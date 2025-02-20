@@ -8,7 +8,8 @@ import BulkUploadApplications from "./pages/BulkUploadApplications";
 import NewApplication from "./pages/NewApplication";
 import Shortlisting from "./pages/Shortlisting";
 import ScreeningTests from "./pages/ScreeningTests";
-
+// import UpdateNewApplication from "./pages/NewApplication";
+import WithApplication from "./pages/withApplicationForm";
 export const appRouter = createBrowserRouter([
   {
     path: "/",
@@ -21,6 +22,7 @@ export const appRouter = createBrowserRouter([
       { path: "/view-applications", element: <ViewApplications /> },
       { path: "/shortlisting", element: <Shortlisting /> },
       { path: "/screening-tests", element: <ScreeningTests /> },
+      {path:"/view-applications/:id",element:<WithApplication/>}
     ],
   },
 ]);
