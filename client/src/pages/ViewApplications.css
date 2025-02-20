@@ -1,0 +1,36 @@
+.view-applications-container {
+  width: 90%;
+  margin: 20px auto;
+  text-align: center;
+}
+
+.error-message {
+  color: red;
+  font-weight: bold;
+}
+
+.applications-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.applications-table th,
+.applications-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.applications-table th {
+  background-color: #007bff;
+  color: white;
+}
+
+.applications-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.applications-table tr:hover {
+  background-color: #ddd;
+}

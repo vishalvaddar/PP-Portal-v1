@@ -1,0 +1,11 @@
+id,nmms_reg_number,student_name,father_name,gender,nmms_year,gmat_score,sat_score,dob
+1,NMMS1000,John Doe,Richard Doe,male,2021,700,1400,2000-01-01
+2,NMMS1001,Jane Smith,Michael Smith,female,2022,710,1350,2001-02-02
+3,NMMS1002,Alice Johnson,Robert Johnson,female,2023,720,1380,2002-03-03
+4,NMMS1003,Bob Brown,David Brown,male,2024,730,1420,2003-04-04
+5,NMMS1004,Charlie Davis,James Davis,male,2021,740,1450,2004-05-05
+6,NMMS1005,Emily White,William White,female,2022,750,1480,2005-06-06
+7,NMMS1006,Frank Harris,Thomas Harris,male,2023,760,1500,2006-07-07
+8,NMMS1007,Grace Lewis,Daniel Lewis,female,2024,770,1520,2007-08-08
+9,NMMS1008,Henry Walker,Joseph Walker,male,2021,780,1550,2008-09-09
+10,NMMS1009,Ivy Adams,Charles Adams,female,2022,790,1580,2009-10-10
