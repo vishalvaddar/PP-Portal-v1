@@ -30,4 +30,4 @@ PORT=5000
 - To run Frontend
 	use -- "npm start" command
 
-	done by shashi
+	done by sha
