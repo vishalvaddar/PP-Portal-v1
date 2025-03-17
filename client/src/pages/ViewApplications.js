@@ -1,261 +1,110 @@
-// import React, { useState, useEffect } from 'react';
-// import axios from 'axios';
-// import './ViewApplications.css'; // Ensure CSS is correctly imported
-
-// const ViewApplication = () => {
-//   const [students, setStudents] = useState([]);
-//   const [nmmsRegNumber, setNmmsRegNumber] = useState('');
-//   const [studentName, setStudentName] = useState('');
-//   const [medium, setMedium] = useState('');
-//   const [parentNo, setParentNo] = useState('');
-//   const [schoolHmNo, setSchoolHmNo] = useState('');
-//   const [schoolName, setSchoolName] = useState('');
-//   const [schoolType, setSchoolType] = useState('');
-//   const [districtName, setDistrictName] = useState('');
-//   const [blockName, setBlockName] = useState('');
-//   const [gmatScore, setGmatScore] = useState('');
-//   const [satScore, setSatScore] = useState('');
-//   const [editMode, setEditMode] = useState(false);
-//   const [currentId, setCurrentId] = useState(null);
-//   const [error, setError] = useState('');
-
-//   // Fetch students on component mount
-//   useEffect(() => {
-//     fetchStudents();
-//   }, []);
-
-//   const fetchStudents = async () => {
-//     try {
-//       const response = await axios.get('http://localhost:5000/student');
-//       setStudents(response.data);
-//     } catch (error) {
-//       console.error('Error fetching students', error);
-//       setError('Failed to fetch student data.');
-//     }
-//   };
-
-//   const handleUpdate = async (e) => {
-//     e.preventDefault();
-//     const studentData = {
-//       nmms_reg_number: nmmsRegNumber,
-//       student_name: studentName,
-//       medium,
-//       parent_no: parentNo,
-//       school_hm_no: schoolHmNo,
-//       school_name: schoolName,
-//       school_type: schoolType,
-//       district_name: districtName,
-//       block_name: blockName,
-//       gmat_score: gmatScore,
-//       sat_score: satScore,
-//     };
-
-//     if (editMode) {
-//       try {
-//         await axios.put(`http://localhost:5000/student/${currentId}`, studentData);
-//         setEditMode(false);
-//         setCurrentId(null);
-//         fetchStudents();
-//       } catch (error) {
-//         console.error('Error updating student', error);
-//         setError('Failed to update student.');
-//       }
-//     }
-
-//     // Clear input fields after update
-//     setNmmsRegNumber('');
-//     setStudentName('');
-//     setMedium('');
-//     setParentNo('');
-//     setSchoolHmNo('');
-//     setSchoolName('');
-//     setSchoolType('');
-//     setDistrictName('');
-//     setBlockName('');
-//     setGmatScore('');
-//     setSatScore('');
-//   };
-
-//   const handleEdit = (student) => {
-//     setNmmsRegNumber(student.nmms_reg_number);
-//     setStudentName(student.student_name);
-//     setMedium(student.medium);
-//     setParentNo(student.parent_no);
-//     setSchoolHmNo(student.school_hm_no);
-//     setSchoolName(student.school_name);
-//     setSchoolType(student.school_type);
-//     setDistrictName(student.district_name);
-//     setBlockName(student.block_name);
-//     setGmatScore(student.gmat_score);
-//     setSatScore(student.sat_score);
-//     setEditMode(true);
-//     setCurrentId(student.id);
-//   };
-
-//   const handleDelete = async (studentId) => {
-//     try {
-//       await axios.delete(`http://localhost:5000/student/${studentId}`);
-//       fetchStudents();
-//     } catch (error) {
-//       console.error('Error deleting student', error);
-//       setError('Failed to delete student.');
-//     }
-//   };
-
-//   return (
-//     <div className="view-applications-container">
-//       <h1>Student Details</h1>
-
-//       {error && <div className="error-message">{error}</div>}
-
-//       {editMode && (
-//         <form onSubmit={handleUpdate} className="edit-form">
-//           <input type="text" placeholder="NMMS Reg Number" value={nmmsRegNumber} onChange={(e) => setNmmsRegNumber(e.target.value)} />
-//           <input type="text" placeholder="Student Name" value={studentName} onChange={(e) => setStudentName(e.target.value)} />
-//           <input type="text" placeholder="Medium" value={medium} onChange={(e) => setMedium(e.target.value)} />
-//           <input type="text" placeholder="Parent No" value={parentNo} onChange={(e) => setParentNo(e.target.value)} />
-//           <input type="text" placeholder="School HM No" value={schoolHmNo} onChange={(e) => setSchoolHmNo(e.target.value)} />
-//           <input type="text" placeholder="School Name" value={schoolName} onChange={(e) => setSchoolName(e.target.value)} />
-//           <input type="text" placeholder="School Type" value={schoolType} onChange={(e) => setSchoolType(e.target.value)} />
-//           <input type="text" placeholder="District Name" value={districtName} onChange={(e) => setDistrictName(e.target.value)} />
-//           <input type="text" placeholder="Block Name" value={blockName} onChange={(e) => setBlockName(e.target.value)} />
-//           <input type="number" placeholder="GMAT Score" value={gmatScore} onChange={(e) => setGmatScore(e.target.value)} />
-//           <input type="number" placeholder="SAT Score" value={satScore} onChange={(e) => setSatScore(e.target.value)} />
-//           <button type="submit">Update Student</button>
-//         </form>
-//       )}
-
-//       <table className="applications-table">
-//         <thead>
-//           <tr>
-//             <th>NMMS Reg Number</th>
-//             <th>Student Name</th>
-//             <th>Medium</th>
-//             <th>Parent No</th>
-//             <th>School HM No</th>
-//             <th>School Name</th>
-//             <th>School Type</th>
-//             <th>District Name</th>
-//             <th>Block Name</th>
-//             <th>GMAT Score</th>
-//             <th>SAT Score</th>
-//             <th>Actions</th>
-//           </tr>
-//         </thead>
-//         <tbody>
-//           {students.map((student) => (
-//             <tr key={student.id}>
-//               <td>{student.nmms_reg_number}</td>
-//               <td>{student.student_name}</td>
-//               <td>{student.medium}</td>
-//               <td>{student.parent_no}</td>
-//               <td>{student.school_hm_no}</td>
-//               <td>{student.school_name}</td>
-//               <td>{student.school_type}</td>
-//               <td>{student.district_name}</td>
-//               <td>{student.block_name}</td>
-//               <td>{student.gmat_score}</td>
-//               <td>{student.sat_score}</td>
-//               <td>
-//                 <button className="edit-btn" onClick={() => handleEdit(student)}>Edit</button>
-//                 <button className="delete-btn" onClick={() => handleDelete(student.id)}>Delete</button>
-//               </td>
-//             </tr>
-//           ))}
-//         </tbody>
-//       </table>
-//     </div>
-//   );
-// };
-
-// export default ViewApplication;
-
-
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import "./ViewApplications.css"; // Ensure CSS is correctly imported
 
-const ViewApplication = () => {
-  const [students, setStudents] = useState([]);
-  const [error, setError] = useState("");
-  const navigate = useNavigate(); // Hook for navigation
+const ViewApplications = () => {
+    const [applications, setApplications] = useState([]);
+    const [showAll, setShowAll] = useState(false);
+    const [updatedData] = useState({});
 
-  useEffect(() => {
-    fetchStudents();
-  }, []);
+    useEffect(() => {
+        fetchApplications();
+    }, []);
 
-  const fetchStudents = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/student");
-      setStudents(response.data);
-    } catch (error) {
-      console.error("Error fetching students", error);
-      setError("Failed to fetch student data.");
-    }
-  };
+    const fetchApplications = async () => {
+        try {
+            const response = await axios.get("http://localhost:5000/applicants");
+            setApplications(response.data);
+        } catch (error) {
+            console.error("Error fetching applications:", error);
+        }
+    };
 
-  const handleDelete = async (studentId) => {
-    try {
-      await axios.delete(`http://localhost:5000/student/${studentId}`);
-      fetchStudents();
-    } catch (error) {
-      console.error("Error deleting student", error);
-      setError("Failed to delete student.");
-    }
-  };
+    const deleteApplication = async (id) => {
+        try {
+            await axios.delete(`http://localhost:5000/applicants/delete/${id}`);
+            setApplications(applications.filter(app => app.applicant_id !== id));
+        } catch (error) {
+            console.error("Error deleting application:", error);
+        }
+    };
 
-  return (
-    <div className="view-applications-container">
-      <h1>Student Details</h1>
+    const updateApplication = async (id) => {
+        try {
+            await axios.put(`http://localhost:5000/applicants/update/${id}`, updatedData);
+            alert("Application updated successfully");
+            fetchApplications();
+        } catch (error) {
+            console.error("Error updating application:", error);
+        }
+    };
 
-      {error && <div className="error-message">{error}</div>}
-
-      <table className="applications-table">
-        <thead>
-          <tr>
-            <th>NMMS Reg Number</th>
-            <th>Student Name</th>
-            <th>Medium</th>
-            <th>Parent No</th>
-            <th>School HM No</th>
-            <th>School Name</th>
-            <th>School Type</th>
-            <th>District Name</th>
-            <th>Block Name</th>
-            <th>GMAT Score</th>
-            <th>SAT Score</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {students.map((student) => (
-            <tr key={student.id}>
-              <td>{student.nmms_reg_number}</td>
-              <td>{student.student_name}</td>
-              <td>{student.medium}</td>
-              <td>{student.parent_no}</td>
-              <td>{student.school_hm_no}</td>
-              <td>{student.school_name}</td>
-              <td>{student.school_type}</td>
-              <td>{student.district_name}</td>
-              <td>{student.block_name}</td>
-              <td>{student.gmat_score}</td>
-              <td>{student.sat_score}</td>
-              <td>
-                <button className="edit-btn" onClick={() => navigate(`/view-applications/${student.id}`)}>
-                  Edit
-                </button>
-                <button className="delete-btn" onClick={() => handleDelete(student.id)}>
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+    return (
+        <div>
+            <h2>Applicant List</h2>
+            <button onClick={() => setShowAll(!showAll)}>
+                {showAll ? "Show Only 5" : "Show All"}
+            </button>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>NMMS Year</th>
+                        <th>Reg Number</th>
+                        <th>State</th>
+                        <th>District</th>
+                        <th>Block</th>
+                        <th>Student Name</th>
+                        <th>Father Name</th>
+                        <th>GMAT</th>
+                        <th>SAT</th>
+                        <th>Contact 1</th>
+                        <th>Contact 2</th>
+                        <th>Current Institute</th>
+                        <th>Previous Institute</th>
+                        <th>Medium</th>
+                        <th>Home Address</th>
+                        <th>Family Income</th>
+                        <th>Mother Name</th>
+                        <th>Gender</th>
+                        <th>Aadhaar</th>
+                        <th>DOB</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {(showAll ? applications : applications.slice(0, 5)).map((app) => (
+                        <tr key={app.applicant_id}>
+                            <td>{app.applicant_id}</td>
+                            <td>{app.nmms_year}</td>
+                            <td>{app.nmms_reg_number}</td>
+                            <td>{app.app_state}</td>
+                            <td>{app.nmms_district}</td>
+                            <td>{app.nmms_block}</td>
+                            <td>{app.student_name}</td>
+                            <td>{app.father_name}</td>
+                            <td>{app.gmat_score}</td>
+                            <td>{app.sat_score}</td>
+                            <td>{app.contact_no1}</td>
+                            <td>{app.contact_no2}</td>
+                            <td>{app.current_institute}</td>
+                            <td>{app.previous_institute}</td>
+                            <td>{app.medium}</td>
+                            <td>{app.home_address}</td>
+                            <td>{app.family_income}</td>
+                            <td>{app.mother_name}</td>
+                            <td>{app.gender}</td>
+                            <td>{app.aadhaar}</td>
+                            <td>{app.DOB}</td>
+                            <td>
+                                <button onClick={() => deleteApplication(app.applicant_id)}>Delete</button>
+                                <button onClick={() => updateApplication(app.applicant_id)}>Update</button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
 };
 
-export default ViewApplication;
+export default ViewApplications;

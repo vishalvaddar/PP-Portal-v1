@@ -1,193 +1,171 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import './NewApplication.css';
+import { useState } from "react";
+import axios from "axios";
 
 const NewApplication = () => {
-  const [formData, setFormData] = useState({
-    nmms_reg_number: '',
-    student_name: '',
-    medium: '',
-    parent_no: '',
-    school_hm_no: '',
-    school_name: '',
-    school_type: '',
-    district_name: '',
-    block_name: '',
-    gmat_score: '',
-    sat_score: '',
-  });
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
+    const [formData, setFormData] = useState({
+        nmms_year: "",
+        nmms_reg_number: "",
+        app_state: "",
+        nmms_district: "",
+        nmms_block: "",
+        student_name: "",
+        father_name: "",
+        gmat_score: "",
+        sat_score: "",
+        contact_no1: "",
+        contact_no2: "",
+        current_institute: "",
+        previous_institute: "",
+        medium: "",
+        home_address: "",
+        family_income: "",
+        mother_name: "",
+        gender: "",
+        aadhaar: "",
+        DOB: ""
     });
-  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post('http://localhost:5000/student', formData);
-      setSubmitSuccess(true);
+    const [page, setPage] = useState(1);
 
-      // Clear form data after successful submission
-      setFormData({
-        nmms_reg_number: '',
-        student_name: '',
-        medium: '',
-        parent_no: '',
-        school_hm_no: '',
-        school_name: '',
-        school_type: '',
-        district_name: '',
-        block_name: '',
-        gmat_score: '',
-        sat_score: '',
-      });
-    } catch (error) {
-      console.error('Error submitting the form:', error);
-    }
-  };
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
-  return (
-    <div className="container">
-      <h2>New Application</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="nmms_reg_number">NMMS Reg Number</label>
-          <input
-            type="text"
-            id="nmms_reg_number"
-            name="nmms_reg_number"
-            value={formData.nmms_reg_number}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="student_name">Student Name</label>
-          <input
-            type="text"
-            id="student_name"
-            name="student_name"
-            value={formData.student_name}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="medium">Medium</label>
-          <select
-            id="medium"
-            name="medium"
-            value={formData.medium}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Medium</option>
-            <option value="Kannada">Kannada</option>
-            <option value="English">English</option>
-          </select>
-        </div>
-        <div className="form-group">
-          <label htmlFor="parent_no">Parent's Contact Number</label>
-          <input
-            type="text"
-            id="parent_no"
-            name="parent_no"
-            value={formData.parent_no}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="school_hm_no">School HM Contact Number</label>
-          <input
-            type="text"
-            id="school_hm_no"
-            name="school_hm_no"
-            value={formData.school_hm_no}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="school_name">School Name</label>
-          <input
-            type="text"
-            id="school_name"
-            name="school_name"
-            value={formData.school_name}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="school_type">School Type</label>
-          <select
-            id="school_type"
-            name="school_type"
-            value={formData.school_type}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select School Type</option>
-            <option value="GOVT">GOVT</option>
-            <option value="PRIVATE">PRIVATE</option>
-            <option value="AIDED">AIDED</option>
-          </select>
-        </div>
-        <div className="form-group">
-          <label htmlFor="district_name">District Name</label>
-          <input
-            type="text"
-            id="district_name"
-            name="district_name"
-            value={formData.district_name}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="block_name">Block Name</label>
-          <input
-            type="text"
-            id="block_name"
-            name="block_name"
-            value={formData.block_name}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="gmat_score">GMAT Score</label>
-          <input
-            type="number"
-            id="gmat_score"
-            name="gmat_score"
-            value={formData.gmat_score}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="sat_score">SAT Score</label>
-          <input
-            type="number"
-            id="sat_score"
-            name="sat_score"
-            value={formData.sat_score}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <button type="submit" className="btn btn-success">
-          Submit Application
-        </button>
-      </form>
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post("http://localhost:5000/applicants/create", formData);
+            if (response.status === 200) {
+                alert("Application submitted successfully!");
+                setFormData({
+                    nmms_year: "",
+                    nmms_reg_number: "",
+                    app_state: "",
+                    nmms_district: "",
+                    nmms_block: "",
+                    student_name: "",
+                    father_name: "",
+                    gmat_score: "",
+                    sat_score: "",
+                    contact_no1: "",
+                    contact_no2: "",
+                    current_institute: "",
+                    previous_institute: "",
+                    medium: "",
+                    home_address: "",
+                    family_income: "",
+                    mother_name: "",
+                    gender: "",
+                    aadhaar: "",
+                    DOB: ""
+                });
+                setPage(1);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Failed to submit application.");
+        }
+    };
 
-      {submitSuccess && (
-        <div className="success-message">Application submitted successfully!</div>
-      )}
-    </div>
-  );
+    return (
+        <div>
+            <h2>New Application</h2>
+            <form onSubmit={handleSubmit}>
+                {page === 1 && (
+                    <>
+                        <div>
+                            <label>NMMS Year: </label>
+                            <input type="text" name="nmms_year" value={formData.nmms_year} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>NMMS Reg Number: </label>
+                            <input type="text" name="nmms_reg_number" value={formData.nmms_reg_number} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>App State: </label>
+                            <input type="text" name="app_state" value={formData.app_state} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>NMMS District: </label>
+                            <input type="text" name="nmms_district" value={formData.nmms_district} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>NMMS Block: </label>
+                            <input type="text" name="nmms_block" value={formData.nmms_block} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>Student Name: </label>
+                            <input type="text" name="student_name" value={formData.student_name} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>Father Name: </label>
+                            <input type="text" name="father_name" value={formData.father_name} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>GMAT Score: </label>
+                            <input type="text" name="gmat_score" value={formData.gmat_score} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>SAT Score: </label>
+                            <input type="text" name="sat_score" value={formData.sat_score} onChange={handleChange} required />
+                        </div>
+                        <button type="button" onClick={() => setPage(2)}>Next</button>
+                    </>
+                )}
+
+                {page === 2 && (
+                    <>
+                        <div>
+                            <label>Contact No1: </label>
+                            <input type="text" name="contact_no1" value={formData.contact_no1} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>Contact No2: </label>
+                            <input type="text" name="contact_no2" value={formData.contact_no2} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>Current Institute: </label>
+                            <input type="text" name="current_institute" value={formData.current_institute} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>Previous Institute: </label>
+                            <input type="text" name="previous_institute" value={formData.previous_institute} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>Medium: </label>
+                            <input type="text" name="medium" value={formData.medium} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>Home Address: </label>
+                            <input type="text" name="home_address" value={formData.home_address} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>Family Income: </label>
+                            <input type="text" name="family_income" value={formData.family_income} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>Mother Name: </label>
+                            <input type="text" name="mother_name" value={formData.mother_name} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>Gender: </label>
+                            <input type="text" name="gender" value={formData.gender} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>Aadhaar: </label>
+                            <input type="text" name="aadhaar" value={formData.aadhaar} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>Date of Birth: </label>
+                            <input type="date" name="DOB" value={formData.DOB} onChange={handleChange} required />
+                        </div>
+                        <button type="button" onClick={() => setPage(1)}>Back</button>
+                        <button type="submit">Submit</button>
+                    </>
+                )}
+            </form>
+        </div>
+    );
 };
 
 export default NewApplication;
