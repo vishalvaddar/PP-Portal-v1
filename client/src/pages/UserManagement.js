@@ -2,7 +2,7 @@ import React from 'react'
 
 const UserManagement = () => {
   return (
-    <div>UserManagement Ravina</div>
+    <div>UserManagement Page</div>
   )
 }
 
