@@ -3,12 +3,12 @@
 # database name
 - student
 - DB_USER=postgres
-DB_HOST=127.0.0.1
-DB_DATABASE=ppp
-DB_PASSWORD=1234
-DB_PORT=5432
-PORT=5000
--DB-Schema is "pp"
+- DB_HOST=127.0.0.1
+- DB_DATABASE=ppp
+- DB_PASSWORD=1234
+- DB_PORT=5432
+- PORT=5000
+- DB-Schema is "pp"
 
 
 - To run the backend
