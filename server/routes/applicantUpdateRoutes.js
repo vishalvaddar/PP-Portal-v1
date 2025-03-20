@@ -1,7 +1,9 @@
 const express = require("express");
-const router = express.Router();
 const { updateApplicant } = require("../controllers/applicantUpdateController");
 
-router.put("/:id", updateApplicant);
+const router = express.Router();
+
+router.put("/update/:id", updateApplicant); //miracles happeing
+
 
 module.exports = router;

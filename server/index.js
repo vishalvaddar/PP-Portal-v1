@@ -20,7 +20,7 @@ app.use(bodyParser.json());
 // Routes
 app.use("/applicants/create", applicantCreateRoutes);
 app.use("/applicants", applicantViewRoutes);
-app.use("/applicants/update", applicantUpdateRoutes);
+app.use("/applicants", applicantUpdateRoutes);  //this is magic understand
 app.use("/applicants/delete", applicantDeleteRoutes);
 app.use("/api", bulkUploadRoutes);
 

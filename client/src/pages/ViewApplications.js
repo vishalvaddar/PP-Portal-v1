@@ -4,7 +4,8 @@ import axios from "axios";
 const ViewApplications = () => {
     const [applications, setApplications] = useState([]);
     const [showAll, setShowAll] = useState(false);
-    const [updatedData] = useState({});
+    const [editingId, setEditingId] = useState(null);
+    const [updatedData, setUpdatedData] = useState({});
 
     useEffect(() => {
         fetchApplications();
@@ -28,15 +29,50 @@ const ViewApplications = () => {
         }
     };
 
-    const updateApplication = async (id) => {
+    const handleEditClick = (app) => {
+        setEditingId(app.applicant_id);
+        setUpdatedData({ ...app });
+    };
+
+    const handleChange = (e, field) => {
+        setUpdatedData({ ...updatedData, [field]: e.target.value });
+    };
+
+    const handleUpdate = async () => {
         try {
-            await axios.put(`http://localhost:5000/applicants/update/${id}`, updatedData);
-            alert("Application updated successfully");
-            fetchApplications();
+            console.log("Updating:", editingId, updatedData);
+            await axios.put(`http://localhost:5000/applicants/update/${editingId}`, updatedData);
+            setEditingId(null);
+            fetchApplications(); // Refresh data after update
         } catch (error) {
             console.error("Error updating application:", error);
         }
     };
+    
+
+    const [formData, setFormData] = useState({
+        student_name: "",
+        father_name: "",
+        contact_no1: "",
+        contact_no2: "",
+        current_institute: "",
+        nmms_year:"",
+         nmms_reg_number:"",
+         app_state:"",
+         nmms_district:"",
+          nmms_block:"",
+                gmat_score:"", 
+                sat_score:"",
+                 previous_institute:"",
+                  medium:"",
+                home_address:"",
+                 family_income:"",
+                  mother_name:"",
+                   gender:"",
+                   aadhaar:"",
+                    DOB:""
+    });
+    
 
     return (
         <div>
@@ -75,30 +111,42 @@ const ViewApplications = () => {
                     {(showAll ? applications : applications.slice(0, 5)).map((app) => (
                         <tr key={app.applicant_id}>
                             <td>{app.applicant_id}</td>
-                            <td>{app.nmms_year}</td>
-                            <td>{app.nmms_reg_number}</td>
-                            <td>{app.app_state}</td>
-                            <td>{app.nmms_district}</td>
-                            <td>{app.nmms_block}</td>
-                            <td>{app.student_name}</td>
-                            <td>{app.father_name}</td>
-                            <td>{app.gmat_score}</td>
-                            <td>{app.sat_score}</td>
-                            <td>{app.contact_no1}</td>
-                            <td>{app.contact_no2}</td>
-                            <td>{app.current_institute}</td>
-                            <td>{app.previous_institute}</td>
-                            <td>{app.medium}</td>
-                            <td>{app.home_address}</td>
-                            <td>{app.family_income}</td>
-                            <td>{app.mother_name}</td>
-                            <td>{app.gender}</td>
-                            <td>{app.aadhaar}</td>
-                            <td>{app.DOB}</td>
-                            <td>
-                                <button onClick={() => deleteApplication(app.applicant_id)}>Delete</button>
-                                <button onClick={() => updateApplication(app.applicant_id)}>Update</button>
-                            </td>
+                            {editingId === app.applicant_id ? (
+                                <>
+                                    <td><input value={updatedData.nmms_year} onChange={(e) => handleChange(e, "nmms_year")} /></td>
+                                    <td><input value={updatedData.nmms_reg_number} onChange={(e) => handleChange(e, "nmms_reg_number")} /></td>
+                                    <td><input value={updatedData.app_state} onChange={(e) => handleChange(e, "app_state")} /></td>
+                                    <td><input value={updatedData.nmms_district} onChange={(e) => handleChange(e, "nmms_district")} /></td>
+                                    <td><input value={updatedData.nmms_block} onChange={(e) => handleChange(e, "nmms_block")} /></td>
+                                    <td><input value={updatedData.student_name} onChange={(e) => handleChange(e, "student_name")} /></td>
+                                    <td><input value={updatedData.father_name} onChange={(e) => handleChange(e, "father_name")} /></td>
+                                    <td><input value={updatedData.gmat_score} onChange={(e) => handleChange(e, "gmat_score")} /></td>
+                                    <td><input value={updatedData.sat_score} onChange={(e) => handleChange(e, "sat_score")} /></td>
+                                    <td><input value={updatedData.contact_no1} onChange={(e) => handleChange(e, "contact_no1")} /></td>
+                                    <td><input value={updatedData.contact_no2} onChange={(e) => handleChange(e, "contact_no2")} /></td>
+                                    <td><input value={updatedData.current_institute} onChange={(e) => handleChange(e, "current_institute")} /></td>
+                                    <td><input value={updatedData.previous_institute} onChange={(e) => handleChange(e, "previous_institute")} /></td>
+                                    <td><input value={updatedData.medium} onChange={(e) => handleChange(e, "medium")} /></td>
+                                    <td><input value={updatedData.home_address} onChange={(e) => handleChange(e, "home_address")} /></td>
+                                    <td><input value={updatedData.family_income} onChange={(e) => handleChange(e, "family_income")} /></td>
+                                    <td><input value={updatedData.mother_name} onChange={(e) => handleChange(e, "mother_name")} /></td>
+                                    <td><input value={updatedData.gender} onChange={(e) => handleChange(e, "gender")} /></td>
+                                    <td><input value={updatedData.aadhaar} onChange={(e) => handleChange(e, "aadhaar")} /></td>
+                                    <td><input value={updatedData.DOB} onChange={(e) => handleChange(e, "DOB")} /></td>
+                                    <td>
+                                        <button onClick={handleUpdate}>Save</button>
+                                        <button onClick={() => setEditingId(null)}>Cancel</button>
+                                    </td>
+                                </>
+                            ) : (
+                                <>
+                                    {Object.values(app).slice(1).map((val, index) => <td key={index}>{val}</td>)}
+                                    <td>
+                                        <button onClick={() => handleEditClick(app)}>Edit</button>
+                                        <button onClick={() => deleteApplication(app.applicant_id)}>Delete</button>
+                                    </td>
+                                </>
+                            )}
                         </tr>
                     ))}
                 </tbody>

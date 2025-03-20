@@ -11,7 +11,7 @@ const Applicant = {
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
             ) RETURNING *;
         `;
-        const values = Object.values(data);
+        const values = Object.values(data).map(val => val === "" ? null : val);
         const result = await pool.query(query, values);
         return result.rows[0];
     },
@@ -22,11 +22,18 @@ const Applicant = {
     },
 
     update: async (id, updatedData) => {
-        const { student_name } = updatedData;
-        const result = await pool.query(
-            "UPDATE pp.applicant SET student_name = $1 WHERE applicant_id = $2 RETURNING *",
-            [student_name, id]
-        );
+        // Dynamically build the query
+        const fields = Object.keys(updatedData);
+        const values = Object.values(updatedData).map(val => val === "" ? null : val);
+
+        if (fields.length === 0) {
+            throw new Error("No data provided for update");
+        }
+
+        const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(", ");
+        const query = `UPDATE pp.applicant SET ${setClause} WHERE applicant_id = $${fields.length + 1} RETURNING *`;
+
+        const result = await pool.query(query, [...values, id]);
         return result.rows[0];
     },
 

@@ -73,6 +73,7 @@ const NewApplication = () => {
             <form onSubmit={handleSubmit}>
                 {page === 1 && (
                     <>
+                    <p>The Below columns must be required</p>
                         <div>
                             <label>NMMS Year: </label>
                             <input type="text" name="nmms_year" value={formData.nmms_year} onChange={handleChange} required />
@@ -82,8 +83,24 @@ const NewApplication = () => {
                             <input type="text" name="nmms_reg_number" value={formData.nmms_reg_number} onChange={handleChange} required />
                         </div>
                         <div>
-                            <label>App State: </label>
-                            <input type="text" name="app_state" value={formData.app_state} onChange={handleChange} required />
+                            <label>Student Name: </label>
+                            <input type="text" name="student_name" value={formData.student_name} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>Father Name: </label>
+                            <input type="text" name="father_name" value={formData.father_name} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>Medium: </label>
+                            <input type="text" name="medium" value={formData.medium} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>Parent Contact No: </label>
+                            <input type="text" name="contact_no1" value={formData.contact_no1} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <label>School HM No: </label>
+                            <input type="text" name="contact_no2" value={formData.contact_no2} onChange={handleChange} required />
                         </div>
                         <div>
                             <label>NMMS District: </label>
@@ -94,12 +111,8 @@ const NewApplication = () => {
                             <input type="text" name="nmms_block" value={formData.nmms_block} onChange={handleChange} required />
                         </div>
                         <div>
-                            <label>Student Name: </label>
-                            <input type="text" name="student_name" value={formData.student_name} onChange={handleChange} required />
-                        </div>
-                        <div>
-                            <label>Father Name: </label>
-                            <input type="text" name="father_name" value={formData.father_name} onChange={handleChange} required />
+                            <label>School Name: </label>
+                            <input type="text" name="current_institute" value={formData.current_institute} onChange={handleChange} required />
                         </div>
                         <div>
                             <label>GMAT Score: </label>
@@ -115,49 +128,38 @@ const NewApplication = () => {
 
                 {page === 2 && (
                     <>
+                    <p>The Below columns not be required//you can keep it as null</p>
                         <div>
-                            <label>Contact No1: </label>
-                            <input type="text" name="contact_no1" value={formData.contact_no1} onChange={handleChange} required />
-                        </div>
-                        <div>
-                            <label>Contact No2: </label>
-                            <input type="text" name="contact_no2" value={formData.contact_no2} onChange={handleChange} required />
-                        </div>
-                        <div>
-                            <label>Current Institute: </label>
-                            <input type="text" name="current_institute" value={formData.current_institute} onChange={handleChange} required />
+                            <label>App State: </label>
+                            <input type="text" name="app_state" value={formData.app_state} onChange={handleChange}  />
                         </div>
                         <div>
                             <label>Previous Institute: </label>
-                            <input type="text" name="previous_institute" value={formData.previous_institute} onChange={handleChange} required />
-                        </div>
-                        <div>
-                            <label>Medium: </label>
-                            <input type="text" name="medium" value={formData.medium} onChange={handleChange} required />
+                            <input type="text" name="previous_institute" value={formData.previous_institute} onChange={handleChange}  />
                         </div>
                         <div>
                             <label>Home Address: </label>
-                            <input type="text" name="home_address" value={formData.home_address} onChange={handleChange} required />
+                            <input type="text" name="home_address" value={formData.home_address} onChange={handleChange}  />
                         </div>
                         <div>
                             <label>Family Income: </label>
-                            <input type="text" name="family_income" value={formData.family_income} onChange={handleChange} required />
+                            <input type="text" name="family_income" value={formData.family_income} onChange={handleChange}  />
                         </div>
                         <div>
                             <label>Mother Name: </label>
-                            <input type="text" name="mother_name" value={formData.mother_name} onChange={handleChange} required />
+                            <input type="text" name="mother_name" value={formData.mother_name} onChange={handleChange}  />
                         </div>
                         <div>
                             <label>Gender: </label>
-                            <input type="text" name="gender" value={formData.gender} onChange={handleChange} required />
+                            <input type="text" name="gender" value={formData.gender} onChange={handleChange}  />
                         </div>
                         <div>
                             <label>Aadhaar: </label>
-                            <input type="text" name="aadhaar" value={formData.aadhaar} onChange={handleChange} required />
+                            <input type="text" name="aadhaar" value={formData.aadhaar} onChange={handleChange}  />
                         </div>
                         <div>
                             <label>Date of Birth: </label>
-                            <input type="date" name="DOB" value={formData.DOB} onChange={handleChange} required />
+                            <input type="date" name="DOB" value={formData.DOB} onChange={handleChange}  />
                         </div>
                         <button type="button" onClick={() => setPage(1)}>Back</button>
                         <button type="submit">Submit</button>
