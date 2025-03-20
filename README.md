@@ -4,10 +4,11 @@
 - student
 - DB_USER=postgres
 DB_HOST=127.0.0.1
-DB_DATABASE=dummydb
-DB_PASSWORD=123
+DB_DATABASE=ppp
+DB_PASSWORD=1234
 DB_PORT=5432
 PORT=5000
+-DB-Schema is "pp"
 
 
 - To run the backend
