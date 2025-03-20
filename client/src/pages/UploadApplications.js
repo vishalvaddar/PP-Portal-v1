@@ -1,84 +1,38 @@
-import React, { useState } from "react";
-import axios from "axios";
-import "./BulkUploadApplications.css"; // Ensure this CSS file is imported
+import React from "react";
+import "./UploadApplicationPage.css"; // Import CSS file for styling
+import { Link } from "react-router-dom"; // Import Link for routing
 
-const BulkUploadApplications = () => {
-  const [file, setFile] = useState(null);
-  const [message, setMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!file) {
-      setMessage("Please select a file to upload.");
-      return;
-    }
-    setIsLoading(true);
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const response = await axios.post(
-        "http://localhost:5000/api/upload",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-
-      setMessage(response.data.message);
-    } catch (error) {
-      setMessage(
-        `Error: ${error.response?.data?.message || "Failed to upload file"}`
-      );
-    }
-
-    setIsLoading(false);
-  };
-
+const UploadApplications = () => {
   return (
-    <div className="bulk-upload-container">
-      <h2>Bulk Upload Applications</h2>
-      <p>
-        Use the form below to upload a CSV or Excel file containing multiple
-        student applications.
-      </p>
+    <div className="container mt-4">
+      <h2 className="text-center">Upload Applications</h2>
 
-      {message && <div className="alert alert-info mt-3">{message}</div>}
-
-      <form onSubmit={handleSubmit} className="upload-form">
-        <div className="form-group">
-          <label htmlFor="file-upload" className="form-label mt-4">
-            Upload File
-          </label>
-          <input
-            type="file"
-            id="file-upload"
-            className="form-control"
-            onChange={handleFileChange}
-            accept=".csv"
-          />
+      {/* Application Options */}
+      <div className="application-options mt-4">
+        <div className="option-box">
+          <Link to="/new-application" className="option-link">
+            <div className="icon-box">
+              <i className="fas fa-plus-circle"></i>
+            </div>
+            <div className="text-box">New Application</div>
+          </Link>
         </div>
-        <button
-          type="submit"
-          className="btn btn-primary mt-3"
-          disabled={isLoading}
-        >
-          {isLoading ? "Uploading..." : "Upload File"}
-        </button>
-      </form>
+        <div className="option-box">
+          <Link to="/bulk-upload-applications" className="option-link">
+            <div className="icon-box">
+              <i className="fas fa-upload"></i>
+            </div>
+            <div className="text-box">Bulk Upload Applications</div>
+          </Link>
+        </div>
+      </div>
+
+      {/* Instructions Section */}
       <div className="instructions mt-4">
         <h3>Instructions</h3>
         <ul>
-          <li>Ensure your file is in CSV format.</li>
-          <li>
-            Include headers: NMMS Reg Number, Name, Father's Name, Gender, Year,
-            GMAT Score, SAT Score, Date of Birth.
-          </li>
+          <li>Ensure your file is in CSV or Excel format.</li>
+          <li>Include headers: Application ID, Name, Email, etc.</li>
           <li>Review the file for errors before uploading.</li>
         </ul>
       </div>
@@ -86,4 +40,4 @@ const BulkUploadApplications = () => {
   );
 };
 
-export default BulkUploadApplications;
+export default UploadApplications;

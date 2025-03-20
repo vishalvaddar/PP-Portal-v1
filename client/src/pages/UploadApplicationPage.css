@@ -1,104 +1,82 @@
-/* Base Container Styles */
 .container {
-  font-family: Arial, sans-serif;
-  margin: 20px;
+  text-align: center;
+  padding: 20px;
 }
 
-/* Instructions Styling */
-.instructions ul {
-  list-style: disc;
-  padding-left: 1.25em; /* Use em for better responsiveness */
-  margin-top: 10px;
+h2 {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
 }
 
-/* Upload Form Styling */
-.upload-form {
-  margin-top: 20px;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-control {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  width: 100%;
-  font-size: 14px;
-}
-
-.btn {
-  padding: 10px 20px;
-  font-size: 16px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: #fff;
-}
-
-.btn-primary:hover {
-  background-color: #0056b3;
-}
-
-.btn[disabled] {
-  background-color: #767373;
-  cursor: not-allowed;
-}
-
-/* Message Box Styling */
-.alert {
-  padding: 15px;
-  border-radius: 5px;
-  margin-top: 10px;
-}
-
-.alert-info {
-  background-color: #e9f7fd;
-  color: #31708f;
-  border: 1px solid #bce8f1;
-}
-
-/* Application Options Styling */
+/* Application options container */
 .application-options {
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: 30px;
   margin-top: 20px;
-  flex-wrap: wrap;
 }
 
+/* Individual option box */
 .option-box {
-  text-align: center;
-  border: 1px solid #ddd;
+  width: 220px;
   padding: 20px;
-  border-radius: 8px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  text-align: center;
+  transition: transform 0.3s, box-shadow 0.3s;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 200px;
-  background-color: #ffffff;
-  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .option-box:hover {
-  background-color: #759aef;
   transform: translateY(-5px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
 }
 
+/* Link styling */
 .option-link {
   text-decoration: none;
-  color: inherit;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
+/* Icon box */
 .icon-box {
-  font-size: 24px;
+  font-size: 40px;
+  color: #007bff;
   margin-bottom: 10px;
 }
 
+/* Text inside option box */
 .text-box {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Instructions section */
+.instructions {
+  margin-top: 30px;
+  text-align: left;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.instructions h3 {
+  font-size: 20px;
+  color: #007bff;
+  margin-bottom: 10px;
+}
+
+.instructions ul {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+.instructions li {
   font-size: 16px;
+  color: #555;
+  margin-bottom: 8px;
 }

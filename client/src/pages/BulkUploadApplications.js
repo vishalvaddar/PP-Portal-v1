@@ -8,6 +8,9 @@ const BulkUploadApplications = ({ refreshData }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+
+  //Sample csv file URL
+  const sampleCsvUrl = "../sample_bulk_upload.csv";
   // Handle file selection
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -79,15 +82,6 @@ const BulkUploadApplications = ({ refreshData }) => {
           {isLoading ? "Uploading..." : "📤 Upload File"}
         </button>
       </form>
-      
-      <div className="upload-instructions">
-        <h4>📌 Instructions</h4>
-        <ul>
-          <li>The Bulk Upload file format must be <b>CSV</b>.</li>
-          <li>The Bulk Upload file columns should match the sample CSV format to ensure correct data storage.</li>
-          <li>Make sure there are no empty rows or missing values in mandatory fields.</li>
-        </ul>
-      </div>
     </div>
   );
 };
