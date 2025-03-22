@@ -10,6 +10,9 @@ import Shortlisting from "./pages/Shortlisting";
 import ScreeningTests from "./pages/ScreeningTests";
 // import UpdateNewApplication from "./pages/NewApplication";
 import WithApplication from "./pages/withApplicationForm";
+import CreateCriteria from "./pages/CreateCriteria";
+import GenerateShortlist from "./pages/GenerateShortlist";
+
 export const appRouter = createBrowserRouter([
   {
     path: "/",
@@ -21,6 +24,8 @@ export const appRouter = createBrowserRouter([
       { path: "/bulk-upload-applications", element: <BulkUploadApplications /> },
       { path: "/view-applications", element: <ViewApplications /> },
       { path: "/shortlisting", element: <Shortlisting /> },
+      { path: "/create-shortlisting-criteria", element:<CreateCriteria/>},
+      {path: "/generate-shortlist", element:<GenerateShortlist/>},
       { path: "/screening-tests", element: <ScreeningTests /> },
       {path:"/view-applications/:id",element:<WithApplication/>}
     ],
