@@ -8,7 +8,6 @@ const BulkUploadApplications = ({ refreshData }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-
   //Sample csv file URL
   const sampleCsvUrl = "../sample_bulk_upload.csv";
   // Handle file selection
@@ -29,11 +28,16 @@ const BulkUploadApplications = ({ refreshData }) => {
     const formData = new FormData();
     formData.append("file", file);
 
+
     try {
-      const response = await axios.post("http://localhost:5000/api/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      
+      const response = await axios.post(
+        "http://localhost:5000/api/upload",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+       
       if (response.status === 200) {
         setMessage("✅ File uploaded successfully!");
         setFile(null);
@@ -46,7 +50,9 @@ const BulkUploadApplications = ({ refreshData }) => {
         throw new Error("Failed to upload file");
       }
     } catch (error) {
-      setError(`❌ Upload Error: ${error.response?.data?.message || error.message}`);
+      setError(
+        `❌ Upload Error: ${error.response?.data?.message || error.message}`
+      );
     } finally {
       setIsLoading(false);
     }
@@ -55,21 +61,28 @@ const BulkUploadApplications = ({ refreshData }) => {
   return (
     <div className="bulk-upload-container">
       <h2>📂 Bulk Upload Applications</h2>
-      <p>Upload a CSV or Excel file containing multiple student applications.</p>
+      <p>
+        Upload a CSV or Excel file containing multiple student applications.
+      </p>
 
       {error && <div className="alert alert-danger">{error}</div>}
       {message && <div className="alert alert-success">{message}</div>}
 
       {/* Download Sample CSV Button */}
       <div className="download-section mt-3">
-        <p>📄 Need a Sample format? 
-          <a href="/sample_bulk_upload.csv" download className="download-link">Download Sample CSV</a>
+        <p>
+          📄 Need a Sample format?
+          <a href="/sample_bulk_upload.csv" download className="download-link">
+            Download Sample CSV
+          </a>
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="upload-form">
         <div className="form-group">
-          <label htmlFor="file-upload" className="form-label">Upload File</label>
+          <label htmlFor="file-upload" className="form-label">
+            Upload File
+          </label>
           <input
             type="file"
             id="file-upload"
