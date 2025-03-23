@@ -4,7 +4,7 @@
 applicant
 - DB_USER=postgres
 - DB_HOST=127.0.0.1
-- DB_DATABASE=ppp // It is Database name
+- DB_DATABASE=pp_portal_db // It is Database name
 - DB_PASSWORD=1234
 - DB_PORT=5432
 - PORT=5000
