@@ -1,0 +1,121 @@
+/* ViewApplications.css */
+.container {
+  max-width: 95%;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.header {
+  font-size: 2rem;
+  color: #d1dce7;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-weight: 600;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #4299e1;
+}
+
+.title {
+  color: #4a5568;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.toggle-btn {
+  background: #4299e1;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  transition: background 0.3s ease;
+}
+
+.toggle-btn:hover {
+  background: #3182ce;
+}
+
+.application-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+  display: block;
+}
+
+.application-table thead {
+  background-color: #4299e1;
+  color: white;
+}
+
+.application-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  background: #4299e1;
+}
+
+.application-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.9rem;
+}
+
+.application-table tr:hover {
+  background-color: #a4b3b4;
+}
+
+.application-table tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.reg-number-link {
+  color: #4299e1;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.reg-number-link:hover {
+  color: #3182ce;
+}
+
+/* Responsive Table */
+@media (max-width: 1200px) {
+  .application-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 0.5rem;
+  }
+
+  .application-table th,
+  .application-table td {
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .header {
+    font-size: 1.5rem;
+  }
+
+  .title {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .toggle-btn {
+    width: 100%;
+    padding: 0.75rem;
+  }
+}

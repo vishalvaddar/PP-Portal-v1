@@ -14,7 +14,7 @@ const WithApplication = () => {
     school_hm_no: "",
     school_name: "",
     school_type: "",
-    district_name: "",
+    district: "",
     block_name: "",
     gmat_score: "",
     sat_score: "",
@@ -103,7 +103,7 @@ const WithApplication = () => {
         </div>
         <div className="form-group">
           <label>District Name</label>
-          <input type="text" name="district_name" value={formData.district_name} onChange={handleChange} required />
+          <input type="text" name="district" value={formData.district} onChange={handleChange} required />
         </div>
         <div className="form-group">
           <label>Block Name</label>

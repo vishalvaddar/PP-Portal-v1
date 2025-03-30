@@ -12,6 +12,8 @@ import ScreeningTests from "./pages/ScreeningTests";
 import WithApplication from "./pages/withApplicationForm";
 import CreateCriteria from "./pages/CreateCriteria";
 import GenerateShortlist from "./pages/GenerateShortlist";
+import SearchApplications from "./pages/SearchApplications";
+import EditForm from "./pages/EditForm";
 
 export const appRouter = createBrowserRouter([
   {
@@ -22,12 +24,14 @@ export const appRouter = createBrowserRouter([
       { path: "/upload-applications", element: <UploadApplications /> },
       { path: "/new-application", element: <NewApplication /> },
       { path: "/bulk-upload-applications", element: <BulkUploadApplications /> },
+      { path: "/search-applications", element: <SearchApplications /> },
       { path: "/view-applications", element: <ViewApplications /> },
       { path: "/shortlisting", element: <Shortlisting /> },
       { path: "/create-shortlisting-criteria", element:<CreateCriteria/>},
       {path: "/generate-shortlist", element:<GenerateShortlist/>},
       { path: "/screening-tests", element: <ScreeningTests /> },
-      {path:"/view-applications/:id",element:<WithApplication/>}
+      {path:"/view-applications/:id",element:<WithApplication/>},
+      { path: "/edit-form/:nmms_reg_number", element: <EditForm /> }
     ],
   },
 ]);
