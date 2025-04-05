@@ -74,17 +74,4 @@ router.get("/institutes-by-block/:blockID", async (req, res) => {
     }
 });
 
-//Fetch all institutes without block name
-router.get("/institutes/all", async (req, res) => {
-    try {
-        const result = await pool.query(`SELECT institute_type_name AS institute_name 
-            FROM PP.institute_type 
-            WHERE institute_type_id IN ('1', '2') 
-            ORDER BY institute_type_name`)
-    } catch (error) {
-        console.error("Error fetching institutes:", error.stack);
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-    
-})
 module.exports = router;

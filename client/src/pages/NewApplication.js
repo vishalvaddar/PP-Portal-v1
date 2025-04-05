@@ -358,6 +358,7 @@ const NewApplication = () => {
                 value={formData.contact_no1}
                 onChange={handleChange}
                 required
+                maxLength="10"
                 placeholder="10-digit mobile numbers"
               />
             </div>
@@ -369,6 +370,7 @@ const NewApplication = () => {
                 value={formData.contact_no2}
                 onChange={handleChange}
                 required
+                maxLength="10"
                 placeholder="Alternative contact number"
               />
             </div>

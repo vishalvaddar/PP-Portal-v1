@@ -1,7 +1,5 @@
 const Applicant = require("../models/applicantModel");
 
-const Applicant = require("../models/applicantModel");
-
 const createApplicant = async (req, res) => {
     try {
         const newApplicant = await Applicant.create(req.body);

@@ -13,6 +13,7 @@ const EditForm = () => {
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState("");
   const mediumOptions = ["ENGLISH", "KANNADA"];
+  const [institutes, setInstitues] = useState([]);
 
   useEffect(() => {
     const fetchStudentDetails = async () => {
@@ -47,11 +48,28 @@ const EditForm = () => {
     fetchStudentDetails();
   }, [nmms_reg_number]);
 
+  // Fetch institutes from the database
+  useEffect(() => {
+    const fetchInstitutes = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/institutes/all");
+        setInstitues(response.data);
+      } catch (error) {
+        console.error("Error fetching institutes:", error);
+        setError("Failed to load institutes.");
+      }
+    };
+    fetchInstitutes();
+  }, []);
+
   const fixedFields = [
     "applicant_id",
     "nmms_reg_number",
+    // "aadhaar",
+    "app_state",
     "nmms_year",
     "district",
+    "nmms_block",
     "gmat_score",
     "sat_score",
   ];
@@ -91,6 +109,9 @@ const EditForm = () => {
       return; // Ignore changes to fixed fields
     }
 
+    if (name === "aadhaar" && value.length > 12) {
+      return;
+    }
     setFormData((prev) => ({ ...prev, [name]: newValue }));
   };
 
@@ -156,16 +177,16 @@ const EditForm = () => {
     DOB: "DATE OF BIRTH ",
     aadhaar: "AADHAAR NO ",
     father_name: "FATHER NAME ",
-    mother_name: "MATHER NAME ",
+    mother_name: "MOTHER NAME ",
     family_income_total: "FAMILY INCOME ",
     home_address: "HOME ADDRESS ",
-    contact_no1: "CONTACT NO1 ",
-    contact_no2: "CONTACT NO2 ",
+    contact_no1: "CONTACT NO-1 ",
+    contact_no2: "CONTACT NO-2 ",
     app_state: "STATE ",
     district: "DISTRICT ",
     nmms_block: "NMMS BLOCK ",
-    current_institute_dise_code: "CURRENT SCHOOL DISE CODE ",
-    previous_institute_dise_code: "PREVIOUS SCHOOL DISE CODE ",
+    current_institute_dise_code: "CURRENT SCHOOL NAME",
+    previous_institute_dise_code: "PREVIOUS SCHOOL NAME ",
     medium: "MEDIUM",
     gmat_score: "GMAT SCORE",
     sat_score: "SAT SCORE",
@@ -190,9 +211,8 @@ const EditForm = () => {
       <div className="edit-form-card">
         <div className="form-header">
           <h2>Edit Student Details</h2>
-          <p className="reg-number">Registration: {nmms_reg_number}</p>
+          <p className="reg-number">NMMS REG NO: {nmms_reg_number}</p>
         </div>
-
         <div className="profile-section">
           <label htmlFor="photo-upload" className="profile-image-container">
             <img src={photoPreview} alt="Profile" className="profile-image" />
@@ -233,6 +253,16 @@ const EditForm = () => {
                           </option>
                         ))}
                       </select>
+                    ) : key === "current_institute_dise_code" ? (
+                      <select
+                        id = {key}
+                        name={key}
+                        className="form-input"
+                        value={formData[key] || ""}
+                        onChange={handleChange}
+                      >
+
+                      </select>
                     ) : (
                       <input
                         type={key.includes("date") ? "date" : "text"}
@@ -241,6 +271,7 @@ const EditForm = () => {
                         className="form-input"
                         value={formData[key] || ""}
                         onChange={handleChange}
+                        maxLength={key === "aadhaar" ? "12" : undefined}
                         placeholder={`Enter ${
                           fieldLabels[key] || key.replace(/_/g, " ")
                         }`}

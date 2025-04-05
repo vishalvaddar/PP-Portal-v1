@@ -8,7 +8,7 @@ const Navbar = () => {
       <ul className="navbar-nav">
         <li className="nav-item"><Link to="/">Dashboard</Link></li>
         <li className="nav-item dropdown">
-          <Link to="/upload-applications" className="dropbtn">Upload Applications</Link>
+          <Link to="" className="dropbtn" onClick={(e)=>e.preventDefault()}>Upload Applications</Link>
           <div className="dropdown-content">
             <Link to="/new-application">New Application</Link>
             <Link to="/bulk-upload-applications">Bulk Upload Applications</Link>
