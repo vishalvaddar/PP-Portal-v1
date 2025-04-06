@@ -47,20 +47,14 @@ const ViewApplications = () => {
             <th>NMMS Year</th>
             <th>Reg Number</th>
             <th>Student Name</th>
-            <th>Gender</th>
-            <th>Date of Birth</th>
+
             <th>Aadhaar</th>
-            <th>Father Name</th>
-            <th>Mother Name</th>
-            <th>Family Income</th>
-            <th>Home Address</th>
+
             <th>Contact No 1</th>
             <th>Contact No 2</th>
-            <th>State</th>
             <th>District</th>
-            <th>Block</th>
             <th>Current School Dice Code</th>
-            <th>Previous School Dice Code</th>
+
             <th>Medium</th>
             <th>GMAT Score</th>
             <th>SAT Score</th>
@@ -82,20 +76,16 @@ const ViewApplications = () => {
                 {app.nmms_reg_number || "N/A"}
               </td>
               <td>{app.student_name || "N/A"}</td>
-              <td>{app.gender || "N/A"}</td>
-              <td>{app.date_of_birth || "N/A"}</td>
+
               <td>{app.aadhaar || "N/A"}</td>
-              <td>{app.father_name || "N/A"}</td>
-              <td>{app.mother_name || "N/A"}</td>
-              <td>{app.family_income || "N/A"}</td>
-              <td>{app.home_address || "N/A"}</td>
+
               <td>{app.contact_no1 || "N/A"}</td>
               <td>{app.contact_no2 || "N/A"}</td>
-              <td>{app.app_state || "N/A"}</td>
+
               <td>{app.district || "N/A"}</td>
-              <td>{app.nmms_block || "N/A"}</td>
+
               <td>{app.current_institute_dise_code || "N/A"}</td>
-              <td>{app.previous_school_dise_code || "N/A"}</td>
+
               <td>{app.medium || "N/A"}</td>
               <td>{app.gmat_score || "N/A"}</td>
               <td>{app.sat_score || "N/A"}</td>
