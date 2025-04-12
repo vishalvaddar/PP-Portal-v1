@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import {UserCircle, Phone, Home, GraduationCap, Calculator,} from "lucide-react";
-import styles from "./NewApplication.module.css";
+import classes from "./NewApplication.module.css";
 const NewApplication = () => {
   const currentYear = new Date().getFullYear();
   const startYear = 2022;
   const yearOptions = Array.from({ length: currentYear - startYear + 1 },(_, i) => startYear + i);
+  const submitButtonRef = useRef(null);
 
   const initialFormData = {
     nmms_year: "",
@@ -113,7 +114,6 @@ const NewApplication = () => {
     e.preventDefault();
 
     const namePattern = /^[a-zA-Z\s]+$/;
-    const regNumberPattern = /^\d{11}$/;
     const aadhaarPattern = /^\d{12}$/;
     const incomePattern = /^\d+$/;
     const phonePattern = /^\d{10}$/;
@@ -190,6 +190,7 @@ const NewApplication = () => {
     try {
       const response = await axios.post("http://localhost:5000/applicants/create",formData);
       if (response.status === 201) {
+        animateSubmitButton();
         alert("Application submitted successfully!");
         setFormData(initialFormData);
         setErrors({});
@@ -200,25 +201,47 @@ const NewApplication = () => {
     }
   };
 
+  const animateSubmitButton = () => {
+    const button = submitButtonRef.current;
+    if (!button) return;
+  
+    button.classList.add("state-1", "animated");
+  
+    setTimeout(() => {
+      button.classList.add("state-2");
+  
+      setTimeout(() => {
+        button.classList.remove("state-1", "state-2", "animated");
+      }, 2000);
+    }, 2000);
+  };
+  
+
   return (
-    <div className={styles.container}>
-      <h2>New Application</h2>
+    <div className={classes.container}>
+      <h2 className={classes.h2}>New Application</h2>
       {Object.keys(errors).length > 0 && (
-        <div className={styles.errorContainer}>
+        <div className={classes.errorContainer}>
           {Object.values(errors).map((error, index) => (<p key={index}>{error}</p>))}
         </div>
       )}
 
       <form onSubmit={handleSubmit}>
-        <div className={styles.formSection}>
-          <h3 className={styles.sectionTitle}><UserCircle className={styles.sectionIcon} />Basic Information</h3>
-          <div className={styles.fieldGroup}>
-            <div className={styles.formField}>
-              <label className="required">NMMS Year:</label>
+        <div className={classes.formSection}>
+          <h3 className={classes.sectionTitle}><UserCircle className={classes.sectionIcon} />Basic Information</h3>
+          <div className={classes.fieldGroup}>
+            <div className={classes.formField}>
+              <label className={classes.label}> NMMS YEAR : <span className={classes.required}></span></label>
               <select
                 name="nmms_year"
                 value={formData.nmms_year}
-                onChange={handleChange}
+                onChange={(e) => {
+                  handleChange(e);
+                  e.target.setCustomValidity(""); // reset custom message
+                }}
+                onInvalid={(e) => {
+                  e.target.setCustomValidity("Please select the NMMS Year");
+                }}
                 required
               >
                 <option value="">Select Year</option>
@@ -229,8 +252,8 @@ const NewApplication = () => {
                 ))}
               </select>
             </div>
-            <div className={styles.formField}>
-              <label className="required">NMMS Reg Number:</label>
+            <div className={classes.formField}>
+              <label className="required">NMMS Reg Number: <span className={classes.required}></span></label>
               <input
                 type="text"
                 name="nmms_reg_number"
@@ -244,9 +267,9 @@ const NewApplication = () => {
               />
             </div>
           </div>
-          <div className={styles.fieldGroup}>
-            <div className={styles.formField}>
-              <label>Student Name:</label>
+          <div className={classes.fieldGroup}>
+            <div className={classes.formField}>
+              <label>Student Name: <span className={classes.required}></span></label>
               <input
                 type="text"
                 name="student_name"
@@ -256,8 +279,8 @@ const NewApplication = () => {
               />
               {errors.student_name && (<p style={{ color: "red" }}>{errors.student_name}</p>)}
             </div>
-            <div className={styles.formField}>
-              <label className="required">Gender :</label>
+            <div className={classes.formField}>
+              <label className="required">Gender : <span className={classes.required}></span></label>
               <select
                 name="gender"
                 value={formData.gender}
@@ -272,8 +295,8 @@ const NewApplication = () => {
             </div>
           </div>
 
-          <div className={styles.fieldGroup}>
-            <div className={styles.formField}>
+          <div className={classes.fieldGroup}>
+            <div className={classes.formField}>
               <label>Date of Birth:</label>
               <input
                 type="date"
@@ -283,8 +306,8 @@ const NewApplication = () => {
               />
               {errors.DOB && <p style={{ color: "red" }}>{errors.DOB}</p>}
             </div>
-            <div className={styles.formField}>
-              <label>Aadhaar:</label>
+            <div className={classes.formField}>
+              <label>Aadhaar: <span className={classes.required}></span></label>
               <input
                 type="text"
                 name="aadhaar"
@@ -296,12 +319,12 @@ const NewApplication = () => {
           </div>
         </div>
 
-        <div className={styles.sectionDivider} />
-        <div className={styles.formSection}>
-          <h3 className={styles.sectionTitle}><Home className={styles.sectionIcon} />Family Information</h3>
-          <div className={styles.fieldGroup}>
-            <div className={styles.formField}>
-              <label className="required">Father Name:</label>
+        <div className={classes.sectionDivider} />
+        <div className={classes.formSection}>
+          <h3 className={classes.sectionTitle}><Home className={classes.sectionIcon} />Family Information</h3>
+          <div className={classes.fieldGroup}>
+            <div className={classes.formField}>
+              <label className="required">Father Name: <span className={classes.required}></span></label>
               <input
                 type="text"
                 name="father_name"
@@ -311,7 +334,7 @@ const NewApplication = () => {
               />
               {errors.father_name && (<p style={{ color: "red" }}>{errors.father_name}</p>)}
             </div>
-            <div className={styles.formField}>
+            <div className={classes.formField}>
               <label>Mother Name:</label>
               <input
                 type="text"
@@ -322,8 +345,8 @@ const NewApplication = () => {
               {errors.mother_name && (<p style={{ color: "red" }}>{errors.mother_name}</p>)}
             </div>
           </div>
-          <div className={styles.fieldGroup}>
-            <div className={styles.formField}>
+          <div className={classes.fieldGroup}>
+            <div className={classes.formField}>
               <label>Family Income (monthly):</label>
               <input
                 type="text"
@@ -334,7 +357,7 @@ const NewApplication = () => {
                 placeholder="Monthly income in rupees"
               />
             </div>
-            <div className={styles.formField}>
+            <div className={classes.formField}>
               <label>Home Address:</label>
               <input
                 type="text"
@@ -346,12 +369,12 @@ const NewApplication = () => {
             </div>
           </div>
         </div>
-        <div className={styles.sectionDivider} />
-        <div className={styles.formSection}>
-          <h3 className={styles.sectionTitle}><Phone className={styles.sectionIcon} />Contact Information</h3>
-          <div className={styles.fieldGroup}>
-            <div className={styles.formField}>
-              <label className="required">Contact No 1:</label>
+        <div className={classes.sectionDivider} />
+        <div className={classes.formSection}>
+          <h3 className={classes.sectionTitle}><Phone className={classes.sectionIcon} />Contact Information</h3>
+          <div className={classes.fieldGroup}>
+            <div className={classes.formField}>
+              <label className="required">Contact No 1: <span className={classes.required}></span></label>
               <input
                 type="text"
                 name="contact_no1"
@@ -362,8 +385,8 @@ const NewApplication = () => {
                 placeholder="10-digit mobile numbers"
               />
             </div>
-            <div className={styles.formField}>
-              <label>Contact No 2:</label>
+            <div className={classes.formField}>
+              <label>Contact No 2: <span className={classes.required}></span></label>
               <input
                 type="text"
                 name="contact_no2"
@@ -376,12 +399,12 @@ const NewApplication = () => {
             </div>
           </div>
         </div>
-        <div className={styles.sectionDivider} />
-        <div className={styles.formSection}>
-          <h3 className={styles.sectionTitle}><GraduationCap className={styles.sectionIcon} />Eductaional Information</h3>
-          <div className={styles.fieldGroup}>
-            <div className={styles.formField}>
-              <label className="required">State:</label>
+        <div className={classes.sectionDivider} />
+        <div className={classes.formSection}>
+          <h3 className={classes.sectionTitle}><GraduationCap className={classes.sectionIcon} />Eductaional Information</h3>
+          <div className={classes.fieldGroup}>
+            <div className={classes.formField}>
+              <label className="required">State: <span className={classes.required}></span></label>
               <select
                 name="app_state"
                 value={formData.app_state}
@@ -396,8 +419,8 @@ const NewApplication = () => {
                 ))}
               </select>
             </div>
-            <div className={styles.formField}>
-              <label className="required">EDUCATION DISTRICT:</label>
+            <div className={classes.formField}>
+              <label className="required">EDUCATION DISTRICT: <span className={classes.required}></span></label>
               <select
                 name="district"
                 value={formData.district}
@@ -413,16 +436,16 @@ const NewApplication = () => {
               </select>
             </div>
           </div>
-          <div className={styles.fieldGroup}>
-            <div className={styles.formField}>
-              <label className="required">NMMS Block:</label>
+          <div className={classes.fieldGroup}>
+            <div className={classes.formField}>
+              <label className="required">NMMS Block: <span className={classes.required}></span></label>
               <select
                 name="nmms_block"
                 onChange={handleChange}
                 value={formData.nmms_block}
                 required
               >
-                <option value="">Select Block</option>
+                <option value="">Select Block <span className={classes.required}></span></option>
                 {blocks.map((block, index) => (
                   <option key={block.id || index} value={block.id}>
                     {block.name}
@@ -430,7 +453,7 @@ const NewApplication = () => {
                 ))}
               </select>
             </div>
-            <div className={styles.formField}>
+            <div className={classes.formField}>
               <label className="required">Medium:</label>
               <select
                 type="text"
@@ -445,9 +468,9 @@ const NewApplication = () => {
               </select>
             </div>
           </div>
-          <div className={styles.fieldGroup}>
-            <div className={styles.formField}>
-              <label className="required">Current School Name:</label>
+          <div className={classes.fieldGroup}>
+            <div className={classes.formField}>
+              <label className="required">Current School Name: <span className={classes.required}></span></label>
               <select
                 name="current_institute_dise_code"
                 value={formData.current_institute_dise_code}
@@ -465,7 +488,7 @@ const NewApplication = () => {
                 ))}
               </select>
             </div>
-            <div className={styles.formField}>
+            <div className={classes.formField}>
               <label>Previous School Name:</label>
               <select
                 type="text"
@@ -486,12 +509,12 @@ const NewApplication = () => {
             </div>
           </div>
         </div>
-        <div className={styles.sectionDivider} />
-        <div className={styles.formSection}>
-          <h3 className={styles.sectionTitle}><Calculator className={styles.sectionIcon} />Test Scores</h3>
-          <div className={styles.fieldGroup}>
-            <div className={styles.formField}>
-              <label>GMAT Score:</label>
+        <div className={classes.sectionDivider} />
+        <div className={classes.formSection}>
+          <h3 className={classes.sectionTitle}><Calculator className={classes.sectionIcon} />Test Scores</h3>
+          <div className={classes.fieldGroup}>
+            <div className={classes.formField}>
+              <label>GMAT Score: <span className={classes.required}></span></label>
               <input
                 type="number"
                 name="gmat_score"
@@ -505,8 +528,8 @@ const NewApplication = () => {
                 placeholder="Score between 0-90"
               />
             </div>
-            <div className={styles.formField}>
-              <label>SAT Score:</label>
+            <div className={classes.formField}>
+              <label>SAT Score: <span className={classes.required}></span></label>
               <input
                 type="number"
                 name="sat_score"
@@ -523,7 +546,15 @@ const NewApplication = () => {
           </div>
         </div>
 
-        <button type="submit" className="submit-button">Submit Application</button>
+        <button
+          type="submit"
+          ref={submitButtonRef}
+          className={`${classes.submitButton} submit-button`} // Ensure 'submit-button' class exists
+        >
+          Submit Application
+        </button>
+
+
       </form>
     </div>
   );
