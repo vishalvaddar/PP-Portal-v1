@@ -15,6 +15,7 @@ const searchRoutes = require("./routes/searchRoutes");
 const jurisdictionRoutes = require("./routes/jurisdictionRoutes");
 const districtRoutes = require("./routes/districtRoutes"); 
 const institutesRoutes = require("./routes/institutesRoutes");
+const jurisNames = require("./routes/jurisNames");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -33,6 +34,7 @@ app.use("/api", searchRoutes);
 app.use("/api", jurisdictionRoutes);
 app.use("/", institutesRoutes);
 app.use("/", districtRoutes);
+app.use("/", jurisNames);
 app.use("/uploads/profile_photos", express.static(path.join(__dirname, "uploads", "profile_photos")));
 
 app.listen(PORT, () => {

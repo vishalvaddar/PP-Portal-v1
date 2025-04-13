@@ -6,40 +6,44 @@ const router = express.Router();
 router.get("/search", async (req, res) => {
   try {
     const { 
-      nmms_year, 
+      nmms_year,
       nmms_reg_number, 
-      student_name, 
-      medium, 
-      district, 
-      current_institute_dise_code 
+      student_name,
+      medium,
+      district,
+      institute_name
     } = req.query;
 
-    let query = "SELECT * FROM pp.applicant_primary_info WHERE 1=1";
+    let query = `SELECT a.*, i.institute_name
+      FROM pp.applicant_primary_info a
+      LEFT JOIN pp.institute i ON a.current_institute_dise_code = i.dise_code
+      WHERE 1=1`;
+    
     let values = [];
 
     if (nmms_reg_number && !isNaN(nmms_reg_number)) {
       values.push(nmms_reg_number.trim());
-      query += ` AND nmms_reg_number = $${values.length} LIMIT 1`; // Ensuring only one record
+      query += ` AND a.nmms_reg_number = $${values.length} LIMIT 1`; // Ensuring only one record
     } else {
       if (nmms_year && !isNaN(nmms_year)) {
         values.push(nmms_year.trim());
-        query += ` AND nmms_year = $${values.length}`;
+        query += ` AND a.nmms_year = $${values.length}`;
       }
       if (student_name) {
         values.push(`%${student_name.trim()}%`);
-        query += ` AND LOWER(student_name) ILIKE LOWER($${values.length})`;
+        query += ` AND LOWER(a.student_name) ILIKE LOWER($${values.length})`;
       }
       if (medium) {
         values.push(medium.trim());
-        query += ` AND medium = $${values.length}`;
+        query += ` AND a.medium = $${values.length}`;
       }
       if (district) {
         values.push(district.trim());
-        query += ` AND district = $${values.length}`;
+        query += ` AND a.district = $${values.length}`;
       }
-      if (current_institute_dise_code) {
-        values.push(current_institute_dise_code.trim());
-        query += ` AND current_institute_dise_code = $${values.length}`;
+      if (institute_name) {
+        values.push(`%${institute_name.trim().toUpperCase()}%`);
+        query += ` AND UPPER(i.institute_name) LIKE $${values.length}`;
       }
     }
 

@@ -162,6 +162,7 @@
 }
 
 .upload-instructions li {
+  text-align: left;
   margin-bottom: 5px;
   color: #333;
 }

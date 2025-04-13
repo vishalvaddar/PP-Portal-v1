@@ -8,8 +8,6 @@ import BulkUploadApplications from "./pages/BulkUploadApplications";
 import NewApplication from "./pages/NewApplication";
 import Shortlisting from "./pages/Shortlisting";
 import ScreeningTests from "./pages/ScreeningTests";
-// import UpdateNewApplication from "./pages/NewApplication";
-import WithApplication from "./pages/withApplicationForm";
 import CreateCriteria from "./pages/CreateCriteria";
 import GenerateShortlist from "./pages/GenerateShortlist";
 import SearchApplications from "./pages/SearchApplications";
@@ -30,7 +28,6 @@ export const appRouter = createBrowserRouter([
       { path: "/create-shortlisting-criteria", element:<CreateCriteria/>},
       {path: "/generate-shortlist", element:<GenerateShortlist/>},
       { path: "/screening-tests", element: <ScreeningTests /> },
-      {path:"/view-applications/:id",element:<WithApplication/>},
       { path: "/edit-form/:nmms_reg_number", element: <EditForm /> }
     ],
   },
