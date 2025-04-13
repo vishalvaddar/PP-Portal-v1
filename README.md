@@ -17,5 +17,3 @@ applicant
 - To run Frontend
 	use -- "npm start" command
 
-- thankyou guys
-	
