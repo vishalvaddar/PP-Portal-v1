@@ -15,9 +15,6 @@ const Navbar = () => {
             <Link to="/bulk-upload-applications">Bulk Upload Applications</Link>
           </div>
         </li>
-
-        <li className="nav-item"><Link to="/view-applications">View Applications</Link></li>
-
         <li className="nav-item dropdown">
           <Link to="" className="dropbtn " onClick={(e)=>e.preventDefault()}>Search/View Applications</Link>
           <div className="dropdown-content">
