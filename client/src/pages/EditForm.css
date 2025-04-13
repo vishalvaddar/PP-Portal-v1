@@ -1,0 +1,148 @@
+/* ========== Page Background ========== */
+
+
+
+/* ========== Container ========== */
+.edit-form-container {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #effcff; /* white form card */
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== Header ========== */
+.edit-form-container h2 {
+  text-align: center;
+  color: #2c3e50;
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.reg-number {
+  text-align: center;
+  color: #7f8c8d;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+/* ========== Profile Image ========== */
+.profile-image {
+  display: block;
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 4px solid #ecf0f1;
+  margin: 0 auto 20px;
+}
+
+/* ========== Messages ========== */
+.error-message {
+  background-color: #ffe5e5;
+  color: #d63031;
+  border: 1px solid #d63031;
+  padding: 10px;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.success-message {
+  background-color: #e8fce8;
+  color: #27ae60;
+  border: 1px solid #27ae60;
+  padding: 10px;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+/* ========== Form Grid with Two Columns ========== */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 50px;
+  margin-bottom: 30px;
+}
+
+/* ========== Form Group ========== */
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+}
+
+input,
+select {
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  transition: all 0.2s ease;
+}
+
+input:focus,
+select:focus {
+  border-color: #3498db;
+  outline: none;
+  background-color: #fff;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+input[readonly] {
+  background-color: #f0f0f0;
+  color: #777;
+  cursor: not-allowed;
+}
+
+/* ========== Buttons ========== */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.form-actions button {
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: none;
+}
+
+.form-actions button[type="button"] {
+  background-color: #f0f0f0;
+  color: #555;
+}
+
+.form-actions button[type="button"]:hover {
+  background-color: #e0e0e0;
+}
+
+.form-actions button[type="submit"] {
+  background-color: #3498db;
+  color: white;
+}
+
+.form-actions button[type="submit"]:hover {
+  background-color: #2980b9;
+}
+
+/* ========== Responsive ========== */
+@media screen and (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}

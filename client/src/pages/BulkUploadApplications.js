@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import "./BulkUploadApplications.css"; // Ensure CSS is correctly imported
+import "./BulkUploadApplications.css";
 
 const BulkUploadApplications = ({ refreshData }) => {
   const [file, setFile] = useState(null);
@@ -8,6 +8,9 @@ const BulkUploadApplications = ({ refreshData }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+
+  //Sample csv file URL
+  const sampleCsvUrl = "../sample_bulk_upload.csv";
   // Handle file selection
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -18,48 +21,32 @@ const BulkUploadApplications = ({ refreshData }) => {
   // Handle file upload
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!file) {
-      setError("⚠️ Please select a file to upload.");
+      setError("⚠ Please select a file to upload.");
       return;
     }
-
     setIsLoading(true);
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/upload",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-
+      const response = await axios.post("http://localhost:5000/api/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      
       if (response.status === 200) {
         setMessage("✅ File uploaded successfully!");
-
-        // ✅ Clear file input field
         setFile(null);
-        document.getElementById("file-upload").value = ""; 
-
-        // ✅ Ensure UI refreshes
+        document.getElementById("file-upload").value = "";
         if (typeof refreshData === "function") {
           refreshData();
         }
-
-        // ✅ Auto-hide message after 3 seconds
-        setTimeout(() => {
-          setMessage("");
-        }, 3000);
+        setTimeout(() => setMessage(""), 3000);
       } else {
         throw new Error("Failed to upload file");
       }
     } catch (error) {
-      setError(
-        `❌ Upload Error: ${error.response?.data?.message || error.message}`
-      );
+      setError(`❌ Upload Error: ${error.response?.data?.message || error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -72,6 +59,13 @@ const BulkUploadApplications = ({ refreshData }) => {
 
       {error && <div className="alert alert-danger">{error}</div>}
       {message && <div className="alert alert-success">{message}</div>}
+
+      {/* Download Sample CSV Button */}
+      <div className="download-section mt-3">
+        <p>📄 Need a Sample format? 
+          <a href="/sample_bulk_upload.csv" download className="download-link">Download Sample CSV</a>
+        </p>
+      </div>
 
       <form onSubmit={handleSubmit} className="upload-form">
         <div className="form-group">

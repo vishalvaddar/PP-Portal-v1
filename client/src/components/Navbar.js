@@ -9,7 +9,7 @@ const Navbar = () => {
         <li className="nav-item"><Link to="/">Dashboard</Link></li>
 
         <li className="nav-item dropdown">
-          <Link to="/upload-applications" className="dropbtn">Upload Applications</Link>
+          <Link to="" className="dropbtn" onClick={(e)=>e.preventDefault()}>Upload Applications</Link>
           <div className="dropdown-content">
             <Link to="/new-application">New Application</Link>
             <Link to="/bulk-upload-applications">Bulk Upload Applications</Link>
@@ -18,6 +18,13 @@ const Navbar = () => {
 
         <li className="nav-item"><Link to="/view-applications">View Applications</Link></li>
 
+        <li className="nav-item dropdown">
+          <Link to="" className="dropbtn " onClick={(e)=>e.preventDefault()}>Search/View Applications</Link>
+          <div className="dropdown-content">
+            <Link to="/search-applications">Search Applications</Link>
+            <Link to="/view-applications">View Applications</Link>
+          </div>
+        </li>
         <li className="nav-item dropdown">
           <Link to="/shortlisting" className="dropbtn">Shortlisting</Link>
           <div className="dropdown-content">
