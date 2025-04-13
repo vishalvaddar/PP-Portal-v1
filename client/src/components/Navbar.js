@@ -7,6 +7,7 @@ const Navbar = () => {
     <nav className="navbar">
       <ul className="navbar-nav">
         <li className="nav-item"><Link to="/">Dashboard</Link></li>
+
         <li className="nav-item dropdown">
           <Link to="/upload-applications" className="dropbtn">Upload Applications</Link>
           <div className="dropdown-content">
@@ -14,7 +15,9 @@ const Navbar = () => {
             <Link to="/bulk-upload-applications">Bulk Upload Applications</Link>
           </div>
         </li>
+
         <li className="nav-item"><Link to="/view-applications">View Applications</Link></li>
+
         <li className="nav-item dropdown">
           <Link to="/shortlisting" className="dropbtn">Shortlisting</Link>
           <div className="dropdown-content">
@@ -22,6 +25,10 @@ const Navbar = () => {
             <Link to="/generate-shortlist">Generate Shortlist</Link>
           </div>
         </li>
+
+        {/*Move Create Exam outside the dropdown */}
+        <li className="nav-item"><Link to="/Create-Exams">Create Exam</Link></li>
+
         <li className="nav-item"><Link to="/screening-tests">Screening Tests/Interviews</Link></li>
       </ul>
     </nav>

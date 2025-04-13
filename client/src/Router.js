@@ -10,6 +10,7 @@ import Shortlisting from "./pages/Shortlisting";
 import ScreeningTests from "./pages/ScreeningTests";
 // import UpdateNewApplication from "./pages/NewApplication";
 import WithApplication from "./pages/withApplicationForm";
+import CreateExam from './pages/CreateExam';
 export const appRouter = createBrowserRouter([
   {
     path: "/",
@@ -22,6 +23,7 @@ export const appRouter = createBrowserRouter([
       { path: "/view-applications", element: <ViewApplications /> },
       { path: "/shortlisting", element: <Shortlisting /> },
       { path: "/screening-tests", element: <ScreeningTests /> },
+      { path: "/Create-Exams", element: <CreateExam/>},
       {path:"/view-applications/:id",element:<WithApplication/>}
     ],
   },
