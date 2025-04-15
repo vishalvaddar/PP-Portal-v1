@@ -10,10 +10,10 @@ import Shortlisting from "./pages/Shortlisting";
 import ScreeningTests from "./pages/ScreeningTests";
 // import UpdateNewApplication from "./pages/NewApplication";
 import CreateExam from './pages/CreateExam';
-import CreateCriteria from "./pages/CreateCriteria";
-import GenerateShortlist from "./pages/GenerateShortlist";
 import SearchApplications from "./pages/SearchApplications";
 import EditForm from "./pages/EditForm";
+import GenerateShortlist from "./pages/GenerateShortlist";
+import ShortlistInfo  from "./pages/ShortlistInfo"; 
 
 export const appRouter = createBrowserRouter([
   {
@@ -27,11 +27,12 @@ export const appRouter = createBrowserRouter([
       { path: "/search-applications", element: <SearchApplications /> },
       { path: "/view-applications", element: <ViewApplications /> },
       { path: "/shortlisting", element: <Shortlisting /> },
-      { path: "/create-shortlisting-criteria", element:<CreateCriteria/>},
-      {path: "/generate-shortlist", element:<GenerateShortlist/>},
       { path: "/screening-tests", element: <ScreeningTests /> },
       { path: "/Create-Exams", element: <CreateExam />},
-      {path: "/edit-form/:nmms_reg_number", element: <EditForm /> }
+      {path: "/edit-form/:nmms_reg_number", element: <EditForm /> },
+      {path: "/generate-shortlist", element:<GenerateShortlist/>},
+      { path: "/shortlist-info", element: <ShortlistInfo /> } 
+
     ],
   },
 ]);
