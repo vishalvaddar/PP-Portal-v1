@@ -1,9 +1,22 @@
-const express = require("express");
-const upload = require("../middleware/uploadMiddleware");
-const { uploadFile } = require("../controllers/bulkUploadController");
+const express = require('express');
+const multer = require('multer');
+const bulkUploadController = require('../controllers/bulkUploadController');
 
 const router = express.Router();
 
-router.post("/upload", upload.single("file"), uploadFile);
+// Setup multer storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage });
+
+// Define the route for uploading a file
+router.post('/upload', upload.single('file'), bulkUploadController.uploadFile);
 
 module.exports = router;

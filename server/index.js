@@ -38,6 +38,7 @@ app.use("/", districtRoutes);
 app.use("/", jurisNames);
 app.use("/uploads/profile_photos", express.static(path.join(__dirname, "uploads", "profile_photos")));
 app.use("/api", generateShortlistRoutes); 
+app.use('/logs', express.static(path.join(__dirname, 'logs')));
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
