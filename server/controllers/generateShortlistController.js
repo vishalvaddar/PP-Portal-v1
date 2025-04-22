@@ -64,34 +64,43 @@ const generateShortlistController = {
         return res.status(400).json({ error: "State, district, criteria, name, and description are required." });
       }
 
-      const result = await GenerateShortlistModel.createShortlistBatch(
-        name,
-        description,
-        criteriaId,
-        blocks,
-        state,
-        district
-      );
+      try {
+        const result = await GenerateShortlistModel.createShortlistBatch(
+          name,
+          description,
+          criteriaId,
+          blocks,
+          state,
+          district
+        );
 
-      console.log("Controller: startShortlisting - Success", result);
+        console.log("Controller: startShortlisting - Success", result);
 
-      // Fetch counts after successful shortlisting
-      const totalApplicantsResult = await pool.query('SELECT COUNT(applicant_id) as count FROM pp.applicant_primary_info');
-      const totalApplicantsCount = totalApplicantsResult.rows[0].count;
+        // Fetch counts after successful shortlisting
+        const totalApplicantsResult = await pool.query('SELECT COUNT(applicant_id) as count FROM pp.applicant_primary_info');
+        const totalApplicantsCount = totalApplicantsResult.rows[0].count;
 
-      const shortlistedStudentsResult = await pool.query('SELECT COUNT(applicant_id) as count FROM pp.shortlist_info WHERE shortlisted_yn = \'Y\'');
-      const shortlistedStudentsCount = shortlistedStudentsResult.rows[0].count;
+        const shortlistedStudentsResult = await pool.query('SELECT COUNT(DISTINCT applicant_id) as count FROM pp.shortlist_info WHERE shortlisted_yn = \'Y\'');
+        const shortlistedStudentsCount = shortlistedStudentsResult.rows[0].count;
 
-      res.status(200).json({
-        message: "Shortlisting process started successfully.  Successfully done the shortlisting",
-        shortlistBatchId: result.shortlistBatchId,
-        shortlistedCount: result.shortlistedCount,
-        shortlistedApplicantIds: result.shortlistedApplicantIds,
-        totalApplicantsCount: totalApplicantsCount,  // Include total count
-        shortlistedStudentsCount: shortlistedStudentsCount, // Include shortlisted count
-      });
+        res.status(200).json({
+          message: "Shortlisting process started successfully.",
+          shortlistBatchId: result.shortlistBatchId,
+          shortlistedCount: result.shortlistedCount,
+          totalApplicantsCount: totalApplicantsCount,   // Include total count
+          shortlistedStudentsCount: shortlistedStudentsCount, // Include shortlisted count
+        });
+      } catch (modelError) {
+        // Check if the error came from the model due to existing shortlists
+        if (modelError.message.startsWith("Shortlists already exist")) {
+          return res.status(409).json({ error: modelError.message }); // Send a 409 Conflict status
+        }
+        // For other errors from the model, propagate them
+        console.error("Controller: startShortlisting - Model Error:", modelError);
+        return res.status(500).json({ message: "Error during shortlist creation", error: modelError.message, details: modelError.stack });
+      }
     } catch (error) {
-      console.error("Controller: startShortlisting - Error:", error);
+      console.error("Controller: startShortlisting - General Error:", error);
       res.status(500).json({ message: "Error starting shortlisting", error: error.message, details: error.stack });
     }
   },
@@ -108,7 +117,7 @@ const generateShortlistController = {
 
   getShortlistedStudents: async (req, res) => {
     try {
-      const result = await pool.query('SELECT COUNT(applicant_id) as count FROM pp.shortlist_info WHERE shortlisted_yn = \'Y\'');
+      const result = await pool.query('SELECT COUNT(DISTINCT applicant_id) as count FROM pp.shortlist_info WHERE shortlisted_yn = \'Y\'');
       res.json({ count: result.rows[0].count });
     } catch (error) {
       console.error("Error fetching shortlisted students:", error);

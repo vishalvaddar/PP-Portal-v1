@@ -1,77 +1,117 @@
+/* ShortlistInfo.css */
+
+.shortlist-info-container {
+  text-align: center;
+  padding: 20px;
+}
+
 /* Container styling */
-.createcriteria {
-    text-align: center;
-    padding: 20px;
-    max-width: 600px;
-    margin: 40px auto;
-    background: #f9f9f9;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Heading styles */
-  h1 {
-    font-size: 26px;
-    color: #333;
-    margin-bottom: 15px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  
-  h2 {
-    font-size: 24px;
-    color: #007bff;
-    margin-bottom: 20px;
-    text-transform: capitalize;
-  }
-  
-  /* Input field styling */
-  .input-box {
-    width: 100%;
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    margin-bottom: 15px;
-    text-align: center;
-    text-transform: capitalize;
-    transition: border 0.3s;
-  }
-  
-  .input-box:focus {
-    border-color: #007bff;
-    outline: none;
-  }
-  
-  /* Display criteria name */
-  .criteria-text {
-    font-size: 18px;
-    color: #555;
-    font-weight: bold;
-    margin-top: 10px;
-    
-  }
-  
-  /* Button styling */
-  .submit-btn {
-    background-color: #007bff;
-    color: white;
-    font-size: 16px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.3s;
-    text-transform: uppercase;
-  }
-  
-  .submit-btn:hover {
-    background-color: #0056b3;
-  }
-  
-  /* Letter styling for input and display text */
-  p, input {
-    letter-spacing: 1px;
-    font-family: Arial, sans-serif;
-  }
-  
+.container {
+  text-align: center;
+  padding: 30px;
+}
+
+/* Heading styles */
+h1 {
+  font-size: 32px;
+  color: #333;
+  margin-bottom: 25px;
+}
+
+/* Counts container */
+.counts-container {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.count-box {
+  background-color: #e9ecef;
+  padding: 20px 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+}
+
+.count-box p {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+  color: #495057;
+}
+
+/* Application options container (Grid Layout) */
+.shortlisting-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Two columns */
+  gap: 20px; /* Gap between the boxes */
+  max-width: 520px; /* Adjust as needed to control the line width */
+  margin: 30px auto; /* Center the grid */
+}
+
+/* Individual option box */
+.option-box {
+  background: #fff;
+  border-radius: 15px;
+  text-align: center;
+  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  padding: 30px;
+}
+
+.option-box:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* Icon box */
+.icon-box {
+  font-size: 50px;
+  color: #007bff;
+  margin-bottom: 15px;
+}
+
+/* Text inside option box */
+.text-box {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Detailed view styling */
+.detailed-view {
+  background-color: #f8f9fa;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  max-width: 600px;
+  margin: 30px auto;
+}
+
+.detailed-view h2 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 28px;
+}
+
+.detailed-view button {
+  background-color: #6c757d;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background-color 0.3s ease;
+  margin-top: 20px;
+}
+
+.detailed-view button:hover {
+  background-color: #545b62;
+}
+
+.error-message {
+  color: red;
+  margin-top: 10px;
+  font-weight: bold;
+}

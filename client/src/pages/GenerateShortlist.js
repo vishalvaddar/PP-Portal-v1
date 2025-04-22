@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { 
+import {
   MapPin, // For State and District
   Building2, // For Blocks
   ListChecks, // For Selection Criteria
   Edit,       // For Shortlist Name/Description
-  Users,     // For Total Applicants
-  UserCheck,    // For Shortlisted Students
-  Play,      // For Start Shortlisting
+  Users,       // For Total Applicants
+  UserCheck,       // For Shortlisted Students
+  Play,       // For Start Shortlisting
   AlertTriangle, //For error
   CheckCircle, //For Success
 } from 'lucide-react';
@@ -32,7 +32,7 @@ const GenerateShortlist = () => {
   const [totalApplicants, setTotalApplicants] = useState(0);
   const [shortlistedStudents, setShortlistedStudents] = useState(0);
   const [loadingCounts, setLoadingCounts] = useState(false);
-
+  const [loadingBlocks, setLoadingBlocks] = useState(false);
 
   useEffect(() => {
     axios.get("http://localhost:5000/api/allstates")
@@ -50,6 +50,7 @@ const GenerateShortlist = () => {
       .catch(error => console.error("Error fetching criteria:", error));
   }, []);
 
+
   useEffect(() => {
     if (selectedState) {
       axios.get(`http://localhost:5000/api/districts/${selectedState}`)
@@ -59,27 +60,44 @@ const GenerateShortlist = () => {
           setBlocks([]);
           setSelectedBlocks([]);
         })
-      .catch(error => console.error("Error fetching districts:", error));
+        .catch(error => console.error("Error fetching districts:", error));
+    } else {
+      setDistricts([]);
+      setBlocks([]);
+      setSelectedDistrict("");
+      setSelectedBlocks([]);
     }
   }, [selectedState]);
 
   useEffect(() => {
     if (selectedDistrict) {
+      setLoadingBlocks(true);
       axios.get(`http://localhost:5000/api/blocks/${selectedDistrict}`)
         .then(response => {
           setBlocks(response.data);
           setSelectedBlocks([]);
+          setLoadingBlocks(false);
         })
-        .catch(error => console.error("Error fetching blocks:", error));
+        .catch(error => {
+          console.error("Error fetching blocks:", error);
+          setBlocks([]);
+          setSelectedBlocks([]);
+          setLoadingBlocks(false);
+        });
+    } else {
+      setBlocks([]);
+      setSelectedBlocks([]);
     }
   }, [selectedDistrict]);
 
-  const handleBlockChange = (blockName) => {
-    setSelectedBlocks(prev =>
-      prev.includes(blockName)
-        ? prev.filter(b => b !== blockName)
-        : [...prev, blockName]
-    );
+  const handleBlockChange = (blockName, isFrozen) => {
+    if (!isFrozen) {
+      setSelectedBlocks(prev =>
+        prev.includes(blockName)
+          ? prev.filter(b => b !== blockName)
+          : [...prev, blockName]
+      );
+    }
   };
 
   const fetchApplicantCounts = async () => {
@@ -116,16 +134,19 @@ const GenerateShortlist = () => {
           description: shortlistDescription,
         });
         console.log("Shortlisting started:", response.data);
-        setShortlistingResult(response.data);
+        setShortlistingResult({ success: response.data.message, shortlistedCount: response.data.shortlistedCount });
 
-        if (response.data.totalApplicantsCount !== undefined && response.data.shortlistedStudentsCount !== undefined) {
-          setTotalApplicants(response.data.totalApplicantsCount);
-          setShortlistedStudents(response.data.shortlistedStudentsCount);
-        }
+        // Optionally refetch counts if needed
+        // fetchApplicantCounts();
 
       } catch (error) {
         console.error("Error starting shortlisting:", error);
-        setShortlistingResult({ error: "Shortlisting failed." });
+        if (error.response && error.response.status === 409) {
+          // Display the specific error message from the backend
+          setShortlistingResult({ error: error.response.data.error });
+        } else {
+          setShortlistingResult({ error: "Shortlisting failed." });
+        }
       }
     } else {
       alert("Please provide all the required information.");
@@ -166,21 +187,32 @@ const GenerateShortlist = () => {
           ))}
         </select>
 
-        {blocks.length > 0 && (
-          <div className="checkbox-group">
-            <label><Building2 className="inline-block mr-2" />Select Blocks:</label>
-            {blocks.map((block) => (
-              <div key={block.juris_code}>
-                <input
-                  type="checkbox"
-                  id={block.juris_name}
-                  checked={selectedBlocks.includes(block.juris_name)}
-                  onChange={() => handleBlockChange(block.juris_name)}
-                />
-                <label htmlFor={block.juris_name}>{block.juris_name}</label>
-              </div>
-            ))}
-          </div>
+        {loadingBlocks ? (
+          <p>Loading blocks...</p>
+        ) : (
+          blocks.length > 0 && (
+            <div className="checkbox-group">
+              <label><Building2 className="inline-block mr-2" />Select Blocks:</label>
+              {blocks.map((block) => (
+                <div key={block.juris_code}>
+                  <input
+                    type="checkbox"
+                    id={block.juris_name}
+                    checked={selectedBlocks.includes(block.juris_name)}
+                    onChange={() => handleBlockChange(block.juris_name, block.is_frozen_block)}
+                    disabled={block.is_frozen_block}
+                  />
+                  <label
+                    htmlFor={block.juris_name}
+                    style={{ color: block.is_frozen_block ? 'red' : 'inherit' }}
+                  >
+                    {block.juris_name}
+                    {block.is_frozen_block && <span style={{ marginLeft: '5px', color: 'red' }}>(Frozen shorlist on this)</span>}
+                  </label>
+                </div>
+              ))}
+            </div>
+          )
         )}
       </div>
 
@@ -228,16 +260,18 @@ const GenerateShortlist = () => {
         />
       </div>
 
-      <button onClick={handleStartShortlisting} className="start-button">
+      <button onClick={handleStartShortlisting} className="start-button" disabled={blocks.some(block => block.is_frozen_block && selectedBlocks.includes(block.juris_name))}>
         <Play className="inline-block mr-2" />
         Start Shortlisting Process
       </button>
 
-      {shortlistingResult && !shortlistingResult.error && (
+      {shortlistingResult && shortlistingResult.success && (
         <div className="shortlisting-result success-box">
           <CheckCircle className="inline-block mr-2 text-green-500" />
-          <p>Shortlisting process completed successfully!</p>
-          <p>Total Shortlisted Applicants: {shortlistingResult.shortlistedCount}</p>
+          <p>{shortlistingResult.success}</p>
+          {shortlistingResult.shortlistedCount !== undefined && (
+            <p>Total Shortlisted Applicants: {shortlistingResult.shortlistedCount}</p>
+          )}
         </div>
       )}
       {shortlistingResult && shortlistingResult.error && (
