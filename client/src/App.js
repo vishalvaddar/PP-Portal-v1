@@ -1,10 +1,29 @@
+// App.js
 import React from "react";
 import { RouterProvider } from "react-router-dom";
-import { appRouter } from "./Router"; // Import the router from a separate file
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { appRouter } from "../src/Router";
+
+function ProtectedApp() {
+  const { user } = useAuth();
+
+  if (!user) {
+    return <div>Please login first</div>; // Optional: or redirect manually
+  }
+
+  return (
+    <RoleProvider>
+      <RouterProvider router={appRouter} />
+    </RoleProvider>
+  );
+}
 
 function App() {
-  return <RouterProvider router={appRouter} />;
+  return (
+    <AuthProvider>
+      <ProtectedApp />
+    </AuthProvider>
+  );
 }
 
 export default App;
- 

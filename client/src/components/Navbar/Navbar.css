@@ -1,0 +1,148 @@
+/* Navbar container */
+.navbar {
+  position: fixed;
+  left: 0;
+  top: 75px;
+  width: 260px;
+  min-height: 100vh;
+  background: linear-gradient(120deg, #2341a0 0%, #4361ee 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  box-shadow: 2px 0 16px rgba(67, 97, 238, 0.07);
+  z-index: 100;
+  transition: width 0.2s;
+}
+
+.navbar.collapsed {
+  width: 70px;
+}
+
+/* Top section for collapse button */
+.navbar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 18px 18px 8px 0;
+  min-height: 60px;
+}
+
+.navbar-collapse-btn {
+  display: flex;
+  align-items: center;
+  gap: 0px;
+  background: #fff;
+  color: #4361ee;
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 2px 12px rgba(67, 97, 238, 0.13);
+  padding: 8px 18px;
+  font-size: 1.06rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s, width 0.2s;
+  outline: none;
+  border: 2px solid #e0e7ef;
+  min-width: 0;
+}
+
+.navbar-collapse-btn:hover,
+.navbar-collapse-btn:focus {
+  background: #4361ee;
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(67, 97, 238, 0.18);
+}
+
+.collapse-text {
+  transition: opacity 0.18s, width 0.18s;
+  white-space: nowrap;
+  opacity: 1;
+  width: auto;
+}
+
+.collapse-text.hide {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Nav links and icon/label styles (unchanged from previous) */
+.navbar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.navbar.collapsed ul {
+  margin-left: 0;
+}
+
+.navbar li {
+  width: 100%;
+}
+
+.navbar a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 28px;
+  color: #e9eefd;
+  font-weight: 500;
+  font-size: 1.08rem;
+  text-decoration: none;
+  border-radius: 8px 0 0 8px;
+  transition: background 0.18s, color 0.18s, font-weight 0.18s, padding 0.2s;
+  position: relative;
+}
+
+.navbar.collapsed a {
+  padding: 14px 14px;
+  justify-content: center;
+}
+
+.navbar .nav-label {
+  transition: opacity 0.18s, width 0.18s;
+  white-space: nowrap;
+}
+
+.navbar.collapsed .nav-label {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Responsive: hide collapse button on mobile */
+@media (max-width: 900px) {
+  .navbar,
+  .navbar.collapsed {
+    position: relative;
+    width: 100vw;
+    min-height: unset;
+    flex-direction: row;
+    padding: 0 10px;
+    box-shadow: 0 2px 12px rgba(67, 97, 238, 0.07);
+  }
+  .navbar-top {
+    display: none;
+  }
+  .navbar ul {
+    flex-direction: row;
+    gap: 0;
+    justify-content: space-between;
+    margin: 0;
+  }
+  .navbar a,
+  .navbar.collapsed a {
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    justify-content: center;
+  }
+}

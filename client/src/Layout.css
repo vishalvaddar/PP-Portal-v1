@@ -1,0 +1,47 @@
+/* Layout.css */
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+.layout-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-section {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.sidebar-container {
+  display: flex;
+  position: fixed;
+  top: 64px; /* Adjust if your header height is different */
+  left: 0;
+  height: calc(100vh - 64px); /* Full height minus header */
+  z-index: 100;
+}
+
+.content {
+  flex: 1;
+  padding: 0;
+  background-color: #f8f9fc;
+  min-height: 0;
+  margin-left: 280px; /* Sidebar width */
+}
+
+.content-collapsed {
+  margin-left: 80px;
+}
+
+footer {
+  background-color: var(--primary-color);
+  color: var(--surface);
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+}

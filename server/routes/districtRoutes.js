@@ -5,7 +5,7 @@ const router = express.Router();
 router.get("/districts/all", async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT JURIS_NAME AS district 
+            SELECT JURIS_NAME AS district, JURIS_CODE AS district_code
             FROM PP.JURISDICTION 
             WHERE JURIS_TYPE = 'EDUCATION DISTRICT' 
             ORDER BY JURIS_NAME

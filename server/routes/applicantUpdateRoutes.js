@@ -1,9 +1,8 @@
 const express = require("express");
+const router = express.Router();
 const { updateApplicant } = require("../controllers/applicantUpdateController");
 
-const router = express.Router();
-
-router.put("/:id", updateApplicant); //miracles happeing
-
+//RESTful route to update the info
+router.put('/:applicant_id', updateApplicant);
 
 module.exports = router;
