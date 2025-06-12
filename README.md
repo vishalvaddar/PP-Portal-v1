@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #This is our Pratibha Poshak Portal.
 
 # database name
@@ -17,3 +18,6 @@ applicant
 - To run Frontend
 	use -- "npm start" command
 
+=======
+# PP-Portal-v1
+>>>>>>> 302569223528985387820e9fdd30a26d6977c189
