@@ -21,6 +21,7 @@ const districtRoutes = require("./routes/districtRoutes");
 const institutesRoutes = require("./routes/institutesRoutes");
 const jurisNames = require("./routes/jurisNames");
 const generateShortlistRoutes = require("./routes/generateShortlistRoutes");
+const shortlistInfoRoutes = require("./routes/shortlistInfoRoutes");
 const authRoutes = require("./routes/authRoutes");
 
 const app = express();
@@ -46,6 +47,7 @@ app.use("/api", bulkUploadRoutes);
 app.use("/api", searchRoutes);
 app.use("/api", jurisdictionRoutes);
 app.use("/api", generateShortlistRoutes);
+app.use("/api", shortlistInfoRoutes);
 
 // Jurisdiction Info
 app.use("/", institutesRoutes);

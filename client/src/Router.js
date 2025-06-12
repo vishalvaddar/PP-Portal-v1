@@ -14,6 +14,8 @@ import LoginForm from "./components/login/LoginForm";
 import ViewStudentInfo from "./pages/Admin/ViewStudentInfo";
 import EditForm from "./pages/Admin/EditForm";
 import UserManagement from "./pages/Admin/UserManagement";
+import GenerateShortlist from "./pages/Admin/GenerateShortlist";
+import ShortlistInfo from "./pages/Admin/ShortlistInfo";
 // import ExamManagement from "./pages/Admin/ExamManagement";
 // import Results from "./pages/Admin/Results";
 
@@ -51,6 +53,8 @@ export const appRouter = createBrowserRouter([
       { path: "bulk-upload-applications", element: <BulkUploadApplications /> },
       { path: "search-applications", element: <SearchApplications /> },
       { path: "shortlisting", element: <Shortlisting /> },
+      { path: "generate-shortlist", element: <GenerateShortlist /> },
+      { path: "shortlist-info", element: <ShortlistInfo /> },
       { path: "view-student-info/:nmms_reg_number", element: <ViewStudentInfo /> },
       { path: "screening-tests", element: <ScreeningTests /> },
       { path: "view-applications", element: <ViewApplications />},

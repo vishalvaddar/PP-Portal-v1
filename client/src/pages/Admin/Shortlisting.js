@@ -9,7 +9,7 @@ const Shortlisting = () => {
 
       <div className="shortlisting-steps mt-4">
         <div className="option-box">
-          <Link to="/generate-shortlist" className="option-link">
+          <Link to="/admin/generate-shortlist" className="option-link">
             <div className="icon-box">
               <i className="fas fa-upload"></i>
             </div>
@@ -18,7 +18,7 @@ const Shortlisting = () => {
         </div>
 
         <div className="option-box">
-          <Link to="/shortlist-info" className="option-link">
+          <Link to="/admin/shortlist-info" className="option-link">
             <div className="icon-box">
               <i className="fas fa-info-circle"></i> {/* Changed icon for clarity */}
             </div>
@@ -33,13 +33,15 @@ const Shortlisting = () => {
         <ul>
           <li>
             The first step is to generate a shortlist based on the state,
-            district, and optionally multiple blocks, using specific criteria.
+            district, and multiple blocks, using specific criteria.
           </li>
           <li>
-            You can generate a shortlist multiple times.
-            Only one shortlist can exist for a specific block at any given time.
-            To finalize and secure a shortlist, you need to freeze it from the
+            You can generate a shortlist multiple times but 
+            only one shortlist can exist for a specific block at any given time.
+            To finalize a shortlist, you need to freeze it from the
             "Shortlisted Information" interface.
+            </li>
+            <li>
             Similarly, deletion of a shortlist is also done through the "Shortlisted Information" interface.
           </li>
           <li>

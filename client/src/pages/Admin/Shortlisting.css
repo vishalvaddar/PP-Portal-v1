@@ -1,129 +1,96 @@
 /* Container styling */
 .container {
-  text-align: center;
-  padding: 32px;
-  background: linear-gradient(135deg, #f8fafc 60%, #e3e9f7 100%);
-  border-radius: 18px;
-  box-shadow: 0 6px 24px rgba(67, 97, 238, 0.08);
-  margin: 32px auto;
-  max-width: 700px;
-}
-
-/* Heading styles */
-h1 {
-  font-size: 2.2rem;
-  color: #2d3a4a;
-  margin-bottom: 18px;
-  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  background: linear-gradient(90deg, #4361ee 40%, #4cc9f0 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-h2 {
-  font-size: 1.6rem;
-  color: #2d3a4a;
-  margin-bottom: 22px;
-  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-  font-weight: 600;
-  border-bottom: 2px solid #4361ee;
-  padding-bottom: 6px;
-}
-
-h3 {
-  font-size: 1.2rem;
-  color: #4361ee;
-  margin-bottom: 12px;
-  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-  font-weight: 600;
-}
-
-.shortlisting-steps {
-  display: flex;
-  justify-content: center;
-  gap: 32px;
-  margin-top: 24px;
-  flex-wrap: wrap;
-}
-
-.option-box {
-  width: 220px;
-  padding: 22px;
-  background: linear-gradient(120deg, #f8f9fa 80%, #e3e9f7 100%);
-  border-radius: 16px;
-  text-align: center;
-  transition: transform 0.25s, box-shadow 0.25s;
-  box-shadow: 0 4px 12px rgba(67, 97, 238, 0.10);
-  cursor: pointer;
-  border: 1px solid #e0e7ef;
-}
-
-.option-box:hover {
-  transform: translateY(-7px) scale(1.03);
-  box-shadow: 0 10px 24px rgba(67, 97, 238, 0.18);
-  border-color: #4361ee;
-}
-
-.option-link {
-  text-decoration: none;
-  color: #2d3a4a;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.icon-box {
-  font-size: 2.5rem;
-  color: #4361ee;
-  margin-bottom: 12px;
-}
-
-.text-box {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #222b3a;
-}
-
-.shortlist-container {
-  margin-top: 36px;
-  text-align: left;
-  max-width: 650px;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 28px;
-  background: #f9f9f9;
-  border-radius: 14px;
-  box-shadow: 0 6px 18px rgba(67, 97, 238, 0.07);
-  border: 1px solid #e0e7ef;
-}
-
-.shortlist-container ul {
-  list-style-type: disc;
-  padding-left: 22px;
-}
-
-.shortlist-container li {
-  font-size: 1rem;
-  color: #495057;
-  margin-bottom: 10px;
-  line-height: 1.6;
-}
-
-@media (max-width: 800px) {
-  .container {
-    padding: 18px;
-    max-width: 98%;
+    text-align: center;
+    padding: 20px;
   }
+  
+  /* Heading styles */
+  h1 {
+    font-size: 26px;
+    color: #333;
+    margin-bottom: 15px;
+  }
+  
+  h2 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  h3 {
+    font-size: 20px;
+    color: #007bff;
+    margin-bottom: 10px;
+  }
+  
+  /* Application options container */
   .shortlisting-steps {
-    gap: 18px;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 20px;
   }
+  
+  /* Individual option box */
   .option-box {
-    width: 95%;
-    margin-bottom: 18px;
+    width: 220px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
+  
+  .option-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Link styling */
+  .option-link {
+    text-decoration: none;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  /* Icon box */
+  .icon-box {
+    font-size: 40px;
+    color: #007bff;
+    margin-bottom: 10px;
+  }
+  
+  /* Text inside option box */
+  .text-box {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  /* Shortlisting Process container */
   .shortlist-container {
-    padding: 16px;
+    margin-top: 30px;
+    text-align: left;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
-}
+  
+  /* Instructions section */
+  .shortlist-container ul {
+    list-style-type: disc;
+    padding-left: 20px;
+  }
+  
+  .shortlist-container li {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 8px;
+  }
+  
