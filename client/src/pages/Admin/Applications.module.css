@@ -1,0 +1,67 @@
+/* Container centers the card with comfortable padding */
+.container {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 3rem 1rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Card with subtle shadow and rounded corners */
+.card {
+  max-width: 480px;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+/* Header with bottom border and spacing */
+.cardHeader {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1.25rem 2rem;
+}
+
+/* Title with clear hierarchy */
+.cardTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937; /* Dark slate */
+  margin: 0;
+}
+
+/* Navigation container with vertical spacing */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 2rem;
+}
+
+/* Navigation links styled as buttons */
+.navLink {
+  display: block;
+  padding: 0.85rem 1.25rem;
+  background-color: #2563eb; /* Blue 600 */
+  color: white;
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-align: center;
+  border-radius: 8px;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgb(37 99 235 / 0.4);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hover and focus states for accessibility and feedback */
+.navLink:hover,
+.navLink:focus-visible {
+  background-color: #1d4ed8; /* Blue 700 */
+  box-shadow: 0 4px 12px rgb(29 78 216 / 0.6);
+  outline: none;
+  cursor: pointer;
+}

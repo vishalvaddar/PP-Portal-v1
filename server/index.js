@@ -53,6 +53,8 @@ app.use("/api", shortlistInfoRoutes);
 app.use("/", institutesRoutes);
 app.use("/", districtRoutes);
 app.use("/", jurisNames);
+
+
 app.use('/admin-dashboard', adminDashboardRoutes);
 app.use('/coordinator', coordinatorRoutes);
 app.use('/student', studentRoutes);

@@ -3,6 +3,7 @@
 html, body {
   height: 100%;
   margin: 0;
+  padding: 0;
 }
 
 .layout-wrapper {
@@ -15,27 +16,29 @@ html, body {
   display: flex;
   flex: 1;
   min-height: 0;
+  margin-top: 25px; /* Header height */
 }
 
 .sidebar-container {
-  display: flex;
-  position: fixed;
-  top: 64px; /* Adjust if your header height is different */
-  left: 0;
-  height: calc(100vh - 64px); /* Full height minus header */
-  z-index: 100;
+  width: 120px;
+  transition: width 0.3s ease;
+}
+
+.sidebar-container.collapsed {
+  width: 70px;
 }
 
 .content {
   flex: 1;
-  padding: 0;
+  padding: 1rem;
   background-color: #f8f9fc;
-  min-height: 0;
-  margin-left: 280px; /* Sidebar width */
+  min-height: calc(100vh - 75px);
+  margin-left: 50px;
+  transition: margin-left 0.3s ease;
 }
 
 .content-collapsed {
-  margin-left: 80px;
+  margin-left: 70px;
 }
 
 footer {
@@ -44,4 +47,13 @@ footer {
   padding: 1rem;
   text-align: center;
   font-size: 0.9rem;
+}
+
+.sidebar-container.collapsed {
+  width: 70px; /* collapsed width */
+}
+
+.sidebar-container {
+  width: 240px; /* expanded width */
+  transition: width 0.3s ease;
 }

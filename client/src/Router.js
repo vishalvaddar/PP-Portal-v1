@@ -9,7 +9,7 @@ import BulkUploadApplications from "./pages/Admin/BulkUploadApplications";
 import SearchApplications from "./pages/Admin/SearchApplications";
 import Shortlisting from "./pages/Admin/Shortlisting";
 import ViewApplications from "./pages/Admin/ViewApplications";
-import ScreeningTests from "./pages/Admin/ScreeningTests";
+import Evaluation from "./pages/Admin/Evaluation";
 import LoginForm from "./components/login/LoginForm";
 import ViewStudentInfo from "./pages/Admin/ViewStudentInfo";
 import EditForm from "./pages/Admin/EditForm";
@@ -34,6 +34,7 @@ import TimeTable from "./pages/Teacher/TimeTable";
 // Student pages
 import StudentDashboard from "./pages/Student/StudentDashboard";
 import StudentProfile from "./pages/Student/StudentProfile";
+import Applications from "./pages/Admin/Applications";
 // import Attendance from "./pages/Student/Attendance";
 // import Issues from "./pages/Student/Issues";
 // import NotesLeave from "./pages/Student/NotesLeave";
@@ -49,16 +50,24 @@ export const appRouter = createBrowserRouter([
     element: <Layout />,
     children: [
       { path: "admin-dashboard", element: <AdminDashboard /> },
-      { path: "new-application", element: <NewApplication /> },
-      { path: "bulk-upload-applications", element: <BulkUploadApplications /> },
-      { path: "search-applications", element: <SearchApplications /> },
-      { path: "shortlisting", element: <Shortlisting /> },
-      { path: "generate-shortlist", element: <GenerateShortlist /> },
-      { path: "shortlist-info", element: <ShortlistInfo /> },
-      { path: "view-student-info/:nmms_reg_number", element: <ViewStudentInfo /> },
-      { path: "screening-tests", element: <ScreeningTests /> },
-      { path: "view-applications", element: <ViewApplications />},
-      { path: "edit-form/:nmms_reg_number", element: <EditForm /> },
+      {
+        path: "admissions",
+        children: [
+          { path: "new-application", element: <NewApplication /> },
+          { path: "bulk-upload-applications", element: <BulkUploadApplications /> },
+          { path: "search-applications", element: <SearchApplications /> },
+          { path: "applications", element: <Applications /> },
+          { path: "shortlisting", element: <Shortlisting /> },
+          { path: "generate-shortlist", element: <GenerateShortlist /> },
+          { path: "shortlist-info", element: <ShortlistInfo /> },
+          { path: "shortlisting", element: <Shortlisting /> },
+          { path: "view-student-info/:nmms_reg_number", element: <ViewStudentInfo /> },
+          { path: "evaluation", element: <Evaluation /> },
+          { path: "view-applications", element: <ViewApplications /> },
+          { path: "edit-form/:nmms_reg_number", element: <EditForm /> },
+        ],
+      },
+      
       { path: "user-management", element: <UserManagement /> },
       // { path: "exam-management", element: <ExamManagement /> },
       // { path: "results", element: <Results /> },
@@ -101,3 +110,25 @@ export const appRouter = createBrowserRouter([
     element: <div>404 - Page Not Found</div>,
   },
 ]);
+
+export const sidebarLinks = [
+  {
+    title: "Applications",
+    icon: "📝",
+    submenu: true,
+    submenuItems: [
+      {
+        title: "Dashboard",
+        path: "/applications/admin-dashboard"
+      },
+      {
+        title: "New Application",
+        path: "/applications/new-application"
+      },
+      {
+        title: "Bulk Upload",
+        path: "/applications/bulk-upload-applications"
+      }
+    ]
+  }
+];

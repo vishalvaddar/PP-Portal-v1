@@ -1,55 +1,51 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "./Shortlisting.css";
+import { ScrollText } from "lucide-react";
+import styles from "./Shortlisting.module.css"; // This import is correct
 
 const Shortlisting = () => {
   return (
-    <div className="container mt-4">
-      <h2 className="text-center">Shortlisting</h2>
+    <div className={styles.shortlistingContainer}>
+      <div className={styles.mainContentWrapper}> {/* This class is correct */}
+        <h2 className={styles.pageTitle}>
+          <span className={styles.pageTitleIcon}><ScrollText size={25} /></span> Shortlisting
+        </h2>
 
-      <div className="shortlisting-steps mt-4">
-        <div className="option-box">
-          <Link to="/admin/generate-shortlist" className="option-link">
-            <div className="icon-box">
-              <i className="fas fa-upload"></i>
+        <div className={styles.actionsGrid}> {/* This class is correct */}
+          <Link to="/admin/generate-shortlist" className={styles.actionCard}> {/* This class is correct */}
+            <div className={styles.actionCardIcon}> {/* This class is correct */}
+              <i className="fas fa-list-check"></i>
             </div>
-            <div className="text-box">Generate Shortlist</div>
+            <div className={styles.actionCardLabel}>Generate Shortlist</div> {/* This class is correct */}
+          </Link>
+
+          <Link to="/admin/shortlist-info" className={styles.actionCard}> {/* This class is correct */}
+            <div className={styles.actionCardIcon}> {/* This class is correct */}
+              <i className="fas fa-info-circle"></i>
+            </div>
+            <div className={styles.actionCardLabel}>View Shortlisted Info</div> {/* This class is correct */}
           </Link>
         </div>
 
-        <div className="option-box">
-          <Link to="/admin/shortlist-info" className="option-link">
-            <div className="icon-box">
-              <i className="fas fa-info-circle"></i> {/* Changed icon for clarity */}
-            </div>
-            <div className="text-box">Shortlisted Information</div>
-          </Link>
-        </div>
-      </div>
-
-      <div className="shortlist-container mt-4">
-        <h1>Shortlisting Process</h1>
-        <h3>Instructions</h3>
-        <ul>
-          <li>
-            The first step is to generate a shortlist based on the state,
-            district, and multiple blocks, using specific criteria.
-          </li>
-          <li>
-            You can generate a shortlist multiple times but 
-            only one shortlist can exist for a specific block at any given time.
-            To finalize a shortlist, you need to freeze it from the
-            "Shortlisted Information" interface.
+        <div className={styles.instructionsBox}> {/* This class is correct */}
+          <h3 className={styles.instructionsHeader}> {/* This class is correct */}
+            <span className={styles.instructionsHeaderIcon}>📌</span> Shortlisting Process Instructions
+          </h3>
+          <ul className={styles.instructionsList}> {/* This class is correct */}
+            <li>
+              <strong>Generate a shortlist</strong> by selecting state, district, and blocks using the given filters.
             </li>
             <li>
-            Similarly, deletion of a shortlist is also done through the "Shortlisted Information" interface.
-          </li>
-          <li>
-            From the "Shortlisted Information" interface, you can access all the
-            details of the generated shortlist and can download the selected student list from there.
-          </li>
-          
-        </ul>
+              You may generate multiple shortlists, but <strong>only one active shortlist per block</strong> is allowed.
+            </li>
+            <li>
+              Use the <em>“Shortlisted Information”</em> section to <strong>freeze or delete</strong> a shortlist.
+            </li>
+            <li>
+              Download finalized student lists directly from the <em>“Shortlisted Information”</em> page.
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   );

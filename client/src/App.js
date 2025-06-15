@@ -1,6 +1,7 @@
 // App.js
 import React from "react";
 import { RouterProvider } from "react-router-dom";
+import 'bootstrap/dist/css/bootstrap.min.css';
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { appRouter } from "../src/Router";
 

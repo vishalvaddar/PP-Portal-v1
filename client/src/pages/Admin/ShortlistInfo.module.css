@@ -1,6 +1,6 @@
-/* ShortlistInfo.css */
+/* ShortlistInfo.module.css */
 
-.shortlist-info-container {
+.shortlistInfoContainer {
   text-align: center;
   padding: 20px;
 }
@@ -12,28 +12,28 @@
 }
 
 /* Heading styles */
-h1 {
+.heading {
   font-size: 32px;
   color: #333;
   margin-bottom: 25px;
 }
 
 /* Counts container */
-.counts-container {
+.countsContainer {
   display: flex;
   justify-content: center;
   gap: 30px;
   margin-bottom: 40px;
 }
 
-.count-box {
+.countBox {
   background-color: #e9ecef;
   padding: 20px 30px;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
 }
 
-.count-box p {
+.countBoxText {
   margin: 0;
   font-size: 18px;
   font-weight: bold;
@@ -41,16 +41,16 @@ h1 {
 }
 
 /* Application options container (Grid Layout) */
-.shortlisting-steps-grid {
+.shortlistingStepsGrid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Two columns */
-  gap: 20px; /* Gap between the boxes */
-  max-width: 520px; /* Adjust as needed to control the line width */
-  margin: 30px auto; /* Center the grid */
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  max-width: 520px;
+  margin: 30px auto;
 }
 
 /* Individual option box */
-.option-box {
+.optionBox {
   background: #fff;
   border-radius: 15px;
   text-align: center;
@@ -59,52 +59,52 @@ h1 {
   padding: 30px;
 }
 
-.option-box:hover {
+.optionBox:hover {
   transform: translateY(-8px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
 }
 
 /* Icon box */
-.icon-box {
+.iconBox {
   font-size: 50px;
   color: #007bff;
   margin-bottom: 15px;
 }
 
 /* Text inside option box */
-.text-box {
+.textBox {
   font-size: 20px;
   font-weight: bold;
   color: #333;
 }
 
 /* Detailed view styling - Default size */
-.detailed-view {
+.detailedView {
   background-color: #f8f9fa;
   padding: 30px;
   border-radius: 12px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-  max-width: 600px; /* Keep the default max-width */
+  max-width: 600px;
   margin: 30px auto;
-  transition: max-width 0.3s ease-in-out; /* Add transition for smooth resizing */
+  transition: max-width 0.3s ease-in-out;
 }
 
 /* Detailed view styling - Larger size for download view */
-.detailed-view.download-view {
-  max-width: 95%; /* Larger max-width for the download view */
+.downloadView {
+  max-width: 95%;
 }
 
-.get-info-view {
-  max-width: 700px; /* Adjust width for Get Info view if needed */
+.getInfoView {
+  max-width: 700px;
 }
 
-.detailed-view h2 {
+.detailedViewHeading {
   color: #333;
   margin-bottom: 20px;
   font-size: 28px;
 }
 
-.detailed-view button {
+.detailedViewButton {
   background-color: #6c757d;
   color: white;
   padding: 12px 20px;
@@ -116,90 +116,90 @@ h1 {
   margin-top: 20px;
 }
 
-.detailed-view button:hover {
+.detailedViewButton:hover {
   background-color: #545b62;
 }
 
-.error-message {
+.errorMessage {
   color: red;
   margin-top: 10px;
   font-weight: bold;
 }
 
-.shortlist-details-info {
+.shortlistDetailsInfo {
   text-align: left;
 }
 
-.shortlist-details-info h3 {
+.shortlistDetailsInfoHeading {
   font-size: 24px;
   margin-bottom: 15px;
 }
 
-.shortlist-details-info p {
+.shortlistDetailsInfoText {
   margin-bottom: 10px;
 }
 
-.justified-text {
+.justifiedText {
   text-align: justify;
 }
 
-.back-button-container {
+.backButtonContainer {
   margin-top: 20px;
   text-align: center;
 }
 
-.below-button {
+.belowButton {
   margin-top: 30px;
 }
 
 /* Download View Styles */
-.shortlisted-data-preview {
+.shortlistedDataPreview {
   margin-top: 20px;
   text-align: left;
 }
 
-.shortlisted-data-preview h3 {
+.shortlistedDataPreviewHeading {
   font-size: 20px;
   margin-bottom: 10px;
 }
 
-.table-container {
-  overflow-x: auto; /* Enable horizontal scrolling for large tables */
+.tableContainer {
+  overflow-x: auto;
 }
 
-.table-container table {
+.table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 20px;
   border: 1px solid #dee2e6;
 }
 
-.table-container th,
-.table-container td {
+.tableTh,
+.tableTd {
   padding: 10px;
   border: 1px solid #dee2e6;
   text-align: left;
   font-size: 14px;
 }
 
-.table-container th {
+.tableTh {
   background-color: #f2f2f2;
   font-weight: bold;
 }
 
-.download-confirmation {
+.downloadConfirmation {
   margin-top: 20px;
   text-align: center;
 }
 
-.confirmation-buttons {
+.confirmationButtons {
   display: flex;
   justify-content: center;
   gap: 10px;
   margin-top: 10px;
 }
 
-.confirmation-buttons button {
+.confirmationButton {
   padding: 8px 15px;
   font-size: 16px;
   border-radius: 6px;

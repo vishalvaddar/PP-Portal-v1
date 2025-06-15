@@ -24,13 +24,16 @@ const Layout = () => {
     <div className="layout-wrapper">
       <Header />
       <div className="main-section">
-        <div className="sidebar-container">
+        {/* ✅ Added dynamic class for collapsed sidebar */}
+        <div className={`sidebar-container ${isSidebarCollapsed ? "collapsed" : ""}`}>
           <Navbar
             isCollapsed={isSidebarCollapsed}
             toggleSidebar={toggleSidebar}
-            navItems={navItems} // Pass navItems to Navbar
+            navItems={navItems}
           />
         </div>
+
+        {/* ✅ Content margin dynamically adjusts with sidebar */}
         <div className={`content ${isSidebarCollapsed ? 'content-collapsed' : ''}`}>
           <Outlet />
         </div>

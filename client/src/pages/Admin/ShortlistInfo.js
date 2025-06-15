@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import "./ShortlistInfo.css";
+import styles from "./ShortlistInfo.module.css";
 import * as XLSX from 'xlsx';
 
 const ShortlistInfo = () => {
@@ -259,31 +259,31 @@ const ShortlistInfo = () => {
   };
 
   const renderMainView = () => (
-    <div className="container">
+    <div className={styles.container}>
       <h1>Shortlisted Information</h1>
-      <div className="counts-container">
-        <div className="count-box">
+      <div className={styles.countsContainer}>
+        <div className={styles.countBox}>
           <p>Total Applicants: {applicantCount}</p>
         </div>
-        <div className="count-box">
+        <div className={styles.countBox}>
           <p>Shortlisted Students: {shortlistedCount}</p>
         </div>
       </div>
 
-      <div className="shortlisting-steps-grid">
-        <div className="option-box" onClick={() => handleBoxClick("getInfo")}>
+      <div className={styles.shortlistingStepsGrid}>
+        <div className={styles.optionBox} onClick={() => handleBoxClick("getInfo")}>
           <div className="icon-box">ℹ️</div>
           <div className="text-box">Get Shortlist Info</div>
         </div>
-        <div className="option-box" onClick={() => handleBoxClick("freeze")}>
+        <div className={styles.optionBox} onClick={() => handleBoxClick("freeze")}>
           <div className="icon-box">🔒</div>
           <div className="text-box">Freeze Shortlist</div>
         </div>
-        <div className="option-box" onClick={() => handleBoxClick("delete")}>
+        <div className={styles.optionBox} onClick={() => handleBoxClick("delete")}>
           <div className="icon-box">🗑️</div>
           <div className="text-box">Delete Shortlist</div>
         </div>
-        <div className="option-box" onClick={() => handleBoxClick("download")}>
+        <div className={styles.optionBox} onClick={() => handleBoxClick("download")}>
           <div className="icon-box">⬇️</div>
           <div className="text-box">Show/Download</div>
         </div>

@@ -84,7 +84,7 @@ const ViewApplications = () => {
     return (
         <div className={classes.container}>
             <h1>View Applications</h1>
-            <button onClick={() => navigate('/admin/search-applications')} className={classes.backButton}>
+            <button onClick={() => navigate('/admin/admissions/search-applications')} className={classes.backButton}>
                 Back to Search
             </button>
 
@@ -114,7 +114,7 @@ const ViewApplications = () => {
                                     <tr key={app.applicant_id}>
                                         <td>{app.applicant_id}</td>
                                         <td>
-                                            <Link to={`/admin/view-student-info/${app.nmms_reg_number}`}>
+                                            <Link to={`/admin/admissions/view-student-info/${app.nmms_reg_number}`}>
                                                 {app.nmms_reg_number}
                                             </Link>
                                         </td>

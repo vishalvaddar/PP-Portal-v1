@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Select from 'react-select';
+import { FileSearch } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useFetchStates, useFetchDistricts, useFetchBlocks, useFetchInstitutes } from "../../hooks/useJurisData";
 import classes from "./SearchApplications.module.css";
@@ -90,7 +91,7 @@ const SearchApplications = () => {
         return;
       }
 
-      navigate("/admin/view-applications", {
+      navigate("/admin/admissions/view-applications", {
         state: {
           initialApplications: response.data.data,
           paginationInfo: response.data.pagination,
@@ -110,7 +111,7 @@ const SearchApplications = () => {
 
   return (
     <div className={classes.container}>
-      <h1>Search Applications</h1>
+      <h2 className={classes.h2}><FileSearch size={25} /> Search Applications</h2>
       <form onSubmit={handleSubmit} className={classes.form}>
         <div className={classes.formGroup}>
           <label htmlFor="nmms_year">Year:</label>
@@ -213,7 +214,6 @@ const SearchApplications = () => {
           />
         </div>
 
-        {/* Optional: Display general errors */}
         {Object.keys(errors).length > 0 && !errors.nmms_reg_number && (
           <div className={classes.errorSummary}>
             Please correct the errors above.
