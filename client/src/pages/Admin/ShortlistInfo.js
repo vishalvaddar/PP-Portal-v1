@@ -24,16 +24,25 @@ const ShortlistInfo = () => {
   const [shortlistNamesError, setShortlistNamesError] = useState(null);
   const [nonFrozenNamesError, setNonFrozenNamesError] = useState(null);
 
-  const API_ENDPOINT = "http://localhost:5000/api/shortlists";
-  const GET_INFO_ENDPOINT = `${API_ENDPOINT}/info`;
-  const FREEZE_ENDPOINT = `${API_ENDPOINT}/freeze`;
-  const DELETE_ENDPOINT = `${API_ENDPOINT}/delete`;
-  const DOWNLOAD_SHOW_ENDPOINT = `${API_ENDPOINT}/show-data`;
-  const DOWNLOAD_ENDPOINT = `${API_ENDPOINT}/download-data`;
+  // Define your base API endpoint for this component
+  // This should match how you've mounted shortlistInfoRoutes in app.js
+  // From your app.js, it looks like it's mounted under /api/shortlist/info
+  const BASE_API_URL = "http://localhost:5000/api/shortlist/info";
+
+  // Use these base paths for your fetch calls
+  const GET_NAMES_ENDPOINT = `${BASE_API_URL}/names`;
+  const GET_NON_FROZEN_NAMES_ENDPOINT = `${BASE_API_URL}/non-frozen-names`;
+  const GET_COUNTS_ENDPOINT = `${BASE_API_URL}/counts`;
+  const FREEZE_ENDPOINT = `${BASE_API_URL}/freeze`;
+  const DELETE_ENDPOINT = `${BASE_API_URL}/delete`;
+  const GET_INFO_BY_NAME_ENDPOINT = `${BASE_API_URL}/info`; // Assuming backend route is /info/:name
+  const DOWNLOAD_SHOW_ENDPOINT = `${BASE_API_URL}/show-data`;
+  const DOWNLOAD_ENDPOINT = `${BASE_API_URL}/download-data`;
+
 
   useEffect(() => {
     setLoadingShortlistNames(true);
-    fetch(`${API_ENDPOINT}/names`)
+    fetch(GET_NAMES_ENDPOINT) // Corrected
       .then(response => response.json())
       .then(data => {
         setShortlistNames(data);
@@ -46,7 +55,7 @@ const ShortlistInfo = () => {
       });
 
     setLoadingNonFrozenNames(true);
-    fetch(`${API_ENDPOINT}/non-frozen-names`)
+    fetch(GET_NON_FROZEN_NAMES_ENDPOINT) // Corrected
       .then(response => response.json())
       .then(data => {
         setNonFrozenShortlistNames(data);
@@ -58,7 +67,7 @@ const ShortlistInfo = () => {
         setLoadingNonFrozenNames(false);
       });
 
-    fetch(`${API_ENDPOINT}/counts`)
+    fetch(GET_COUNTS_ENDPOINT) // Corrected
       .then(response => response.json())
       .then(data => {
         animateCount(0, data.totalApplicants, setApplicantCount, applicantCountRef);
@@ -130,7 +139,7 @@ const ShortlistInfo = () => {
   const handleShortlistSelectInfo = (event) => {
     const selectedName = event.target.value;
     if (selectedName) {
-      fetch(`${GET_INFO_ENDPOINT}/${selectedName}`)
+      fetch(`${GET_INFO_BY_NAME_ENDPOINT}/${selectedName}`) // Corrected
         .then(response => response.json())
         .then(data => setSelectedShortlistInfo(data))
         .catch(error => console.error(`Error fetching info for ${selectedName}:`, error));
@@ -156,7 +165,7 @@ const ShortlistInfo = () => {
   const handleFreezeSubmit = () => {
     if (selectedShortlistFreezeId) {
       if (window.confirm(`Are you sure you want to freeze the shortlist "${selectedShortlistFreezeName}"? This action cannot be undone.`)) {
-        fetch(FREEZE_ENDPOINT, {
+        fetch(FREEZE_ENDPOINT, { // Corrected
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -192,7 +201,7 @@ const ShortlistInfo = () => {
   const handleDeleteSubmit = () => {
     if (selectedShortlistDeleteId) {
       if (window.confirm(`Are you sure you want to delete the shortlist "${selectedShortlistDeleteName}"? This action cannot be undone.`)) {
-        fetch(DELETE_ENDPOINT, {
+        fetch(DELETE_ENDPOINT, { // Corrected
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -220,7 +229,7 @@ const ShortlistInfo = () => {
 
   const handleShowData = () => {
     if (selectedShortlistDownloadName) {
-      fetch(`${DOWNLOAD_SHOW_ENDPOINT}/${selectedShortlistDownloadName}`)
+      fetch(`${DOWNLOAD_SHOW_ENDPOINT}/${selectedShortlistDownloadName}`) // Corrected
         .then(response => response.json())
         .then(data => {
           setShortlistedData(data.data);
@@ -234,7 +243,7 @@ const ShortlistInfo = () => {
 
   const handleDownloadConfirmation = (confirm) => {
     if (confirm) {
-      fetch(`${DOWNLOAD_ENDPOINT}/${selectedShortlistDownloadName}`)
+      fetch(`${DOWNLOAD_ENDPOINT}/${selectedShortlistDownloadName}`) // Corrected
         .then(response => response.json())
         .then(data => {
           downloadExcel(data.data, data.name);

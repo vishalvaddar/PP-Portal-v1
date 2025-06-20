@@ -37,7 +37,8 @@ const GenerateShortlist = () => {
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/allstates")
+    // Corrected URL for allstates
+    axios.get("http://localhost:5000/api/shortlist/generate/allstates")
       .then(response => {
         setStates(response.data);
       })
@@ -45,7 +46,8 @@ const GenerateShortlist = () => {
   }, []);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/criteria")
+    // Corrected URL for criteria
+    axios.get("http://localhost:5000/api/shortlist/generate/criteria")
       .then(response => {
         setSelectionCriteria(response.data);
       })
@@ -55,7 +57,8 @@ const GenerateShortlist = () => {
 
   useEffect(() => {
     if (selectedState) {
-      axios.get(`http://localhost:5000/api/districts/${selectedState}`)
+      // Corrected URL for districts
+      axios.get(`http://localhost:5000/api/shortlist/generate/districts/${selectedState}`)
         .then(response => {
           setDistricts(response.data);
           setSelectedDistrict("");
@@ -74,7 +77,8 @@ const GenerateShortlist = () => {
   useEffect(() => {
     if (selectedDistrict) {
       setLoadingBlocks(true);
-      axios.get(`http://localhost:5000/api/blocks/${selectedDistrict}`)
+      // Corrected URL for blocks
+      axios.get(`http://localhost:5000/api/shortlist/generate/blocks/${selectedDistrict}`)
         .then(response => {
           setBlocks(response.data);
           setSelectedBlocks([]);
@@ -105,6 +109,12 @@ const GenerateShortlist = () => {
   const fetchApplicantCounts = async () => {
     setLoadingCounts(true);
     try {
+      // Assuming these counts are directly under /api or handled by other routes
+      // If these also need the /shortlist/generate prefix, adjust them here as well.
+      // Based on your app.js, it seems 'total-applicants' and 'shortlisted-students'
+      // are not part of generateShortlistRoutes, so they might be correct as is,
+      // or they might belong to another route file mounted under /api.
+      // You should confirm their actual backend paths. For now, leaving as is.
       const totalResponse = await axios.get(`http://localhost:5000/api/total-applicants?year=${currentYear}`);
       setTotalApplicants(totalResponse.data.count);
       const shortlistedResponse = await axios.get("http://localhost:5000/api/shortlisted-students");
@@ -130,7 +140,8 @@ const GenerateShortlist = () => {
       console.log("currentYear:", currentYear);
 
       try {
-        const response = await axios.post("http://localhost:5000/api/start-shortlist", {
+        // Corrected URL for start-shortlist
+        const response = await axios.post("http://localhost:5000/api/shortlist/generate/start-shortlist", {
           criteriaId: selectedCriteria,
           locations: selectedLocations,
           name: shortlistName,
