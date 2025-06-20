@@ -13,9 +13,13 @@ import Evaluation from "./pages/Admin/Evaluation";
 import LoginForm from "./components/login/LoginForm";
 import ViewStudentInfo from "./pages/Admin/ViewStudentInfo";
 import EditForm from "./pages/Admin/EditForm";
-import UserManagement from "./pages/Admin/UserManagement";
 import GenerateShortlist from "./pages/Admin/GenerateShortlist";
 import ShortlistInfo from "./pages/Admin/ShortlistInfo";
+import Students from "./pages/Admin/Students";
+import Batches from "./pages/Admin/Batches";
+import UserRoles from "./pages/Admin/UserRoles";
+import System from "./pages/Admin/System";
+import MyProfile from "./pages/Admin/MyProfile";
 // import ExamManagement from "./pages/Admin/ExamManagement";
 // import Results from "./pages/Admin/Results";
 
@@ -67,8 +71,17 @@ export const appRouter = createBrowserRouter([
           { path: "edit-form/:nmms_reg_number", element: <EditForm /> },
         ],
       },
-      
-      { path: "user-management", element: <UserManagement /> },
+      { path: "academics", children: [
+          { path: "students", element: <Students /> },
+          // { path: "teachers", element: <Teachers /> },
+          { path: "batches", element: <Batches /> },
+        ]
+      },
+      { path: "settings", children: [
+        { path: "my-profile", element: <MyProfile /> },
+        { path: "user-roles", element: <UserRoles /> },
+        { path: "system", element: <System /> },
+      ]},
       // { path: "exam-management", element: <ExamManagement /> },
       // { path: "results", element: <Results /> },
     ],

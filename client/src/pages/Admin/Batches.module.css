@@ -1,0 +1,382 @@
+/* Batches.module.css */
+
+/* General container for the entire page/component */
+.container {
+  padding: 2.5rem; /* Increased padding around the content */
+  background-color: #f8f9fa; /* Light grey background for the page */
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif; /* Use Inter font for consistency */
+  color: #343a40; /* Darker text for readability */
+}
+
+/* Headings and Titles */
+.heading {
+  font-size: 2rem; /* Larger main heading */
+  font-weight: 700; /* Bold */
+  color: #1a202c; /* Darker color for main titles */
+  margin-bottom: 2rem; /* More space below heading */
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* Space between icon and text */
+}
+
+.icon {
+  color: #4c51bf; /* Indigo color for icons */
+}
+
+.tableHeading {
+  font-size: 1.75rem; /* Sub-heading for the table */
+  font-weight: 600;
+  color: #1a202c;
+  margin-top: 3rem; /* More space above table heading */
+  margin-bottom: 1.5rem; /* Space below table heading */
+}
+
+/* Form Styles */
+.form {
+  background-color: #ffffff;
+  padding: 2rem; /* Generous padding inside the form card */
+  border-radius: 0.75rem; /* Rounded corners for the form */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Subtle shadow */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid for form fields */
+  gap: 1.5rem; /* Space between form groups */
+  margin-bottom: 2.5rem; /* Space below the form */
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* Space between label and input */
+}
+
+.formGroup label {
+  font-weight: 500;
+  color: #495057; /* Slightly lighter label text */
+  font-size: 0.95rem;
+}
+
+.formGroup input,
+.formGroup select {
+  padding: 0.75rem 1rem; /* Comfortable padding */
+  border: 1px solid #ced4da; /* Light border */
+  border-radius: 0.375rem; /* Rounded input fields */
+  font-size: 1rem;
+  color: #343a40;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background-color: #ffffff; /* Explicitly white background */
+}
+
+.formGroup input:focus,
+.formGroup select:focus {
+  border-color: #4c51bf; /* Indigo border on focus */
+  box-shadow: 0 0 0 3px rgba(76, 81, 191, 0.25); /* Soft glow on focus */
+  outline: none;
+}
+
+.errorInput {
+  border-color: #e53e3e !important; /* Red border for errors */
+}
+
+.errorText {
+  color: #e53e3e; /* Red text for error messages */
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* React-Select Specific Styling (to integrate with overall design) */
+/* The base styles from react-select are very opinionated. These override them. */
+.formGroup .react-select-container .react-select__control {
+  border: 1px solid #ced4da !important;
+  border-radius: 0.375rem !important;
+  padding: 0.25rem 0.5rem !important; /* Adjust padding to match input height */
+  min-height: 48px; /* Match typical input height */
+  box-shadow: none !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+
+.formGroup .react-select-container .react-select__control--is-focused {
+  border-color: #4c51bf !important;
+  box-shadow: 0 0 0 3px rgba(76, 81, 191, 0.25) !important;
+}
+
+.formGroup .react-select-container .react-select__value-container {
+  padding: 0 0.5rem;
+}
+
+.formGroup .react-select-container .react-select__indicator-separator {
+  background-color: #ced4da;
+}
+
+.formGroup .react-select-container .react-select__indicator {
+  color: #6c757d;
+}
+
+.formGroup .react-select-container .react-select__menu {
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 0.5rem;
+  z-index: 1000; /* Ensure dropdown is on top */
+}
+
+.formGroup .react-select-container .react-select__option {
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+}
+
+.formGroup .react-select-container .react-select__option--is-selected {
+  background-color: #e0e7ff; /* Light indigo for selected */
+  color: #4c51bf;
+}
+
+.formGroup .react-select-container .react-select__option--is-focused {
+  background-color: #f0f2f5; /* Lighter grey for hover/focused */
+}
+
+
+/* Submit Button */
+.submitButton {
+  background-color: #4c51bf; /* Indigo primary button */
+  color: white;
+  padding: 0.8rem 1.5rem; /* Generous padding */
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  grid-column: 1 / -1; /* Span across all columns in grid */
+  margin-top: 1rem; /* Space above button */
+}
+
+.submitButton:hover {
+  background-color: #3b3f8e; /* Darker indigo on hover */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Table Styles */
+.batchTable {
+  width: 100%;
+  border-collapse: separate; /* Allows rounded corners and spacing */
+  border-spacing: 0;
+  background-color: #ffffff;
+  border-radius: 0.75rem; /* Rounded corners for the whole table */
+  overflow: hidden; /* Ensures rounded corners are visible */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Subtle shadow */
+}
+
+.batchTable th,
+.batchTable td {
+  padding: 1rem 1.25rem; /* Comfortable padding for cells */
+  text-align: left;
+  border-bottom: 1px solid #e9ecef; /* Light border between rows */
+}
+
+.batchTable th {
+  background-color: #e9ecef; /* Light grey header background */
+  color: #495057;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.batchTable tbody tr:last-child td {
+  border-bottom: none; /* No border for the last row */
+}
+
+.batchTable tbody tr:hover {
+  background-color: #f0f2f5; /* Subtle hover effect on rows */
+}
+
+/* Status Badges */
+.active, .inactive {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.75rem;
+  border-radius: 1rem; /* More rounded, pill-like shape */
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.active {
+  background-color: #e6ffed; /* Light green */
+  color: #2f855a; /* Dark green text */
+  border: 1px solid #a7f3d0; /* Green border */
+}
+
+.inactive {
+  background-color: #ffe6e6; /* Light red */
+  color: #c53030; /* Dark red text */
+  border: 1px solid #fbd38d; /* Red border */
+}
+
+/* Table Action Buttons */
+.iconBtn {
+  background: none;
+  border: none;
+  padding: 0.5rem; /* Padding around icons */
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s, color 0.2s;
+  color: #6c757d; /* Default icon color */
+}
+
+.iconBtn:hover {
+  background-color: #e9ecef; /* Light grey background on hover */
+  color: #495057; /* Darker icon color on hover */
+}
+
+.iconBtn:not(:last-child) {
+  margin-right: 0.5rem; /* Space between action buttons */
+}
+
+.iconBtn svg {
+  vertical-align: middle; /* Align icons nicely with text */
+}
+
+/* Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6); /* Darker overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out; /* Fade in animation */
+}
+
+.modal {
+  background-color: #ffffff;
+  padding: 2.5rem; /* More padding inside modal */
+  border-radius: 0.75rem; /* Rounded corners */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); /* Stronger shadow */
+  width: 90%;
+  max-width: 500px; /* Max width for modal */
+  animation: scaleIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Scale in animation */
+}
+
+.modal h3 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 1.5rem; /* Space below modal title */
+  text-align: center;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem; /* Space between modal form groups */
+}
+
+.modalContent label {
+  font-weight: 500;
+  color: #495057;
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem; /* Small space between label and input in modal */
+}
+
+.modalContent input,
+.modalContent select {
+  padding: 0.75rem 1rem;
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  color: #343a40;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background-color: #ffffff;
+}
+
+.modalContent input:focus,
+.modalContent select:focus {
+  border-color: #4c51bf;
+  box-shadow: 0 0 0 3px rgba(76, 81, 191, 0.25);
+  outline: none;
+}
+
+/* React-Select in Modal */
+.modal .react-select-container .react-select__control {
+  border: 1px solid #ced4da !important;
+  border-radius: 0.375rem !important;
+  padding: 0.25rem 0.5rem !important;
+  min-height: 48px;
+  box-shadow: none !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+
+.modal .react-select-container .react-select__control--is-focused {
+  border-color: #4c51bf !important;
+  box-shadow: 0 0 0 3px rgba(76, 81, 191, 0.25) !important;
+}
+
+.modal .react-select-container .react-select__value-container {
+  padding: 0 0.5rem;
+}
+
+.modal .react-select-container .react-select__menu {
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 0.5rem;
+  z-index: 1001; /* Higher z-index for modal select dropdown */
+}
+
+.modal .react-select-container .react-select__option {
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+}
+
+.modal .react-select-container .react-select__option--is-selected {
+  background-color: #e0e7ff;
+  color: #4c51bf;
+}
+
+.modal .react-select-container .react-select__option--is-focused {
+  background-color: #f0f2f5;
+}
+
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem; /* Space between modal action buttons */
+  margin-top: 2rem; /* Space above modal action buttons */
+}
+
+.saveBtn, .cancelBtn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.saveBtn {
+  background-color: #4c51bf;
+  color: white;
+}
+
+.saveBtn:hover {
+  background-color: #3b3f8e;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.cancelBtn {
+  background-color: #6c757d; /* Grey for cancel */
+  color: white;
+}
+
+.cancelBtn:hover {
+  background-color: #5a6268;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+

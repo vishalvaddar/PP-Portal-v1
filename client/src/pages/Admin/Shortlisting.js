@@ -12,14 +12,14 @@ const Shortlisting = () => {
         </h2>
 
         <div className={styles.actionsGrid}> {/* This class is correct */}
-          <Link to="/admin/generate-shortlist" className={styles.actionCard}> {/* This class is correct */}
+          <Link to="/admin/admissions/generate-shortlist" className={styles.actionCard}> {/* This class is correct */}
             <div className={styles.actionCardIcon}> {/* This class is correct */}
               <i className="fas fa-list-check"></i>
             </div>
             <div className={styles.actionCardLabel}>Generate Shortlist</div> {/* This class is correct */}
           </Link>
 
-          <Link to="/admin/shortlist-info" className={styles.actionCard}> {/* This class is correct */}
+          <Link to="/admin/admissions/shortlist-info" className={styles.actionCard}> {/* This class is correct */}
             <div className={styles.actionCardIcon}> {/* This class is correct */}
               <i className="fas fa-info-circle"></i>
             </div>

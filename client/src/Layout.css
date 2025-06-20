@@ -31,7 +31,6 @@ html, body {
 .content {
   flex: 1;
   padding: 1rem;
-  background-color: #f8f9fc;
   min-height: calc(100vh - 75px);
   margin-left: 50px;
   transition: margin-left 0.3s ease;

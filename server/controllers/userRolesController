@@ -1,0 +1,190 @@
+const pool = require("../config/db");
+
+// Get all users with their assigned role names
+exports.getUsersWithRoles = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        u.user_id AS id,
+        u.user_name AS username,
+        u.locked_yn AS status,
+        ARRAY_AGG(r.role_name) FILTER (WHERE r.role_name IS NOT NULL) AS roles
+      FROM pp.user u
+      LEFT JOIN pp.user_role ur ON u.user_id = ur.user_id
+      LEFT JOIN pp.role r ON ur.role_id = r.role_id
+      GROUP BY u.user_id
+      ORDER BY u.user_id
+    `);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching users with roles:", err);
+    res.status(500).send("Error fetching users with roles");
+  }
+};
+
+// Get all active roles
+exports.getAllRoles = async (req, res) => {
+  try {
+    const roles = await pool.query(`
+      SELECT role_id, role_name 
+      FROM pp.role 
+      WHERE active_yn = 'Y' 
+      ORDER BY role_id
+    `);
+    res.json(roles.rows);
+  } catch (err) {
+    console.error("Error fetching roles:", err);
+    res.status(500).send("Error fetching roles");
+  }
+};
+
+// Create new user with roles
+exports.createUserWithRoles = async (req, res) => {
+  const { username, password, roles } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).send("Username and password are required.");
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    const userInsert = await client.query(`
+      INSERT INTO pp.user (user_name, password, locked_yn)
+      VALUES ($1, $2, 'N')
+      RETURNING user_id
+    `, [username, password]);
+
+    const userId = userInsert.rows[0].user_id;
+
+    if (roles && roles.length > 0) {
+      for (const roleName of roles) {
+        const roleQuery = await client.query(
+          `SELECT role_id FROM pp.role WHERE role_name = $1 AND active_yn = 'Y'`,
+          [roleName]
+        );
+
+        if (roleQuery.rows.length > 0) {
+          const roleId = roleQuery.rows[0].role_id;
+          await client.query(
+            `INSERT INTO pp.user_role (user_id, role_id) VALUES ($1, $2)`,
+            [userId, roleId]
+          );
+        }
+      }
+    }
+
+    await client.query("COMMIT");
+    res.sendStatus(201);
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("Error creating user with roles:", err);
+    res.status(500).send("Failed to create user");
+  } finally {
+    client.release();
+  }
+};
+
+// Update user info and roles
+exports.updateUserWithRoles = async (req, res) => {
+  const { userId } = req.params;
+  const { username, password, roles } = req.body;
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    await client.query(`
+      UPDATE pp.user
+      SET user_name = $1, password = $2
+      WHERE user_id = $3
+    `, [username, password, userId]);
+
+    await client.query(`DELETE FROM pp.user_role WHERE user_id = $1`, [userId]);
+
+    for (const roleName of roles) {
+      const roleRes = await client.query(
+        `SELECT role_id FROM pp.role WHERE role_name = $1 AND active_yn = 'Y'`,
+        [roleName]
+      );
+
+      if (roleRes.rows.length > 0) {
+        const roleId = roleRes.rows[0].role_id;
+        await client.query(
+          `INSERT INTO pp.user_role (user_id, role_id) VALUES ($1, $2)`,
+          [userId, roleId]
+        );
+      }
+    }
+
+    await client.query("COMMIT");
+    res.sendStatus(204);
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("Error updating user:", err);
+    res.status(500).send("Failed to update user");
+  } finally {
+    client.release();
+  }
+};
+
+// Delete a user
+exports.deleteUser = async (req, res) => {
+  const { userId } = req.params;
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    await client.query(`DELETE FROM pp.user_role WHERE user_id = $1`, [userId]);
+    await client.query(`DELETE FROM pp.user WHERE user_id = $1`, [userId]);
+
+    await client.query("COMMIT");
+    res.sendStatus(204);
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("Error deleting user:", err);
+    res.status(500).send("Failed to delete user");
+  } finally {
+    client.release();
+  }
+};
+
+// Optional: Assign a single role (if needed)
+exports.assignRole = async (req, res) => {
+  const { userId, roleId } = req.params;
+  if (!userId || !roleId) return res.status(400).send("Missing userId or roleId");
+
+  try {
+    await pool.query(`
+      INSERT INTO pp.user_role (user_id, role_id)
+      VALUES ($1, $2)
+      ON CONFLICT DO NOTHING
+    `, [userId, roleId]);
+
+    res.sendStatus(204);
+  } catch (err) {
+    console.error("Error assigning role:", err);
+    res.status(500).send("Error assigning role");
+  }
+};
+
+// Optional: Remove a single role
+exports.removeRole = async (req, res) => {
+  const { userId, roleId } = req.params;
+  if (!userId || !roleId) return res.status(400).send("Missing userId or roleId");
+
+  try {
+    await pool.query(`
+      DELETE FROM pp.user_role
+      WHERE user_id = $1 AND role_id = $2
+    `, [userId, roleId]);
+
+    res.sendStatus(204);
+  } catch (err) {
+    console.error("Error removing role:", err);
+    res.status(500).send("Error removing role");
+  }
+};
