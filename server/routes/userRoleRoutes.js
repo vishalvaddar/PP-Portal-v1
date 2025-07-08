@@ -1,20 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const controller = require("../controllers/userRolesController");
+const UserRolesController = require("../controllers/userRolesController");
 
-// Get all users with their roles
-router.get("/users", controller.getUsersWithRoles);
-
-// Get all available roles
-router.get("/roles", controller.getAllRoles);
-
-// Create a new user (used in handleSubmit)
-router.post("/users", controller.createUserWithRoles);
-
-// Update a user and roles (used in handleSaveEdit)
-router.put("/users/:userId", controller.updateUserWithRoles);
-
-// Delete a user (used in handleDelete)
-router.delete("/users/:userId", controller.deleteUser);
+router.get("/users", UserRolesController.getUsersWithRoles);
+router.get("/roles", UserRolesController.getAllRoles);
+router.post("/users", UserRolesController.createUserWithRoles);
+router.put("/users/:userId", UserRolesController.updateUserWithRoles);
+router.delete("/users/:userId", UserRolesController.deleteUser);
+router.put("/users/:userId/status", UserRolesController.toggleUserStatus);
+router.post("/users/:userId/roles/:roleId", UserRolesController.assignRole);
+router.delete("/users/:userId/roles/:roleId", UserRolesController.removeRole);
+router.post('/roles', UserRolesController.createRole);
 
 module.exports = router;

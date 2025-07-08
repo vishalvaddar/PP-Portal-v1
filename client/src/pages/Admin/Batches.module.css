@@ -1,241 +1,221 @@
-/* Batches.module.css */
-
-/* General container for the entire page/component */
-.container {
-  padding: 2.5rem; /* Increased padding around the content */
-  background-color: #f8f9fa; /* Light grey background for the page */
-  min-height: 100vh;
-  font-family: 'Inter', sans-serif; /* Use Inter font for consistency */
-  color: #343a40; /* Darker text for readability */
+/* General Styles & Variables */
+:root {
+  --primary-color: #4f46e5;
+  --primary-hover: #4338ca;
+  --secondary-color: #1f2937;
+  --danger-color: #dc2626;
+  --danger-hover: #b91c1c;
+  --success-color: #16a34a;
+  --warning-color: #f59e0b;
+  --bg-color: #f9fafb;
+  --card-bg: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+  --border-radius: 8px;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
-/* Headings and Titles */
-.heading {
-  font-size: 2rem; /* Larger main heading */
-  font-weight: 700; /* Bold */
-  color: #1a202c; /* Darker color for main titles */
-  margin-bottom: 2rem; /* More space below heading */
+.container {
+  background-color: var(--bg-color);
+  padding: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  min-height: 100vh;
+  color: var(--text-primary);
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.headerActions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Controls (Sort) */
+.controls {
   display: flex;
   align-items: center;
-  gap: 0.75rem; /* Space between icon and text */
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  background-color: var(--card-bg);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  width: fit-content;
 }
 
-.icon {
-  color: #4c51bf; /* Indigo color for icons */
+.controls label {
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
-.tableHeading {
-  font-size: 1.75rem; /* Sub-heading for the table */
+.sortSelect {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+  font-size: 0.875rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.sortSelect:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgb(79 70 229 / 0.2);
+}
+
+/* Buttons */
+.addbtn, .secondaryBtn, .saveBtn, .cancelBtn, .dangerBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: var(--border-radius);
   font-weight: 600;
-  color: #1a202c;
-  margin-top: 3rem; /* More space above table heading */
-  margin-bottom: 1.5rem; /* Space below table heading */
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
 }
 
-/* Form Styles */
-.form {
-  background-color: #ffffff;
-  padding: 2rem; /* Generous padding inside the form card */
-  border-radius: 0.75rem; /* Rounded corners for the form */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Subtle shadow */
+.addbtn {
+  background-color: var(--primary-color);
+  color: white;
+}
+.addbtn:hover {
+  background-color: var(--primary-hover);
+}
+
+.secondaryBtn {
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+.secondaryBtn:hover {
+  background-color: var(--bg-color);
+}
+
+/* Card Grid & Card Styles */
+.cardGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid for form fields */
-  gap: 1.5rem; /* Space between form groups */
-  margin-bottom: 2.5rem; /* Space below the form */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
 }
 
-.formGroup {
+.card {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem; /* Space between label and input */
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.formGroup label {
-  font-weight: 500;
-  color: #495057; /* Slightly lighter label text */
-  font-size: 0.95rem;
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
-.formGroup input,
-.formGroup select {
-  padding: 0.75rem 1rem; /* Comfortable padding */
-  border: 1px solid #ced4da; /* Light border */
-  border-radius: 0.375rem; /* Rounded input fields */
-  font-size: 1rem;
-  color: #343a40;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  background-color: #ffffff; /* Explicitly white background */
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
 }
 
-.formGroup input:focus,
-.formGroup select:focus {
-  border-color: #4c51bf; /* Indigo border on focus */
-  box-shadow: 0 0 0 3px rgba(76, 81, 191, 0.25); /* Soft glow on focus */
-  outline: none;
-}
-
-.errorInput {
-  border-color: #e53e3e !important; /* Red border for errors */
-}
-
-.errorText {
-  color: #e53e3e; /* Red text for error messages */
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-}
-
-/* React-Select Specific Styling (to integrate with overall design) */
-/* The base styles from react-select are very opinionated. These override them. */
-.formGroup .react-select-container .react-select__control {
-  border: 1px solid #ced4da !important;
-  border-radius: 0.375rem !important;
-  padding: 0.25rem 0.5rem !important; /* Adjust padding to match input height */
-  min-height: 48px; /* Match typical input height */
-  box-shadow: none !important;
-  transition: border-color 0.2s, box-shadow 0.2s !important;
-}
-
-.formGroup .react-select-container .react-select__control--is-focused {
-  border-color: #4c51bf !important;
-  box-shadow: 0 0 0 3px rgba(76, 81, 191, 0.25) !important;
-}
-
-.formGroup .react-select-container .react-select__value-container {
-  padding: 0 0.5rem;
-}
-
-.formGroup .react-select-container .react-select__indicator-separator {
-  background-color: #ced4da;
-}
-
-.formGroup .react-select-container .react-select__indicator {
-  color: #6c757d;
-}
-
-.formGroup .react-select-container .react-select__menu {
-  border-radius: 0.375rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-top: 0.5rem;
-  z-index: 1000; /* Ensure dropdown is on top */
-}
-
-.formGroup .react-select-container .react-select__option {
-  padding: 0.75rem 1rem;
-  font-size: 0.95rem;
-}
-
-.formGroup .react-select-container .react-select__option--is-selected {
-  background-color: #e0e7ff; /* Light indigo for selected */
-  color: #4c51bf;
-}
-
-.formGroup .react-select-container .react-select__option--is-focused {
-  background-color: #f0f2f5; /* Lighter grey for hover/focused */
-}
-
-
-/* Submit Button */
-.submitButton {
-  background-color: #4c51bf; /* Indigo primary button */
-  color: white;
-  padding: 0.8rem 1.5rem; /* Generous padding */
-  border: none;
-  border-radius: 0.375rem;
-  font-size: 1.05rem;
+.cardTitle {
+  font-size: 1.25rem;
   font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  grid-column: 1 / -1; /* Span across all columns in grid */
-  margin-top: 1rem; /* Space above button */
+  margin: 0;
+  color: var(--primary-color);
 }
 
-.submitButton:hover {
-  background-color: #3b3f8e; /* Darker indigo on hover */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+.cardBody {
+    flex-grow: 1;
 }
 
-/* Table Styles */
-.batchTable {
-  width: 100%;
-  border-collapse: separate; /* Allows rounded corners and spacing */
-  border-spacing: 0;
-  background-color: #ffffff;
-  border-radius: 0.75rem; /* Rounded corners for the whole table */
-  overflow: hidden; /* Ensures rounded corners are visible */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Subtle shadow */
-}
-
-.batchTable th,
-.batchTable td {
-  padding: 1rem 1.25rem; /* Comfortable padding for cells */
-  text-align: left;
-  border-bottom: 1px solid #e9ecef; /* Light border between rows */
-}
-
-.batchTable th {
-  background-color: #e9ecef; /* Light grey header background */
-  color: #495057;
-  font-weight: 600;
+.cardBody p {
+  margin: 0.5rem 0;
+  color: var(--text-secondary);
   font-size: 0.9rem;
+}
+.cardBody p strong {
+  color: var(--text-primary);
+}
+
+.statusBadge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
-.batchTable tbody tr:last-child td {
-  border-bottom: none; /* No border for the last row */
+.statusBadge.active {
+  background-color: #dcfce7;
+  color: #166534;
 }
 
-.batchTable tbody tr:hover {
-  background-color: #f0f2f5; /* Subtle hover effect on rows */
+.statusBadge.inactive {
+  background-color: #fee2e2;
+  color: #991b1b;
 }
 
-/* Status Badges */
-.active, .inactive {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.3rem 0.75rem;
-  border-radius: 1rem; /* More rounded, pill-like shape */
-  font-size: 0.85rem;
-  font-weight: 500;
-  text-transform: capitalize;
+.cardActions {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
 
-.active {
-  background-color: #e6ffed; /* Light green */
-  color: #2f855a; /* Dark green text */
-  border: 1px solid #a7f3d0; /* Green border */
-}
-
-.inactive {
-  background-color: #ffe6e6; /* Light red */
-  color: #c53030; /* Dark red text */
-  border: 1px solid #fbd38d; /* Red border */
-}
-
-/* Table Action Buttons */
-.iconBtn {
-  background: none;
-  border: none;
-  padding: 0.5rem; /* Padding around icons */
+.actionBtn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
   cursor: pointer;
-  border-radius: 0.25rem;
-  transition: background-color 0.2s, color 0.2s;
-  color: #6c757d; /* Default icon color */
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.actionBtn:hover {
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  border-color: #d1d5db;
 }
 
-.iconBtn:hover {
-  background-color: #e9ecef; /* Light grey background on hover */
-  color: #495057; /* Darker icon color on hover */
+.dangerBtnIcon {
+    color: var(--danger-color);
+}
+.dangerBtnIcon:hover {
+    background-color: var(--danger-color);
+    color: white;
+    border-color: var(--danger-color);
 }
 
-.iconBtn:not(:last-child) {
-  margin-right: 0.5rem; /* Space between action buttons */
-}
-
-.iconBtn svg {
-  vertical-align: middle; /* Align icons nicely with text */
-}
 
 /* Modal Styles */
 .modalOverlay {
@@ -244,139 +224,185 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6); /* Darker overlay */
+  background-color: rgba(17, 24, 39, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  animation: fadeIn 0.3s ease-out; /* Fade in animation */
+  backdrop-filter: blur(4px);
 }
 
 .modal {
-  background-color: #ffffff;
-  padding: 2.5rem; /* More padding inside modal */
-  border-radius: 0.75rem; /* Rounded corners */
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); /* Stronger shadow */
-  width: 90%;
-  max-width: 500px; /* Max width for modal */
-  animation: scaleIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Scale in animation */
+  background-color: var(--card-bg);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .modal h3 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #1a202c;
-  margin-bottom: 1.5rem; /* Space below modal title */
-  text-align: center;
+  margin-top: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
 }
 
 .modalContent {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem; /* Space between modal form groups */
+  gap: 1.25rem;
 }
-
-.modalContent label {
-  font-weight: 500;
-  color: #495057;
-  font-size: 0.95rem;
-  margin-bottom: 0.25rem; /* Small space between label and input in modal */
-}
-
-.modalContent input,
-.modalContent select {
-  padding: 0.75rem 1rem;
-  border: 1px solid #ced4da;
-  border-radius: 0.375rem;
-  font-size: 1rem;
-  color: #343a40;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  background-color: #ffffff;
-}
-
-.modalContent input:focus,
-.modalContent select:focus {
-  border-color: #4c51bf;
-  box-shadow: 0 0 0 3px rgba(76, 81, 191, 0.25);
-  outline: none;
-}
-
-/* React-Select in Modal */
-.modal .react-select-container .react-select__control {
-  border: 1px solid #ced4da !important;
-  border-radius: 0.375rem !important;
-  padding: 0.25rem 0.5rem !important;
-  min-height: 48px;
-  box-shadow: none !important;
-  transition: border-color 0.2s, box-shadow 0.2s !important;
-}
-
-.modal .react-select-container .react-select__control--is-focused {
-  border-color: #4c51bf !important;
-  box-shadow: 0 0 0 3px rgba(76, 81, 191, 0.25) !important;
-}
-
-.modal .react-select-container .react-select__value-container {
-  padding: 0 0.5rem;
-}
-
-.modal .react-select-container .react-select__menu {
-  border-radius: 0.375rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-top: 0.5rem;
-  z-index: 1001; /* Higher z-index for modal select dropdown */
-}
-
-.modal .react-select-container .react-select__option {
-  padding: 0.75rem 1rem;
-  font-size: 0.95rem;
-}
-
-.modal .react-select-container .react-select__option--is-selected {
-  background-color: #e0e7ff;
-  color: #4c51bf;
-}
-
-.modal .react-select-container .react-select__option--is-focused {
-  background-color: #f0f2f5;
-}
-
 
 .modalActions {
   display: flex;
   justify-content: flex-end;
-  gap: 1rem; /* Space between modal action buttons */
-  margin-top: 2rem; /* Space above modal action buttons */
-}
-
-.saveBtn, .cancelBtn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 0.375rem;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  gap: 0.75rem;
+  margin-top: 2rem;
 }
 
 .saveBtn {
-  background-color: #4c51bf;
+  background-color: var(--primary-color);
   color: white;
 }
-
 .saveBtn:hover {
-  background-color: #3b3f8e;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  background-color: var(--primary-hover);
 }
 
 .cancelBtn {
-  background-color: #6c757d; /* Grey for cancel */
+  background-color: var(--card-bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+.cancelBtn:hover {
+  background-color: var(--bg-color);
+}
+
+.dangerBtn {
+  background-color: var(--danger-color);
   color: white;
 }
-
-.cancelBtn:hover {
-  background-color: #5a6268;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+.dangerBtn:hover {
+  background-color: var(--danger-hover);
 }
 
+/* Form Styles */
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formGroup label {
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgb(79 70 229 / 0.2);
+}
+
+.errorText {
+  color: var(--danger-color);
+  font-size: 0.8rem;
+}
+
+.errorInput,
+:global(.react-select-error .react-select__control) {
+  border-color: var(--danger-color) !important;
+}
+:global(.react-select-error .react-select__control:hover) {
+  border-color: var(--danger-color) !important;
+}
+
+/* React-Select Overrides */
+:global(.react-select__control) {
+  border-color: var(--border-color) !important;
+  box-shadow: none !important;
+  padding: 0.2rem;
+  border-radius: var(--border-radius) !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+:global(.react-select__control--is-focused) {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 3px rgb(79 70 229 / 0.2) !important;
+}
+:global(.react-select__menu) {
+  border-radius: var(--border-radius) !important;
+  z-index: 10;
+}
+:global(.react-select__option--is-focused) {
+  background-color: #eef2ff !important;
+  color: var(--primary-color) !important;
+}
+:global(.react-select__option--is-selected) {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+}
+
+/* Notification */
+.notification {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  padding: 1rem 1.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  animation: slideIn 0.3s ease-out;
+}
+.notification.success {
+  background-color: var(--success-color);
+  color: white;
+}
+.notification.error {
+  background-color: var(--danger-color);
+  color: white;
+}
+.dismissButton {
+  background: none;
+  border: none;
+  color: white;
+  opacity: 0.7;
+  cursor: pointer;
+  padding: 0;
+}
+.dismissButton:hover {
+  opacity: 1;
+}
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Confirmation Modal Message */
+.confirmMessage {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}

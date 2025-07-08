@@ -1,17 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
-  MapPin, // For State and District
-  Building2, // For Blocks
-  ListChecks, // For Selection Criteria
-  Edit,       // For Shortlist Name/Description
-  Users,       // For Total Applicants
-  UserCheck,       // For Shortlisted Students
-  Play,       // For Start Shortlisting
-  AlertTriangle, //For error
-  CheckCircle, //For Success
+  MapPin, Building2, ListChecks, Edit, Users,
+  UserCheck, Play, AlertTriangle, CheckCircle
 } from 'lucide-react';
-import "./GenerateShortlist.css"; // You can keep your existing CSS file
+import "./GenerateShortlist.css";
 
 const GenerateShortlist = () => {
   const [states, setStates] = useState([]);
@@ -37,32 +30,27 @@ const GenerateShortlist = () => {
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/allstates")
-      .then(response => {
-        setStates(response.data);
-      })
-      .catch(error => console.error("Error fetching allstates:", error));
+    axios.get("http://localhost:5000/api/shortlist/generate/allstates")
+      .then((res) => setStates(res.data))
+      .catch((err) => console.error("Error fetching all states:", err));
   }, []);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/criteria")
-      .then(response => {
-        setSelectionCriteria(response.data);
-      })
-      .catch(error => console.error("Error fetching criteria:", error));
+    axios.get("http://localhost:5000/api/shortlist/generate/criteria")
+      .then((res) => setSelectionCriteria(res.data))
+      .catch((err) => console.error("Error fetching criteria:", err));
   }, []);
-
 
   useEffect(() => {
     if (selectedState) {
-      axios.get(`http://localhost:5000/api/districts/${selectedState}`)
-        .then(response => {
-          setDistricts(response.data);
+      axios.get(`http://localhost:5000/api/shortlist/generate/districts/${selectedState}`)
+        .then((res) => {
+          setDistricts(res.data);
           setSelectedDistrict("");
           setBlocks([]);
           setSelectedBlocks([]);
         })
-        .catch(error => console.error("Error fetching districts:", error));
+        .catch((err) => console.error("Error fetching districts:", err));
     } else {
       setDistricts([]);
       setBlocks([]);
@@ -74,18 +62,17 @@ const GenerateShortlist = () => {
   useEffect(() => {
     if (selectedDistrict) {
       setLoadingBlocks(true);
-      axios.get(`http://localhost:5000/api/blocks/${selectedDistrict}`)
-        .then(response => {
-          setBlocks(response.data);
+      axios.get(`http://localhost:5000/api/shortlist/generate/blocks/${selectedDistrict}`)
+        .then((res) => {
+          setBlocks(res.data);
           setSelectedBlocks([]);
-          setLoadingBlocks(false);
         })
-        .catch(error => {
-          console.error("Error fetching blocks:", error);
+        .catch((err) => {
+          console.error("Error fetching blocks:", err);
           setBlocks([]);
           setSelectedBlocks([]);
-          setLoadingBlocks(false);
-        });
+        })
+        .finally(() => setLoadingBlocks(false));
     } else {
       setBlocks([]);
       setSelectedBlocks([]);
@@ -93,107 +80,81 @@ const GenerateShortlist = () => {
   }, [selectedDistrict]);
 
   const handleBlockChange = (blockName, isFrozen) => {
-    if (!isFrozen) {
-      setSelectedBlocks(prev =>
-        prev.includes(blockName)
-          ? prev.filter(b => b !== blockName)
-          : [...prev, blockName]
-      );
-    }
+    if (isFrozen) return;
+    setSelectedBlocks((prev) =>
+      prev.includes(blockName)
+        ? prev.filter((b) => b !== blockName)
+        : [...prev, blockName]
+    );
   };
 
   const fetchApplicantCounts = async () => {
     setLoadingCounts(true);
     try {
-      const totalResponse = await axios.get(`http://localhost:5000/api/total-applicants?year=${currentYear}`);
-      setTotalApplicants(totalResponse.data.count);
-      const shortlistedResponse = await axios.get("http://localhost:5000/api/shortlisted-students");
-      setShortlistedStudents(shortlistedResponse.data.count);
+      const totalRes = await axios.get(`http://localhost:5000/api/total-applicants?year=${currentYear}`);
+      const shortlistedRes = await axios.get("http://localhost:5000/api/shortlisted-students");
+      setTotalApplicants(totalRes.data.count || 0);
+      setShortlistedStudents(shortlistedRes.data.count || 0);
     } catch (error) {
-      console.error("Error fetching applicant counts:", error);
+      console.error("Error fetching counts:", error);
     } finally {
       setLoadingCounts(false);
     }
-  }
+  };
 
   const handleStartShortlisting = async () => {
-    if (selectedCriteria && selectedState && selectedDistrict && shortlistName && shortlistDescription) {
-      const selectedLocations = {
+    if (!selectedCriteria || !selectedState || !selectedDistrict || !shortlistName || !shortlistDescription || selectedBlocks.length === 0) {
+      alert("Please fill all required fields and select at least one unfrozen block.");
+      return;
+    }
+
+    const payload = {
+      criteriaId: selectedCriteria,
+      locations: {
         state: selectedState,
         district: selectedDistrict,
         blocks: selectedBlocks,
-      };
+      },
+      name: shortlistName,
+      description: shortlistDescription,
+      year: currentYear,
+    };
 
-      console.log("selectedState:", selectedState);
-      console.log("selectedDistrict:", selectedDistrict);
-      console.log("selectedLocations:", selectedLocations);
-      console.log("currentYear:", currentYear);
-
-      try {
-        const response = await axios.post("http://localhost:5000/api/start-shortlist", {
-          criteriaId: selectedCriteria,
-          locations: selectedLocations,
-          name: shortlistName,
-          description: shortlistDescription,
-          year: currentYear, // Pass the current year
-        });
-        console.log("Shortlisting started:", response.data);
-        setShortlistingResult({ success: response.data.message, shortlistedCount: response.data.shortlistedCount });
-
-        // Optionally refetch counts if needed
-        fetchApplicantCounts();
-
-      } catch (error) {
-        console.error("Error starting shortlisting:", error);
-        if (error.response && error.response.status === 409) {
-          // Display the specific error message from the backend
-          setShortlistingResult({ error: error.response.data.error });
-        } else {
-          setShortlistingResult({ error: "Shortlisting failed." });
-        }
-      }
-    } else {
-      alert("Please provide all the required information.");
+    try {
+      const res = await axios.post("http://localhost:5000/api/shortlist/generate/start-shortlist", payload);
+      setShortlistingResult({ success: res.data.message, shortlistedCount: res.data.shortlistedCount });
+      fetchApplicantCounts();
+    } catch (err) {
+      const msg = err.response?.data?.error || "Shortlisting failed.";
+      setShortlistingResult({ error: msg });
     }
   };
+
+  const isFormValid = selectedCriteria && selectedState && selectedDistrict && shortlistName && shortlistDescription && selectedBlocks.length > 0;
 
   return (
     <div className="generate-shortlist">
       <h2>Shortlist Process</h2>
-      <p>Configure the shortlist by selecting the jurisdiction, criteria, and providing shortlist details.</p>
+      <p>Select jurisdiction, criteria, and provide details to generate a shortlist.</p>
 
+      {/* Jurisdiction */}
       <div className="location-selection">
         <h3><MapPin className="inline-block mr-2" />Select Jurisdiction</h3>
-        <select
-          value={selectedState}
-          onChange={(e) => setSelectedState(e.target.value)}
-          className="dropdown"
-        >
+        <select value={selectedState} onChange={(e) => setSelectedState(e.target.value)} className="dropdown" aria-label="Select State">
           <option value="">Select State</option>
           {states.map((state) => (
-            <option key={state.juris_code} value={state.juris_name}>
-              {state.juris_name}
-            </option>
+            <option key={state.juris_code} value={state.juris_name}>{state.juris_name}</option>
           ))}
         </select>
 
-        <select
-          value={selectedDistrict}
-          onChange={(e) => setSelectedDistrict(e.target.value)}
-          disabled={!selectedState}
-          className="dropdown"
-        >
+        <select value={selectedDistrict} onChange={(e) => setSelectedDistrict(e.target.value)} className="dropdown" disabled={!selectedState} aria-label="Select District">
           <option value="">Select District</option>
           {districts.map((district) => (
-            <option key={district.juris_code} value={district.juris_name}>
-              {district.juris_name}
-            </option>
+            <option key={district.juris_code} value={district.juris_name}>{district.juris_name}</option>
           ))}
         </select>
 
-        {loadingBlocks ? (
-          <p>Loading blocks...</p>
-        ) : (
+        {loadingBlocks ? <p>Loading blocks...</p> : (
           blocks.length > 0 && (
             <div className="checkbox-group">
               <label><Building2 className="inline-block mr-2" />Select Blocks:</label>
@@ -206,12 +167,9 @@ const GenerateShortlist = () => {
                     onChange={() => handleBlockChange(block.juris_name, block.is_frozen_block)}
                     disabled={block.is_frozen_block}
                   />
-                  <label
-                    htmlFor={block.juris_name}
-                    style={{ color: block.is_frozen_block ? 'red' : 'inherit' }}
-                  >
+                  <label htmlFor={block.juris_name} style={{ color: block.is_frozen_block ? "red" : "inherit" }}>
                     {block.juris_name}
-                    {block.is_frozen_block && <span style={{ marginLeft: '5px', color: 'red' }}>(Frozen shorlist on this)</span>}
+                    {block.is_frozen_block && <span style={{ marginLeft: 5 }}>(Frozen)</span>}
                   </label>
                 </div>
               ))}
@@ -220,6 +178,7 @@ const GenerateShortlist = () => {
         )}
       </div>
 
+      {/* Selection Criteria */}
       <div className="selection-criteria">
         <label htmlFor="criteria" className="criteria-label">
           <ListChecks className="inline-block mr-2" />Selection Criteria:
@@ -232,63 +191,60 @@ const GenerateShortlist = () => {
         >
           <option value="">Select Criteria</option>
           {selectionCriteria.map((criteria) => (
-            <option key={criteria.criteria_id} value={criteria.criteria_id}>
-              {criteria.criteria}
-            </option>
+            <option key={criteria.criteria_id} value={criteria.criteria_id}>{criteria.criteria}</option>
           ))}
         </select>
       </div>
 
+      {/* Shortlist Details */}
       <div className="shortlist-details">
-        <label htmlFor="shortlist-name" className="shortlist-label">
-          <Edit className="inline-block mr-2" />Shortlist Name:
-        </label>
+        <label htmlFor="shortlist-name" className="shortlist-label"><Edit className="inline-block mr-2" />Shortlist Name:</label>
         <input
           type="text"
           id="shortlist-name"
           value={shortlistName}
           onChange={(e) => setShortlistName(e.target.value)}
           className="shortlist-input"
-          placeholder="Bailhongal_Kittur_shortlist"
+          placeholder="e.g. Bailhongal_Kittur_Shortlist"
         />
 
-        <label htmlFor="shortlist-description" className="shortlist-label">
-          <Edit className="inline-block mr-2"/>Shortlist Description:
-        </label>
+        <label htmlFor="shortlist-description" className="shortlist-label"><Edit className="inline-block mr-2" />Shortlist Description:</label>
         <textarea
           id="shortlist-description"
           value={shortlistDescription}
           onChange={(e) => setShortlistDescription(e.target.value)}
           className="shortlist-textarea"
-          placeholder="This shortlist includes the Bailhongal and Kittur blocks of Belagavi district."
+          placeholder="e.g. This shortlist includes the Bailhongal and Kittur blocks..."
         />
       </div>
 
-      <button onClick={handleStartShortlisting} className="start-button" disabled={blocks.some(block => block.is_frozen_block && selectedBlocks.includes(block.juris_name))}>
-        <Play className="inline-block mr-2" />
-        Start Shortlisting Process
+      <button
+        onClick={handleStartShortlisting}
+        className="start-button"
+        disabled={!isFormValid}
+      >
+        <Play className="inline-block mr-2" />Start Shortlisting Process
       </button>
 
-      {shortlistingResult && shortlistingResult.success && (
+      {shortlistingResult?.success && (
         <div className="shortlisting-result success-box">
           <CheckCircle className="inline-block mr-2 text-green-500" />
           <p>{shortlistingResult.success}</p>
-          {shortlistingResult.shortlistedCount !== undefined && (
-            <p>Total Shortlisted Applicants: {shortlistingResult.shortlistedCount}</p>
-          )}
+          <p>Total Shortlisted Applicants: {shortlistingResult.shortlistedCount}</p>
         </div>
       )}
-      {shortlistingResult && shortlistingResult.error && (
+
+      {shortlistingResult?.error && (
         <div className="shortlisting-result error-box">
-          <AlertTriangle className="inline-block mr-2 text-red-500"/>
+          <AlertTriangle className="inline-block mr-2 text-red-500" />
           <p>Error: {shortlistingResult.error}</p>
         </div>
       )}
 
       {loadingCounts && <p>Loading applicant counts...</p>}
-      {totalApplicants > 0 && shortlistedStudents >= 0 && (
+      {totalApplicants > 0 && (
         <div className="applicant-counts">
-           <p><Users className="inline-block mr-2"/>Total Applicants Count ({currentYear}): {totalApplicants} | <UserCheck className="inline-block mr-2"/>Shortlisted Students Count (All Batches): {shortlistedStudents}</p>
+          <p><Users className="inline-block mr-2" />Total Applicants ({currentYear}): {totalApplicants} | <UserCheck className="inline-block mr-2" />Shortlisted Students: {shortlistedStudents}</p>
         </div>
       )}
     </div>

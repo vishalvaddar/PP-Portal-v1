@@ -20,7 +20,7 @@ import Batches from "./pages/Admin/Batches";
 import UserRoles from "./pages/Admin/UserRoles";
 import System from "./pages/Admin/System";
 import MyProfile from "./pages/Admin/MyProfile";
-// import ExamManagement from "./pages/Admin/ExamManagement";
+import CreateExam from "./pages/Admin/CreateExam";
 // import Results from "./pages/Admin/Results";
 
 // Coordinator pages
@@ -65,6 +65,7 @@ export const appRouter = createBrowserRouter([
           { path: "generate-shortlist", element: <GenerateShortlist /> },
           { path: "shortlist-info", element: <ShortlistInfo /> },
           { path: "shortlisting", element: <Shortlisting /> },
+          { path: "exam-management", element: <CreateExam /> },
           { path: "view-student-info/:nmms_reg_number", element: <ViewStudentInfo /> },
           { path: "evaluation", element: <Evaluation /> },
           { path: "view-applications", element: <ViewApplications /> },

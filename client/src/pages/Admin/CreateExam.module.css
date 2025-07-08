@@ -1,0 +1,62 @@
+/* --- Base Page & Dashboard Styles --- */
+:root {
+  --primary-color: #4a90e2; --primary-hover: #357abd; --secondary-color: #f4f7f6;
+  --text-color: #333; --text-light: #777; --border-color: #e0e0e0;
+  --white-color: #ffffff; --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --border-radius: 8px; --green: #4caf50; --red: #f44336;
+  --yellow: #ffc107; --blue: #2196f3;
+}
+.pageContainer { padding: 2rem; background-color: var(--secondary-color); font-family: sans-serif; min-height: 100vh; }
+.dashboardHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+.createButton { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background-color: var(--primary-color); color: var(--white-color); border: none; border-radius: var(--border-radius); font-size: 1rem; cursor: pointer; transition: all 0.2s ease; }
+.createButton:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+.errorText, .error { color: var(--red); }
+.success { color: var(--green); }
+.emptyState, .examGrid { /* Existing styles */ }
+
+/* --- Exam Card Styles --- */
+.examCard { background: white; padding: 1.5rem; border-radius: var(--border-radius); box-shadow: var(--shadow); display: flex; flex-direction: column; }
+.cardHeader { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem; }
+.cardBody { flex-grow: 1; }
+.cardFooter { display: flex; flex-wrap: wrap; gap: 0.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color); }
+.actionButton { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 6px; border: none; font-size: 0.8rem; cursor: pointer; text-decoration: none; color: var(--white-color); }
+.btnGreen { background-color: var(--green); }
+.btnYellow { background-color: var(--yellow); color: #333; }
+.btnRed { background-color: var(--red); }
+.btnBlue { background-color: var(--blue); }
+.frozenTag { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background-color: var(--secondary-color); color: var(--text-light); border-radius: 6px; font-weight: 500; }
+
+/* --- Wizard Styles --- */
+.wizardOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
+.wizardContainer { background: var(--white-color); border-radius: var(--border-radius); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); width: 90%; max-width: 700px; overflow: hidden; animation: fadeInScale 0.4s ease-out; }
+@keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+.wizardHeader { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+.closeButton { background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--text-light); }
+.progressBar { display: flex; justify-content: space-around; padding: 1rem 1.5rem; background-color: var(--secondary-color); }
+.progressStep { display: flex; align-items: center; gap: 0.5rem; color: var(--text-light); }
+.progressStep.active { color: var(--primary-color); font-weight: bold; }
+.wizardBody { padding: 2rem 1.5rem; min-height: 350px; }
+.stepContent { animation: fadeIn 0.5s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.stepContent h3 { font-size: 1.25rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--primary-color); padding-bottom: 0.5rem; display: inline-block; }
+.choiceContainer { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+.choiceCard { flex: 1; padding: 2rem; border: 2px solid var(--border-color); border-radius: var(--border-radius); text-align: center; font-size: 1.1rem; cursor: pointer; transition: all 0.2s ease-in-out; }
+.choiceCard:hover { border-color: var(--primary-hover); }
+.choiceCard.selected { border-color: var(--primary-color); background-color: #eaf2fe; color: var(--primary-color); }
+.formGroup { margin-bottom: 1.5rem; }
+.formGroup label { display: block; font-weight: 500; margin-bottom: 0.5rem; }
+input, select { width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--border-radius); font-size: 1rem; }
+.inputWithAction { display: flex; align-items: center; gap: 0.5rem; }
+.deleteCentreButton { background: transparent; border: none; color: var(--text-light); cursor: pointer; padding: 0.5rem; }
+.deleteCentreButton:hover { color: var(--red); }
+.checkboxGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; }
+.checkboxItem { display: flex; align-items: center; }
+.checkboxItem.disabled label { color: var(--text-light); cursor: not-allowed; }
+.reviewSection { margin-top: 2rem; padding: 1rem; background-color: var(--secondary-color); border-left: 4px solid var(--green); }
+.wizardNav { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background-color: var(--secondary-color); border-top: 1px solid var(--border-color); }
+.messageArea { flex-grow: 1; text-align: left; font-weight: bold; font-size: 0.9rem; }
+.buttonGroup { display: flex; gap: 0.5rem; }
+.backButton, .nextButton, .submitButton { padding: 0.75rem 2rem; border: none; border-radius: var(--border-radius); font-size: 1rem; font-weight: 500; cursor: pointer; }
+.backButton { background-color: transparent; color: var(--text-color); }
+.nextButton, .submitButton { background-color: var(--primary-color); color: var(--white-color); }
+.nextButton:disabled, .submitButton:disabled { background-color: #ccc; cursor: not-allowed; }

@@ -1,137 +1,66 @@
-/* Applications.module.css */
-
-.pageContainer {
-  max-width: 950px;
-  margin: 0px 40px;
-  padding: 40px;
-  border-radius: 20px;
-  box-shadow: 0 10px 32px rgba(67, 97, 238, 0.10);
-  border: 1px solid #e0e7ef;
+.page {
+  padding: 3rem 2rem;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
 }
 
-.mainCard {
-  width: 100%;
-  max-width: 950px;
-  box-shadow: var(--shadow-md, 0 4px 6px rgba(0, 0, 0, 0.1));
-  border-radius: var(--radius-lg, 12px);
-  background-color: var(--card-background, #ffffff);
-}
-
-.mainCardHeader {
+.header {
   text-align: center;
-  padding: 25px 20px 20px; /* Top, right/left, bottom padding */
-  border-bottom: 1px solid var(--border-color, #e0e0e0); /* Separator line */
+  margin-bottom: 2.5rem;
 }
 
-.mainCardTitle {
-  font-size: 2.2em;
+.heading {
+  font-size: 2.4rem;
   font-weight: 700;
-  color: var(--primary-color, #007bff);
-
-  margin-bottom: 8px;
+  color: #1f2937;
 }
 
-.mainCardDescription {
-  font-size: 1.1em;
-  color: var(--text-color-secondary, #666);
-  line-height: 1.5;
-  max-width: 700px;
-  margin: 0 auto; 
+.subheading {
+  font-size: 1rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
 }
 
-.mainCardContent {
-  padding: 30px;
-}
-
-.gridContainer {
+.grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 25px;
-  justify-content: center;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
-.cardLink {
-  text-decoration: none; 
-  color: inherit;
-  display: block;
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-.cardLink:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-lg, 0 10px 15px rgba(0, 0, 0, 0.15));
-}
-
-.featureCard {
-  height: 100%; 
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+.card {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+  padding: 2rem;
   text-align: center;
-  padding: 5px;
-  border-radius: var(--radius-md, 8px);
-  border: 1.5px solid var(--border-color-light, #e6e0e0); 
-  background-color: var(--card-background, #ffffff);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
 }
 
-.featureCardHeader {
-  margin-top: 10px;
-  margin-bottom: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(59, 130, 246, 0.15);
+  border-color: #93c5fd;
 }
 
-.featureIcon {
-  color: var(--primary-color, #007bff);
-  margin-bottom: 10px;
+.icon {
+  margin-bottom: 1rem;
+  color: #2563eb;
 }
 
-.featureCardTitle {
-  font-size: 1.5em;
+.cardTitle {
+  font-size: 1.2rem;
   font-weight: 600;
-  color: var(--text-color-primary, #333); 
+  color: #111827;
+  margin-bottom: 0.5rem;
 }
 
-.featureCardContent {
-  flex-grow: 1; 
-}
-
-.featureDescription {
-  font-size: 0.95em;
-  color: var(--text-color-secondary, #666);
-  line-height: 1.6;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  .pageContainer {
-    padding: 20px;
-  }
-
-  .mainCardTitle {
-    font-size: 1.8em;
-  }
-
-  .mainCardDescription {
-    font-size: 1em;
-  }
-
-  .gridContainer {
-    grid-template-columns: 1fr; 
-  }
-}
-
-:root {
-  --primary-color: #007bff;
-  --text-color-primary: #1f2937;
-  --text-color-secondary: #666;
-  --background-color-light: #f8f9fa; /* Light background for the page */
-  --card-background: #ffffffe5;
-  --border-color: #e0e0e0; /* Standard border color */
-  --border-color-light: #f0f0f0; /* Lighter border for subtle divisions */
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1); /* Medium shadow for cards */
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15); /* Larger shadow for hover effect */
-  --radius-md: 8px; /* Medium border-radius */
-  --radius-lg: 12px; /* Larger border-radius for main card */
+.cardDescription {
+  font-size: 0.95rem;
+  color: #4b5563;
+  line-height: 1.5;
 }
