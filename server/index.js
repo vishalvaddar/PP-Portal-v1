@@ -47,6 +47,9 @@ const authRoutes = require("./routes/authRoutes");
 const batchRoutes = require("./routes/batchRoutes");
 const userRoleRoutes = require("./routes/userRoleRoutes");
 
+const examRoutes = require('./routes/examRoutes');
+const examCentres = require('./routes/examRoutes');
+
 // ───────────────────────────────────────────────
 // API Routes
 // ───────────────────────────────────────────────
@@ -66,7 +69,7 @@ app.use("/api", userRoleRoutes);
 
 app.use("/api/bulk-upload", bulkUploadRoutes);
 app.use("/api/search", searchRoutes);
-app.use("/api/jurisdiction", jurisdictionRoutes);
+app.use("/api", jurisdictionRoutes);
 app.use("/api/shortlist/generate", generateShortlistRoutes);
 app.use("/api/shortlist/info", shortlistInfoRoutes);
 
@@ -79,6 +82,11 @@ app.use("/api/districts", districtRoutes);
 app.use("/admin-dashboard", adminDashboardRoutes);
 app.use("/coordinator", coordinatorRoutes);
 app.use("/student", studentRoutes);
+
+//Exam api
+app.use('/api/exams', examRoutes);
+app.use('/halltickets', express.static(path.join(__dirname, 'public/halltickets')));
+app.use("/api/exam-centres",examCentres)
 
 // ───────────────────────────────────────────────
 // Fallback for Unknown Routes

@@ -2,7 +2,7 @@ const express = require("express");
 const pool = require("../config/db");
 const router = express.Router();
 
-router.get("/search", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const {
       nmms_year,

@@ -1,76 +1,50 @@
-import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "../../components/ui/card";
+import React from "react";
 import { Link } from "react-router-dom";
-import styles from './Applications.module.css';
-import { FilePlus, Upload, Search } from 'lucide-react'; // Importing icons
+import { FilePlus, Upload, Search } from "lucide-react";
+import styles from "./Applications.module.css";
 
-const Applications = () => (
-  <div className={styles.pageContainer}>
-    <Card className={styles.mainCard}>
-      <CardHeader className={styles.mainCardHeader}>
-        <CardTitle className={styles.mainCardTitle}>
-          Applications Management
-        </CardTitle>
-        <CardDescription className={styles.mainCardDescription}>
-          Streamline your student application process with these powerful tools.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className={styles.mainCardContent}>
-        <div className={styles.gridContainer}>
-          {/* New Application Card */}
-          <Link to="/admin/admissions/new-application" className={styles.cardLink}>
-            <Card className={styles.featureCard}>
-              <CardHeader className={styles.featureCardHeader}>
-                <FilePlus className={styles.featureIcon} size={32} />
-                <CardTitle className={styles.featureCardTitle}>
-                  Upload Single <br /> Application
-                </CardTitle>
-              </CardHeader>
-              <CardContent className={styles.featureCardContent}>
-                <p className={styles.featureDescription}>
-                  Create a new application for a single student. 
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
+const features = [
+  {
+    title: "Upload Single Application",
+    icon: <FilePlus size={36} />,
+    description: "Create an application for one student manually.",
+    link: "/admin/admissions/new-application",
+  },
+  {
+    title: "Upload Bulk Applications",
+    icon: <Upload size={36} />,
+    description: "Upload multiple applications using Excel or CSV template.",
+    link: "/admin/admissions/bulk-upload-applications",
+  },
+  {
+    title: "Search & View Applications",
+    icon: <Search size={36} />,
+    description: "Easily find and view submitted applications.",
+    link: "/admin/admissions/search-applications",
+  },
+];
 
-          {/* Bulk Upload Applications Card */}
-          <Link to="/admin/admissions/bulk-upload-applications" className={styles.cardLink}>
-            <Card className={styles.featureCard}>
-              <CardHeader className={styles.featureCardHeader}>
-                <Upload className={styles.featureIcon} size={32} />
-                <CardTitle className={styles.featureCardTitle}>
-                  Upload Bulk <br /> Applications
-                </CardTitle>
-              </CardHeader>
-              <CardContent className={styles.featureCardContent}>
-                <p className={styles.featureDescription}>
-                  Import multiple student applications in bulk using a CSV or Excel template
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
+const Applications = () => {
+  return (
+    <div className={styles.page}>
+      <header className={styles.header}>
+        <h1 className={styles.heading}>Applications</h1>
+        <p className={styles.subheading}>
+          Manage your student admissions with ease and efficiency.
+        </p>
+      </header>
 
-          {/* Search Applications Card */}
-          <Link to="/admin/admissions/search-applications" className={styles.cardLink}>
-            <Card className={styles.featureCard}>
-              <CardHeader className={styles.featureCardHeader}>
-                <Search className={styles.featureIcon} size={32} />
-                <CardTitle className={styles.featureCardTitle}>
-                  Search & View <br />Applications
-                </CardTitle>
-              </CardHeader>
-              <CardContent className={styles.featureCardContent}>
-                <p className={styles.featureDescription}>
-                  Search and manage applications by name, registration number, etc.
-                </p>
-              </CardContent>
-            </Card>
+      <section className={styles.grid}>
+        {features.map(({ title, icon, description, link }) => (
+          <Link to={link} className={styles.card} key={title}>
+            <div className={styles.icon}>{icon}</div>
+            <h2 className={styles.cardTitle}>{title}</h2>
+            <p className={styles.cardDescription}>{description}</p>
           </Link>
-        </div>
-      </CardContent>
-    </Card>
-  </div>
-);
+        ))}
+      </section>
+    </div>
+  );
+};
 
 export default Applications;

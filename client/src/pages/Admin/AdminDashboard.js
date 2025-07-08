@@ -20,14 +20,18 @@ const AdminDashboard = () => {
         <div className={styles.quickActions}>
           <h2 className={styles.sectionTitle}>Quick Actions</h2>
           <div className={styles.actionsGrid}>
-            <Link to="/admin/new-application" className={styles.actionLink}>
+            <Link to="/admin/admissions/new-application" className={styles.actionLink}>
               <ActionButton title="New Application" icon={<Plus size={18} />} className={styles.blue} />
             </Link>
-            <Link to="/admin/bulk-upload-applications" className={styles.actionLink}>
-              <ActionButton title="Bulk Upload" icon={<Upload size={18} />} className={styles.green} />
+            <Link to="/admin/admissions/bulk-upload-applications" className={styles.actionLink}>
+              <ActionButton title="Bulk Upload Applications" icon={<Upload size={18} />} className={styles.green} />
             </Link>
-            <ActionButton title="Search Applications" icon={<Search size={18} />} className={styles.purple} />
-            <ActionButton title="Generate Shortlist" icon={<Users size={18} />} className={styles.orange} />
+            <Link to="/admin/admissions/search-applications" className={styles.actionLink}>
+              <ActionButton title="Search Applications" icon={<Search size={18} />} className={styles.purple} />
+            </Link>
+            <Link to="/admin/admissions/generate-shortlist" className={styles.actionLink}>
+              <ActionButton title="Generate Shortlist" icon={<Users size={18} />} className={styles.orange} />
+            </Link>
           </div>
         </div>
 

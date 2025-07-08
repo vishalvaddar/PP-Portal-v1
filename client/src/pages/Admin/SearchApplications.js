@@ -110,118 +110,133 @@ const SearchApplications = () => {
   };
 
   return (
-    <div className={classes.container}>
-      <h2 className={classes.h2}><FileSearch size={25} /> Search Applications</h2>
-      <form onSubmit={handleSubmit} className={classes.form}>
-        <div className={classes.formGroup}>
-          <label htmlFor="nmms_year">Year:</label>
-          <select name="nmms_year" value={formData.nmms_year} onChange={handleChange} disabled={isRegNumberEntered}>
-            {yearOptions.map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))}
-          </select>
+    <div className={classes.pageBg}>
+      <div className={classes.centerCard}>
+        <div className={classes.header}>
+          <FileSearch size={28} className={classes.icon} />
+          <h2>Search Applications</h2>
         </div>
-        <div className={classes.formGroup}>
-          <label htmlFor="nmms_reg_number">NMMS Registration Number:</label>
-          <input
-            type="text"
-            name="nmms_reg_number"
-            placeholder="Enter 11-digit number"
-            value={formData.nmms_reg_number}
-            onChange={handleChange}
-            maxLength="11"
-          />
-          {errors.nmms_reg_number && <span className={classes.error}>{errors.nmms_reg_number}</span>}
-        </div>
-
-        <p className={classes.orSeparator}>OR search by other criteria (leave Reg Number blank):</p>
-
-        <div className={classes.formGroup}>
-          <label htmlFor="app_state">State:</label>
-          <select name="app_state" value={formData.app_state} onChange={handleChange} disabled={isRegNumberEntered}>
-            <option value="">Select State</option>
-            {states.map(state => (
-              <option key={state.id} value={state.id}>{state.name}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className={classes.formGroup}>
-          <label htmlFor="district">District:</label>
-          <select name="district" value={formData.district} onChange={handleChange} disabled={isRegNumberEntered || !formData.app_state}>
-            <option value="">Select District</option>
-            {districts.map(district => (
-              <option key={district.id} value={district.id}>{district.name}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className={classes.formGroup}>
-          <label htmlFor="nmms_block">Block:</label>
-          <select name="nmms_block" value={formData.nmms_block} onChange={handleChange} disabled={isRegNumberEntered || !formData.district}>
-            <option value="">Select Block</option>
-            {blocks.map(block => (
-              <option key={block.id} value={block.id}>{block.name}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className={classes.formGroup}>
-          <label htmlFor="current_institute_dise_code">Institute:</label>
-          <Select
-            isDisabled={isRegNumberEntered || !formData.nmms_block}
-            options={institutes.map(inst => ({
-              value: inst.dise_code,
-              label: inst.institute_name,
-            }))}
-            value={institutes
-              .map(inst => ({
-                value: inst.dise_code,
-                label: inst.institute_name,
-              }))
-              .find(option => option.value === formData.current_institute_dise_code) || null}
-            onChange={(selectedOption) => {
-              setFormData(prev => ({
-                ...prev,
-                current_institute_dise_code: selectedOption ? selectedOption.value : "",
-              }));
-            }}
-            placeholder="Select Institute"
-            isSearchable
-          />
-        </div>
-
-        <div className={classes.formGroup}>
-          <label htmlFor="medium">Medium:</label>
-          <select name="medium" value={formData.medium} onChange={handleChange} disabled={isRegNumberEntered}>
-            <option value="">Select Medium</option>
-            {mediumOptions.map(medium => (
-              <option key={medium} value={medium}>{medium}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className={classes.formGroup}>
-          <label htmlFor="student_name">Student Name:</label>
-          <input
-            type="text"
-            name="student_name"
-            placeholder="Enter student name (partial match)"
-            value={formData.student_name}
-            onChange={handleChange}
-            disabled={isRegNumberEntered}
-            maxLength="50"
-          />
-        </div>
-
-        {Object.keys(errors).length > 0 && !errors.nmms_reg_number && (
-          <div className={classes.errorSummary}>
-            Please correct the errors above.
+        <form onSubmit={handleSubmit} className={classes.form}>
+          <div className={classes.formRow}>
+            <div className={classes.formGroup}>
+              <label htmlFor="nmms_year">Year</label>
+              <select name="nmms_year" value={formData.nmms_year} onChange={handleChange} disabled={isRegNumberEntered}>
+                {yearOptions.map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+            <div className={classes.formGroup}>
+              <label htmlFor="nmms_reg_number">NMMS Registration Number</label>
+              <input
+                type="text"
+                name="nmms_reg_number"
+                placeholder="Enter 11-digit number"
+                value={formData.nmms_reg_number}
+                onChange={handleChange}
+                maxLength="11"
+                autoComplete="off"
+              />
+              {errors.nmms_reg_number && <span className={classes.error}>{errors.nmms_reg_number}</span>}
+            </div>
           </div>
-        )}
 
-        <button type="submit" className={classes.submitButton}>Search</button>
-      </form>
+          <div className={classes.orSeparator}>
+            <span>OR</span>
+          </div>
+
+          <div className={classes.formRow}>
+            <div className={classes.formGroup}>
+              <label htmlFor="app_state">State</label>
+              <select name="app_state" value={formData.app_state} onChange={handleChange} disabled={isRegNumberEntered}>
+                <option value="">Select State</option>
+                {states.map(state => (
+                  <option key={state.id} value={state.id}>{state.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className={classes.formGroup}>
+              <label htmlFor="district">District</label>
+              <select name="district" value={formData.district} onChange={handleChange} disabled={isRegNumberEntered || !formData.app_state}>
+                <option value="">Select District</option>
+                {districts.map(district => (
+                  <option key={district.id} value={district.id}>{district.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className={classes.formRow}>
+            <div className={classes.formGroup}>
+              <label htmlFor="nmms_block">Block</label>
+              <select name="nmms_block" value={formData.nmms_block} onChange={handleChange} disabled={isRegNumberEntered || !formData.district}>
+                <option value="">Select Block</option>
+                {blocks.map(block => (
+                  <option key={block.id} value={block.id}>{block.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className={classes.formGroup}>
+              <label htmlFor="current_institute_dise_code">Institute</label>
+              <Select
+                isDisabled={isRegNumberEntered || !formData.nmms_block}
+                options={institutes.map(inst => ({
+                  value: inst.dise_code,
+                  label: inst.institute_name,
+                }))}
+                value={institutes
+                  .map(inst => ({
+                    value: inst.dise_code,
+                    label: inst.institute_name,
+                  }))
+                  .find(option => option.value === formData.current_institute_dise_code) || null}
+                onChange={(selectedOption) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    current_institute_dise_code: selectedOption ? selectedOption.value : "",
+                  }));
+                }}
+                placeholder="Select Institute"
+                isSearchable
+                className={classes.selectInput}
+              />
+            </div>
+          </div>
+
+          <div className={classes.formRow}>
+            <div className={classes.formGroup}>
+              <label htmlFor="medium">Medium</label>
+              <select name="medium" value={formData.medium} onChange={handleChange} disabled={isRegNumberEntered}>
+                <option value="">Select Medium</option>
+                {mediumOptions.map(medium => (
+                  <option key={medium} value={medium}>{medium}</option>
+                ))}
+              </select>
+            </div>
+            <div className={classes.formGroup}>
+              <label htmlFor="student_name">Student Name</label>
+              <input
+                type="text"
+                name="student_name"
+                placeholder="Enter student name"
+                value={formData.student_name}
+                onChange={handleChange}
+                disabled={isRegNumberEntered}
+                maxLength="50"
+                autoComplete="off"
+              />
+            </div>
+          </div>
+
+          {Object.keys(errors).length > 0 && !errors.nmms_reg_number && (
+            <div className={classes.errorSummary}>
+              Please correct the errors above.
+            </div>
+          )}
+
+          <button type="submit" className={classes.submitButton}>Search</button>
+        </form>
+      </div>
     </div>
   );
 };
