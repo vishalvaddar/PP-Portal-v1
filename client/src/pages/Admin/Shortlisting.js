@@ -1,50 +1,85 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ScrollText } from "lucide-react";
-import styles from "./Shortlisting.module.css"; // This import is correct
+import { ScrollText, Info, ListChecks, Download, AlertCircle } from "lucide-react";
+import styles from "./Shortlisting.module.css";
 
 const Shortlisting = () => {
+  const features = [
+    {
+      title: "Generate Shortlist",
+      icon: <ListChecks size={32} className={styles.featureIcon} />,
+      description: "Create customized shortlists by selecting state, district, and blocks",
+      link: "/admin/admissions/generate-shortlist",
+      badge: "New"
+    },
+    {
+      title: "View Shortlisted Info",
+      icon: <Info size={32} className={styles.featureIcon} />,
+      description: "Manage, freeze or delete existing shortlists",
+      link: "/admin/admissions/shortlist-info",
+      badge: "Updated"
+    }
+  ];
+
+  const tips = [
+    "Only one active shortlist per block is allowed",
+    "Changes made to frozen shortlists require admin approval",
+    "Use filters to refine your shortlisting criteria"
+  ];
+
   return (
-    <div className={styles.shortlistingContainer}>
-      <div className={styles.mainContentWrapper}> {/* This class is correct */}
-        <h2 className={styles.pageTitle}>
-          <span className={styles.pageTitleIcon}><ScrollText size={25} /></span> Shortlisting
-        </h2>
+    <div className={styles.dashboardContainer}>
+      <div className={styles.header}>
+        <div className={styles.titleContainer}>
+          <ScrollText size={28} className={styles.titleIcon} />
+          <h1 className={styles.title}>Shortlisting Dashboard</h1>
+        </div>
+        <p className={styles.subtitle}>Manage student selection process efficiently</p>
+      </div>
 
-        <div className={styles.actionsGrid}> {/* This class is correct */}
-          <Link to="/admin/admissions/generate-shortlist" className={styles.actionCard}> {/* This class is correct */}
-            <div className={styles.actionCardIcon}> {/* This class is correct */}
-              <i className="fas fa-list-check"></i>
-            </div>
-            <div className={styles.actionCardLabel}>Generate Shortlist</div> {/* This class is correct */}
-          </Link>
-
-          <Link to="/admin/admissions/shortlist-info" className={styles.actionCard}> {/* This class is correct */}
-            <div className={styles.actionCardIcon}> {/* This class is correct */}
-              <i className="fas fa-info-circle"></i>
-            </div>
-            <div className={styles.actionCardLabel}>View Shortlisted Info</div> {/* This class is correct */}
-          </Link>
+      <div className={styles.contentWrapper}>
+        <div className={styles.featuresGrid}>
+          {features.map((feature, index) => (
+            <Link to={feature.link} key={index} className={styles.featureCard}>
+              {feature.badge && <span className={styles.featureBadge}>{feature.badge}</span>}
+              <div className={styles.featureIconContainer}>
+                {feature.icon}
+              </div>
+              <h3 className={styles.featureTitle}>{feature.title}</h3>
+              <p className={styles.featureDescription}>{feature.description}</p>
+              <div className={styles.featureArrow}>→</div>
+            </Link>
+          ))}
         </div>
 
-        <div className={styles.instructionsBox}> {/* This class is correct */}
-          <h3 className={styles.instructionsHeader}> {/* This class is correct */}
-            <span className={styles.instructionsHeaderIcon}>📌</span> Shortlisting Process Instructions
-          </h3>
-          <ul className={styles.instructionsList}> {/* This class is correct */}
-            <li>
-              <strong>Generate a shortlist</strong> by selecting state, district, and blocks using the given filters.
-            </li>
-            <li>
-              You may generate multiple shortlists, but <strong>only one active shortlist per block</strong> is allowed.
-            </li>
-            <li>
-              Use the <em>“Shortlisted Information”</em> section to <strong>freeze or delete</strong> a shortlist.
-            </li>
-            <li>
-              Download finalized student lists directly from the <em>“Shortlisted Information”</em> page.
-            </li>
-          </ul>
+        <div className={styles.infoSection}>
+          <div className={styles.instructionsCard}>
+            <h2 className={styles.sectionTitle}>
+              <Info size={20} className={styles.sectionIcon} />
+              Shortlisting Guidelines
+            </h2>
+            <ul className={styles.instructionsList}>
+              <li>Generate multiple shortlists but maintain only one active version per block</li>
+              <li>Use the freeze option to prevent further modifications</li>
+              <li>Download options include PDF, Excel, and CSV formats</li>
+              <li>Changes to frozen lists require administrator approval</li>
+            </ul>
+          </div>
+
+          <div className={styles.tipsCard}>
+            <h2 className={styles.sectionTitle}>
+              <AlertCircle size={20} className={styles.sectionIcon} />
+              Quick Tips
+            </h2>
+            <div className={styles.tipsContainer}>
+              {tips.map((tip, index) => (
+                <div key={index} className={styles.tipItem}>
+                  <span className={styles.tipBullet}>•</span>
+                  {tip}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>

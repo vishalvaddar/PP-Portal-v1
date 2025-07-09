@@ -1,6 +1,6 @@
 // hashPassword.js
 const bcrypt = require('bcrypt');
-const password = 'Admin@123';
+const password = 'root@123';
 
 bcrypt.hash(password, 10).then((hash) => {
   console.log('Hashed password:', hash);
