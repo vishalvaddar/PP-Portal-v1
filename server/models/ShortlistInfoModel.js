@@ -1,4 +1,3 @@
-// models/shortlistInfoModel.js
 const pool = require("../config/db");
 
 const shortlistInfoModel = {
