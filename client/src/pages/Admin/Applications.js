@@ -1,48 +1,72 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FilePlus, Upload, Search } from "lucide-react";
+import { FilePlus, Upload, Search, FileText, AlertTriangle } from "lucide-react";
 import styles from "./Applications.module.css";
 
-const features = [
-  {
-    title: "Upload Single Application",
-    icon: <FilePlus size={36} />,
-    description: "Create an application for one student manually.",
-    link: "/admin/admissions/new-application",
-  },
-  {
-    title: "Upload Bulk Applications",
-    icon: <Upload size={36} />,
-    description: "Upload multiple applications using Excel or CSV template.",
-    link: "/admin/admissions/bulk-upload-applications",
-  },
-  {
-    title: "Search & View Applications",
-    icon: <Search size={36} />,
-    description: "Easily find and view submitted applications.",
-    link: "/admin/admissions/search-applications",
-  },
-];
-
 const Applications = () => {
-  return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <h1 className={styles.heading}>Applications</h1>
-        <p className={styles.subheading}>
-          Manage your student admissions with ease and efficiency.
-        </p>
-      </header>
+  const features = [
+    {
+      title: "New Application",
+      icon: <FilePlus size={32} className={styles.featureIcon} />,
+      description: "Create individual student applications manually",
+      link: "/admin/admissions/new-application",
+      badge: "Common"
+    },
+    {
+      title: "Upload Bulk Applications",
+      icon: <Upload size={32} className={styles.featureIcon} />,
+      description: "Upload multiple applications using our template",
+      link: "/admin/admissions/bulk-upload-applications",
+      badge: "Recommended"
+    },
+    {
+      title: "Application Search",
+      icon: <Search size={32} className={styles.featureIcon} />,
+      description: "Manage existing applications",
+      link: "/admin/admissions/search-applications"
+    }
+  ];
 
-      <section className={styles.grid}>
-        {features.map(({ title, icon, description, link }) => (
-          <Link to={link} className={styles.card} key={title}>
-            <div className={styles.icon}>{icon}</div>
-            <h2 className={styles.cardTitle}>{title}</h2>
-            <p className={styles.cardDescription}>{description}</p>
-          </Link>
-        ))}
-      </section>
+  return (
+    <div className={styles.dashboardContainer}>
+      <div className={styles.header}>
+        <div className={styles.titleContainer}>
+          <FileText size={28} className={styles.titleIcon} />
+          <h1 className={styles.title}>Applications Management</h1>
+        </div>
+        <p className={styles.subtitle}>Handle all application processes in one place.</p>
+      </div>
+
+      <div className={styles.contentWrapper}>
+        <div className={styles.featuresGrid}>
+          {features.map((feature, index) => (
+            <Link to={feature.link} key={index} className={styles.featureCard}>
+              {feature.badge && <span className={styles.featureBadge}>{feature.badge}</span>}
+              <div className={styles.featureIconContainer}>
+                {feature.icon}
+              </div>
+              <h3 className={styles.featureTitle}>{feature.title}</h3>
+              <p className={styles.featureDescription}>{feature.description}</p>
+              <div className={styles.featureArrow}>→</div>
+            </Link>
+          ))}
+        </div>
+
+        <div className={styles.infoSection}>
+          <div className={styles.alertCard}>
+            <h2 className={styles.sectionTitle}>
+              <AlertTriangle size={20} className={styles.sectionIcon} />
+              Important Notes
+            </h2>
+            <ul className={styles.alertList}>
+              <li>Bulk uploads require our standardized template format</li>
+              <li>Applications remain pending until manually verified</li>
+              <li>Duplicate applications are automatically flagged</li>
+              <li>System automatically archives applications after 6 months</li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

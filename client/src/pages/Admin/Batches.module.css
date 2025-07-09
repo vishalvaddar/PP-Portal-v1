@@ -1,117 +1,73 @@
-/* General Styles & Variables */
-:root {
-  --primary-color: #4f46e5;
-  --primary-hover: #4338ca;
-  --secondary-color: #1f2937;
-  --danger-color: #dc2626;
-  --danger-hover: #b91c1c;
-  --success-color: #16a34a;
-  --warning-color: #f59e0b;
-  --bg-color: #f9fafb;
-  --card-bg: #ffffff;
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --border-color: #e5e7eb;
-  --border-radius: 8px;
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-}
+/* Batches.module.css */
 
 .container {
-  background-color: var(--bg-color);
   padding: 2rem;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  min-height: 100vh;
-  color: var(--text-primary);
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* Header */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
 .title {
-  font-size: 2.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-size: 2rem;
+  color: #2c3e50;
+  margin: 0;
 }
 
 .headerActions {
   display: flex;
-  gap: 0.75rem;
-}
-
-/* Controls (Sort) */
-.controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-  background-color: var(--card-bg);
-  padding: 1rem;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
-  width: fit-content;
-}
-
-.controls label {
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-.sortSelect {
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
-  background-color: var(--card-bg);
-  font-size: 0.875rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.sortSelect:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgb(79 70 229 / 0.2);
-}
-
-/* Buttons */
-.addbtn, .secondaryBtn, .saveBtn, .cancelBtn, .dangerBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: var(--border-radius);
-  font-weight: 600;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  gap: 1rem;
 }
 
 .addbtn {
-  background-color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #3498db;
   color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
+
 .addbtn:hover {
-  background-color: var(--primary-hover);
+  background-color: #2980b9;
 }
 
 .secondaryBtn {
-  background-color: var(--card-bg);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-}
-.secondaryBtn:hover {
-  background-color: var(--bg-color);
+  background-color: #f8f9fa;
+  color: #2c3e50;
+  border: 1px solid #dee2e6;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-/* Card Grid & Card Styles */
+.secondaryBtn:hover {
+  background-color: #e9ecef;
+}
+
+.controls {
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sortSelect {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+}
+
 .cardGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -119,103 +75,79 @@
 }
 
 .card {
-  background-color: var(--card-bg);
-  border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-md);
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .cardHeader {
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
+  align-items: center;
 }
 
 .cardTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
   margin: 0;
-  color: var(--primary-color);
+  font-size: 1.25rem;
+  color: #2c3e50;
 }
 
 .cardBody {
-    flex-grow: 1;
+  padding: 1rem;
 }
 
 .cardBody p {
   margin: 0.5rem 0;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-}
-.cardBody p strong {
-  color: var(--text-primary);
+  color: #495057;
 }
 
-.statusBadge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.statusBadge.active {
-  background-color: #dcfce7;
-  color: #166534;
-}
-
-.statusBadge.inactive {
-  background-color: #fee2e2;
-  color: #991b1b;
+.cardBody strong {
+  color: #2c3e50;
 }
 
 .cardActions {
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border-color);
+  padding: 1rem;
   display: flex;
-  justify-content: flex-end;
   gap: 0.5rem;
+  border-top: 1px solid #dee2e6;
 }
 
 .actionBtn {
-  background: transparent;
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  padding: 0.5rem 1rem;
-  border-radius: var(--border-radius);
+  background-color: #f8f9fa;
+  color: #2c3e50;
+  border: 1px solid #dee2e6;
+  padding: 0.5rem;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  justify-content: center;
 }
+
 .actionBtn:hover {
-  background-color: var(--bg-color);
-  color: var(--text-primary);
-  border-color: #d1d5db;
+  background-color: #e9ecef;
 }
 
 .dangerBtnIcon {
-    color: var(--danger-color);
-}
-.dangerBtnIcon:hover {
-    background-color: var(--danger-color);
-    color: white;
-    border-color: var(--danger-color);
+  color: #e74c3c;
+  border-color: #f5b7b1;
 }
 
+.dangerBtnIcon:hover {
+  background-color: #f5b7b1;
+  color: #c0392b;
+}
 
 /* Modal Styles */
 .modalOverlay {
@@ -224,171 +156,182 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(17, 24, 39, 0.6);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  backdrop-filter: blur(4px);
 }
 
 .modal {
-  background-color: var(--card-bg);
-  padding: 2rem;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-md);
+  background-color: white;
+  border-radius: 8px;
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .modal h3 {
-  margin-top: 0;
+  margin: 0;
+  padding: 1.5rem;
   font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
+  color: #2c3e50;
+  border-bottom: 1px solid #dee2e6;
 }
 
 .modalContent {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+  padding: 1.5rem;
 }
 
 .modalActions {
+  padding: 1rem 1.5rem;
   display: flex;
   justify-content: flex-end;
-  gap: 0.75rem;
-  margin-top: 2rem;
+  gap: 1rem;
+  border-top: 1px solid #dee2e6;
 }
 
 .saveBtn {
-  background-color: var(--primary-color);
+  background-color: #2ecc71;
   color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
+
 .saveBtn:hover {
-  background-color: var(--primary-hover);
+  background-color: #27ae60;
 }
 
 .cancelBtn {
-  background-color: var(--card-bg);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
+  background-color: #f8f9fa;
+  color: #2c3e50;
+  border: 1px solid #dee2e6;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
+
 .cancelBtn:hover {
-  background-color: var(--bg-color);
+  background-color: #e9ecef;
 }
 
 .dangerBtn {
-  background-color: var(--danger-color);
+  background-color: #e74c3c;
   color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
+
 .dangerBtn:hover {
-  background-color: var(--danger-hover);
+  background-color: #c0392b;
 }
 
 /* Form Styles */
 .formGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
   font-weight: 500;
-  font-size: 0.875rem;
+  color: #2c3e50;
 }
 
 .formGroup input,
 .formGroup select,
 .formGroup textarea {
   width: 100%;
-  padding: 0.6rem 0.8rem;
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ced4da;
   font-size: 1rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
 }
-.formGroup input:focus,
-.formGroup select:focus,
-.formGroup textarea:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgb(79 70 229 / 0.2);
+
+.formGroup textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.errorInput {
+  border-color: #e74c3c !important;
 }
 
 .errorText {
-  color: var(--danger-color);
-  font-size: 0.8rem;
+  color: #e74c3c;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
 }
 
-.errorInput,
-:global(.react-select-error .react-select__control) {
-  border-color: var(--danger-color) !important;
-}
-:global(.react-select-error .react-select__control:hover) {
-  border-color: var(--danger-color) !important;
+/* Status Badge */
+.statusBadge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
-/* React-Select Overrides */
-:global(.react-select__control) {
-  border-color: var(--border-color) !important;
-  box-shadow: none !important;
-  padding: 0.2rem;
-  border-radius: var(--border-radius) !important;
-  transition: border-color 0.2s, box-shadow 0.2s !important;
+.statusBadge.withIcon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
 }
-:global(.react-select__control--is-focused) {
-  border-color: var(--primary-color) !important;
-  box-shadow: 0 0 0 3px rgb(79 70 229 / 0.2) !important;
+
+.active {
+  background-color: #d5f5e3;
+  color: #27ae60;
 }
-:global(.react-select__menu) {
-  border-radius: var(--border-radius) !important;
-  z-index: 10;
-}
-:global(.react-select__option--is-focused) {
-  background-color: #eef2ff !important;
-  color: var(--primary-color) !important;
-}
-:global(.react-select__option--is-selected) {
-  background-color: var(--primary-color) !important;
-  color: white !important;
+
+.inactive {
+  background-color: #fadbd8;
+  color: #c0392b;
 }
 
 /* Notification */
 .notification {
   position: fixed;
-  top: 2rem;
-  right: 2rem;
-  padding: 1rem 1.5rem;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-md);
-  z-index: 2000;
+  top: 1rem;
+  right: 1rem;
+  padding: 1rem;
+  border-radius: 4px;
+  color: white;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  justify-content: space-between;
+  min-width: 250px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1100;
   animation: slideIn 0.3s ease-out;
 }
+
 .notification.success {
-  background-color: var(--success-color);
-  color: white;
+  background-color: #2ecc71;
 }
+
 .notification.error {
-  background-color: var(--danger-color);
-  color: white;
+  background-color: #e74c3c;
 }
+
 .dismissButton {
   background: none;
   border: none;
   color: white;
-  opacity: 0.7;
   cursor: pointer;
   padding: 0;
+  margin-left: 1rem;
 }
-.dismissButton:hover {
-  opacity: 1;
-}
+
 @keyframes slideIn {
   from {
     transform: translateX(100%);
@@ -400,9 +343,28 @@
   }
 }
 
-/* Confirmation Modal Message */
+/* React Select Customization */
+.react-select__control {
+  min-height: 38px !important;
+  border-radius: 4px !important;
+  border: 1px solid #ced4da !important;
+}
+
+.react-select__control--is-focused {
+  border-color: #3498db !important;
+  box-shadow: 0 0 0 1px #3498db !important;
+}
+
+.react-select-error .react-select__control {
+  border-color: #e74c3c !important;
+}
+
+.react-select__menu {
+  z-index: 1001 !important;
+}
+
+/* Confirm Modal Specific Styles */
 .confirmMessage {
-    color: var(--text-secondary);
-    margin-bottom: 1.5rem;
-    line-height: 1.6;
+  margin-bottom: 1.5rem;
+  color: #495057;
 }

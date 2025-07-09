@@ -1,66 +1,189 @@
-.page {
-  padding: 3rem 2rem;
-  min-height: 100vh;
-  font-family: 'Inter', sans-serif;
+/* Inherits all base styles from Shortlisting */
+.dashboardContainer {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  color: #333;
 }
 
 .header {
-  text-align: center;
   margin-bottom: 2.5rem;
 }
 
-.heading {
-  font-size: 2.4rem;
-  font-weight: 700;
-  color: #1f2937;
-}
-
-.subheading {
-  font-size: 1rem;
-  color: #6b7280;
-  margin-top: 0.5rem;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.card {
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
-  padding: 2rem;
-  text-align: center;
-  text-decoration: none;
-  color: inherit;
-  transition: all 0.3s ease;
-}
-
-.card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 28px rgba(59, 130, 246, 0.15);
-  border-color: #93c5fd;
-}
-
-.icon {
-  margin-bottom: 1rem;
-  color: #2563eb;
-}
-
-.cardTitle {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #111827;
+.titleContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   margin-bottom: 0.5rem;
 }
 
-.cardDescription {
-  font-size: 0.95rem;
-  color: #4b5563;
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a365d;
+  margin: 0;
+}
+
+.titleIcon {
+  color: #48bb78; /* Green instead of blue for differentiation */
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: #4a5568;
+  margin: 0;
+}
+
+/* Features Grid - Same as Shortlisting */
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.featureCard {
+  background: white;
+  border-radius: 10px;
+  padding: 1.75rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  position: relative;
+  border: 1px solid #e2e8f0;
+}
+
+.featureCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  border-color: #c6f6d5; /* Green hover border */
+}
+
+.featureIconContainer {
+  background: #f0fff4; /* Light green background */
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.featureIcon {
+  color: #38a169; /* Green icon color */
+}
+
+.featureTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem 0;
+  color: #2d3748;
+}
+
+.featureDescription {
+  color: #4a5568;
+  margin: 0 0 1.5rem 0;
   line-height: 1.5;
+}
+
+.featureArrow {
+  color: #48bb78; /* Green arrow */
+  font-weight: bold;
+  font-size: 1.25rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.featureCard:hover .featureArrow {
+  opacity: 1;
+}
+
+.featureBadge {
+  position: absolute;
+  top: -10px;
+  right: 15px;
+  background: #48bb78; /* Green badge */
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Info Section - Modified for Applications */
+.infoSection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.statsCard, 
+.alertCard {
+  background: white;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  color: #2d3748;
+}
+
+.sectionIcon {
+  color: #48bb78; /* Green icon */
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.statItem {
+  text-align: center;
+}
+
+.statValue {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #2b6cb0;
+  margin-bottom: 0.25rem;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: #718096;
+}
+
+.alertList {
+  padding-left: 1.25rem;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.alertList li {
+  margin-bottom: 0.75rem;
+  color: #4a5568;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .featuresGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .infoSection {
+    grid-template-columns: 1fr;
+  }
+  
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
 }

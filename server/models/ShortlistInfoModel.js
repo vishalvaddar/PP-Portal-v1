@@ -1,7 +1,7 @@
 // models/shortlistInfoModel.js
 const pool = require("../config/db");
 
-const ShortlistInfoModel = {
+const shortlistInfoModel = {
   async getAllShortlistNames() {
     try {
       const { rows } = await pool.query(`
@@ -272,4 +272,4 @@ const ShortlistInfoModel = {
   }
 };
 
-module.exports = ShortlistInfoModel;
+module.exports = shortlistInfoModel;
