@@ -1,0 +1,53 @@
+/* PP-Portal-v1\client\src\pages\Admin\Evaluation\EvaluationDashboard.css */
+.evaluation-dashboard {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.checklist {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+}
+
+.checklist input[type="checkbox"] {
+  transform: scale(1.2);
+  margin-right: 10px;
+}
+
+.dashboard-grid table {
+  border: 1px solid #dee2e6;
+}
+
+.dashboard-grid th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.stats-grid div {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.batch-progress div {
+  background-color: #f8f9fa;
+  padding: 8px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.total-ip {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+  display: inline-block;
+}
