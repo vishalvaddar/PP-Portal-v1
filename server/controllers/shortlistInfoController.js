@@ -1,5 +1,7 @@
+// controllers/shortlistInfoController.js
 const ShortlistInfoModel = require("../models/shortlistInfoModel");
 const xlsx = require("xlsx");
+const pool = require("../config/db"); // IMPORTANT: Ensure 'pool' is imported here
 
 const shortlistInfoController = {
   // Fetch all shortlist batch names
@@ -8,7 +10,7 @@ const shortlistInfoController = {
       const names = await ShortlistInfoModel.getAllShortlistNames();
       res.json(names);
     } catch (error) {
-      console.error("getShortlistNames Error:", error);
+      console.error("getShortlistNames Error in controller:", error);
       res.status(500).json({ message: "Error fetching shortlist names", error: error.message });
     }
   },
@@ -19,7 +21,7 @@ const shortlistInfoController = {
       const nonFrozenNames = await ShortlistInfoModel.getNonFrozenShortlistNames();
       res.json(nonFrozenNames);
     } catch (error) {
-      console.error("getNonFrozenShortlistNames Error:", error);
+      console.error("getNonFrozenShortlistNames Error in controller:", error);
       res.status(500).json({ message: "Error fetching non-frozen shortlist names", error: error.message });
     }
   },
@@ -32,7 +34,7 @@ const shortlistInfoController = {
       if (!info) return res.status(404).json({ message: "Shortlist not found" });
       res.json(info);
     } catch (error) {
-      console.error(`getShortlistDetails Error [${shortlistName}]:`, error);
+      console.error(`getShortlistDetails Error [${shortlistName}] in controller:`, error);
       res.status(500).json({ message: "Error fetching shortlist information", error: error.message });
     }
   },
@@ -44,7 +46,7 @@ const shortlistInfoController = {
       const totalShortlisted = await ShortlistInfoModel.getTotalShortlistedCount();
       res.json({ totalApplicants, totalShortlisted });
     } catch (error) {
-      console.error("getCounts Error:", error);
+      console.error("getCounts Error in controller:", error);
       res.status(500).json({ message: "Error fetching applicant counts", error: error.message });
     }
   },
@@ -63,7 +65,7 @@ const shortlistInfoController = {
         res.status(404).json({ message: "Shortlist not found or already frozen" });
       }
     } catch (error) {
-      console.error(`freezeShortlist Error [ID: ${shortlistBatchId}]:`, error);
+      console.error(`freezeShortlist Error [ID: ${shortlistBatchId}] in controller:`, error);
       res.status(500).json({ message: "Error freezing shortlist", error: error.message });
     }
   },
@@ -82,7 +84,7 @@ const shortlistInfoController = {
         res.status(404).json({ message: "Shortlist not found or could not be deleted" });
       }
     } catch (error) {
-      console.error(`deleteShortlist Error [ID: ${shortlistBatchId}]:`, error);
+      console.error(`deleteShortlist Error [ID: ${shortlistBatchId}] in controller:`, error);
       res.status(500).json({ message: "Error deleting shortlist", error: error.message });
     }
   },
@@ -95,10 +97,10 @@ const shortlistInfoController = {
       if (!shortlistInfo) {
         return res.status(404).json({ message: "Shortlist not found" });
       }
-      const applicants = await ShortlistInfoModel.getShortlistedApplicantsForShow(shortlistInfo.shortlist_batch_id);
-      res.json({ name: shortlistInfo.shortlist_batch_name, data: applicants });
+      const applicants = await ShortlistInfoModel.getShortlistedApplicantsForShow(shortlistInfo.id);
+      res.json({ name: shortlistInfo.name, data: applicants });
     } catch (error) {
-      console.error(`getShortlistedApplicantsForShow Error [${shortlistName}]:`, error);
+      console.error(`getShortlistedApplicantsForShow Error [${shortlistName}] in controller:`, error);
       res.status(500).json({ message: "Error fetching shortlisted applicants", error: error.message });
     }
   },
@@ -111,11 +113,42 @@ const shortlistInfoController = {
       if (!shortlistInfo) {
         return res.status(404).json({ message: "Shortlist not found" });
       }
-      const applicants = await ShortlistInfoModel.getShortlistedApplicantsForDownload(shortlistInfo.shortlist_batch_id);
-      console.log("Download Data:", applicants.length);
-      res.json({ name: shortlistInfo.shortlist_batch_name, data: applicants });
+
+      const year = new Date().getFullYear();
+      const totalStudentsInBatchRes = await pool.query(
+        `SELECT COUNT(*) AS total_students
+         FROM pp.applicant_primary_info api
+         JOIN pp.shortlist_batch_jurisdiction sbj ON api.nmms_block = sbj.juris_code
+         WHERE api.nmms_year = $1
+           AND sbj.shortlist_batch_id = $2
+           AND api.applicant_id IN (
+             SELECT applicant_id FROM pp.applicant_shortlist_info
+           );`,
+        [year, shortlistInfo.id]
+      );
+      const totalStudentsInBatch = parseInt(totalStudentsInBatchRes.rows[0]?.total_students || "0", 10);
+
+      if (totalStudentsInBatch === 0) {
+        console.log(`Controller: No students found for download in shortlist "${shortlistName}". Sending 'no_data' status.`);
+        // **Updated Message Here**
+        return res.status(200).json({ status: "no_data", message: "Cannot download: No students exist for this shortlist." });
+      }
+
+      let applicants = await ShortlistInfoModel.getShortlistedApplicantsForDownload(shortlistInfo.id);
+
+      // Add S. No. as the first column
+      applicants = applicants.map((applicant, index) => {
+        const newApplicant = { "S. No.": index + 1 };
+        for (const key in applicant) {
+          newApplicant[key] = applicant[key];
+        }
+        return newApplicant;
+      });
+
+      console.log(`Controller: Data fetched for download of "${shortlistName}", records: ${applicants.length}`);
+      res.json({ status: "success", name: shortlistInfo.name, data: applicants });
     } catch (error) {
-      console.error(`getShortlistedApplicantsForDownload Error [${shortlistName}]:`, error);
+      console.error(`getShortlistedApplicantsForDownload Error [${shortlistName}] in controller:`, error);
       res.status(500).json({ message: "Error fetching applicants for download", error: error.message });
     }
   },
