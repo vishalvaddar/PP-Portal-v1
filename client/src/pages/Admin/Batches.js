@@ -347,9 +347,8 @@ const Batches = () => {
           <div key={b.id} className={classes.card}>
             <div className={classes.cardHeader}>
               <h2 className={classes.cardTitle}>{b.batch_name}</h2>
-              <span className={`${classes.statusBadge} ${b.batch_status === 'Active' ? classes.active : classes.inactive}`}>
-                {b.batch_status}
-              </span>
+                <span className={`${classes.statusBadge} ${classes.withIcon} ${b.batch_status === 'Active' ?  classes.active : classes.inactive}`}> {b.batch_status}
+                </span>
             </div>
             <div className={classes.cardBody}>
               <p><strong>Cohort:</strong> {b.cohort_name || "—"}</p>
@@ -358,22 +357,6 @@ const Batches = () => {
             <div className={classes.cardActions}>
               <button className={classes.actionBtn} /* onClick={() => handleViewBatchDetails(b.id)} */>View</button>
               <button className={classes.actionBtn} onClick={() => handleEdit(b)}><Pencil size={16} /></button>
-              {/* Deactivate/Activate Button */}
-              {b.batch_status === 'Active' ? (
-                <button
-                  className={`${classes.actionBtn} ${classes.deactivateBtn}`}
-                  onClick={() => handleStatusToggle(b, 'Inactive')}
-                >
-                  Deactivate
-                </button>
-              ) : (
-                <button
-                  className={`${classes.actionBtn} ${classes.activateBtn}`}
-                  onClick={() => handleStatusToggle(b, 'Active')}
-                >
-                  Activate
-                </button>
-              )}
               <button className={`${classes.actionBtn} ${classes.dangerBtnIcon}`} onClick={() => handleDeleteClick(b.id)}><Trash2 size={16} /></button>
             </div>
           </div>

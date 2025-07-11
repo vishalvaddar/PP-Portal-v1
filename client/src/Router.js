@@ -9,7 +9,6 @@ import BulkUploadApplications from "./pages/Admin/BulkUploadApplications";
 import SearchApplications from "./pages/Admin/SearchApplications";
 import Shortlisting from "./pages/Admin/Shortlisting";
 import ViewApplications from "./pages/Admin/ViewApplications";
-import Evaluation from "./pages/Admin/Evaluation";
 import LoginForm from "./components/login/LoginForm";
 import ViewStudentInfo from "./pages/Admin/ViewStudentInfo";
 import EditForm from "./pages/Admin/EditForm";
@@ -21,6 +20,13 @@ import UserRoles from "./pages/Admin/UserRoles";
 import System from "./pages/Admin/System";
 import MyProfile from "./pages/Admin/MyProfile";
 import CreateExam from "./pages/Admin/CreateExam";
+      //Admin-Evaluation pages
+      import EvaluationDashboard from "./pages/Admin/Evaluation/EvaluationDashboard";
+      import EvaluationMarksEntry from "./pages/Admin/Evaluation/EvaluatioinMarksEntry";
+      import EvaluationInterview from "./pages/Admin/Evaluation/EvaluationInterview";
+      import EvaluationTracking from "./pages/Admin/Evaluation/EvaluationTracking";
+
+
 // import Results from "./pages/Admin/Results";
 
 // Coordinator pages
@@ -67,9 +73,17 @@ export const appRouter = createBrowserRouter([
           { path: "shortlisting", element: <Shortlisting /> },
           { path: "exam-management", element: <CreateExam /> },
           { path: "view-student-info/:nmms_reg_number", element: <ViewStudentInfo /> },
-          { path: "evaluation", element: <Evaluation /> },
           { path: "view-applications", element: <ViewApplications /> },
           { path: "edit-form/:nmms_reg_number", element: <EditForm /> },
+          { path: "evaluation", 
+            children:[
+              { path:"", element:<EvaluationDashboard />},
+              { path: "marks-entry", element: <EvaluationMarksEntry /> },
+              { path: "interview", element: <EvaluationInterview /> },
+              { path: "tracking", element: <EvaluationTracking /> },
+
+            ],
+          },
         ],
       },
       { path: "academics", children: [
