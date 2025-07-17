@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Evaluation = () => {
+const EvaluationTracking = () => {
   return (
     <div>
       <li>🧪 Evaluation (Marks Entry & Interviews)
@@ -15,4 +15,4 @@ const Evaluation = () => {
   )
 }
 
-export default Evaluation;
+export default EvaluationTracking;
