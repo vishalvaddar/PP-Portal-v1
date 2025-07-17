@@ -333,14 +333,14 @@ const CreateExam = () => {
                 </div>
                 <div className={classes.cardFooter}>
                   <a
-                    href={`$${process.env.REACT_APP_BACKEND_API_URL}/api/exams/${entry.exam_id}/student-list`}
+                    href={`$${process.env.REACT_APP_API_URL}/api/exams/${entry.exam_id}/student-list`}
                     download
                     className={`${classes.actionButton} ${classes.btnGreen}`}
                   >
                     <FaListAlt /> List
                   </a>
                   <a
-                    href={`$${process.env.REACT_APP_BACKEND_API_URL}/api/exams/${entry.exam_id}/download-all-hall-tickets`}
+                    href={`$${process.env.REACT_APP_API_URL}/api/exams/${entry.exam_id}/download-all-hall-tickets`}
                     download
                     className={`${classes.actionButton} ${classes.btnYellow}`}
                   >
