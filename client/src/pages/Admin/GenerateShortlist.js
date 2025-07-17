@@ -52,9 +52,6 @@ const GenerateShortlist = () => {
       .catch((err) => console.error("Error fetching all states:", err));
   }, []);
 
-  const BASE_URL = "http://localhost:5000/api";
-
-
   // --- Effect Hooks for Data Fetching ---
 
   // 1. Fetch States and Selection Criteria on component mount
@@ -70,8 +67,8 @@ const GenerateShortlist = () => {
       setCriteriaError(null);
       try {
         const [statesRes, criteriaRes] = await Promise.all([
-          axios.get(`${BASE_URL}/shortlist/generate/allstates`),
-          axios.get(`${BASE_URL}/shortlist/generate/criteria`)
+          axios.get(`${process.env.REACT_APP_API_URL}/api/shortlist/generate/allstates`),
+          axios.get(`${process.env.REACT_APP_API_URL}/api/shortlist/generate/criteria`)
         ]);
         setStates(statesRes.data);
         setSelectionCriteria(criteriaRes.data);
@@ -115,7 +112,7 @@ const GenerateShortlist = () => {
         setLoadingDistricts(true);
         setDistrictsError(null);
         try {
-          const res = await axios.get(`${BASE_URL}/shortlist/generate/districts/${selectedState}`);
+          const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/shortlist/generate/districts/${selectedState}`);
 
           setDistricts(res.data);
           setSelectedDistrict(""); // Reset district selection when state changes
@@ -155,7 +152,7 @@ const GenerateShortlist = () => {
         setLoadingBlocks(true);
         setBlocksError(null);
         try {
-          const res = await axios.get(`${BASE_URL}/shortlist/generate/blocks/${selectedDistrict}`);
+          const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/shortlist/generate/blocks/${selectedDistrict}`);
 
           setBlocks(res.data);
           setSelectedBlocks([]); // Clear selected blocks when district changes
@@ -249,7 +246,7 @@ const GenerateShortlist = () => {
 
       const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/shortlist/generate/start-shortlist`, payload);
 
-      const res = await axios.post(`${BASE_URL}/shortlist/generate/start-shortlist`, payload);
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/shortlist/generate/start-shortlist`, payload);
 
       setShortlistingResult({ success: res.data.message, shortlistedCount: res.data.shortlistedCount });
 
