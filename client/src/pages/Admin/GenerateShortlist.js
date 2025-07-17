@@ -246,8 +246,6 @@ const GenerateShortlist = () => {
 
       const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/shortlist/generate/start-shortlist`, payload);
 
-      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/shortlist/generate/start-shortlist`, payload);
-
       setShortlistingResult({ success: res.data.message, shortlistedCount: res.data.shortlistedCount });
 
       // Removed: No longer calling fetchApplicantCounts after shortlisting
