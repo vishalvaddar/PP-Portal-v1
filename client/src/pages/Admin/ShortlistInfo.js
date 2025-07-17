@@ -26,9 +26,14 @@ function ShortlistInfo({ onClose }) {
   const [nonFrozenNamesError, setNonFrozenNamesError] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
 
+
+  // API Endpoints
+  const BASE_API_URL = `${process.env.REACT_APP_BACKEND_API_URL}/api/shortlist/info`;
+
   // API Endpoints (adjust if your backend is on a different port/URL)
   // Using process.env.REACT_APP_API_BASE_URL is good practice for production deployments
   const BASE_API_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000/api/shortlist/info";
+
   const GET_NAMES_ENDPOINT = `${BASE_API_URL}/names`;
   const GET_NON_FROZEN_NAMES_ENDPOINT = `${BASE_API_URL}/non-frozen-names`;
   const GET_COUNTS_ENDPOINT = `${BASE_API_URL}/counts`;

@@ -1,0 +1,330 @@
+/* MyProfile.module.css */
+
+/* --- Base Container & Card --- */
+.profileContainer {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Align card to the top */
+  min-height: calc(100vh - var(--navbar-height, 60px)); /* Adjust for navbar */
+  padding: 50px 20px; /* Increased padding for more breathing room */
+  background-color: #eef2f6; /* A very light, cool gray background */
+  font-family: 'Inter', sans-serif, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue'; /* Modern sans-serif font stack */
+  color: #333; /* Darker default text color */
+}
+
+.card {
+  background-color: #ffffff;
+  border-radius: 18px; /* Even more rounded corners for a softer look */
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.09); /* Deeper, softer shadow */
+  padding: 45px; /* Generous internal padding */
+  width: 100%;
+  max-width: 750px; /* Wider card to feel less cramped */
+  box-sizing: border-box;
+  text-align: center;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother transition */
+}
+
+.card:hover {
+  transform: translateY(-8px); /* More noticeable lift on hover */
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12); /* Enhanced shadow on hover */
+}
+
+/* --- Header Section --- */
+.header {
+  display: flex;
+  flex-direction: column; /* Stack vertically by default */
+  align-items: center;
+  margin-bottom: 40px; /* More space below header */
+  padding-bottom: 30px;
+  border-bottom: 1px solid #e0e6ed; /* Very light, clean border */
+}
+
+@media (min-width: 768px) { /* Tablet and Desktop layout */
+  .header {
+    flex-direction: row;
+    justify-content: center; /* Center content horizontally within header */
+    text-align: left;
+    align-items: center; /* Align items centrally */
+  }
+  .info {
+    margin-left: 35px; /* More space from avatar */
+  }
+}
+
+.avatar {
+  width: 130px; /* Larger avatar */
+  height: 130px;
+  border-radius: 50%;
+  background-image: linear-gradient(45deg, #7b1fa2, #9c27b0); /* Gradient for a richer look */
+  color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 64px; /* Larger font for initial */
+  font-weight: 700;
+  margin-bottom: 25px; /* Space on smaller screens */
+  flex-shrink: 0;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); /* More defined shadow for avatar */
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2); /* Subtle text shadow for initial */
+}
+
+@media (min-width: 768px) {
+  .avatar {
+    margin-bottom: 0;
+  }
+}
+
+.info {
+  flex-grow: 1;
+}
+
+.welcomeHeading {
+  margin: 0 0 12px 0;
+  color: #2c3e50; /* Darker, more professional heading text */
+  font-size: 2.5em; /* More prominent heading */
+  font-weight: 700;
+  letter-spacing: -0.5px; /* Tighten letter spacing slightly */
+}
+
+.roleBadge {
+  background-color: #e3f2fd; /* Light blue for badge */
+  color: #1976d2; /* Deeper blue for badge text */
+  padding: 8px 18px; /* More padding */
+  border-radius: 30px; /* More pill-shaped */
+  font-size: 0.95em;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 18px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Subtle shadow for badge */
+}
+
+.detailItem {
+  color: #607d8b; /* Muted slate gray for details */
+  font-size: 1em; /* Slightly larger detail font */
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  word-break: break-all;
+}
+
+.detailValue {
+  font-weight: 500;
+  color: #455a64; /* Darker for the value itself */
+  margin-left: 8px; /* More space between label and value */
+}
+
+@media (min-width: 768px) {
+  .detailItem {
+    justify-content: flex-start;
+  }
+}
+
+/* --- Section Dividers --- */
+.divider {
+  border: 0;
+  height: 1px;
+  background: #e0e6ed;
+  margin: 45px 0; /* More vertical spacing */
+}
+
+/* --- Content Sections --- */
+.section {
+  text-align: left;
+  margin-bottom: 45px; /* More space between main sections */
+}
+
+.sectionHeading {
+  color: #2c3e50;
+  font-size: 2em; /* Larger section titles */
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  border-bottom: 2px solid #cfd8dc; /* Slightly more prominent underline */
+  padding-bottom: 12px;
+  letter-spacing: -0.2px;
+}
+
+/* --- Form Elements --- */
+.formGroup {
+  margin-bottom: 30px; /* More space between form groups */
+}
+
+.formLabel {
+  display: block;
+  margin-bottom: 12px; /* More space below label */
+  color: #455a64; /* Darker, clearer labels */
+  font-weight: 600;
+  font-size: 1.05em;
+}
+
+.input {
+  width: calc(100% - 30px); /* Account for more padding */
+  padding: 15px 15px; /* Increased padding */
+  margin-bottom: 20px; /* Space below input */
+  border: 1px solid #c5d0db; /* Softer border */
+  border-radius: 10px; /* More rounded */
+  font-size: 1.1em;
+  transition: all 0.3s ease-in-out;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #4285f4; /* Google blue on focus */
+  box-shadow: 0 0 0 4px rgba(66, 133, 244, 0.25); /* More vibrant glow effect */
+}
+
+/* --- Buttons --- */
+.button {
+  background-image: linear-gradient(45deg, #4285f4, #2979ff); /* Blue gradient for primary action */
+  color: white;
+  padding: 16px 35px; /* Even larger touch area */
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1.15em; /* Larger font for buttons */
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  width: auto;
+  min-width: 200px; /* Wider buttons */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3); /* Clearer shadow for buttons */
+  text-transform: uppercase; /* Uppercase button text */
+  letter-spacing: 0.8px;
+}
+
+.button:hover:not(:disabled) {
+  background-image: linear-gradient(45deg, #2979ff, #4285f4); /* Reverse gradient on hover */
+  transform: translateY(-5px); /* More noticeable lift */
+  box-shadow: 0 8px 20px rgba(0, 123, 255, 0.4); /* Enhanced shadow on hover */
+}
+
+.button:disabled {
+  background-image: none; /* No gradient when disabled */
+  background-color: #e0e6ed; /* Lighter disabled background */
+  color: #aebecd; /* Muted disabled text */
+  cursor: not-allowed;
+  opacity: 0.7;
+  box-shadow: none;
+  transform: none;
+}
+
+/* --- Messages (Success/Error) --- */
+.message {
+  padding: 20px; /* More padding */
+  margin-top: 35px; /* More space above message */
+  border-radius: 10px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1em;
+  text-align: left;
+  line-height: 1.5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Subtle shadow for messages */
+}
+
+.successMessage {
+  background-color: #e6ffed;
+  color: #28a745;
+  border: 1px solid #b3e6c9;
+}
+
+.errorMessage {
+  background-color: #ffebe6; /* Slightly softer red background */
+  color: #dc3545;
+  border: 1px solid #e6b3b3;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 767px) { /* Tablets and smaller */
+  .card {
+    padding: 30px;
+  }
+
+  .header {
+    padding-bottom: 20px;
+  }
+
+  .avatar {
+    width: 100px;
+    height: 100px;
+    font-size: 50px;
+    margin-bottom: 20px;
+  }
+
+  .welcomeHeading {
+    font-size: 2em;
+  }
+
+  .roleBadge {
+    padding: 6px 14px;
+    font-size: 0.85em;
+  }
+
+  .detailItem {
+    font-size: 0.9em;
+  }
+
+  .sectionHeading {
+    font-size: 1.6em;
+    flex-direction: column; /* Stack icon above text on smaller screens */
+    text-align: center;
+    padding-bottom: 8px;
+  }
+
+  .sectionHeading svg {
+    margin-right: 0 !important;
+    margin-bottom: 10px;
+  }
+
+  .input {
+    padding: 12px 12px;
+    font-size: 1em;
+    width: calc(100% - 24px);
+  }
+
+  .button {
+    width: 100%; /* Full width buttons on smaller screens */
+    min-width: unset;
+    padding: 14px 25px;
+    font-size: 1.05em;
+  }
+}
+
+@media (max-width: 480px) { /* Very small screens / Mobile portrait */
+  .profileContainer {
+    padding: 30px 15px;
+  }
+
+  .card {
+    padding: 20px;
+    border-radius: 12px;
+  }
+
+  .avatar {
+    width: 90px;
+    height: 90px;
+    font-size: 45px;
+  }
+
+  .welcomeHeading {
+    font-size: 1.6em;
+  }
+
+  .sectionHeading {
+    font-size: 1.4em;
+  }
+
+  .message {
+    padding: 15px;
+    font-size: 0.95em;
+  }
+}

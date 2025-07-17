@@ -46,12 +46,24 @@ const GenerateShortlist = () => {
 
   const currentYear = new Date().getFullYear();
 
+  useEffect(() => {
+    axios.get(`${process.env.REACT_API_URL}/api/shortlist/generate/allstates`)
+      .then((res) => setStates(res.data))
+      .catch((err) => console.error("Error fetching all states:", err));
+  }, []);
+
   const BASE_URL = "http://localhost:5000/api";
+
 
   // --- Effect Hooks for Data Fetching ---
 
   // 1. Fetch States and Selection Criteria on component mount
   useEffect(() => {
+
+    axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/shortlist/generate/criteria`)
+      .then((res) => setSelectionCriteria(res.data))
+      .catch((err) => console.error("Error fetching criteria:", err));
+
     const fetchInitialData = async () => {
       setLoadingInitialData(true);
       setStatesError(null);
@@ -87,17 +99,24 @@ const GenerateShortlist = () => {
     };
 
     fetchInitialData();
+
   }, []);
 
 
   // 2. Fetch Districts when a State is selected
   useEffect(() => {
+
+    if (selectedState) {
+      axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/shortlist/generate/districts/${selectedState}`)
+        .then((res) => {
+
     const fetchDistricts = async () => {
       if (selectedState) {
         setLoadingDistricts(true);
         setDistrictsError(null);
         try {
           const res = await axios.get(`${BASE_URL}/shortlist/generate/districts/${selectedState}`);
+
           setDistricts(res.data);
           setSelectedDistrict(""); // Reset district selection when state changes
           setBlocks([]); // Clear blocks
@@ -125,12 +144,19 @@ const GenerateShortlist = () => {
 
   // 3. Fetch Blocks when a District is selected
   useEffect(() => {
+
+    if (selectedDistrict) {
+      setLoadingBlocks(true);
+      axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/shortlist/generate/blocks/${selectedDistrict}`)
+        .then((res) => {
+
     const fetchBlocks = async () => {
       if (selectedDistrict) {
         setLoadingBlocks(true);
         setBlocksError(null);
         try {
           const res = await axios.get(`${BASE_URL}/shortlist/generate/blocks/${selectedDistrict}`);
+
           setBlocks(res.data);
           setSelectedBlocks([]); // Clear selected blocks when district changes
         } catch (err) {
@@ -167,6 +193,21 @@ const GenerateShortlist = () => {
     );
   };
 
+
+  const fetchApplicantCounts = async () => {
+    setLoadingCounts(true);
+    try {
+      const totalRes = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/total-applicants?year=${currentYear}`);
+      const shortlistedRes = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/shortlisted-students`);
+      setTotalApplicants(totalRes.data.count || 0);
+      setShortlistedStudents(shortlistedRes.data.count || 0);
+    } catch (error) {
+      console.error("Error fetching counts:", error);
+    } finally {
+      setLoadingCounts(false);
+    }
+  };
+
   // Removed: This function is no longer needed
   // const fetchApplicantCounts = async () => {
   //   setLoadingCounts(true);
@@ -181,6 +222,7 @@ const GenerateShortlist = () => {
   //     setLoadingCounts(false);
   //   }
   // };
+
 
   const handleStartShortlisting = async () => {
     if (!selectedCriteria || !selectedState || !selectedDistrict || !shortlistName || !shortlistDescription || selectedBlocks.length === 0) {
@@ -204,7 +246,11 @@ const GenerateShortlist = () => {
     };
 
     try {
+
+      const res = await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/api/shortlist/generate/start-shortlist`, payload);
+
       const res = await axios.post(`${BASE_URL}/shortlist/generate/start-shortlist`, payload);
+
       setShortlistingResult({ success: res.data.message, shortlistedCount: res.data.shortlistedCount });
 
       // Removed: No longer calling fetchApplicantCounts after shortlisting

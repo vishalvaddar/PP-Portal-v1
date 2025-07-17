@@ -70,7 +70,6 @@ export const appRouter = createBrowserRouter([
           { path: "shortlisting", element: <Shortlisting /> },
           { path: "generate-shortlist", element: <GenerateShortlist /> },
           { path: "shortlist-info", element: <ShortlistInfo /> },
-          { path: "shortlisting", element: <Shortlisting /> },
           { path: "exam-management", element: <CreateExam /> },
           { path: "view-student-info/:nmms_reg_number", element: <ViewStudentInfo /> },
           { path: "view-applications", element: <ViewApplications /> },

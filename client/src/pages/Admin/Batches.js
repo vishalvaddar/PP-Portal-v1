@@ -82,7 +82,7 @@ const Batches = () => {
 
   const fetchCohorts = useCallback(async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/batches/cohorts");
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/batches/cohorts`);
       setCohorts(res.data.map((c) => ({ value: c.cohort_number, label: c.cohort_name })));
     } catch (err) {
       console.error("Error fetching cohorts", err);
@@ -92,7 +92,7 @@ const Batches = () => {
 
   const fetchCoordinators = useCallback(async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/batches/coordinators");
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/batches/coordinators`);
       setCoordinators(res.data);
     } catch (err) {
       console.error("Error fetching coordinators", err);
@@ -102,7 +102,7 @@ const Batches = () => {
 
   const fetchBatches = useCallback(async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/batches");
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/batches`);
       setBatches(res.data);
     } catch (err) {
       console.error("Error fetching Batches", err);
@@ -112,7 +112,7 @@ const Batches = () => {
 
   const fetchBatchNames = useCallback(async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/batches/names");
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/batches/names`);
       setAvailableBatchNames(res.data);
     } catch (err) {
       console.error("Error fetching Batch Names", err);
@@ -128,7 +128,7 @@ const Batches = () => {
 
   const validateBatch = (data) => {
     const validationErrors = {};
-    if (!data.batch_name || !data.batch_name.trim()) validationErrors.batch_name = "Batch name is required";
+    if (!data.batch_name || !data.batch_name.trim()) validationErrors.batch_name = "House name is required";
     if (!data.cohort_number) validationErrors.cohort_number = "Please select a cohort";
     setErrors(validationErrors);
     return Object.keys(validationErrors).length === 0;
@@ -153,7 +153,7 @@ const Batches = () => {
     if (!validateBatch(batch)) return;
 
     try {
-      await axios.post("http://localhost:5000/api/batches", {
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/batches`, {
         ...batch,
         batch_name: batch.batch_name.trim(),
         coordinator_id: batch.coordinator_id || null,
@@ -165,9 +165,9 @@ const Batches = () => {
       showNotification("Batch created successfully!");
     } catch (err) {
       if (err.response?.status === 409) {
-        setErrors({ batch_name: "Batch name already exists for this cohort." });
+        setErrors({ batch_name: "House name already exists for this cohort." });
       } else {
-        showNotification("Batch creation failed.", 'error');
+        showNotification("House creation failed.", 'error');
       }
     }
   };
@@ -193,7 +193,7 @@ const Batches = () => {
     if (!validateBatch(editBatch)) return;
 
     try {
-      await axios.put(`http://localhost:5000/api/batches/${editBatch.id}`, {
+      await axios.put(`${process.env.REACT_APP_API_URL}/api/batches/${editBatch.id}`, {
         batch_name: editBatch.batch_name,
         cohort_number: editBatch.cohort_number,
         batch_status: editBatch.batch_status,
@@ -203,12 +203,12 @@ const Batches = () => {
       setEditBatch(null);
       setShowEditModal(false);
       fetchBatches();
-      showNotification("Batch updated successfully!");
+      showNotification("House updated successfully!");
     } catch (err) {
       if (err.response?.status === 409) {
-        setErrors({ batch_name: "Another batch with this name already exists for the selected cohort." });
+        setErrors({ batch_name: "Another House with this name already exists for the selected cohort." });
       } else {
-        showNotification("Batch update failed.", 'error');
+        showNotification("House update failed.", 'error');
       }
     }
   };
@@ -221,9 +221,9 @@ const Batches = () => {
   const confirmDeleteBatch = async () => {
     if (!batchToDelete) return;
     try {
-      await axios.delete(`http://localhost:5000/api/batches/${batchToDelete}`);
+      await axios.delete(`${process.env.REACT_APP_API_URL}/api/batches/${batchToDelete}`);
       fetchBatches();
-      showNotification("Batch deleted successfully!");
+      showNotification("House deleted successfully!");
     } catch {
       showNotification("Delete failed.", 'error');
     } finally {
@@ -242,15 +242,15 @@ const Batches = () => {
   const confirmStatusChange = async () => {
     if (!batchToToggleStatus) return;
     try {
-      await axios.put(`http://localhost:5000/api/batches/${batchToToggleStatus.id}`, {
+      await axios.put(`${process.env.REACT_APP_API_URL}/api/batches/${batchToToggleStatus.id}`, {
         ...batchToToggleStatus,
         batch_status: newStatus,
       });
       fetchBatches();
-      showNotification(`Batch status changed to ${newStatus} successfully!`);
+      showNotification(`House status changed to ${newStatus} successfully!`);
     } catch (err) {
-      console.error("Error updating batch status", err);
-      showNotification("Failed to update batch status.", 'error');
+      console.error("Error updating house status", err);
+      showNotification("Failed to update house status.", 'error');
     } finally {
       setShowStatusConfirmModal(false);
       setBatchToToggleStatus(null);
@@ -274,18 +274,17 @@ const Batches = () => {
 
   const handleCohortSubmit = async (e) => {
     e.preventDefault();
-    const { cohort_name, start_date, end_date } = newCohort;
+    const { cohort_name, start_date } = newCohort;
     const validationErrors = {};
     if (!cohort_name.trim()) validationErrors.cohort_name = "Cohort name required";
     if (!start_date) validationErrors.start_date = "Start date required";
-    if (!end_date) validationErrors.end_date = "End date required";
     setCohortErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) return;
 
     try {
-      await axios.post("http://localhost:5000/api/batches/cohorts", newCohort);
-      setNewCohort({ cohort_name: "", start_date: "", end_date: "", description: "" });
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/batches/cohorts`, newCohort);
+      setNewCohort({ cohort_name: "", start_date: "", description: "" });
       setShowCohortModal(false);
       fetchCohorts();
       showNotification('Cohort created successfully!');
@@ -309,7 +308,7 @@ const Batches = () => {
         onClose={() => setShowConfirmModal(false)}
         onConfirm={confirmDeleteBatch}
         title="Confirm Deletion"
-        message="Are you sure you want to delete this batch? This action cannot be undone."
+        message="Are you sure you want to delete this House? This action cannot be undone."
       />
 
       {/* Confirmation Modal for Status Change */}
@@ -318,7 +317,7 @@ const Batches = () => {
         onClose={() => setShowStatusConfirmModal(false)}
         onConfirm={confirmStatusChange}
         title={`Confirm ${newStatus === 'Active' ? 'Activation' : 'Deactivation'}`}
-        message={`Are you sure you want to ${newStatus === 'Active' ? 'activate' : 'deactivate'} the batch "${batchToToggleStatus?.batch_name}"?`}
+        message={`Are you sure you want to ${newStatus === 'Active' ? 'activate' : 'deactivate'} the House "${batchToToggleStatus?.batch_name}"?`}
       />
 
       <div className={classes.header}>
@@ -328,7 +327,7 @@ const Batches = () => {
             + Add Cohort
           </button>
           <button onClick={() => { setErrors({}); setShowCreateModal(true); }} className={classes.addbtn}>
-            <PlusCircle size={20} /> Add Batch
+            <PlusCircle size={20} /> Add House
           </button>
         </div>
       </div>
@@ -337,7 +336,7 @@ const Batches = () => {
         <label htmlFor="sortBy">Sort By:</label>
         <select id="sortBy" value={sortBy} onChange={(e) => setSortBy(e.target.value)} className={classes.sortSelect}>
           <option value="cohort_name">Cohort</option>
-          <option value="batch_name">Batch Name</option>
+          <option value="batch_name">House Name</option>
           <option value="coordinator_name">Coordinator</option>
         </select>
       </div>
@@ -367,13 +366,13 @@ const Batches = () => {
       {showCreateModal && (
         <div className={classes.modalOverlay}>
           <div className={classes.modal}>
-            <h3>Create New Batch</h3>
+            <h3>Create New House</h3>
             <form onSubmit={handleSubmit} className={classes.modalContent}>
               <div className={classes.formGroup}>
-                <label>Batch Name</label>
+                <label>House Name</label>
                 <CreatableSelect
                   isClearable
-                  placeholder="Choose or type a batch name"
+                  placeholder="Choose or type a house name"
                   options={availableBatchNames}
                   value={getOption(availableBatchNames, batch.batch_name, 'value')}
                   onChange={async (selected, { action }) => {
@@ -381,10 +380,10 @@ const Batches = () => {
                     setBatch(prev => ({ ...prev, batch_name: value }));
                     if (action === "create-option" && value.trim()) {
                       try {
-                        await axios.post("http://localhost:5000/api/batches/names", { name: value.trim() });
+                        await axios.post(`${process.env.REACT_APP_API_URL}/api/batches/names`, { name: value.trim() });
                         fetchBatchNames();
                       } catch (err) {
-                        console.error("Error saving new batch name", err);
+                        console.error("Error saving new house name", err);
                       }
                     }
                   }}
@@ -449,11 +448,6 @@ const Batches = () => {
                 <label>Start Date</label>
                 <input type="date" name="start_date" value={newCohort.start_date} onChange={handleCohortInputChange} className={cohortErrors.start_date ? classes.errorInput : ''} />
                 {cohortErrors.start_date && <span className={classes.errorText}>{cohortErrors.start_date}</span>}
-              </div>
-              <div className={classes.formGroup}>
-                <label>End Date</label>
-                <input type="date" name="end_date" value={newCohort.end_date} onChange={handleCohortInputChange} className={cohortErrors.end_date ? classes.errorInput : ''} />
-                {cohortErrors.end_date && <span className={classes.errorText}>{cohortErrors.end_date}</span>}
               </div>
               <div className={classes.formGroup}>
                 <label>Description</label>

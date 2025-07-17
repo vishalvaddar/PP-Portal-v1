@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { navConfig } from "../../config/navConfig";
 import { useAuth } from "../../contexts/AuthContext";
-import "./Navbar.css";
+import { Link, useLocation } from "react-router-dom";
 import { MoveLeft, MoveRight, ChevronDown, ChevronRight } from "lucide-react";
-import { useLocation } from "react-router-dom"; // ✅ Added
+import "./Navbar.css";
 
 const roleMap = {
   ADMIN: "admin",
@@ -14,22 +14,21 @@ const roleMap = {
 
 const Navbar = ({ isCollapsed, toggleSidebar, navItems }) => {
   const { user } = useAuth();
-  const roleKey = roleMap[user?.role?.toUpperCase()] || "admin";
-  const navItemsToRender = navItems || navConfig[roleKey];
   const location = useLocation();
+  const roleKey = roleMap[user?.role?.toUpperCase()];
+  const navItemsToRender = navItems || navConfig[roleKey];
 
   const [openSubmenus, setOpenSubmenus] = useState({});
 
-  // ✅ Keep submenu open if current route is inside its children
   useEffect(() => {
     const newState = {};
-    navItemsToRender.forEach((item) => {
-      if (item.children) {
-        item.children.forEach((child) => {
-          if (location.pathname.startsWith(child.path)) {
-            newState[item.label] = true;
-          }
-        });
+    navItemsToRender?.forEach((item) => {
+      if (
+        item.children?.some((child) =>
+          location.pathname.startsWith(child.path)
+        )
+      ) {
+        newState[item.label] = true;
       }
     });
     setOpenSubmenus((prev) => ({ ...prev, ...newState }));
@@ -41,6 +40,10 @@ const Navbar = ({ isCollapsed, toggleSidebar, navItems }) => {
       [label]: !prev[label],
     }));
   };
+
+  if (!roleKey || !navItemsToRender) {
+    return <div className="navbar">Unauthorized role or no menu found</div>;
+  }
 
   return (
     <nav className={`navbar${isCollapsed ? " collapsed" : ""}`}>
@@ -86,10 +89,10 @@ const Navbar = ({ isCollapsed, toggleSidebar, navItems }) => {
                 <ul className="submenu-list">
                   {item.children.map((child) => (
                     <li key={child.path} className="submenu-item">
-                      <a href={child.path} title={child.label}>
+                      <Link to={child.path} title={child.label}>
                         <span className="nav-icon">{child.icon}</span>
                         <span className="nav-label">{child.label}</span>
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -97,10 +100,10 @@ const Navbar = ({ isCollapsed, toggleSidebar, navItems }) => {
             </li>
           ) : (
             <li key={item.path}>
-              <a href={item.path} title={isCollapsed ? item.label : undefined}>
+              <Link to={item.path} title={isCollapsed ? item.label : undefined}>
                 <span className="nav-icon">{item.icon}</span>
                 <span className="nav-label">{item.label}</span>
-              </a>
+              </Link>
             </li>
           )
         )}

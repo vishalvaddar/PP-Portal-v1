@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const jwt = require('jsonwebtoken');
 
 const authorizeRoleController = async (req, res) => {
   const { user_name, role_name } = req.body;
@@ -24,7 +25,19 @@ const authorizeRoleController = async (req, res) => {
 
     const user = result.rows[0];
 
+    // ✅ Generate JWT token
+    const token = jwt.sign(
+      {
+        user_id: user.user_id,
+        user_name: user.user_name,
+        role_name: user.role_name
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '1d' }
+    );
+
     res.status(200).json({
+      token, // 🛡️ include token in response
       user_id: user.user_id,
       user_name: user.user_name,
       role_name: user.role_name
