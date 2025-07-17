@@ -4,21 +4,25 @@ const Applicant = {
     create: async (data) => {
         const requiredFields = [
             "nmms_year", "nmms_reg_number", "student_name", "father_name",
-            "medium", "contact_no1", "contact_no2", "district",
-            "nmms_block", "current_institute_dise_code", "gmat_score", "sat_score"
+            "medium", "contact_no1", "district", "nmms_block",
+            "current_institute_dise_code", "gmat_score", "sat_score"
         ];
 
         for (let field of requiredFields) {
-            if (typeof data[field] === "string" && data[field].trim() === "") {
+            if (data[field] === undefined || data[field] === null || data[field] === "") {
                 throw new Error(`Missing required field: ${field}`);
             }
         }
 
+        const regNum = Number(data.nmms_reg_number);
+        if (isNaN(regNum)) throw new Error("Invalid NMMS Registration Number.");
+
         try {
             const checkResult = await pool.query(
                 "SELECT 1 FROM pp.applicant_primary_info WHERE nmms_reg_number = $1",
-                [data.nmms_reg_number]
+                [regNum]
             );
+
             if (checkResult.rows.length > 0) {
                 throw new Error("Student already exists with this NMMS registration number.");
             }
@@ -38,31 +42,30 @@ const Applicant = {
             `;
 
             const values = [
-                data.nmms_year || null,
-                data.nmms_reg_number || null,
-                data.app_state || null,
-                data.district || null,
-                data.nmms_block || null,
-                data.student_name || null,
-                data.father_name || null,
+                Number(data.nmms_year),
+                regNum,
+                data.app_state ? Number(data.app_state) : null,
+                data.district ? Number(data.district) : null,
+                data.nmms_block ? Number(data.nmms_block) : null,
+                data.student_name,
+                data.father_name,
                 data.mother_name || null,
-                data.gmat_score || null,
-                data.sat_score || null,
+                data.gmat_score ? Number(data.gmat_score) : null,
+                data.sat_score ? Number(data.sat_score) : null,
                 data.gender || null,
-                data.medium || null,
+                data.medium,
                 data.aadhaar || null,
                 data.DOB ? new Date(data.DOB).toISOString().split("T")[0] : null,
                 data.home_address || null,
-                data.family_income_total || null,
-                data.contact_no1 || null,
-                data.contact_no2 || null,
-                data.current_institute_dise_code || null,
-                data.previous_institute_dise_code || null
+                data.family_income_total ? Number(data.family_income_total) : null,
+                data.contact_no1,
+                data.contact_no2,
+                data.current_institute_dise_code ? Number(data.current_institute_dise_code) : null,
+                data.previous_institute_dise_code ? Number(data.previous_institute_dise_code) : null
             ];
 
             const result = await pool.query(query, values);
             return result.rows[0];
-
         } catch (error) {
             console.error("Error creating applicant:", error.message);
             throw new Error("Failed to create applicant.");
@@ -150,25 +153,26 @@ const Applicant = {
 
     getByRegNumber: async (nmms_reg_number) => {
         try {
-          const result = await pool.query(
-            `
-            SELECT 
-              a.*, 
-              s.*,
-              i.institute_name,
-              js.juris_name AS state_name,
-              jd.juris_name AS district_name,
-              jb.juris_name AS block_name
-            FROM pp.applicant_primary_info a
-            LEFT JOIN pp.institute i ON i.dise_code = a.current_institute_dise_code
-            LEFT JOIN pp.jurisdiction js ON js.juris_code = a.app_state AND js.juris_type = 'STATE'
-            LEFT JOIN pp.jurisdiction jd ON jd.juris_code = a.district AND jd.juris_type = 'EDUCATION DISTRICT'
-            LEFT JOIN pp.jurisdiction jb ON jb.juris_code = a.nmms_block AND jb.juris_type = 'BLOCK'
-            LEFT JOIN pp.applicant_secondary_info s ON s.applicant_id = a.applicant_id
-            WHERE a.nmms_reg_number = $1
-            `,
-            [nmms_reg_number]
-          );
+       const result = await pool.query(
+         `
+         SELECT
+             a.*,
+             s.*,
+             i.institute_name,
+             js.juris_name AS state_name,
+             jd.juris_name AS district_name,
+             jb.juris_name AS block_name
+         FROM pp.applicant_primary_info a
+         LEFT JOIN pp.institute i ON i.dise_code = a.current_institute_dise_code
+         LEFT JOIN pp.jurisdiction js ON js.juris_code = a.app_state AND js.juris_type = 'STATE'
+         LEFT JOIN pp.jurisdiction jd ON jd.juris_code = a.district AND jd.juris_type = 'EDUCATION DISTRICT'
+         LEFT JOIN pp.jurisdiction jb ON jb.juris_code = a.nmms_block AND jb.juris_type = 'BLOCK'
+         LEFT JOIN pp.applicant_secondary_info s ON s.applicant_id = a.applicant_id
+         WHERE TRIM(a.nmms_reg_number::text) = TRIM($1)
+    `,
+    [nmms_reg_number]
+    );
+
       
           return result.rows[0] || null;
         } catch (error) {

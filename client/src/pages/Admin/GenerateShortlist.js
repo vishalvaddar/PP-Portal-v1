@@ -30,20 +30,20 @@ const GenerateShortlist = () => {
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/shortlist/generate/allstates")
+    axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/shortlist/generate/allstates`)
       .then((res) => setStates(res.data))
       .catch((err) => console.error("Error fetching all states:", err));
   }, []);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/shortlist/generate/criteria")
+    axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/shortlist/generate/criteria`)
       .then((res) => setSelectionCriteria(res.data))
       .catch((err) => console.error("Error fetching criteria:", err));
   }, []);
 
   useEffect(() => {
     if (selectedState) {
-      axios.get(`http://localhost:5000/api/shortlist/generate/districts/${selectedState}`)
+      axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/shortlist/generate/districts/${selectedState}`)
         .then((res) => {
           setDistricts(res.data);
           setSelectedDistrict("");
@@ -62,7 +62,7 @@ const GenerateShortlist = () => {
   useEffect(() => {
     if (selectedDistrict) {
       setLoadingBlocks(true);
-      axios.get(`http://localhost:5000/api/shortlist/generate/blocks/${selectedDistrict}`)
+      axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/shortlist/generate/blocks/${selectedDistrict}`)
         .then((res) => {
           setBlocks(res.data);
           setSelectedBlocks([]);
@@ -91,8 +91,8 @@ const GenerateShortlist = () => {
   const fetchApplicantCounts = async () => {
     setLoadingCounts(true);
     try {
-      const totalRes = await axios.get(`http://localhost:5000/api/total-applicants?year=${currentYear}`);
-      const shortlistedRes = await axios.get("http://localhost:5000/api/shortlisted-students");
+      const totalRes = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/total-applicants?year=${currentYear}`);
+      const shortlistedRes = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/shortlisted-students`);
       setTotalApplicants(totalRes.data.count || 0);
       setShortlistedStudents(shortlistedRes.data.count || 0);
     } catch (error) {
@@ -121,7 +121,7 @@ const GenerateShortlist = () => {
     };
 
     try {
-      const res = await axios.post("http://localhost:5000/api/shortlist/generate/start-shortlist", payload);
+      const res = await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/api/shortlist/generate/start-shortlist`, payload);
       setShortlistingResult({ success: res.data.message, shortlistedCount: res.data.shortlistedCount });
       fetchApplicantCounts();
     } catch (err) {

@@ -25,7 +25,7 @@ const ShortlistInfo = () => {
   const [nonFrozenNamesError, setNonFrozenNamesError] = useState(null);
 
   // API Endpoints
-  const BASE_API_URL = "http://localhost:5000/api/shortlist/info";
+  const BASE_API_URL = `${process.env.REACT_APP_BACKEND_API_URL}/api/shortlist/info`;
   const GET_NAMES_ENDPOINT = `${BASE_API_URL}/names`;
   const GET_NON_FROZEN_NAMES_ENDPOINT = `${BASE_API_URL}/non-frozen-names`;
   const GET_COUNTS_ENDPOINT = `${BASE_API_URL}/counts`;

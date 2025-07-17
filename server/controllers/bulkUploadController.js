@@ -28,7 +28,7 @@ const validateField = (field, value, rowIndex) => {
       break;
 
     case 'nmms_reg_number':
-      if (value && value.length < 5) errors.push('must be at least 5 characters');
+      if (value && value.length !== 11) errors.push('must be exactly 11 characters');
       break;
 
     case 'gmat_score':

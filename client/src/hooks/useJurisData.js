@@ -5,7 +5,7 @@ export function useFetchStates(setStates) {
     useEffect(() => {
         const fetchStates = async () => {
             try {
-                const response = await axios.get("http://localhost:5000/api/states");
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/states`);
                 setStates(response.data);
             } catch (error) {
                 console.error("Error fetching states:", error);
@@ -20,7 +20,7 @@ export function useFetchDistricts(stateId, setDistricts) {
         const fetchDistricts = async () => {
             if (stateId) {
                 try {
-                    const response = await axios.get(`http://localhost:5000/api/districts-by-state/${stateId}`);
+                    const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/districts-by-state/${stateId}`);
                     setDistricts(response.data);
                 } catch (error) {
                     console.error("Error fetching districts:", error);
@@ -38,7 +38,7 @@ export function useFetchBlocks(districtId, setBlocks) {
         const fetchBlocks = async () => {
             if (districtId) {
                 try {
-                    const response = await axios.get(`http://localhost:5000/api/blocks-by-district/${districtId}`);
+                    const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/blocks-by-district/${districtId}`);
                     setBlocks(response.data);
                 } catch (error) {
                     console.error("Error fetching blocks:", error);
@@ -56,7 +56,7 @@ export function useFetchInstitutes(blockId, setInstitutes) {
         const fetchInstitutes = async () => {
             if (blockId) {
                 try {
-                    const response = await axios.get(`http://localhost:5000/api/institutes-by-block/${blockId}`);
+                    const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/institutes-by-block/${blockId}`);
                     setInstitutes(response.data);
                 } catch (error) {
                     console.error("Error fetching institutes:", error);

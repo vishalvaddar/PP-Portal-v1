@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 import logo from '../../assets/images.png';
-// import { GraduationCap } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent} from '../ui/card';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
@@ -30,7 +29,7 @@ const LoginForm = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/auth/login', {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, {
         user_name: credentials.user_name,
         password: credentials.password,
       });
@@ -53,7 +52,7 @@ const LoginForm = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/auth/authorize-role', {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/authorize-role`, {
         user_name: credentials.user_name,
         role_name: selectedRole,
       });
