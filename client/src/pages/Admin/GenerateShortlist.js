@@ -60,7 +60,7 @@ const GenerateShortlist = () => {
   // 1. Fetch States and Selection Criteria on component mount
   useEffect(() => {
 
-    axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/shortlist/generate/criteria`)
+    axios.get(`${process.env.REACT_API_URL}/api/shortlist/generate/criteria`)
       .then((res) => setSelectionCriteria(res.data))
       .catch((err) => console.error("Error fetching criteria:", err));
 
@@ -107,7 +107,7 @@ const GenerateShortlist = () => {
   useEffect(() => {
 
     if (selectedState) {
-      axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/shortlist/generate/districts/${selectedState}`)
+      axios.get(`${process.env.REACT_API_URL}/api/shortlist/generate/districts/${selectedState}`)
         .then((res) => {
 
     const fetchDistricts = async () => {
@@ -147,7 +147,7 @@ const GenerateShortlist = () => {
 
     if (selectedDistrict) {
       setLoadingBlocks(true);
-      axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/shortlist/generate/blocks/${selectedDistrict}`)
+      axios.get(`${process.env.REACT_API_URL}/api/shortlist/generate/blocks/${selectedDistrict}`)
         .then((res) => {
 
     const fetchBlocks = async () => {
@@ -197,8 +197,8 @@ const GenerateShortlist = () => {
   const fetchApplicantCounts = async () => {
     setLoadingCounts(true);
     try {
-      const totalRes = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/total-applicants?year=${currentYear}`);
-      const shortlistedRes = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/shortlisted-students`);
+      const totalRes = await axios.get(`${process.env.REACT_API_URL}/api/total-applicants?year=${currentYear}`);
+      const shortlistedRes = await axios.get(`${process.env.REACT_API_URL}/api/shortlisted-students`);
       setTotalApplicants(totalRes.data.count || 0);
       setShortlistedStudents(shortlistedRes.data.count || 0);
     } catch (error) {
@@ -247,7 +247,7 @@ const GenerateShortlist = () => {
 
     try {
 
-      const res = await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/api/shortlist/generate/start-shortlist`, payload);
+      const res = await axios.post(`${process.env.REACT_API_URL}/api/shortlist/generate/start-shortlist`, payload);
 
       const res = await axios.post(`${BASE_URL}/shortlist/generate/start-shortlist`, payload);
 
