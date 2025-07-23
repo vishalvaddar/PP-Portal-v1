@@ -1,30 +1,32 @@
-// Layout.js
 import React, { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar/Navbar";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { useAuth } from "./contexts/AuthContext";
 import { navConfig } from "./config/navConfig";
-import "./Layout.css"; 
+import "./Layout.css";
 
 const Layout = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const { user } = useAuth(); // Get user from context
+  const { user } = useAuth();
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
-  // Determine role, default to 'student' or handle unauthenticated state as needed
-  const role = user?.role || "student";
-  const navItems = navConfig[role];
+  // 🔐 Redirect if not logged in
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
+
+  const roleKey = user?.role?.toLowerCase() || "student";  // ⬅ fix: lowercase
+  const navItems = navConfig[roleKey] || [];
 
   return (
     <div className="layout-wrapper">
       <Header />
       <div className="main-section">
-        {/* ✅ Added dynamic class for collapsed sidebar */}
         <div className={`sidebar-container ${isSidebarCollapsed ? "collapsed" : ""}`}>
           <Navbar
             isCollapsed={isSidebarCollapsed}
@@ -33,8 +35,7 @@ const Layout = () => {
           />
         </div>
 
-        {/* ✅ Content margin dynamically adjusts with sidebar */}
-        <div className={`content ${isSidebarCollapsed ? 'content-collapsed' : ''}`}>
+        <div className={`content ${isSidebarCollapsed ? "content-collapsed" : ""}`}>
           <Outlet />
         </div>
       </div>

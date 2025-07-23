@@ -220,7 +220,7 @@ exports.addBatchName = async (req, res) => {
 exports.getAllCohorts = async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT cohort_number, cohort_name, start_date, end_date, description 
+      SELECT cohort_number, cohort_name, start_date, description 
       FROM pp.cohort 
       ORDER BY cohort_number ASC
     `);
@@ -233,17 +233,17 @@ exports.getAllCohorts = async (req, res) => {
 
 // 10. Create Cohort
 exports.createCohort = async (req, res) => {
-  const { cohort_name, start_date, end_date, description } = req.body;
+  const { cohort_name, start_date, description } = req.body;
 
-  if (!cohort_name || !start_date || !end_date)
-    return res.status(400).json({ error: "cohort_name, start_date, and end_date are required." });
+  if (!cohort_name || !start_date)
+    return res.status(400).json({ error: "cohort_name and start_date are required." });
 
   try {
     const result = await pool.query(
-      `INSERT INTO pp.cohort (cohort_name, start_date, end_date, description)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO pp.cohort (cohort_name, start_date, description)
+       VALUES ($1, $2, $3)
        RETURNING *`,
-      [cohort_name.trim(), start_date, end_date, description || null]
+      [cohort_name.trim(), start_date, description || null]
     );
 
     res.status(201).json({

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import classes from "./ViewStudentInfo.module.css"; // Adjust the path as necessary
+import classes from "./ViewStudentInfo.module.css";
 // import classes from "./EditForm.module.css"; // Assuming you reuse the CSS
 
 const ViewStudentInfo = () => {
@@ -87,7 +87,8 @@ const ViewStudentInfo = () => {
     const fetchStudentDetails = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`http://localhost:5000/applicants/${nmms_reg_number}`);
+        console.log(`${process.env.REACT_APP_API_URL}/applicants/${nmms_reg_number}`); // Debugging line
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/applicants/${nmms_reg_number}`);
         const data = res.data;
 
         if (data) {
@@ -148,7 +149,7 @@ const ViewStudentInfo = () => {
 
           setFormData(primaryData);
           setSecondaryData(secondaryData);
-          setPhotoPreview(data.photo ? `http://localhost:5000/uploads/profile_photos/${data.photo}` : (data.gender === "M" ? "/default-boy.png" : "/default-girl.png"));
+          setPhotoPreview(data.photo ? `${process.env.REACT_APP_API_URL}/uploads/profile_photos/${data.photo}` : (data.gender === "M" ? "/default-boy.png" : "/default-girl.png"));
 
           // Fetch institutes after getting the block code
           if (primaryData.nmms_block) {
@@ -172,7 +173,7 @@ const ViewStudentInfo = () => {
 
     const fetchInstitutes = async (blockCode) => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/institutes-by-block/${blockCode}`);
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/institutes-by-block/${blockCode}`);
         setInstitutes(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error("Error fetching institutes", err);
@@ -231,7 +232,6 @@ const ViewStudentInfo = () => {
         <h3>{title}</h3>
       </div>
       <div className={classes.sectionToggle}>
-        {/* Using text icons for simplicity, replace with actual icons if preferred */}
         <span>{expandedSections[section] ? '−' : '+'}</span>
       </div>
     </div>
@@ -251,7 +251,7 @@ const ViewStudentInfo = () => {
   if (!formData) {
     return (
       <div className={classes.container}>
-        <div className={classes.errorMessage}> {/* Use errorMessage for consistency */}
+        <div className={classes.errorMessage}>
           <span className={classes.errorIcon}>⚠</span>
           <span>No student data found for NMMS Registration Number: {nmms_reg_number}</span>
         </div>
@@ -263,7 +263,7 @@ const ViewStudentInfo = () => {
     <div className={classes.container}>
       <div className={classes.headerSection}>
         <div className={classes.headerContent}>
-          <h2 className={classes.pageTitle}>Student Profile</h2>
+          <h2 className={classes.pageTitle}>Applicant</h2>
           <div className={classes.studentMeta}>
             <span className={classes.idLabel}>NMMS Reg No:</span>
             <span className={classes.idValue}>{nmms_reg_number}</span>
@@ -294,7 +294,7 @@ const ViewStudentInfo = () => {
         <button 
           type="button" 
           className={classes.editBtn} 
-          onClick={() => navigate(`/admin/edit-form/${nmms_reg_number}`)}
+          onClick={() => navigate(`/admin/admissions/edit-form/${nmms_reg_number}`)}
         >
           Edit Profile  
         </button>

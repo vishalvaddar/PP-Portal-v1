@@ -82,7 +82,7 @@ const SearchApplications = () => {
     };
 
     try {
-      const response = await axios.get("http://localhost:5000/api/search", {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/search`, {
         params: searchParams,
       });
 
@@ -91,7 +91,7 @@ const SearchApplications = () => {
         return;
       }
 
-      navigate("/admin/admissions/view-applications", {
+      navigate(`/admin/admissions/view-applications`, {
         state: {
           initialApplications: response.data.data,
           paginationInfo: response.data.pagination,

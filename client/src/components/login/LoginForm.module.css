@@ -1,65 +1,56 @@
 /* LoginForm.module.css */
 
-/* Overall container for the login form */
+/* --- Global Styles for this Component --- */
 .loginFormContainer {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* Full viewport height */
-    background: linear-gradient(135deg, #f0f2f5 0%, #e0e6ed 100%); /* Subtle gradient background */
-    font-family: 'Inter', sans-serif; /* Modern font */
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f0f2f5 0%, #e0e6ed 100%);
+    font-family: 'Inter', sans-serif;
     padding: 20px;
-    box-sizing: border-box; /* Include padding in element's total width and height */
+    box-sizing: border-box;
 }
 
-/* Styling for the main Card component */
+/* --- Card Styles --- */
 .card {
     width: 100%;
-    max-width: 450px; /* Limit width for desktop */
+    max-width: 450px;
     background-color: #ffffff;
-    border-radius: 12px; /* Rounded corners */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Deeper shadow for elevation */
-    overflow: hidden; /* Ensures rounded corners apply to children */
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
     padding: 30px;
     box-sizing: border-box;
-    border: none; /* Remove default shadcn border if any */
+    border: none;
 }
 
-/* Card Header styles */
 .cardHeader {
     text-align: center;
     margin-bottom: 25px;
-    padding-bottom: 0; /* Remove default padding if any */
 }
 
-/* Icon styling */
 .graduationCapIcon {
     width: 60px;
     height: 60px;
-    color: #007bff; /* Primary blue color */
+    color: #007bff;
     margin-bottom: 15px;
-    animation: fadeInScale 0.5s ease-out; /* Simple entry animation */
 }
 
-
-
-/* Card Title */
+/* Using clamp() for fluid font size */
 .cardTitle {
-    font-size: 1.8rem;
+    font-size: clamp(1.6rem, 5vw, 1.8rem); /* Scales between 1.6rem and 1.8rem */
     font-weight: 700;
     color: #2c3e50;
     margin-bottom: 8px;
-    letter-spacing: -0.02em;
 }
 
-/* Card Description */
 .cardDescription {
     font-size: 1rem;
     color: #6c757d;
-    line-height: 1.5;
 }
 
-/* Error message styling */
+/* --- Form Element Styles --- */
 .errorMessage {
     background-color: #ffebeb;
     color: #d9534f;
@@ -71,21 +62,18 @@
     text-align: center;
 }
 
-/* Form spacing */
 .formSpaceY4 > *:not(:last-child) {
-    margin-bottom: 20px; /* Spacing between form groups */
+    margin-bottom: 20px;
 }
 
-/* Label styling */
 .label {
     font-size: 0.95rem;
     font-weight: 600;
     color: #495057;
-    margin-bottom: 8px; /* Space between label and input */
-    display: block; /* Ensure label takes full width */
+    margin-bottom: 8px;
+    display: block;
 }
 
-/* Input field styling */
 .inputField {
     width: 100%;
     padding: 12px 15px;
@@ -94,16 +82,16 @@
     font-size: 1rem;
     color: #343a40;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    box-sizing: border-box; /* Ensures padding doesn't add to total width */
+    box-sizing: border-box;
 }
 
 .inputField:focus {
     border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); /* Focus ring */
-    outline: none; /* Remove default outline */
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    outline: none;
 }
 
-/* Button styling */
+/* --- Button Styles --- */
 .button {
     width: 100%;
     padding: 14px 20px;
@@ -120,11 +108,11 @@
 
 .button:hover {
     background-color: #0056b3;
-    transform: translateY(-2px); /* Slight lift on hover */
+    transform: translateY(-2px);
 }
 
 .button:active {
-    transform: translateY(0); /* Press effect */
+    transform: translateY(0);
 }
 
 .button:disabled {
@@ -134,11 +122,11 @@
     transform: none;
 }
 
-/* Role selection radio group */
+/* --- Role Selection --- */
 .roleRadioGroup {
     display: flex;
-    flex-direction: column; /* Stack roles vertically */
-    gap: 12px; /* Space between role options */
+    flex-direction: column; /* Default vertical layout for mobile */
+    gap: 12px;
 }
 
 .roleOption {
@@ -148,94 +136,49 @@
     border: 1px solid #e9ecef;
     border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
     font-size: 1rem;
     color: #495057;
-    background-color: #f8f9fa;
-    position: relative; /* For custom checkbox */
 }
 
-.roleOption:hover {
-    background-color: #e2e6ea;
-    border-color: #c1d8ee;
-}
-
-/* Style for when a role option is checked */
 .roleOption[data-checked="true"] {
-    background-color: #e0f2fe; /* Light blue background */
-    border-color: #90cdf4; /* Darker blue border */
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2); /* Highlight glow */
+    background-color: #e0f2fe;
+    border-color: #90cdf4;
     font-weight: 600;
     color: #007bff;
 }
 
-/* Hide default radio input */
 .roleRadioGroupItem {
-    position: absolute; /* Take out of flow */
-    opacity: 0; /* Hide visually */
-    pointer-events: none; /* Disable interaction */
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
 }
 
-/* Custom radio indicator */
-.roleOption::before {
-    content: '';
-    display: inline-block;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    border: 2px solid #adb5bd;
-    margin-right: 12px;
-    background-color: #fff;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-    flex-shrink: 0; /* Prevent it from shrinking */
-}
+/* --- Responsive Adjustments --- */
 
-/* Custom radio indicator when checked */
-.roleOption[data-checked="true"]::before {
-    background-color: #007bff; /* Blue fill */
-    border-color: #007bff;
-    box-shadow: inset 0 0 0 4px #fff; /* White inner circle */
-}
-
-
-/* Animations */
-@keyframes fadeInScale {
-    from {
-        opacity: 0;
-        transform: scale(0.8);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-/* Responsive adjustments */
+/* Small devices (phones, 600px and down) */
 @media (max-width: 600px) {
+    .loginFormContainer {
+        padding: 10px; /* Reduce padding on smallest screens */
+    }
+
     .card {
-        padding: 25px;
-        margin: 15px; /* Add some margin on smaller screens */
+        padding: 20px; /* Reduce card padding */
     }
-
-    .cardTitle {
-        font-size: 1.6rem;
-    }
-
-    .graduationCapIcon {
-        width: 50px;
-        height: 50px;
-    }
-
-    .button {
-        font-size: 1rem;
-        padding: 12px 18px;
-    }
-
-    .inputField {
-        padding: 10px 12px;
-    }
-
+    
     .formSpaceY4 > *:not(:last-child) {
-        margin-bottom: 15px;
+        margin-bottom: 15px; /* Tighten form spacing */
+    }
+}
+
+/* Medium devices and up (tablets and desktops, 768px and up) */
+@media (min-width: 768px) {
+    .roleRadioGroup {
+        flex-direction: row; /* Horizontal layout for roles */
+    }
+
+    .roleOption {
+        flex: 1; /* Make both options take equal space */
+        justify-content: center; /* Center content within each option */
     }
 }

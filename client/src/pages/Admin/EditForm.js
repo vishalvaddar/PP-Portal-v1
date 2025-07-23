@@ -112,7 +112,7 @@ const EditStudent = () => {
     const fetchStudentDetails = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`http://localhost:5000/applicants/${nmms_reg_number}`);
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/applicants/${nmms_reg_number}`);
         if (!isMounted) return; // Check if component is still mounted
         const data = res.data;
 
@@ -176,7 +176,7 @@ const EditStudent = () => {
           setFormData(primaryData);
           setSecondaryData(secondaryData);
           setPhotoPreview(data.photo
-            ? `http://localhost:5000/uploads/profile_photos/${data.photo}`
+            ? `${process.env.REACT_APP_API_URL}/uploads/profile_photos/${data.photo}`
             : data.gender === "M" ? "/default-boy.png" : "/default-girl.png"
           );
 
@@ -207,7 +207,7 @@ const EditStudent = () => {
     const fetchInstitutes = async (blockCode) => {
       if (!blockCode) return; // Don't fetch if blockCode is missing
       try {
-        const res = await axios.get(`http://localhost:5000/api/institutes-by-block/${blockCode}`);
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/institutes-by-block/${blockCode}`);
         if (isMounted) {
           setInstitutes(Array.isArray(res.data) ? res.data : []);
         }
@@ -378,7 +378,7 @@ const EditStudent = () => {
       });
   
       const response = await axios.put(
-        `http://localhost:5000/applicants/update/${formData.applicant_id}`,
+        `${process.env.REACT_APP_API_URL}/applicants/update/${formData.applicant_id}`,
         {
           primaryData: primaryDataToSend,
           secondaryData: secondaryDataToSend
@@ -387,7 +387,7 @@ const EditStudent = () => {
   
       if (response.status === 200) {
         setSuccess(true);
-        setTimeout(() => navigate(`/admin/view-student-info/${nmms_reg_number}`), 1500);
+        setTimeout(() => navigate(`/admin/admissions/view-student-info/${nmms_reg_number}`), 1500);
       } else {
         setError("Update was not completely successful. Please check the data and try again.");
       }
@@ -515,7 +515,7 @@ const EditStudent = () => {
     <div className={classes.container}>
       <div className={classes.headerSection}>
         <div className={classes.headerContent}> 
-          <h2 className={classes.pageTitle}>Edit Student Profile</h2> {/* Updated title */}
+          <h2 className={classes.pageTitle}>Edit Applicant</h2> {/* Updated title */}
           <div className={classes.studentMeta}>
             <span className={classes.idLabel}>NMMS Reg No:</span>
             <span className={classes.idValue}>{nmms_reg_number}</span>
@@ -546,7 +546,7 @@ const EditStudent = () => {
       {success && (
         <div className={classes.successMessage}>
           <span className={classes.successIcon}>✅</span>
-          <span>Update successful! Redirecting...</span> {/* Updated success message */}
+          <span>Update successful! Redirecting...</span>
         </div>
       )}
 
@@ -661,7 +661,7 @@ const EditStudent = () => {
           <button 
             type="button" 
             className={classes.cancelBtn} 
-            onClick={() => navigate(`/view-student-info/${nmms_reg_number}`)} // Navigate back to view page
+            onClick={() => navigate(`/admin/admissions/view-student-info/${nmms_reg_number}`)} 
             disabled={loading} // Disable while submitting
           >
             Cancel

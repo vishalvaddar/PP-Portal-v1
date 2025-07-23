@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
-  MapPin, Building2, ListChecks, Edit, Users,
-  UserCheck, Play, AlertTriangle, CheckCircle
+  MapPin, Building2, ListChecks, Edit, Play, AlertTriangle, CheckCircle, Loader
 } from 'lucide-react';
 import "./GenerateShortlist.css";
 
@@ -10,73 +9,94 @@ const GenerateShortlist = () => {
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [blocks, setBlocks] = useState([]);
-
   const [selectedState, setSelectedState] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [selectedBlocks, setSelectedBlocks] = useState([]);
-
   const [selectionCriteria, setSelectionCriteria] = useState([]);
   const [selectedCriteria, setSelectedCriteria] = useState("");
-
   const [shortlistName, setShortlistName] = useState("");
   const [shortlistDescription, setShortlistDescription] = useState("");
-
   const [shortlistingResult, setShortlistingResult] = useState(null);
-  const [totalApplicants, setTotalApplicants] = useState(0);
-  const [shortlistedStudents, setShortlistedStudents] = useState(0);
-  const [loadingCounts, setLoadingCounts] = useState(false);
+
   const [loadingBlocks, setLoadingBlocks] = useState(false);
+  const [loadingInitialData, setLoadingInitialData] = useState(true);
+  const [loadingDistricts, setLoadingDistricts] = useState(false);
+  const [submittingShortlist, setSubmittingShortlist] = useState(false);
+
+  const [statesError, setStatesError] = useState(null);
+  const [criteriaError, setCriteriaError] = useState(null);
+  const [districtsError, setDistrictsError] = useState(null);
+  const [blocksError, setBlocksError] = useState(null);
 
   const currentYear = new Date().getFullYear();
 
+  // 1. Fetch initial states and criteria
   useEffect(() => {
-    axios.get("http://localhost:5000/api/shortlist/generate/allstates")
-      .then((res) => setStates(res.data))
-      .catch((err) => console.error("Error fetching all states:", err));
+    const fetchInitialData = async () => {
+      setLoadingInitialData(true);
+      try {
+        const [statesRes, criteriaRes] = await Promise.all([
+          axios.get(`${process.env.REACT_APP_API_URL}/api/shortlist/generate/allstates`),
+          axios.get(`${process.env.REACT_APP_API_URL}/api/shortlist/generate/criteria`)
+        ]);
+        setStates(statesRes.data);
+        setSelectionCriteria(criteriaRes.data);
+      } catch (err) {
+        console.error("Initial fetch error:", err);
+        setStatesError("Failed to load states.");
+        setCriteriaError("Failed to load selection criteria.");
+      } finally {
+        setLoadingInitialData(false);
+      }
+    };
+    fetchInitialData();
   }, []);
 
+  // 2. Fetch districts
   useEffect(() => {
-    axios.get("http://localhost:5000/api/shortlist/generate/criteria")
-      .then((res) => setSelectionCriteria(res.data))
-      .catch((err) => console.error("Error fetching criteria:", err));
-  }, []);
-
-  useEffect(() => {
-    if (selectedState) {
-      axios.get(`http://localhost:5000/api/shortlist/generate/districts/${selectedState}`)
-        .then((res) => {
-          setDistricts(res.data);
-          setSelectedDistrict("");
-          setBlocks([]);
-          setSelectedBlocks([]);
-        })
-        .catch((err) => console.error("Error fetching districts:", err));
-    } else {
-      setDistricts([]);
-      setBlocks([]);
-      setSelectedDistrict("");
-      setSelectedBlocks([]);
-    }
+    const fetchDistricts = async () => {
+      if (!selectedState) return;
+      setLoadingDistricts(true);
+      setDistrictsError(null);
+      try {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/shortlist/generate/districts/${selectedState}`);
+        setDistricts(res.data);
+        setSelectedDistrict("");
+        setBlocks([]);
+        setSelectedBlocks([]);
+      } catch (err) {
+        console.error("Error fetching districts:", err);
+        setDistrictsError("Failed to load districts for selected state.");
+        setDistricts([]);
+        setBlocks([]);
+        setSelectedBlocks([]);
+      } finally {
+        setLoadingDistricts(false);
+      }
+    };
+    fetchDistricts();
   }, [selectedState]);
 
+  // 3. Fetch blocks
   useEffect(() => {
-    if (selectedDistrict) {
+    const fetchBlocks = async () => {
+      if (!selectedDistrict) return;
       setLoadingBlocks(true);
-      axios.get(`http://localhost:5000/api/shortlist/generate/blocks/${selectedDistrict}`)
-        .then((res) => {
-          setBlocks(res.data);
-          setSelectedBlocks([]);
-        })
-        .catch((err) => {
-          console.error("Error fetching blocks:", err);
-          setBlocks([]);
-          setSelectedBlocks([]);
-        })
-        .finally(() => setLoadingBlocks(false));
-    } else {
-      setBlocks([]);
-      setSelectedBlocks([]);
-    }
+      setBlocksError(null);
+      try {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/shortlist/generate/blocks/${selectedDistrict}`);
+        setBlocks(res.data);
+        setSelectedBlocks([]);
+      } catch (err) {
+        console.error("Error fetching blocks:", err);
+        setBlocksError("Failed to load blocks for selected district.");
+        setBlocks([]);
+        setSelectedBlocks([]);
+      } finally {
+        setLoadingBlocks(false);
+      }
+    };
+    fetchBlocks();
   }, [selectedDistrict]);
 
   const handleBlockChange = (blockName, isFrozen) => {
@@ -88,25 +108,14 @@ const GenerateShortlist = () => {
     );
   };
 
-  const fetchApplicantCounts = async () => {
-    setLoadingCounts(true);
-    try {
-      const totalRes = await axios.get(`http://localhost:5000/api/total-applicants?year=${currentYear}`);
-      const shortlistedRes = await axios.get("http://localhost:5000/api/shortlisted-students");
-      setTotalApplicants(totalRes.data.count || 0);
-      setShortlistedStudents(shortlistedRes.data.count || 0);
-    } catch (error) {
-      console.error("Error fetching counts:", error);
-    } finally {
-      setLoadingCounts(false);
-    }
-  };
-
   const handleStartShortlisting = async () => {
     if (!selectedCriteria || !selectedState || !selectedDistrict || !shortlistName || !shortlistDescription || selectedBlocks.length === 0) {
       alert("Please fill all required fields and select at least one unfrozen block.");
       return;
     }
+
+    setSubmittingShortlist(true);
+    setShortlistingResult(null);
 
     const payload = {
       criteriaId: selectedCriteria,
@@ -121,12 +130,21 @@ const GenerateShortlist = () => {
     };
 
     try {
-      const res = await axios.post("http://localhost:5000/api/shortlist/generate/start-shortlist", payload);
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/shortlist/generate/start-shortlist`, payload);
       setShortlistingResult({ success: res.data.message, shortlistedCount: res.data.shortlistedCount });
-      fetchApplicantCounts();
+
+      // Reset form
+      setSelectedState("");
+      setSelectedDistrict("");
+      setSelectedBlocks([]);
+      setSelectedCriteria("");
+      setShortlistName("");
+      setShortlistDescription("");
     } catch (err) {
-      const msg = err.response?.data?.error || "Shortlisting failed.";
-      setShortlistingResult({ error: msg });
+      console.error("Error during shortlisting:", err);
+      setShortlistingResult({ error: err.response?.data?.error || "Shortlisting failed." });
+    } finally {
+      setSubmittingShortlist(false);
     }
   };
 
@@ -137,39 +155,55 @@ const GenerateShortlist = () => {
       <h2>Shortlist Process</h2>
       <p>Select jurisdiction, criteria, and provide details to generate a shortlist.</p>
 
-      {/* Jurisdiction */}
+      {/* Select State */}
       <div className="location-selection">
         <h3><MapPin className="inline-block mr-2" />Select Jurisdiction</h3>
-        <select value={selectedState} onChange={(e) => setSelectedState(e.target.value)} className="dropdown" aria-label="Select State">
-          <option value="">Select State</option>
-          {states.map((state) => (
-            <option key={state.juris_code} value={state.juris_name}>{state.juris_name}</option>
-          ))}
-        </select>
+        {loadingInitialData ? (
+          <p><Loader className="inline-block animate-spin mr-2" />Loading states...</p>
+        ) : statesError ? (
+          <p className="error-message">{statesError}</p>
+        ) : (
+          <select value={selectedState} onChange={(e) => setSelectedState(e.target.value)}>
+            <option value="">Select State</option>
+            {states.map((s) => (
+              <option key={s.juris_code} value={s.juris_name}>{s.juris_name}</option>
+            ))}
+          </select>
+        )}
 
-        <select value={selectedDistrict} onChange={(e) => setSelectedDistrict(e.target.value)} className="dropdown" disabled={!selectedState} aria-label="Select District">
-          <option value="">Select District</option>
-          {districts.map((district) => (
-            <option key={district.juris_code} value={district.juris_name}>{district.juris_name}</option>
-          ))}
-        </select>
+        {/* Districts */}
+        {loadingDistricts ? (
+          <p><Loader className="inline-block animate-spin mr-2" />Loading districts...</p>
+        ) : districtsError ? (
+          <p className="error-message">{districtsError}</p>
+        ) : (
+          <select value={selectedDistrict} onChange={(e) => setSelectedDistrict(e.target.value)} disabled={!selectedState}>
+            <option value="">Select District</option>
+            {districts.map((d) => (
+              <option key={d.juris_code} value={d.juris_name}>{d.juris_name}</option>
+            ))}
+          </select>
+        )}
 
-        {loadingBlocks ? <p>Loading blocks...</p> : (
+        {/* Blocks */}
+        {loadingBlocks ? (
+          <p><Loader className="inline-block animate-spin mr-2" />Loading blocks...</p>
+        ) : blocksError ? (
+          <p className="error-message">{blocksError}</p>
+        ) : (
           blocks.length > 0 && (
-            <div className="checkbox-group">
+            <div>
               <label><Building2 className="inline-block mr-2" />Select Blocks:</label>
               {blocks.map((block) => (
                 <div key={block.juris_code}>
                   <input
                     type="checkbox"
-                    id={block.juris_name}
                     checked={selectedBlocks.includes(block.juris_name)}
                     onChange={() => handleBlockChange(block.juris_name, block.is_frozen_block)}
                     disabled={block.is_frozen_block}
                   />
-                  <label htmlFor={block.juris_name} style={{ color: block.is_frozen_block ? "red" : "inherit" }}>
-                    {block.juris_name}
-                    {block.is_frozen_block && <span style={{ marginLeft: 5 }}>(Frozen)</span>}
+                  <label style={{ color: block.is_frozen_block ? "red" : "inherit" }}>
+                    {block.juris_name} {block.is_frozen_block && "(Frozen)"}
                   </label>
                 </div>
               ))}
@@ -178,73 +212,53 @@ const GenerateShortlist = () => {
         )}
       </div>
 
-      {/* Selection Criteria */}
+      {/* Criteria */}
       <div className="selection-criteria">
-        <label htmlFor="criteria" className="criteria-label">
-          <ListChecks className="inline-block mr-2" />Selection Criteria:
-        </label>
-        <select
-          id="criteria"
-          value={selectedCriteria}
-          onChange={(e) => setSelectedCriteria(e.target.value)}
-          className="dropdown"
-        >
-          <option value="">Select Criteria</option>
-          {selectionCriteria.map((criteria) => (
-            <option key={criteria.criteria_id} value={criteria.criteria_id}>{criteria.criteria}</option>
-          ))}
-        </select>
+        <label><ListChecks className="inline-block mr-2" />Selection Criteria:</label>
+        {loadingInitialData ? (
+          <p><Loader className="inline-block animate-spin mr-2" />Loading criteria...</p>
+        ) : criteriaError ? (
+          <p className="error-message">{criteriaError}</p>
+        ) : (
+          <select value={selectedCriteria} onChange={(e) => setSelectedCriteria(e.target.value)} disabled={selectionCriteria.length === 0}>
+            <option value="">Select Criteria</option>
+            {selectionCriteria.map((c) => (
+              <option key={c.criteria_id} value={c.criteria_id}>{c.criteria}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       {/* Shortlist Details */}
       <div className="shortlist-details">
-        <label htmlFor="shortlist-name" className="shortlist-label"><Edit className="inline-block mr-2" />Shortlist Name:</label>
-        <input
-          type="text"
-          id="shortlist-name"
-          value={shortlistName}
-          onChange={(e) => setShortlistName(e.target.value)}
-          className="shortlist-input"
-          placeholder="e.g. Bailhongal_Kittur_Shortlist"
-        />
+        <label><Edit className="inline-block mr-2" />Shortlist Name:</label>
+        <input type="text" value={shortlistName} onChange={(e) => setShortlistName(e.target.value)} />
 
-        <label htmlFor="shortlist-description" className="shortlist-label"><Edit className="inline-block mr-2" />Shortlist Description:</label>
-        <textarea
-          id="shortlist-description"
-          value={shortlistDescription}
-          onChange={(e) => setShortlistDescription(e.target.value)}
-          className="shortlist-textarea"
-          placeholder="e.g. This shortlist includes the Bailhongal and Kittur blocks..."
-        />
+        <label><Edit className="inline-block mr-2" />Shortlist Description:</label>
+        <textarea value={shortlistDescription} onChange={(e) => setShortlistDescription(e.target.value)} />
       </div>
 
-      <button
-        onClick={handleStartShortlisting}
-        className="start-button"
-        disabled={!isFormValid}
-      >
-        <Play className="inline-block mr-2" />Start Shortlisting Process
+      {/* Start Button */}
+      <button onClick={handleStartShortlisting} disabled={!isFormValid || submittingShortlist}>
+        {submittingShortlist ? (
+          <><Loader className="inline-block animate-spin mr-2" />Processing...</>
+        ) : (
+          <><Play className="inline-block mr-2" />Start Shortlisting</>
+        )}
       </button>
 
+      {/* Result */}
       {shortlistingResult?.success && (
-        <div className="shortlisting-result success-box">
+        <div className="success-box">
           <CheckCircle className="inline-block mr-2 text-green-500" />
-          <p>{shortlistingResult.success}</p>
-          <p>Total Shortlisted Applicants: {shortlistingResult.shortlistedCount}</p>
+          {shortlistingResult.success} (Shortlisted: {shortlistingResult.shortlistedCount})
         </div>
       )}
 
       {shortlistingResult?.error && (
-        <div className="shortlisting-result error-box">
+        <div className="error-box">
           <AlertTriangle className="inline-block mr-2 text-red-500" />
-          <p>Error: {shortlistingResult.error}</p>
-        </div>
-      )}
-
-      {loadingCounts && <p>Loading applicant counts...</p>}
-      {totalApplicants > 0 && (
-        <div className="applicant-counts">
-          <p><Users className="inline-block mr-2" />Total Applicants ({currentYear}): {totalApplicants} | <UserCheck className="inline-block mr-2" />Shortlisted Students: {shortlistedStudents}</p>
+          Error: {shortlistingResult.error}
         </div>
       )}
     </div>
