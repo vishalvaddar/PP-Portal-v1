@@ -50,6 +50,8 @@ const userRoleRoutes = require("./routes/userRoleRoutes");
 const examRoutes = require('./routes/examRoutes');
 const examCentres = require('./routes/examRoutes');
 
+
+
 // ───────────────────────────────────────────────
 // API Routes
 // ───────────────────────────────────────────────
@@ -67,7 +69,7 @@ app.use("/applicants/delete", applicantDeleteRoutes);
 app.use("/api/batches", batchRoutes);
 app.use("/api", userRoleRoutes);
 
-app.use("/api/bulk-upload", bulkUploadRoutes);
+app.use("/api/upload", bulkUploadRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api", jurisdictionRoutes);
 app.use("/api/shortlist/generate", generateShortlistRoutes);
@@ -87,6 +89,9 @@ app.use("/student", studentRoutes);
 app.use('/api/exams', examRoutes);
 app.use('/halltickets', express.static(path.join(__dirname, 'public/halltickets')));
 app.use("/api/exam-centres",examCentres)
+
+//evaluation api
+// app.use('/marks-entry',)
 
 // ───────────────────────────────────────────────
 // Fallback for Unknown Routes

@@ -241,8 +241,9 @@ async function generateStudentList(req, res) {
 
     const result = await pool.query(`
       SELECT ae.pp_hall_ticket_no, api.student_name, api.current_institute_dise_code, 
-             api.contact_no1, api.contact_no2
-      FROM pp.applicant_exam ae
+             api.contact_no1, api.contact_no2,ee.exam_name
+             from pp.examination ee join 
+       pp.applicant_exam ae on ee.exam_id = ae.exam_id
       JOIN pp.applicant_primary_info api ON ae.applicant_id = api.applicant_id
       WHERE ae.exam_id = $1
     `, [examId]);
@@ -334,9 +335,12 @@ async function generateStudentList(req, res) {
 
     doc.end();
 
-    stream.on('finish', () => {
-      return res.download(filePath, "Exm_studentlist_generated.pdf");
-    });
+    const examName = result.rows[0].exam_name.replace(/\s+/g, '_'); // or use slugify for cleaner names
+
+stream.on('finish', () => {
+  return res.download(filePath, `${examName}.pdf`);
+});
+
 
   } catch (err) {
     console.error(err);
@@ -360,7 +364,7 @@ async function downloadAllHallTickets(req, res) {
     const archive = archiver('zip', { zlib: { level: 9 } });
 
     // Set response headers
-    res.setHeader('Content-Disposition', `attachment; filename=All_Hall_Tickets_${examId}.zip`);
+    res.setHeader('Content-Disposition', `attachment; filename=_Hall_Tickets_${examId}.zip`);
     res.setHeader('Content-Type', 'application/zip');
 
     // Pipe archive to the response
@@ -380,7 +384,8 @@ async function downloadAllHallTickets(req, res) {
         ae.pp_hall_ticket_no,
         api.student_name,
         ec.pp_exam_centre_name,
-        e.exam_date
+        e.exam_date,
+        e.exam_name
       FROM pp.applicant_exam ae
       JOIN pp.applicant_primary_info api ON ae.applicant_id = api.applicant_id
       JOIN pp.examination e ON ae.exam_id = e.exam_id
@@ -400,7 +405,7 @@ async function downloadAllHallTickets(req, res) {
         lang: 'kn'
       });
 
-      const ticketPath = path.join(dirPath, `hall_ticket_${student.pp_hall_ticket_no}.pdf`);
+      const ticketPath = path.join(dirPath, `${student.exam_name}_${student.pp_hall_ticket_no}.pdf`);
       const stream = fs.createWriteStream(ticketPath);
       doc.pipe(stream);
 
@@ -564,41 +569,46 @@ doc.fontSize(12)
       doc.fontSize(12)
          .text("10:00 AM - 01:00 PM", 320, examInfoY + 35);
 
-      // Instructions section
-      const instructionsY = examInfoY + 80;
-      
-      doc.fontSize(16)
-         .fillColor(primaryColor)
-         .font('Helvetica-Bold')
-         .text("IMPORTANT INSTRUCTIONS", 50, instructionsY);
 
-      // Horizontal line below instructions title
-      doc.moveTo(50, instructionsY + 20)
-         .lineTo(550, instructionsY + 20)
-         .stroke(primaryColor).lineWidth(0.5);
+        // First, make sure you've registered the Kannada font properly
+doc.registerFont('Kannada', kannadaFontPath);
 
-      // Kannada instructions
-      doc.registerFont('Kannada', kannadaFontPath);
-      
-      const kannadaInstructions = [
-        "೧) ವಿದ್ಯಾರ್ಥಿಗಳು ತಮ್ಮ ಆಧಾರ್ ಕಾರ್ಡ್ ಫೋಟೋಕಾಪಿ ಮತ್ತು ಇತ್ತೀಚಿನ ಪಾಸ್ಪೋರ್ಟ್ ಗಾತ್ರದ ಒಂದು ಫೋಟೋ ಕಡ್ಡಾಯವಾಗಿ ತರಬೇಕು.",
-        "೨) ದಯವಿಟ್ಟು ನಿಮ್ಮ ಪ್ಯಾಮೆಟ್ರಿ ಬಾಕ್ಸ್, ಪೆನ್ ಮತ್ತು ಪರೀಕ್ಷಾ ಪ್ಯಾಡ್ ತರಬೇಕು.",
-        "೩) ವಿದ್ಯಾರ್ಥಿಗಳು ಪರೀಕ್ಷಾ ಕೇಂದ್ರಕ್ಕೆ ನಿಗದಿತ ಸಮಯಕ್ಕಿಂತ ಕನಿಷ್ಠ ೩೦ ನಿಮಿಷಗಳ ಮುಂಚಿತವಾಗಿ ಆಗಮಿಸಬೇಕು.",
-        "೪) ಮೊಬೈಲ್ ಫೋನ್, ಟ್ಯಾಬ್ಲೆಟ್ಗಳು, ಸ್ಮಾರ್ಟ್ ವಾಚ್ಗಳು ಇತ್ಯಾದಿ ವಿದ್ಯುನ್ಮಾನ ಸಾಧನಗಳನ್ನು ಕಡ್ಡಾಯವಾಗಿ ನಿಷೇಧಿಸಲಾಗಿದೆ.",
-        "೫) ವಿದ್ಯಾರ್ಥಿಗಳು ಪರೀಕ್ಷೆಯ ವೇಳೆ ಮೇಲ್ವಿಚಾರಕರ ಸೂಚನೆಗಳನ್ನು ಅನುಸರಿಸಬೇಕು.",
-        "೬) ಇತರರಿಗೆ ಅಡ್ಡಿಪಡಿಸದಂತೆ ಪರೀಕ್ಷೆಯ ಅವಧಿಯಲ್ಲಿ ಮೌನವನ್ನು ಕಾಪಾಡಿ.",
-        "೭) ಯಾವುದೇ ರೀತಿಯ ನಕಲು (ಚೀಟಿ) ಕಂಡುಬಂದಲ್ಲಿ, ವಿದ್ಯಾರ್ಥಿಯನ್ನು ತಕ್ಷಣವೇ ಆನರ್ಹಗೊಳಿಸಲಾಗುವುದು.",
-        "೮) ಪರೀಕ್ಷೆಯ ಸಮಯದಲ್ಲಿ ವಿದ್ಯಾರ್ಥಿಗಳ ಮಧ್ಯೆ ಸಂಭಾಷಣೆ ನಿಷಿದ್ಧ.",
-        "೯) ಸಹಾಯ ಬೇಕಾದರೆ ಅಥವಾ ಅನುಮಾನ ಇದ್ದರೆ, ಕೈ ಎತ್ತಿ ಮೇಲ್ವಿಚಾರಕರ ಸಹಾಯಕ್ಕಾಗಿ ಕಾಯಬೇಕು."
-      ];
+// Instructions section
+const instructionsY = examInfoY + 80;
 
-      doc.font('Kannada')
-         .fontSize(10)
-         .fillColor(primaryColor)
-         .text(kannadaInstructions.join('\n'), 60, instructionsY + 30, {
-           width: 480,
-           paragraphGap: 5
-         });
+// Print "ಸೂಚನೆಗಳು" in Kannada using the registered font
+doc.font('Kannada')  // Switch to Kannada font
+   .fontSize(16)
+   .fillColor(primaryColor)
+   .text("ಸೂಚನೆಗಳು", 50, instructionsY);
+
+// Horizontal line below instructions title
+doc.moveTo(50, instructionsY + 20)
+   .lineTo(550, instructionsY + 20)
+   .stroke(primaryColor)
+   .lineWidth(0.5);
+
+// Kannada instructions list
+const kannadaInstructions = [
+  "೧) ವಿದ್ಯಾರ್ಥಿಗಳು ತಮ್ಮ ಆಧಾರ್ ಕಾರ್ಡ್ ಫೋಟೋಕಾಪಿ ಮತ್ತು ಇತ್ತೀಚಿನ ಪಾಸ್ಪೋರ್ಟ್ ಗಾತ್ರದ ಒಂದು ಫೋಟೋ ಕಡ್ಡಾಯವಾಗಿ ತರಬೇಕು.",
+  "೨) ದಯವಿಟ್ಟು ನಿಮ್ಮ ಪ್ಯಾಮೆಟ್ರಿ ಬಾಕ್ಸ್, ಪೆನ್ ಮತ್ತು ಪರೀಕ್ಷಾ ಪ್ಯಾಡ್ ತರಬೇಕು.",
+  "೩) ವಿದ್ಯಾರ್ಥಿಗಳು ಪರೀಕ್ಷಾ ಕೇಂದ್ರಕ್ಕೆ ನಿಗದಿತ ಸಮಯಕ್ಕಿಂತ ಕನಿಷ್ಠ ೩೦ ನಿಮಿಷಗಳ ಮುಂಚಿತವಾಗಿ ಆಗಮಿಸಬೇಕು.",
+  "೪) ಮೊಬೈಲ್ ಫೋನ್, ಟ್ಯಾಬ್ಲೆಟ್ಗಳು, ಸ್ಮಾರ್ಟ್ ವಾಚ್ಗಳು ಇತ್ಯಾದಿ ವಿದ್ಯುನ್ಮಾನ ಸಾಧನಗಳನ್ನು ಕಡ್ಡಾಯವಾಗಿ ನಿಷೇಧಿಸಲಾಗಿದೆ.",
+  "೫) ವಿದ್ಯಾರ್ಥಿಗಳು ಪರೀಕ್ಷೆಯ ವೇಳೆ ಮೇಲ್ವಿಚಾರಕರ ಸೂಚನೆಗಳನ್ನು ಅನುಸರಿಸಬೇಕು.",
+  "೬) ಇತರರಿಗೆ ಅಡ್ಡಿಪಡಿಸದಂತೆ ಪರೀಕ್ಷೆಯ ಅವಧಿಯಲ್ಲಿ ಮೌನವನ್ನು ಕಾಪಾಡಿ.",
+  "೭) ಯಾವುದೇ ರೀತಿಯ ನಕಲು (ಚೀಟಿ) ಕಂಡುಬಂದಲ್ಲಿ, ವಿದ್ಯಾರ್ಥಿಯನ್ನು ತಕ್ಷಣವೇ ಆನರ್ಹಗೊಳಿಸಲಾಗುವುದು.",
+  "೮) ಪರೀಕ್ಷೆಯ ಸಮಯದಲ್ಲಿ ವಿದ್ಯಾರ್ಥಿಗಳ ಮಧ್ಯೆ ಸಂಭಾಷಣೆ ನಿಷಿದ್ಧ.",
+  "೯) ಸಹಾಯ ಬೇಕಾದರೆ ಅಥವಾ ಅನುಮಾನ ಇದ್ದರೆ, ಕೈ ಎತ್ತಿ ಮೇಲ್ವಿಚಾರಕರ ಸಹಾಯಕ್ಕಾಗಿ ಕಾಯಬೇಕು."
+];
+
+// Print Kannada instructions
+doc.font('Kannada')  // Make sure to use Kannada font
+   .fontSize(10)
+   .fillColor(primaryColor)
+   .text(kannadaInstructions.join('\n'), 60, instructionsY + 30, {
+     width: 480,
+     paragraphGap: 5
+   });
 
       // Signature boxes section
       const signatureY = instructionsY + 200;
@@ -691,7 +701,7 @@ doc.text("Seal", 50 + (boxWidth + gap) * 3, signatureY + boxPadding + 15, {
 
       // Add to archive
       await new Promise(resolve => stream.on('finish', resolve));
-      archive.file(ticketPath, { name: `hall_ticket_${student.pp_hall_ticket_no}.pdf` });
+      archive.file(ticketPath, { name: `${student.exam_name}_${student.pp_hall_ticket_no}.pdf` });
     }
 
     // Finalize archive
