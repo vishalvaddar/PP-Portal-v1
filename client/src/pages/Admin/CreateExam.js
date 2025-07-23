@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FaPlus,
   FaBuilding,
@@ -41,33 +41,30 @@ const ExamCreationWizard = ({ onCancel }) => {
 
   const handleBack = () => setStep(prev => prev - 1);
 
+  useEffect(() => {
+    if (formData.centreId && formData.examDate) {
+      const selectedCentre = centres.find(c => c.pp_exam_centre_id === formData.centreId);
+      const centreName = selectedCentre?.pp_exam_centre_name?.replace(/\s+/g, '_') || '';
+      const date = formData.examDate;
+
+      setFormData(prev => ({
+        ...prev,
+        examName: `${centreName}_${date}`
+      }));
+    }
+  }, [formData.centreId, formData.examDate, centres]);
+
   const handleNext = async () => {
     if (step === 1) {
       if (centreSelectionMode === "new") {
-        if (!newCentreName.trim()) {
-          alert("Please enter a centre name.");
-          return;
-        }
         setIsCreatingCentre(true);
-        try {
-          const createdId = await createCentre();
-          if (createdId) {
-            setFormData({ ...formData, centreId: createdId });
-            setStep(2);
-          }
-        } catch (err) {
-          console.error("Failed to add centre:", err);
-          alert("Failed to add the new centre. Please try again.");
-        } finally {
-          setIsCreatingCentre(false);
-        }
       } else if (centreSelectionMode === "existing" && formData.centreId) {
         setStep(2);
       } else {
         alert("Please select or create an exam centre.");
       }
     } else if (step === 2) {
-      if (formData.examName && formData.examDate && formData.district) {
+      if (formData.examName && formData.examDate) {
         setStep(3);
       } else {
         alert("Please fill all exam details before proceeding.");
@@ -93,13 +90,13 @@ const ExamCreationWizard = ({ onCancel }) => {
 
         <div className={classes.progressBar}>
           <div className={`${classes.progressStep} ${step >= 1 ? classes.active : ""}`}>
-            <FaBuilding /> Centre
+            <FaBuilding /> Choose Centre
           </div>
           <div className={`${classes.progressStep} ${step >= 2 ? classes.active : ""}`}>
-            <FaPencilAlt /> Details
+            <FaPencilAlt /> Schedule Exam
           </div>
           <div className={`${classes.progressStep} ${step >= 3 ? classes.active : ""}`}>
-            <FaTasks /> Assign & Review
+            <FaTasks /> Assign Student
           </div>
         </div>
 
@@ -116,19 +113,24 @@ const ExamCreationWizard = ({ onCancel }) => {
                 >
                   Use Existing Centre
                 </div>
-                <div
+                {/* <div
                   className={`${classes.choiceCard} ${
                     centreSelectionMode === "new" ? classes.selected : ""
                   }`}
                   onClick={() => setCentreSelectionMode("new")}
                 >
                   Create New Centre
-                </div>
+                </div> */}
               </div>
 
               {centreSelectionMode === "existing" && (
                 <div className={classes.inputWithAction}>
-                  <select name="centreId" value={formData.centreId} onChange={handleChange} required>
+                  <select 
+                    name="centreId" 
+                    value={formData.centreId} 
+                    onChange={handleChange} 
+                    required
+                  >
                     <option value="">-- Select a Centre --</option>
                     {centres?.map(c => (
                       <option key={c.pp_exam_centre_id} value={c.pp_exam_centre_id}>
@@ -151,40 +153,92 @@ const ExamCreationWizard = ({ onCancel }) => {
                   )}
                 </div>
               )}
-
-              {centreSelectionMode === "new" && (
-                <input
-                  type="text"
-                  placeholder="Enter New Centre Name"
-                  value={newCentreName}
-                  onChange={e => setNewCentreName(e.target.value)}
-                  required
-                />
-              )}
             </div>
           )}
 
           {step === 2 && (
             <div className={classes.stepContent}>
               <h3>Step 2: Define Exam Details</h3>
-              <div className={classes.formGroup}>
-                <label>Exam Name</label>
-                <input
-                  type="text"
-                  name="examName"
-                  placeholder="e.g., Annual Scholarship Test"
-                  value={formData.examName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+              <label>Exam Name</label>
+              <input
+                type="text"
+                name="examName"
+                placeholder="Auto-generated from Centre and Date"
+                value={formData.examName}
+                readOnly
+              />
+
               <div className={classes.formGroup}>
                 <label>Exam Date</label>
-                <input type="date" name="examDate" value={formData.examDate} onChange={handleChange} required />
+                <input 
+                  type="date" 
+                  name="examDate" 
+                  value={formData.examDate} 
+                  onChange={handleChange} 
+                  required 
+                />
               </div>
+            </div>
+          )}
+
+          {isCreatingCentre && (
+            <div className={classes.popupBox}>
+              <h4>Create New Centre</h4>
+              <input
+                type="text"
+                placeholder="Enter New Centre Name"
+                value={newCentreName}
+                onChange={e => setNewCentreName(e.target.value)}
+                required
+              />
+              <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
+                <button
+                  className={classes.btnGreen}
+                  type="button"
+                  onClick={async () => {
+                    if (!newCentreName.trim()) {
+                      alert("Please enter a centre name.");
+                      return;
+                    }
+                    try {
+                      const createdId = await createCentre();
+                      if (createdId) {
+                        setFormData({ ...formData, centreId: createdId });
+                        setIsCreatingCentre(false);
+                        setStep(2);
+                      }
+                    } catch (err) {
+                      alert("Failed to create centre");
+                    }
+                  }}
+                >
+                  Create
+                </button>
+                <button 
+                  className={classes.btnRed} 
+                  onClick={() => {
+                    setIsCreatingCentre(false);
+                    setCentreSelectionMode(null);
+                  }} 
+                  type="button"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className={classes.stepContent}>
+              <h3>Step 3: Assign Students</h3>
               <div className={classes.formGroup}>
                 <label>District</label>
-                <select name="district" value={formData.district} onChange={handleChange} required>
+                <select 
+                  name="district" 
+                  value={formData.district} 
+                  onChange={handleChange} 
+                  required
+                >
                   <option value="">-- Select District --</option>
                   {districts?.map(d => (
                     <option key={d.id} value={d.id}>
@@ -193,14 +247,8 @@ const ExamCreationWizard = ({ onCancel }) => {
                   ))}
                 </select>
               </div>
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className={classes.stepContent}>
-              <h3>Step 3: Assign Blocks & Review</h3>
               <div className={classes.formGroup}>
-                <label>Select Available Blocks for this Exam</label>
+                <label>Assign shortlisted students from the selected blocks to an exam center.</label>
                 <div className={classes.checkboxGrid}>
                   {blocks.map(b => (
                     <div
@@ -251,7 +299,9 @@ const ExamCreationWizard = ({ onCancel }) => {
         <div className={classes.wizardNav}>
           <div className={classes.messageArea}>
             {message && (
-              <div className={message.includes("✅") ? classes.success : classes.error}>{message}</div>
+              <div className={message.includes("✅") ? classes.success : classes.error}>
+                {message}
+              </div>
             )}
           </div>
           <div className={classes.buttonGroup}>
@@ -290,7 +340,8 @@ const ExamCreationWizard = ({ onCancel }) => {
 // MAIN COMPONENT
 const CreateExam = () => {
   const [isWizardOpen, setIsWizardOpen] = useState(false);
-  const { entries, isLoading, error, deleteExam, toggleFreezeExam } = useCreateExamHooks();
+  const [isCreatingCentre, setIsCreatingCentre] = useState(false);
+  const { entries, isLoading, error, deleteExam, toggleFreezeExam, createCentre, newCentreName, setNewCentreName } = useCreateExamHooks();
 
   return (
     <div className={classes.pageContainer}>
@@ -298,10 +349,67 @@ const CreateExam = () => {
 
       <header className={classes.dashboardHeader}>
         <h1>Exam Dashboard</h1>
-        <button className={classes.createButton} onClick={() => setIsWizardOpen(true)}>
-          <FaPlus /> Create New Exam
-        </button>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+          <button
+            type="button"
+            className={classes.createButton}
+            onClick={() => setIsCreatingCentre(true)}
+          >
+            <FaPlus /> Create Centre
+          </button>
+          <button 
+            className={classes.createButton} 
+            onClick={() => setIsWizardOpen(true)}
+          >
+            <FaPlus /> Create New Exam
+          </button>
+        </div>
       </header>
+
+      {isCreatingCentre && (
+        <div className={classes.popupBox}>
+          <h4>Create New Centre</h4>
+          <input
+            type="text"
+            placeholder="Enter New Centre Name"
+            value={newCentreName}
+            onChange={e => setNewCentreName(e.target.value)}
+            required
+          />
+          <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
+            <button
+              className={classes.btnGreen}
+              type="button"
+              onClick={async () => {
+                if (!newCentreName.trim()) {
+                  alert("Please enter a centre name.");
+                  return;
+                }
+                try {
+                  await createCentre();
+                  alert("Centre created successfully!");
+                  setNewCentreName("");
+                  setIsCreatingCentre(false);
+                } catch (err) {
+                  alert("Failed to create centre");
+                }
+              }}
+            >
+              Create
+            </button>
+            <button 
+              className={classes.btnRed} 
+              onClick={() => {
+                setIsCreatingCentre(false);
+                setNewCentreName("");
+              }} 
+              type="button"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <main>
         {isLoading ? (
@@ -337,14 +445,15 @@ const CreateExam = () => {
                     download
                     className={`${classes.actionButton} ${classes.btnGreen}`}
                   >
-                    <FaListAlt /> List
+                    <FaListAlt /> Calling List
                   </a>
                   <a
                     href={`$${process.env.REACT_APP_API_URL}/api/exams/${entry.exam_id}/download-all-hall-tickets`}
                     download
                     className={`${classes.actionButton} ${classes.btnYellow}`}
                   >
-                    <FaDownload /> Tickets
+                    <FaDownload />  Hall Tickets
+
                   </a>
                   {entry.frozen_yn === "N" ? (
                     <>

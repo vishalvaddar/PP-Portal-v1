@@ -50,7 +50,10 @@ const userRoleRoutes = require("./routes/userRoleRoutes");
 const examRoutes = require("./routes/examRoutes");
 const studentSearchRoutes = require("./routes/studentSearchRoutes");
 
-// ───── API Routing ─────
+const examRoutes = require('./routes/examRoutes');
+const examCentres = require('./routes/examRoutes');
+
+
 app.use("/auth", authRoutes);
 
 app.use("/api/applicants", applicantCreateRoutes);
@@ -60,6 +63,7 @@ app.use("/api/applicants/delete", applicantDeleteRoutes);
 
 app.use("/api/batches", batchRoutes);
 app.use("/api", userRoleRoutes);
+app.use("/api/upload", bulkUploadRoutes);
 app.use("/api/bulk-upload", bulkUploadRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api", jurisdictionRoutes);
@@ -76,7 +80,6 @@ app.use("/api/student", studentRoutes);
 app.use("/api/exams", examRoutes);
 app.use("/api", studentSearchRoutes);
 
-// ───── Fallback ─────
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
