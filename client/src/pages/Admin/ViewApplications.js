@@ -40,7 +40,7 @@ const ViewApplications = () => {
         };
 
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/search`, { params });
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/search`, { params });
             if (response.data && response.data.data) {
                 setApplications(response.data.data);
                 setPagination(prev => ({

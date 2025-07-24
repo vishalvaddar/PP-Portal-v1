@@ -82,7 +82,7 @@ const SearchApplications = () => {
     };
 
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/search`, {
+      const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/search`, {
         params: searchParams,
       });
 
