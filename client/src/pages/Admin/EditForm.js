@@ -112,7 +112,7 @@ const EditStudent = () => {
     const fetchStudentDetails = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/applicants/${nmms_reg_number}`);
+        const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/applicants/${nmms_reg_number}`);
         if (!isMounted) return; // Check if component is still mounted
         const data = res.data;
 
@@ -176,7 +176,7 @@ const EditStudent = () => {
           setFormData(primaryData);
           setSecondaryData(secondaryData);
           setPhotoPreview(data.photo
-            ? `${process.env.REACT_APP_API_URL}/uploads/profile_photos/${data.photo}`
+            ? `${process.env.REACT_APP_BACKEND_API_URL}/uploads/profile_photos/${data.photo}`
             : data.gender === "M" ? "/default-boy.png" : "/default-girl.png"
           );
 
@@ -207,7 +207,7 @@ const EditStudent = () => {
     const fetchInstitutes = async (blockCode) => {
       if (!blockCode) return; // Don't fetch if blockCode is missing
       try {
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/institutes-by-block/${blockCode}`);
+        const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/institutes-by-block/${blockCode}`);
         if (isMounted) {
           setInstitutes(Array.isArray(res.data) ? res.data : []);
         }
@@ -378,7 +378,7 @@ const EditStudent = () => {
       });
   
       const response = await axios.put(
-        `${process.env.REACT_APP_API_URL}/applicants/update/${formData.applicant_id}`,
+        `${process.env.REACT_APP_BACKEND_API_URL}/api/applicants/update/${formData.applicant_id}`,
         {
           primaryData: primaryDataToSend,
           secondaryData: secondaryDataToSend
@@ -515,7 +515,7 @@ const EditStudent = () => {
     <div className={classes.container}>
       <div className={classes.headerSection}>
         <div className={classes.headerContent}> 
-          <h2 className={classes.pageTitle}>Edit Applicant</h2> {/* Updated title */}
+          <h2 className={classes.pageTitle}>Edit Applicant</h2>
           <div className={classes.studentMeta}>
             <span className={classes.idLabel}>NMMS Reg No:</span>
             <span className={classes.idValue}>{nmms_reg_number}</span>
@@ -558,11 +558,9 @@ const EditStudent = () => {
         <button type="button" className={classes.collapseAllBtn} onClick={collapseAll}>
           Collapse All
         </button>
-        {/* Removed Edit/Cancel toggle button */}
       </div>
 
       <form onSubmit={handleSubmit} className={classes.studentForm}>
-        {/* Sections remain the same, but fields inside are always editable */}
         {renderSectionHeader("Personal Information", "personal")}
         <div className={`${classes.sectionContent} ${expandedSections.personal ? classes.visible : ''}`}>
           <div className={classes.formGrid}>

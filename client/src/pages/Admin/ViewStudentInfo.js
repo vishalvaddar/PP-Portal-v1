@@ -87,13 +87,11 @@ const ViewStudentInfo = () => {
     const fetchStudentDetails = async () => {
       try {
         setLoading(true);
-        console.log(`${process.env.REACT_APP_API_URL}/applicants/${nmms_reg_number}`); // Debugging line
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/applicants/${nmms_reg_number}`);
+        const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/applicants/${nmms_reg_number}`);
         const data = res.data;
 
         if (data) {
           const dobFromServer = data.dob;
-          console.log("DOB from server:", dobFromServer); // Debugging line
           const formattedDOB = dobFromServer ? new Date(dobFromServer).toISOString().split('T')[0] : '';
           
           const primaryData = {
@@ -149,7 +147,7 @@ const ViewStudentInfo = () => {
 
           setFormData(primaryData);
           setSecondaryData(secondaryData);
-          setPhotoPreview(data.photo ? `${process.env.REACT_APP_API_URL}/uploads/profile_photos/${data.photo}` : (data.gender === "M" ? "/default-boy.png" : "/default-girl.png"));
+          setPhotoPreview(data.photo ? `${process.env.REACT_APP_BACKEND_API_URL}/uploads/profile_photos/${data.photo}` : (data.gender === "M" ? "/default-boy.png" : "/default-girl.png"));
 
           // Fetch institutes after getting the block code
           if (primaryData.nmms_block) {
@@ -173,7 +171,7 @@ const ViewStudentInfo = () => {
 
     const fetchInstitutes = async (blockCode) => {
       try {
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/institutes-by-block/${blockCode}`);
+        const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/institutes-by-block/${blockCode}`);
         setInstitutes(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error("Error fetching institutes", err);
