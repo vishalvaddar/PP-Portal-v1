@@ -50,7 +50,6 @@ const userRoleRoutes = require("./routes/userRoleRoutes");
 const examRoutes = require("./routes/examRoutes");
 const studentSearchRoutes = require("./routes/studentSearchRoutes");
 
-const examRoutes = require('./routes/examRoutes');
 const examCentres = require('./routes/examRoutes');
 
 

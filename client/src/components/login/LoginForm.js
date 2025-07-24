@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 import logo from '../../assets/images.png';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent} from '../ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
@@ -29,14 +29,18 @@ const LoginForm = () => {
     setError('');
 
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, {
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/auth/login`, {
         user_name: credentials.user_name,
         password: credentials.password,
       });
 
-      const { roles } = response.data;
+      const { roles, user_id, user_name } = response.data;
 
-      if (roles && roles.length > 0) {
+      if (roles?.length === 1) {
+        // If only one role, auto-select and proceed to next step
+        setSelectedRole(roles[0]);
+        handleRoleSelection(roles[0], user_name);
+      } else if (roles?.length > 1) {
         setRoles(roles);
         setStep(2);
       } else {
@@ -47,21 +51,38 @@ const LoginForm = () => {
     }
   };
 
-  const handleRoleSelection = async (e) => {
-    e.preventDefault();
+  const handleRoleSelection = async (eOrRole, overrideUsername = null) => {
+    if (typeof eOrRole === 'object') eOrRole.preventDefault(); // if triggered via form
+
+    const role = typeof eOrRole === 'string' ? eOrRole : selectedRole;
+    const username = overrideUsername || credentials.user_name;
+
+    if (!role) {
+      setError('Please select a role.');
+      return;
+    }
+
     setError('');
 
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/authorize-role`, {
-        user_name: credentials.user_name,
-        role_name: selectedRole,
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/auth/authorize-role`, {
+        user_name: username,
+        role_name: role,
       });
 
-      const { user_id, user_name, role_name } = response.data;
+      const { token, user } = response.data;
+      const { user_id, user_name: dbUserName, role_name } = user;
 
-      const userData = { user_id, username: user_name, role: role_name };
+      const userData = {
+        user_id,
+        user_name: dbUserName,
+        role: role_name,
+        token,
+      };
+
       auth.login(userData);
 
+      // Navigate based on role
       switch (role_name.toLowerCase()) {
         case 'admin':
           navigate('/admin/admin-dashboard');
@@ -76,7 +97,8 @@ const LoginForm = () => {
           navigate('/teacher/teacher-dashboard');
           break;
         default:
-          setError('Unknown role');
+          navigate('/');
+          break;
       }
     } catch (err) {
       setError(err.response?.data?.error || 'Authorization failed');
@@ -90,9 +112,10 @@ const LoginForm = () => {
           <img src={logo} alt="Logo" className={styles.logo} />
           <CardTitle className={styles.cardTitle}>PP Portal</CardTitle>
           <CardDescription className={styles.cardDescription}>
-            {step === 1 ? 'Sign in to your account' : ''}
+            {step === 1 ? 'Sign in to your account' : 'Select a role'}
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           {error && <div className={styles.errorMessage}>{error}</div>}
 

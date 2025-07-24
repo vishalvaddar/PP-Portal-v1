@@ -1,8 +1,32 @@
-  import { Children } from "react";
-  import { Dashboard, School, Description, FactCheck, Event, Grading, EmojiEvents, MenuBook, Group, SupervisorAccount, Badge, Settings, AccountCircle, ManageAccounts, Tune, Logout, Plagiarism, GroupWork, Assessment, CoPresent, BugReport, NoteAlt, Quiz, AssignmentInd, Schedule } from '@mui/icons-material';
+// navConfig.js
 
-  // navConfig.js
-
+import {
+  Dashboard,
+  School,
+  Description,
+  FactCheck,
+  Event,
+  Grading,
+  EmojiEvents,
+  MenuBook,
+  Group,
+  SupervisorAccount,
+  Badge,
+  Settings,
+  AccountCircle,
+  ManageAccounts,
+  Tune,
+  Logout,
+  Plagiarism,
+  GroupWork,
+  Assessment,
+  CoPresent,
+  BugReport,
+  NoteAlt,
+  Quiz,
+  AssignmentInd,
+  Schedule,
+} from '@mui/icons-material';
 
 export const navConfig = {
   admin: [
@@ -23,6 +47,7 @@ export const navConfig = {
       icon: <MenuBook />,
       children: [
         { path: "/admin/academics/students", icon: <Group />, label: "Students" },
+        // Uncomment below if teachers page is needed later
         // { path: "/admin/academics/teachers", icon: <SupervisorAccount />, label: "Teachers" },
         { path: "/admin/academics/batches", icon: <Badge />, label: "Batches" },
       ],
@@ -38,6 +63,7 @@ export const navConfig = {
     },
     { path: "/", icon: <Logout />, label: "Logout" },
   ],
+
   coordinator: [
     { path: '/coordinator/coordinator-dashboard', label: 'Dashboard', icon: <Dashboard /> },
     { path: "/coordinator/view-applications", icon: <Plagiarism />, label: "View Applications" },
@@ -45,6 +71,7 @@ export const navConfig = {
     { path: "/coordinator/batch-reports", icon: <Assessment />, label: "Batch Reports" },
     { path: "/", icon: <Logout />, label: "Logout" },
   ],
+
   student: [
     { path: '/student/student-dashboard', label: 'Dashboard', icon: <Dashboard /> },
     { path: "/student/student-profile", icon: <AccountCircle />, label: "Profile" },
@@ -54,6 +81,7 @@ export const navConfig = {
     { path: "/student/exams", icon: <Quiz />, label: "Exam Updates" },
     { path: "/", icon: <Logout />, label: "Logout" },
   ],
+
   teacher: [
     { path: '/teacher/teacher-dashboard', label: 'Dashboard', icon: <Dashboard /> },
     { path: "/teacher/students-list", icon: <Group />, label: "Students List" },

@@ -15,12 +15,11 @@ const Layout = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
-  // 🔐 Redirect if not logged in
   if (!user) {
     return <Navigate to="/" replace />;
   }
 
-  const roleKey = user?.role?.toLowerCase() || "student";  // ⬅ fix: lowercase
+  const roleKey = user?.role?.toLowerCase();
   const navItems = navConfig[roleKey] || [];
 
   return (

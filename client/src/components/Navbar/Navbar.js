@@ -15,8 +15,13 @@ const roleMap = {
 const Navbar = ({ isCollapsed, toggleSidebar, navItems }) => {
   const { user } = useAuth();
   const location = useLocation();
-  const roleKey = roleMap[user?.role?.toUpperCase()];
-  const navItemsToRender = navItems || navConfig[roleKey];
+  const normalizedRole = user?.role?.trim().toUpperCase();
+  const roleKey = roleMap[normalizedRole];
+
+
+const navItemsToRender = (navItems && navItems.length > 0)
+  ? navItems
+  : navConfig[roleKey];
 
   const [openSubmenus, setOpenSubmenus] = useState({});
 

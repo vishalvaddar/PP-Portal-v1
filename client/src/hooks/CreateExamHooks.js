@@ -30,7 +30,7 @@ const useCreateExamHooks = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams`);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/exams`);
         // console.log('Exam API Response:', response.data);
         //  console.log("log data:",formData.blocks);
         console.log("the raw things in e entry ",entries);
@@ -60,7 +60,7 @@ const useCreateExamHooks = () => {
           await Promise.all(formattedEntries.map(async (exam) => {
             if (exam.district && exam.district !== ':district') {
               try {
-                const blocksResponse = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/blocks-by-district/${exam.district}`);
+                const blocksResponse = await axios.get(`${process.env.REACT_APP_API_URL}/api/exams/blocks-by-district/${exam.district}`);
                 setExamBlocks(prev => ({
                   ...prev,
                   [exam.district]: blocksResponse.data
@@ -86,7 +86,7 @@ const useCreateExamHooks = () => {
   useEffect(() => {
     const fetchCentres = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/exam-centres`);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/exams/exam-centres`);
         setCentres(response.data);
       } catch (error) {
         console.error("Error fetching centres:", error);
@@ -100,7 +100,7 @@ const useCreateExamHooks = () => {
     if (!formData.app_state) return;
     const fetchDistricts = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/districts-by-state/${formData.app_state}`);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/exams/districts-by-state/${formData.app_state}`);
         setDistricts(response.data);
       } catch (error) {
         console.error("Error fetching districts:", error);
@@ -115,7 +115,7 @@ useEffect(() => {
   const fetchBlocks = async () => {
     if (!formData.district) return;
     try {
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/blocks-by-district/${formData.district}`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/exams/blocks-by-district/${formData.district}`);
       setBlocks(response.data);
       
     } catch (error) {
@@ -131,7 +131,7 @@ useEffect(() => {
   useEffect(() => {
     const fetchUsedBlocks = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/used-blocks`);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/exams/used-blocks`);
         setUsedBlocks(response.data);
       } catch (error) {
         console.error("Error fetching used blocks:", error);
@@ -172,10 +172,10 @@ useEffect(() => {
         blocks: formData.blocks,
       };
 
-      const response = await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/create`, payload);
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/exams/create`, payload);
 
       // Fetch updated exam list after creation
-      const updatedExamsResponse = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams`);
+      const updatedExamsResponse = await axios.get(`${process.env.REACT_APP_API_URL}/api/exams`);
       setEntries(updatedExamsResponse.data);
        
        
@@ -216,9 +216,9 @@ useEffect(() => {
      //delete centre done
   const deleteExam = async (examId) => {
     try {
-      await axios.delete(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/${examId}`);
+      await axios.delete(`${process.env.REACT_APP_API_URL}/api/exams/${examId}`);
       // Fetch updated exam list after deletion
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/exams`);
       setEntries(response.data);
       setMessage("✅ Exam deleted successfully");
     } catch (err) {
@@ -230,7 +230,7 @@ useEffect(() => {
   //create centre done
   const createCentre = async () => {
     try {
-      const res = await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/exam-centres`, {
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/exams/exam-centres`, {
         pp_exam_centre_name: newCentreName,
       });
       setCentres([...centres, res.data]);
@@ -244,7 +244,7 @@ useEffect(() => {
   //delete the centre done
   const deleteCentre = async (id) => {
     try {
-      await axios.delete(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/exam-centres/${id}`);
+      await axios.delete(`${process.env.REACT_APP_API_URL}/api/exams/exam-centres/${id}`);
       setCentres(centres.filter((c) => c.pp_exam_centre_id !== id));
       if (formData.centreId === id) {
         setFormData({ ...formData, centreId: "" });
@@ -264,7 +264,7 @@ useEffect(() => {
 
 const toggleFreezeExam = async (examId) => {
   try {
-    const response = await fetch(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/${examId}/freeze`, {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/exams/${examId}/freeze`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

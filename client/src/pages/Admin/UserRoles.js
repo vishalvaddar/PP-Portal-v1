@@ -71,10 +71,8 @@ const UserRoles = () => {
   };
 
   const fetchUsers = useCallback(async () => {
-    console.log("Fetching users...");
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/users`);
-      console.log("Users fetched successfully:", res.data);
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/users`);
       setUsers(res.data || []);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -83,11 +81,9 @@ const UserRoles = () => {
   }, []);
 
   const fetchRoles = useCallback(async () => {
-    console.log("Fetching roles...");
     try {
       // Assuming backend returns roles as objects with id, role_name, and status
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/roles`);
-      console.log("Roles fetched successfully:", res.data);
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/roles`);
       setRoles(res.data || []);
     } catch (error) {
       console.error("Error fetching roles:", error);
@@ -130,7 +126,7 @@ const UserRoles = () => {
     if (Object.keys(errs).length) return setErrors(errs);
     try {
       console.log("Creating user with data:", userForm);
-      await axios.post(`${process.env.REACT_APP_API_URL}/api/users`, userForm);
+      await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/api/users`, userForm);
       notify(`User "${userForm.username}" created successfully!`);
       fetchUsers(); // Re-fetch users to show new user
       closeCreateModal(); // Close modal and reset form
@@ -162,7 +158,7 @@ const UserRoles = () => {
     if (Object.keys(errs).length) return setErrors(errs);
     try {
       console.log(`Updating user ${editUser.id} with data:`, editUser);
-      await axios.put(`${process.env.REACT_APP_API_URL}/api/users/${editUser.id}`, editUser);
+      await axios.put(`${process.env.REACT_APP_BACKEND_API_URL}/api/users/${editUser.id}`, editUser);
       notify(`User "${editUser.username}" updated successfully!`);
       fetchUsers(); // Re-fetch users to show updated user
       closeEditModal(); // Close modal and reset form
@@ -185,7 +181,7 @@ const UserRoles = () => {
     if (!userToDelete) return;
     try {
       console.log("Deleting user with ID:", userToDelete);
-      await axios.delete(`${process.env.REACT_APP_API_URL}/api/users/${userToDelete}`);
+      await axios.delete(`${process.env.REACT_APP_BACKEND_API_URL}/api/users/${userToDelete}`);
       notify("User deleted successfully!");
       fetchUsers(); // Re-fetch users after deletion
     } catch (error) {
@@ -223,7 +219,7 @@ const UserRoles = () => {
     // ------------------------------------------
 
     try {
-      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/users/${userToToggleStatus.id}/status`, { status: targetUserStatus });
+      const response = await axios.put(`${process.env.REACT_APP_BACKEND_API_URL}/api/users/${userToToggleStatus.id}/status`, { status: targetUserStatus });
       console.log("User status update response:", response.data);
       // Message: if target status is 'N' (active), show "activated". If 'Y' (deactivated), show "deactivated".
       notify(`User "${userToToggleStatus.username}" ${targetUserStatus === "N" ? "activated" : "deactivated"} successfully!`);
@@ -271,7 +267,7 @@ const UserRoles = () => {
 
     try {
       // Assuming a PUT endpoint for role status: /api/roles/:id/status
-      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/roles/${roleToToggleStatus.id}/status`, { status: targetRoleStatus });
+      const response = await axios.put(`${process.env.REACT_APP_BACKEND_API_URL}/api/roles/${roleToToggleStatus.id}/status`, { status: targetRoleStatus });
       console.log("Role status update response:", response.data);
       // Message: if target status is 'Y' (active), show "activated". If 'N' (deactivated), show "deactivated".
       notify(`Role "${roleToToggleStatus.roleName}" ${targetRoleStatus === "Y" ? "activated" : "deactivated"} successfully!`);
@@ -311,7 +307,7 @@ const UserRoles = () => {
     try {
       // Assuming new roles default to 'Y' (Active) status on creation by backend
       console.log("Creating role with data:", { roleName: rn, status: "Y" }); // Frontend now sends 'Y' for active
-      await axios.post(`${process.env.REACT_APP_API_URL}/api/roles`, { roleName: rn, status: "Y" });
+      await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/api/roles`, { roleName: rn, status: "Y" });
       notify(`Role "${rn}" created successfully!`);
       fetchRoles(); // Re-fetch roles to update the list and dropdowns
       closeRoleModal();
