@@ -4,6 +4,7 @@ import Layout from "./Layout";
 
 // Admin pages
 import AdminDashboard from "./pages/Admin/AdminDashboard";
+import Applications from "./pages/Admin/Applications";
 import NewApplication from "./pages/Admin/NewApplication";
 import BulkUploadApplications from "./pages/Admin/BulkUploadApplications";
 import SearchApplications from "./pages/Admin/SearchApplications";
@@ -16,6 +17,7 @@ import GenerateShortlist from "./pages/Admin/GenerateShortlist";
 import ShortlistInfo from "./pages/Admin/ShortlistInfo";
 import Students from "./pages/Admin/Students";
 import Batches from "./pages/Admin/Batches";
+import Reports from "./pages/Admin/Reports";
 import UserRoles from "./pages/Admin/UserRoles";
 import System from "./pages/Admin/System";
 import MyProfile from "./pages/Admin/MyProfile";
@@ -44,11 +46,7 @@ import TimeTable from "./pages/Teacher/TimeTable";
 // Student pages
 import StudentDashboard from "./pages/Student/StudentDashboard";
 import StudentProfile from "./pages/Student/StudentProfile";
-import Applications from "./pages/Admin/Applications";
-// import Attendance from "./pages/Student/Attendance";
-// import Issues from "./pages/Student/Issues";
-// import NotesLeave from "./pages/Student/NotesLeave";
-// import Exams from "./pages/Student/Exams";
+import StudentCorner from "./pages/Student/StudentCorner";
 
 export const appRouter = createBrowserRouter([
   {
@@ -89,6 +87,7 @@ export const appRouter = createBrowserRouter([
           { path: "students", element: <Students /> },
           // { path: "teachers", element: <Teachers /> },
           { path: "batches", element: <Batches /> },
+          { path: "reports", element: <Reports /> },
         ]
       },
       { path: "settings", children: [
@@ -105,7 +104,7 @@ export const appRouter = createBrowserRouter([
     element: <Layout />,
     children: [
       { path: "coordinator-dashboard", element: <CoordinatorDashboard /> },
-      { path: "view-applications", element: <ViewApplications /> },
+      { path: "view-application", element: <ViewApplication /> },
       { path: "batch-management", element: <BatchManagement /> },
       { path: "batch-reports", element: <BatchReports /> },
     ],
@@ -116,10 +115,7 @@ export const appRouter = createBrowserRouter([
     children: [
       { path: "student-dashboard", element: <StudentDashboard /> },
       { path: "student-profile", element: <StudentProfile /> },
-      // { path: "attendance", element: <Attendance /> },
-      // { path: "issues", element: <Issues /> },
-      // { path: "notes-leave", element: <NotesLeave /> },
-      // { path: "exams", element: <Exams /> },
+      { path: "student-corner", element: <StudentCorner /> },
     ],
   },
   {

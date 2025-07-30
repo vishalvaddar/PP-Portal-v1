@@ -284,12 +284,12 @@ const NewApplication = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className={classes.formContent}>
         <div className={classes.formSection}>
           <h3 className={classes.sectionTitle}><UserCircle className={classes.sectionIcon} />Basic Information</h3>
           <div className={classes.fieldGroup}>
             <div className={classes.formField}>
-              <label className={classes.label}> NMMS YEAR : <span className={classes.required}></span></label>
+              <label className={classes.label}> NMMS YEAR : <span className={classes.required}>*</span></label>
               <select
                 name="nmms_year"
                 value={formData.nmms_year}
@@ -311,7 +311,7 @@ const NewApplication = () => {
               </select>
             </div>
             <div className={classes.formField}>
-              <label className="required">NMMS Reg Number: <span className={classes.required}></span></label>
+              <label className="required">NMMS Reg Number:<span className={classes.required}>*</span></label>
               <input
                 type="text"
                 name="nmms_reg_number"
@@ -327,7 +327,7 @@ const NewApplication = () => {
           </div>
           <div className={classes.fieldGroup}>
             <div className={classes.formField}>
-              <label>Student Name: <span className={classes.required}></span></label>
+              <label>Student Name: <span className={classes.required}>*</span></label>
               <input
                 type="text"
                 name="student_name"
@@ -338,7 +338,7 @@ const NewApplication = () => {
               {errors.student_name && (<p style={{ color: "red" }}>{errors.student_name}</p>)}
             </div>
             <div className={classes.formField}>
-              <label className="required">Gender : <span className={classes.required}></span></label>
+              <label className="required">Gender : <span className={classes.required}>*</span></label>
               <select
                 name="gender"
                 value={formData.gender}
@@ -365,7 +365,7 @@ const NewApplication = () => {
               {errors.DOB && <p style={{ color: "red" }}>{errors.DOB}</p>}
             </div>
             <div className={classes.formField}>
-              <label>Aadhaar: <span className={classes.required}></span></label>
+              <label>Aadhaar: <span className={classes.required}>*</span></label>
               <input
                 type="text"
                 name="aadhaar"
@@ -382,7 +382,7 @@ const NewApplication = () => {
           <h3 className={classes.sectionTitle}><Home className={classes.sectionIcon} />Family Information</h3>
           <div className={classes.fieldGroup}>
             <div className={classes.formField}>
-              <label className="required">Father Name: <span className={classes.required}></span></label>
+              <label className="required">Father Name: <span className={classes.required}>*</span></label>
               <input
                 type="text"
                 name="father_name"
@@ -432,7 +432,7 @@ const NewApplication = () => {
           <h3 className={classes.sectionTitle}><Phone className={classes.sectionIcon} />Contact Information</h3>
           <div className={classes.fieldGroup}>
             <div className={classes.formField}>
-              <label className="required">Contact No 1 (Whatsapp): <span className={classes.required}></span></label>
+              <label className="required">Contact No 1 (Whatsapp): <span className={classes.required}>*</span></label>
               <input
                 type="text"
                 name="contact_no1"
@@ -444,13 +444,12 @@ const NewApplication = () => {
               />
             </div>
             <div className={classes.formField}>
-              <label>Contact No 2: <span className={classes.required}></span></label>
+              <label>Contact No 2: </label>
               <input
                 type="text"
                 name="contact_no2"
                 value={formData.contact_no2}
                 onChange={handleChange}
-                required
                 maxLength="10"
                 placeholder="Alternative contact number"
               />
@@ -462,7 +461,7 @@ const NewApplication = () => {
           <h3 className={classes.sectionTitle}><GraduationCap className={classes.sectionIcon} />Eductaional Information</h3>
           <div className={classes.fieldGroup}>
             <div className={classes.formField}>
-              <label className="required">State: <span className={classes.required}></span></label>
+              <label className="required">State: <span className={classes.required}>*</span></label>
               <select
                 name="app_state"
                 value={formData.app_state}
@@ -478,7 +477,7 @@ const NewApplication = () => {
               </select>
             </div>
             <div className={classes.formField}>
-              <label className="required">EDUCATION DISTRICT: <span className={classes.required}></span></label>
+              <label className="required">EDUCATION DISTRICT: <span className={classes.required}>*</span></label>
               <select
                 name="district"
                 value={formData.district}
@@ -496,14 +495,14 @@ const NewApplication = () => {
           </div>
           <div className={classes.fieldGroup}>
             <div className={classes.formField}>
-              <label className="required">NMMS Block: <span className={classes.required}></span></label>
+              <label className="required">NMMS Block: <span className={classes.required}>*</span></label>
               <select
                 name="nmms_block"
                 onChange={handleChange}
                 value={formData.nmms_block}
                 required
               >
-                <option value="">Select Block <span className={classes.required}></span></option>
+                <option value="">Select Block</option>
                 {blocks.map((block, index) => (
                   <option key={block.id || index} value={block.id}>
                     {block.name}
@@ -512,7 +511,7 @@ const NewApplication = () => {
               </select>
             </div>
             <div className={classes.formField}>
-              <label className="required">Medium:</label>
+              <label className="required">Medium:<span className={classes.required}>*</span></label>
               <select
                 type="text"
                 name="medium"
@@ -530,7 +529,7 @@ const NewApplication = () => {
           </div>
           <div className={classes.fieldGroup}>
             <div className={classes.formField}>
-              <label className="required">Current School Name: <span className={classes.required}></span></label>
+              <label className="required">Current School Name: <span className={classes.required}>*</span></label>
               <select
                 name="current_institute_dise_code"
                 value={formData.current_institute_dise_code}
@@ -574,7 +573,7 @@ const NewApplication = () => {
           <h3 className={classes.sectionTitle}><Calculator className={classes.sectionIcon} />Test Scores</h3>
           <div className={classes.fieldGroup}>
             <div className={classes.formField}>
-              <label>GMAT Score: <span className={classes.required}></span></label>
+              <label>GMAT Score: <span className={classes.required}>*</span></label>
               <input
                 type="number"
                 name="gmat_score"
@@ -589,7 +588,7 @@ const NewApplication = () => {
               />
             </div>
             <div className={classes.formField}>
-              <label>SAT Score: <span className={classes.required}></span></label>
+              <label>SAT Score: <span className={classes.required}>*</span></label>
               <input
                 type="number"
                 name="sat_score"

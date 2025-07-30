@@ -28,7 +28,7 @@ function ShortlistInfo({ onClose }) {
 
 
   // API Endpoints
-  const BASE_API_URL = `${process.env.REACT_APP_API_URL}/api/shortlist/info`;
+  const BASE_API_URL = `${process.env.REACT_APP_BACKEND_API_URL}/api/shortlist-info`;
 
   const GET_NAMES_ENDPOINT = `${BASE_API_URL}/names`;
   const GET_NON_FROZEN_NAMES_ENDPOINT = `${BASE_API_URL}/non-frozen-names`;
@@ -332,11 +332,10 @@ function ShortlistInfo({ onClose }) {
           <p className={styles.countBoxText}>Shortlisted Students: {shortlistedCount}</p>
         </div>
       </div>
-
       <div className={styles.shortlistingStepsGrid}>
         <div className={styles.optionBox} onClick={() => handleBoxClick("getInfo")}>
-          <div className={styles.iconBox}>ℹ</div>
-          <div className={styles.textBox}>Get Shortlist Info</div>
+            <div className={styles.iconBox}>ℹ</div>
+            <div className={styles.textBox}>Get Shortlist Info</div>
         </div>
         <div className={styles.optionBox} onClick={() => handleBoxClick("freeze")}>
           <div className={styles.iconBox}>🔒</div>
@@ -355,7 +354,7 @@ function ShortlistInfo({ onClose }) {
   );
 
   const renderGetInfo = () => (
-    <div className={`${styles.detailedView} ${styles.getInfoView}`}> {/* Combine classes using template literal */}
+    <div className={`${styles.detailedView} ${styles.getInfoView}`}>
       <h2 className={styles.detailedViewHeading}>Get Shortlist Information</h2>
       <select onChange={handleShortlistSelectInfo} value={selectedShortlistInfo?.name || ""}>
         {renderShortlistOptions(shortlistNames, loadingShortlistNames, shortlistNamesError)}
@@ -389,7 +388,7 @@ function ShortlistInfo({ onClose }) {
         </div>
       )}
       <div className={styles.backButtonContainer}>
-        <button className={styles.detailedViewButton} onClick={() => setActiveBox(null)}>Back</button>
+        <button className={styles.backButton} onClick={() => setActiveBox(null)}>Back</button>
       </div>
     </div>
   );
@@ -401,11 +400,11 @@ function ShortlistInfo({ onClose }) {
         {renderNonFrozenShortlistOptions(nonFrozenShortlistNames, loadingNonFrozenNames, nonFrozenNamesError)}
       </select>
       {selectedShortlistFreezeName && <p>You have selected: {selectedShortlistFreezeName} to freeze.</p>}
-      <button className={styles.detailedViewButton} onClick={handleFreezeSubmit} disabled={!selectedShortlistFreezeId}>
+      <button className={styles.freezeButton} onClick={handleFreezeSubmit} disabled={!selectedShortlistFreezeId}>
         Freeze Shortlist
       </button>
       <div className={styles.backButtonContainer}>
-        <button className={styles.detailedViewButton} onClick={() => setActiveBox(null)}>Back</button>
+        <button className={styles.backButton} onClick={() => setActiveBox(null)}>Back</button>
       </div>
     </div>
   );
@@ -417,11 +416,11 @@ function ShortlistInfo({ onClose }) {
         {renderNonFrozenShortlistOptions(nonFrozenShortlistNames, loadingNonFrozenNames, nonFrozenNamesError)}
       </select>
       {selectedShortlistDeleteName && <p>You have selected: {selectedShortlistDeleteName} to delete.</p>}
-      <button className={styles.detailedViewButton} onClick={handleDeleteSubmit} disabled={!selectedShortlistDeleteId}>
+      <button className={styles.deleteButton} onClick={handleDeleteSubmit} disabled={!selectedShortlistDeleteId}>
         Delete Shortlist
       </button>
       <div className={styles.backButtonContainer}>
-        <button className={styles.detailedViewButton} onClick={() => setActiveBox(null)}>Back</button>
+        <button className={styles.backButton} onClick={() => setActiveBox(null)}>Back</button>
       </div>
     </div>
   );
@@ -435,7 +434,7 @@ function ShortlistInfo({ onClose }) {
       {selectedShortlistDownloadName && (
         <p>You have selected: {selectedShortlistDownloadName} for download.</p>
       )}
-      <button className={`${styles.detailedViewButton} ${styles.belowButton}`} onClick={handleInitiateDownload} disabled={!selectedShortlistDownloadName || isDownloading}>
+      <button className={`${styles.downloadButton} ${styles.belowButton}`} onClick={handleInitiateDownload} disabled={!selectedShortlistDownloadName || isDownloading}>
         {isDownloading ? "Downloading..." : "Download Shortlist"}
       </button>
 
@@ -443,14 +442,14 @@ function ShortlistInfo({ onClose }) {
         <div className={styles.downloadConfirmation}>
           <p>Are you sure you want to download data for "{selectedShortlistDownloadName}"?</p>
           <div className={styles.confirmationButtons}>
-            <button className={styles.confirmationButton} onClick={() => handleDownloadConfirmationResponse(true)}>Yes</button>
-            <button className={styles.confirmationButton} onClick={() => handleDownloadConfirmationResponse(false)}>No</button>
+            <button className={styles.confirmYesButton} onClick={() => handleDownloadConfirmationResponse(true)}>Yes</button>
+            <button className={styles.confirmYesButton} onClick={() => handleDownloadConfirmationResponse(false)}>No</button>
           </div>
         </div>
       )}
 
       <div className={styles.backButtonContainer}>
-        <button className={styles.detailedViewButton} onClick={() => setActiveBox(null)}>Back</button>
+        <button className={styles.backButton} onClick={() => setActiveBox(null)}>Back</button>
       </div>
     </div>
   );
@@ -472,7 +471,7 @@ function ShortlistInfo({ onClose }) {
   };
 
   return (
-    <div className={styles.shortlistInfoContainer}> {/* Main container for the component */}
+    <div className={styles.shortlistInfoContainer}>
       {renderContent()}
     </div>
   );

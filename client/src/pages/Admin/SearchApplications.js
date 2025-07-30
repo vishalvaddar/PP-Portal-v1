@@ -1,18 +1,32 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import Select from 'react-select';
-import { FileSearch } from "lucide-react";
+import Select from "react-select";
+import { FileSearch, Search, RotateCcw, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useFetchStates, useFetchDistricts, useFetchBlocks, useFetchInstitutes } from "../../hooks/useJurisData";
+import {
+  useFetchStates,
+  useFetchDistricts,
+  useFetchBlocks,
+} from "../../hooks/useJurisData"; // Removed unused useFetchInstitutes
 import classes from "./SearchApplications.module.css";
 
 const SearchApplications = () => {
   const navigate = useNavigate();
+  const [toastMessage, setToastMessage] = useState('');
 
   const currentYear = new Date().getFullYear();
   const startYear = 2022;
-  const yearOptions = Array.from({ length: currentYear - startYear + 1 }, (_, i) => startYear + i);
-  const mediumOptions = ["ENGLISH", "KANNADA", "URDU", "MARATHI"];
+  const yearOptions = Array.from({ length: currentYear - startYear + 1 }, (_, i) => ({
+    value: startYear + i,
+    label: `${startYear + i} - ${startYear + i + 1}`,
+  }));
+
+  const mediumOptions = [
+    { value: "ENGLISH", label: "English" },
+    { value: "KANNADA", label: "Kannada" },
+    { value: "URDU", label: "Urdu" },
+    { value: "MARATHI", label: "Marathi" },
+  ];
 
   const initialFormData = {
     nmms_year: currentYear,
@@ -20,44 +34,41 @@ const SearchApplications = () => {
     district: "",
     nmms_block: "",
     medium: "",
-    current_institute_dise_code: "",
-    nmms_reg_number: "",
     student_name: "",
+    nmms_reg_number: "",
   };
 
   const [formData, setFormData] = useState(initialFormData);
-  const [institutes, setInstitutes] = useState([]);
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [blocks, setBlocks] = useState([]);
   const [errors, setErrors] = useState({});
-  const isRegNumberEntered = formData.nmms_reg_number.trim().length > 0;
 
+  // Custom hooks for fetching jurisdictional data
   useFetchStates(setStates);
   useFetchDistricts(formData.app_state, setDistricts);
   useFetchBlocks(formData.district, setBlocks);
-  useFetchInstitutes(formData.nmms_block, setInstitutes);
-
-  useEffect(() => {
-    if (isRegNumberEntered) {
-      setFormData(prev => ({
-        ...initialFormData,
-        nmms_year: prev.nmms_year,
-        nmms_reg_number: prev.nmms_reg_number
-      }));
-      setDistricts([]);
-      setBlocks([]);
-      setInstitutes([]);
-      setErrors({});
-    }
-  }, [isRegNumberEntered]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
-      setErrors(prevErrors => ({ ...prevErrors, [name]: undefined }));
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
+  };
+
+  const handleSelectChange = (selectedOption, name) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: selectedOption ? selectedOption.value : "",
+    }));
+  };
+
+  const handleReset = () => {
+    setFormData(initialFormData);
+    setDistricts([]);
+    setBlocks([]);
+    setErrors({});
   };
 
   const handleSubmit = async (e) => {
@@ -72,22 +83,20 @@ const SearchApplications = () => {
     if (Object.keys(newErrors).length > 0) return;
 
     const filteredFormData = Object.fromEntries(
-      Object.entries(formData).filter(([_, v]) => v !== "" && v !== null && v !== undefined)
+      Object.entries(formData).filter(([, v]) => v)
     );
 
-    const searchParams = {
-      ...filteredFormData,
-      limit: 10,
-      offset: 0
-    };
+    const searchParams = { ...filteredFormData, limit: 10, offset: 0 };
 
     try {
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/search`, {
-        params: searchParams,
-      });
-
-      if (!response.data || !response.data.data || response.data.data.length === 0) {
-        alert("No applications found matching your criteria.");
+      const response = await axios.get(
+        `${process.env.REACT_APP_BACKEND_API_URL}/api/search`,
+        { params: searchParams }
+      );
+      
+      if (!response.data?.data?.length) {
+        setToastMessage("No applications found matching your criteria.");
+        setTimeout(() => setToastMessage(''), 3000);
         return;
       }
 
@@ -95,147 +104,188 @@ const SearchApplications = () => {
         state: {
           initialApplications: response.data.data,
           paginationInfo: response.data.pagination,
-          searchFilters: filteredFormData
-        }
+          searchFilters: filteredFormData,
+        },
       });
-
     } catch (error) {
-      console.error("Error searching applications:", error);
-      if (error.response && error.response.status === 404) {
-        alert("No applications found matching your criteria.");
-      } else {
-        alert("Error searching applications. Please check the console and try again.");
-      }
+      const message = error.response?.status === 404
+        ? "No applications found matching your criteria."
+        : "An error occurred while searching. Please try again.";
+      setToastMessage(message);
+      setTimeout(() => setToastMessage(''), 3000);
     }
   };
+  
+  // Memoize options to prevent re-creation on every render
+  const stateOptions = React.useMemo(() => states.map((s) => ({ value: s.id, label: s.name })), [states]);
+  const districtOptions = React.useMemo(() => districts.map((d) => ({ value: d.id, label: d.name })), [districts]);
+  const blockOptions = React.useMemo(() => blocks.map((b) => ({ value: b.id, label: b.name })), [blocks]);
+  
+  // A single flag to disable the advanced search fields.
+  const isAdvancedSearchDisabled = !!formData.nmms_reg_number;
 
   return (
-    <div className={classes.pageBg}>
-      <div className={classes.centerCard}>
-        <div className={classes.header}>
-          <FileSearch size={28} className={classes.icon} />
-          <h2>Search Applications</h2>
+    <div className={classes.pageContainer}>
+      {toastMessage && (
+        <div className={`${classes.toast} ${classes.toastVisible}`}>
+          {toastMessage}
         </div>
-        <form onSubmit={handleSubmit} className={classes.form}>
-          <div className={classes.formRow}>
-            <div className={classes.formGroup}>
-              <label htmlFor="nmms_year">Year</label>
-              <select name="nmms_year" value={formData.nmms_year} onChange={handleChange} disabled={isRegNumberEntered}>
-                {yearOptions.map(year => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
-            </div>
-            <div className={classes.formGroup}>
-              <label htmlFor="nmms_reg_number">NMMS Registration Number</label>
-              <input
-                type="text"
-                name="nmms_reg_number"
-                placeholder="Enter 11-digit number"
-                value={formData.nmms_reg_number}
-                onChange={handleChange}
-                maxLength="11"
-                autoComplete="off"
-              />
-              {errors.nmms_reg_number && <span className={classes.error}>{errors.nmms_reg_number}</span>}
-            </div>
+      )}
+      <div className={classes.searchGrid}>
+        {/* Left Column: Search Form */}
+        <div className={classes.searchCard}>
+          <div className={classes.cardHeader}>
+            <FileSearch size={28} />
+            <h1>Application Search</h1>
           </div>
 
-          <div className={classes.orSeparator}>
-            <span>OR</span>
-          </div>
+          <form onSubmit={handleSubmit} className={classes.form}>
+            <div className={classes.formSection}>
+              <label htmlFor="nmms_reg_number" className={classes.label}>
+                Search by NMMS Registration Number
+              </label>
+              <div className={classes.inputGroup}>
+                <Search className={classes.inputIcon} size={18} />
+                <input
+                  type="text"
+                  id="nmms_reg_number"
+                  name="nmms_reg_number"
+                  placeholder="Enter 11-digit number..."
+                  value={formData.nmms_reg_number}
+                  onChange={handleChange}
+                  maxLength="11"
+                  autoComplete="off"
+                  className={classes.input}
+                />
+              </div>
+              {errors.nmms_reg_number && (
+                <p className={classes.errorText}>{errors.nmms_reg_number}</p>
+              )}
+            </div>
 
-          <div className={classes.formRow}>
-            <div className={classes.formGroup}>
-              <label htmlFor="app_state">State</label>
-              <select name="app_state" value={formData.app_state} onChange={handleChange} disabled={isRegNumberEntered}>
-                <option value="">Select State</option>
-                {states.map(state => (
-                  <option key={state.id} value={state.id}>{state.name}</option>
-                ))}
-              </select>
+            <div className={classes.divider}>
+              <span>OR</span>
             </div>
-            <div className={classes.formGroup}>
-              <label htmlFor="district">District</label>
-              <select name="district" value={formData.district} onChange={handleChange} disabled={isRegNumberEntered || !formData.app_state}>
-                <option value="">Select District</option>
-                {districts.map(district => (
-                  <option key={district.id} value={district.id}>{district.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
+            
+            {/* By wrapping the fields in a fieldset, we can disable them all at once. */}
+            <fieldset disabled={isAdvancedSearchDisabled} className={classes.fieldset}>
+              <div className={classes.filterGrid}>
+                {/* Student Name */}
+                <div className={classes.field}>
+                  <label htmlFor="student_name" className={classes.label}>Student Name</label>
+                  <input
+                    type="text"
+                    id="student_name"
+                    name="student_name"
+                    placeholder="e.g. Anil Kumar"
+                    value={formData.student_name}
+                    onChange={handleChange}
+                    className={classes.input}
+                  />
+                </div>
 
-          <div className={classes.formRow}>
-            <div className={classes.formGroup}>
-              <label htmlFor="nmms_block">Block</label>
-              <select name="nmms_block" value={formData.nmms_block} onChange={handleChange} disabled={isRegNumberEntered || !formData.district}>
-                <option value="">Select Block</option>
-                {blocks.map(block => (
-                  <option key={block.id} value={block.id}>{block.name}</option>
-                ))}
-              </select>
-            </div>
-            <div className={classes.formGroup}>
-              <label htmlFor="current_institute_dise_code">Institute</label>
-              <Select
-                isDisabled={isRegNumberEntered || !formData.nmms_block}
-                options={institutes.map(inst => ({
-                  value: inst.dise_code,
-                  label: inst.institute_name,
-                }))}
-                value={institutes
-                  .map(inst => ({
-                    value: inst.dise_code,
-                    label: inst.institute_name,
-                  }))
-                  .find(option => option.value === formData.current_institute_dise_code) || null}
-                onChange={(selectedOption) => {
-                  setFormData(prev => ({
-                    ...prev,
-                    current_institute_dise_code: selectedOption ? selectedOption.value : "",
-                  }));
-                }}
-                placeholder="Select Institute"
-                isSearchable
-                className={classes.selectInput}
-              />
-            </div>
-          </div>
+                {/* Academic Year */}
+                <div className={classes.field}>
+                  <label htmlFor="nmms_year" className={classes.label}>Academic Year</label>
+                  <Select
+                    id="nmms_year"
+                    options={yearOptions}
+                    value={yearOptions.find((o) => o.value === formData.nmms_year)}
+                    onChange={(s) => handleSelectChange(s, "nmms_year")}
+                    classNamePrefix="react-select"
+                  />
+                </div>
 
-          <div className={classes.formRow}>
-            <div className={classes.formGroup}>
-              <label htmlFor="medium">Medium</label>
-              <select name="medium" value={formData.medium} onChange={handleChange} disabled={isRegNumberEntered}>
-                <option value="">Select Medium</option>
-                {mediumOptions.map(medium => (
-                  <option key={medium} value={medium}>{medium}</option>
-                ))}
-              </select>
-            </div>
-            <div className={classes.formGroup}>
-              <label htmlFor="student_name">Student Name</label>
-              <input
-                type="text"
-                name="student_name"
-                placeholder="Enter student name"
-                value={formData.student_name}
-                onChange={handleChange}
-                disabled={isRegNumberEntered}
-                maxLength="50"
-                autoComplete="off"
-              />
-            </div>
-          </div>
+                {/* Medium */}
+                <div className={classes.field}>
+                  <label htmlFor="medium" className={classes.label}>Medium</label>
+                  <Select
+                    id="medium"
+                    options={mediumOptions}
+                    value={mediumOptions.find((o) => o.value === formData.medium)}
+                    onChange={(s) => handleSelectChange(s, "medium")}
+                    placeholder="Any Medium"
+                    classNamePrefix="react-select"
+                    isClearable
+                  />
+                </div>
 
-          {Object.keys(errors).length > 0 && !errors.nmms_reg_number && (
-            <div className={classes.errorSummary}>
-              Please correct the errors above.
-            </div>
-          )}
+                {/* State */}
+                <div className={classes.field}>
+                  <label htmlFor="app_state" className={classes.label}>State</label>
+                  <Select
+                    id="app_state"
+                    options={stateOptions}
+                    value={stateOptions.find((o) => o.value === formData.app_state)}
+                    onChange={(s) => handleSelectChange(s, "app_state")}
+                    placeholder="Any State"
+                    classNamePrefix="react-select"
+                    isClearable
+                  />
+                </div>
 
-          <button type="submit" className={classes.submitButton}>Search</button>
-        </form>
+                {/* District */}
+                <div className={classes.field}>
+                  <label htmlFor="district" className={classes.label}>District</label>
+                  <Select
+                    id="district"
+                    options={districtOptions}
+                    value={districtOptions.find((o) => o.value === formData.district)}
+                    onChange={(s) => handleSelectChange(s, "district")}
+                    placeholder="Any District"
+                    isDisabled={!formData.app_state}
+                    classNamePrefix="react-select"
+                    isClearable
+                  />
+                </div>
+
+                {/* Block */}
+                <div className={classes.field}>
+                  <label htmlFor="nmms_block" className={classes.label}>Block</label>
+                  <Select
+                    id="nmms_block"
+                    options={blockOptions}
+                    value={blockOptions.find((o) => o.value === formData.nmms_block)}
+                    onChange={(s) => handleSelectChange(s, "nmms_block")}
+                    placeholder="Any Block"
+                    isDisabled={!formData.district}
+                    classNamePrefix="react-select"
+                    isClearable
+                  />
+                </div>
+              </div>
+            </fieldset>
+
+            <div className={classes.formActions}>
+              <button type="button" onClick={handleReset} className={`${classes.btn} ${classes.btnSecondary}`}>
+                <RotateCcw size={16} /> Reset
+              </button>
+              <button type="submit" className={`${classes.btn} ${classes.btnPrimary}`}>
+                <Search size={18} /> Search Applications
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Right Column: Info Panel */}
+        <div className={classes.infoPanel}>
+            <div className={classes.infoIconContainer}>
+              <Info size={24} className={classes.infoIcon}/>
+            </div>
+            <h2>How to Search</h2>
+            <p>Use the fields on the left to find student applications.</p>
+            <ul>
+              <li>
+                <strong>Quick Search:</strong> For the fastest results, enter a student's complete 11-digit NMMS Registration Number.
+              </li>
+              <li>
+                <strong>Advanced Filters:</strong> Combine multiple filters like name, academic year, and location to narrow down your search results.
+              </li>
+              <li>
+                <strong>Reset:</strong> Click the "Reset" button to clear all filters and start a new search.
+              </li>
+            </ul>
+        </div>
       </div>
     </div>
   );

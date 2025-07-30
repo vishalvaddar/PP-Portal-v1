@@ -517,11 +517,11 @@ const EditStudent = () => {
         <div className={classes.headerContent}> 
           <h2 className={classes.pageTitle}>Edit Applicant</h2>
           <div className={classes.studentMeta}>
-            <span className={classes.idLabel}>NMMS Reg No:</span>
+            <span className={classes.idLabel}>NMMS Reg No: </span>
             <span className={classes.idValue}>{nmms_reg_number}</span>
           </div>
           <div className={classes.studentIdRow}>
-            <span className={classes.idLabel}>Student ID:</span>
+            <span className={classes.idLabel}>Student ID: </span>
             <span className={classes.idValue}>{formData.applicant_id}</span>
           </div>
         </div>

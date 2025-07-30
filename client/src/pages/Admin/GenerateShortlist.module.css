@@ -1,0 +1,316 @@
+/* GenerateShortlist.module.css */
+
+/* =================================
+   CSS Variables for Theming
+   ================================= */
+:root {
+  --primary-color: #4f46e5; /* Indigo */
+  --primary-hover: #4338ca;
+  --primary-light: #eef2ff;
+  --page-bg: #f8fafc;
+  --card-bg: #ffffff;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+  --success-bg: #f0fdf4;
+  --success-text: #16a34a;
+  --error-bg: #fef2f2;
+  --error-text: #dc2626;
+  --frozen-text: #991b1b;
+  --radius: 16px;
+}
+
+/* =================================
+   Main Page Layout
+   ================================= */
+.page {
+  background-color: var(--page-bg);
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  padding: 2rem;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* =================================
+   Card Layout
+   ================================= */
+.formGrid { /* This class now acts as the main card */
+  background-color: var(--card-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  overflow: hidden;
+}
+
+.header {
+  padding: 2rem 2.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.header p {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0.25rem 0 0;
+}
+
+/* =================================
+   Step-by-Step Sections
+   ================================= */
+.formSection {
+  padding: 2rem 2.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.formSection:last-of-type {
+  border-bottom: none;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+}
+
+.sectionHeader .iconWrapper {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sectionHeader h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formGroup:last-child {
+    margin-bottom: 0;
+}
+
+.formGroup label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+/* =================================
+   Form Inputs
+   ================================= */
+.inputWrapper { position: relative; }
+
+.inputIcon {
+  position: absolute;
+  left: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+
+.formGroup select,
+.formGroup input[type="text"],
+.formGroup textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: var(--page-bg);
+  color: var(--text-primary);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.formGroup input[type="text"],
+.formGroup textarea {
+    padding-left: 2.5rem;
+}
+
+.formGroup select:focus,
+.formGroup input[type="text"]:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.formGroup select:disabled,
+.formGroup input:disabled,
+.formGroup textarea:disabled {
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+}
+
+
+/* =================================
+   Blocks Selection
+   ================================= */
+.blocksContainer {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.checkboxWrapper {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.checkboxWrapper:not(.disabled):hover {
+    background-color: var(--primary-light);
+}
+
+.checkboxWrapper input[type="checkbox"] {
+  width: 1.15em;
+  height: 1.15em;
+  border-radius: 4px;
+  accent-color: var(--primary-color);
+  cursor: pointer;
+  margin-right: 0.75rem;
+}
+
+.checkboxWrapper label {
+  font-weight: 500;
+  color: var(--text-primary);
+  margin: 0;
+  cursor: pointer;
+}
+
+.checkboxWrapper.disabled {
+  cursor: not-allowed;
+}
+
+.checkboxWrapper.disabled label {
+    color: var(--text-secondary);
+    text-decoration: line-through;
+}
+
+.checkboxWrapper.disabled label {
+    color: var(--frozen-text);
+    font-style: italic;
+    text-decoration: none;
+}
+
+/* =================================
+   Action Bar & Results
+   ================================= */
+.actionBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 1.5rem 2.5rem;
+  background-color: var(--page-bg);
+}
+
+.result { flex-grow: 1; }
+
+.successBox, .errorBox {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 1px solid;
+}
+
+.successBox { background-color: var(--success-bg); color: var(--success-text); border-color: #a7f3d0; }
+.errorBox { background-color: var(--error-bg); color: var(--error-text); border-color: #fecaca; }
+.successBox p, .errorBox p { margin: 0; }
+
+.submitButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: var(--primary-color);
+  color: white;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.submitButton:hover:not(:disabled) { background-color: var(--primary-hover); }
+.submitButton:disabled { background-color: #9ca3af; cursor: not-allowed; }
+
+/* =================================
+   Loaders, Spinners & Messages
+   ================================= */
+.spinner {
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.loaderSmall {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+
+.errorMessage, .emptyMessage {
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+.errorMessage { color: var(--error-text); }
+.emptyMessage { color: var(--text-secondary); }
+
+/* =================================
+   Responsiveness
+   ================================= */
+@media (max-width: 640px) {
+    .page {
+        padding: 1rem;
+    }
+    .header, .formSection, .actionBar {
+        padding: 1.5rem;
+    }
+    .header h1 { font-size: 1.5rem; }
+    .sectionHeader h3 { font-size: 1.1rem; }
+    .actionBar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

@@ -1,5 +1,4 @@
 // navConfig.js
-
 import {
   Dashboard,
   School,
@@ -50,6 +49,7 @@ export const navConfig = {
         // Uncomment below if teachers page is needed later
         // { path: "/admin/academics/teachers", icon: <SupervisorAccount />, label: "Teachers" },
         { path: "/admin/academics/batches", icon: <Badge />, label: "Batches" },
+        { path: "/admin/academics/reports", icon: <Assessment />, label: "Reports"},
       ],
     },
     {
@@ -74,10 +74,7 @@ export const navConfig = {
   student: [
     { path: '/student/student-dashboard', label: 'Dashboard', icon: <Dashboard /> },
     { path: "/student/student-profile", icon: <AccountCircle />, label: "Profile" },
-    { path: "/student/attendance", icon: <CoPresent />, label: "Attendance" },
-    { path: "/student/issues", icon: <BugReport />, label: "Report Issue" },
-    { path: "/student/notes-leave", icon: <NoteAlt />, label: "Notes & Leave" },
-    { path: "/student/exams", icon: <Quiz />, label: "Exam Updates" },
+    { path: "/student/student-corner", icon: <NoteAlt />, label: "Student Corner" },
     { path: "/", icon: <Logout />, label: "Logout" },
   ],
 

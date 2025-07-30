@@ -5,7 +5,6 @@ import { PlusCircle, Pencil, Trash2, X, Lock, Unlock } from "lucide-react";
 import axios from "axios";
 import classes from "./UserRoles.module.css";
 
-// Notification Component
 const Notification = ({ message, type, onDismiss }) => {
   if (!message) return null;
   return (
@@ -18,7 +17,6 @@ const Notification = ({ message, type, onDismiss }) => {
   );
 };
 
-// Confirmation Modal Component - Made more generic for reuse
 const ConfirmationModal = ({ show, onClose, onConfirm, title, message, confirmButtonText = "Confirm" }) => {
   if (!show) return null;
   return (
@@ -53,19 +51,16 @@ const UserRoles = () => {
   const [userToDelete, setUserToDelete] = useState(null);
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
 
-  // State for user status confirmation: "N" for active, "Y" for deactivated
   const [showConfirmStatusModal, setShowConfirmStatusModal] = useState(false);
   const [userToToggleStatus, setUserToToggleStatus] = useState(null);
-  const [targetUserStatus, setTargetUserStatus] = useState(''); // "N" for active, "Y" for deactivated
+  const [targetUserStatus, setTargetUserStatus] = useState('');
 
-  // New state for role status confirmation: "Y" for active, "N" for deactivated
   const [showConfirmRoleStatusModal, setShowConfirmRoleStatusModal] = useState(false);
   const [roleToToggleStatus, setRoleToToggleStatus] = useState(null);
-  const [targetRoleStatus, setTargetRoleStatus] = useState(''); // "Y" for active, "N" for deactivated
+  const [targetRoleStatus, setTargetRoleStatus] = useState('');
 
   const notify = (msg, type = "success") => {
     setNotification({ message: msg, type });
-    // Keep error messages visible longer or until dismissed, success for a fixed time
     const timeout = type === "error" ? 8000 : 4000;
     setTimeout(() => setNotification({ message: "", type: "" }), timeout);
   };
@@ -82,7 +77,6 @@ const UserRoles = () => {
 
   const fetchRoles = useCallback(async () => {
     try {
-      // Assuming backend returns roles as objects with id, role_name, and status
       const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/roles`);
       setRoles(res.data || []);
     } catch (error) {
@@ -99,25 +93,22 @@ const UserRoles = () => {
   const validateUser = ({ username, password }, isEdit = false) => {
     const errs = {};
     if (!username.trim()) errs.username = "Username is required";
-    // Password is only required for new user creation
     if (!isEdit && !password.trim()) errs.password = "Password is required";
     return errs;
   };
 
-  // getOptions to filter for active roles (status "Y" for roles) and map to { value, label }
   const getOptions = (arr) => arr.filter(r => r.status === "Y").map(r => ({ value: r.role_name, label: r.role_name }));
-  // getSelected maps selected role strings back to { value, label } for the Select component
   const getSelected = (arr) => arr.map(r => ({ value: r, label: r }));
 
   const openCreate = () => {
-    setUserForm({ username: "", password: "", roles: [] }); // Reset form on open
+    setUserForm({ username: "", password: "", roles: [] });
     setErrors({});
     setShowCreateModal(true);
   };
 
   const closeCreateModal = () => {
     setShowCreateModal(false);
-    setUserForm({ username: "", password: "", roles: [] }); // Reset form on close
+    setUserForm({ username: "", password: "", roles: [] });
     setErrors({});
   };
 
@@ -128,11 +119,11 @@ const UserRoles = () => {
       console.log("Creating user with data:", userForm);
       await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/api/users`, userForm);
       notify(`User "${userForm.username}" created successfully!`);
-      fetchUsers(); // Re-fetch users to show new user
-      closeCreateModal(); // Close modal and reset form
+      fetchUsers();
+      closeCreateModal(); 
     } catch (error) {
       console.error("Error creating user:", error);
-      const errorMessage = error.response?.data?.error || "Error creating user."; // Access error.response.data.error
+      const errorMessage = error.response?.data?.error || "Error creating user.";
       notify(errorMessage, "error");
       if (errorMessage.includes("Username already exists")) {
         setErrors(prev => ({ ...prev, username: errorMessage }));
@@ -141,7 +132,6 @@ const UserRoles = () => {
   };
 
   const openEdit = (u) => {
-    // When opening edit, copy user data but clear password for security and optional update
     setEditUser({ ...u, password: "" });
     setErrors({});
     setShowEditModal(true);
@@ -149,22 +139,22 @@ const UserRoles = () => {
 
   const closeEditModal = () => {
     setShowEditModal(false);
-    setEditUser(null); // Clear editUser on close
+    setEditUser(null);
     setErrors({});
   };
 
   const handleEdit = async () => {
-    const errs = validateUser(editUser, true); // Pass true for isEdit
+    const errs = validateUser(editUser, true);
     if (Object.keys(errs).length) return setErrors(errs);
     try {
       console.log(`Updating user ${editUser.id} with data:`, editUser);
       await axios.put(`${process.env.REACT_APP_BACKEND_API_URL}/api/users/${editUser.id}`, editUser);
       notify(`User "${editUser.username}" updated successfully!`);
-      fetchUsers(); // Re-fetch users to show updated user
-      closeEditModal(); // Close modal and reset form
+      fetchUsers(); 
+      closeEditModal();
     } catch (error) {
       console.error("Error updating user:", error);
-      const errorMessage = error.response?.data?.error || "Error updating user."; // Access error.response.data.error
+      const errorMessage = error.response?.data?.error || "Error updating user.";
       notify(errorMessage, "error");
       if (errorMessage.includes("Username already taken")) {
         setErrors(prev => ({ ...prev, username: errorMessage }));
@@ -183,10 +173,10 @@ const UserRoles = () => {
       console.log("Deleting user with ID:", userToDelete);
       await axios.delete(`${process.env.REACT_APP_BACKEND_API_URL}/api/users/${userToDelete}`);
       notify("User deleted successfully!");
-      fetchUsers(); // Re-fetch users after deletion
+      fetchUsers(); 
     } catch (error) {
       console.error("Error deleting user:", error);
-      const errorMessage = error.response?.data?.error || "Delete failed."; // Access error.response.data.error
+      const errorMessage = error.response?.data?.error || "Delete failed.";
       notify(errorMessage, "error");
     } finally {
       setShowConfirmDeleteModal(false);

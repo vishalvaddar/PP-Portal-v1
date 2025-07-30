@@ -8,8 +8,8 @@ router.get("/names", batchCreateController.getBatchNames);
 router.post("/names", batchCreateController.addBatchName);
 
 // 🔹 Cohort Routes
-router.get("/cohorts", batchCreateController.getAllCohorts); // now returns full cohort data
-router.post("/cohorts", batchCreateController.createCohort); // new: create full cohort with dates & description
+router.get("/cohorts", batchCreateController.getAllCohorts);
+router.post("/cohorts", batchCreateController.createCohort);
 
 // 🔸 Batch CRUD routes
 router.get("/", batchCreateController.getAllBatches);
@@ -17,7 +17,6 @@ router.post("/", batchCreateController.createBatch);
 router.put("/:id", batchCreateController.updateBatch);
 router.delete("/:id", batchCreateController.deleteBatch);
 
-// 🔸 Additional route
-router.put("/:id/assign-coordinator", batchCreateController.assignCoordinator);
+router.get("/:id/students", batchCreateController.getStudentsInBatch);
 
 module.exports = router;

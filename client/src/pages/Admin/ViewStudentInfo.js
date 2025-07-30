@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import classes from "./ViewStudentInfo.module.css";
-// import classes from "./EditForm.module.css"; // Assuming you reuse the CSS
 
 const ViewStudentInfo = () => {
   const { nmms_reg_number } = useParams();
@@ -12,10 +11,16 @@ const ViewStudentInfo = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [photoPreview, setPhotoPreview] = useState("");
-  const [institutes, setInstitutes] = useState([]); // Keep if needed for display
+  const [institutes, setInstitutes] = useState([]);
   const [expandedSections, setExpandedSections] = useState({
-    personal: true, address: true, educational: true, family: true, 
-    contact: true, transportation: true, teacher: true, property: true
+    personal: true,
+    address: false,
+    educational: false,
+    family: false,
+    contact: false,
+    transportation: false,
+    teacher: false,
+    property: false
   });
 
   const fieldLabels = {
@@ -28,7 +33,7 @@ const ViewStudentInfo = () => {
     aadhaar: "Aadhaar Number",
     father_name: "Father's Name",
     mother_name: "Mother's Name",
-    family_income_total: "Family Income",
+    family_income_total: "Family Income (₹)",
     home_address: "Home Address",
     contact_no1: "Primary Contact",
     contact_no2: "Secondary Contact",
@@ -50,27 +55,67 @@ const ViewStudentInfo = () => {
     subjects_of_interest: "Subjects of Interest",
     transportation_mode: "Transportation Mode",
     distance_to_school: "Distance to School (km)",
-    num_two_wheelers: "Number of Two Wheelers",
-    num_four_wheelers: "Number of Four Wheelers",
+    num_two_wheelers: "Two Wheelers",
+    num_four_wheelers: "Four Wheelers",
     irrigation_land: "Irrigation Land (acres)",
     neighbor_name: "Neighbor's Name",
     neighbor_phone: "Neighbor's Phone",
-    favorite_teacher_name: "Favorite Teacher's Name",
+    favorite_teacher_name: "Favorite Teacher",
     favorite_teacher_phone: "Teacher's Contact",
     gmat_score: "GMAT Score",
     sat_score: "SAT Score"
   };
 
-  const sectionIcons = {
-    personal: "👤",
-    address: "🏠",
-    educational: "🎓",
-    family: "👪",
-    contact: "📞",
-    transportation: "🚌",
-    teacher: "👨‍🏫",
-    property: "🏗"
-  };
+  const sections = [
+    {
+      key: 'personal',
+      title: 'Personal Information',
+      icon: '👤',
+      fields: ['student_name', 'gender', 'DOB', 'aadhaar', 'medium', 'father_name', 'mother_name']
+    },
+    {
+      key: 'address',
+      title: 'Address Information',
+      icon: '🏠',
+      fields: ['app_state', 'district', 'nmms_block', 'home_address', 'village']
+    },
+    {
+      key: 'educational',
+      title: 'Educational Information',
+      icon: '🎓',
+      fields: ['current_institute_dise_code', 'previous_institute_dise_code', 'gmat_score', 'sat_score', 'subjects_of_interest', 'career_goals']
+    },
+    {
+      key: 'family',
+      title: 'Family Information',
+      icon: '👨‍👩‍👧‍👦',
+      fields: ['father_occupation', 'mother_occupation', 'father_education', 'mother_education', 'family_income_total', 'household_size']
+    },
+    {
+      key: 'contact',
+      title: 'Contact Information',
+      icon: '📞',
+      fields: ['contact_no1', 'contact_no2', 'neighbor_name', 'neighbor_phone']
+    },
+    {
+      key: 'transportation',
+      title: 'Transportation & Facilities',
+      icon: '🚌',
+      fields: ['transportation_mode', 'distance_to_school', 'smart_phone_home', 'internet_facility_home']
+    },
+    {
+      key: 'teacher',
+      title: 'Teacher Information',
+      icon: '👨‍🏫',
+      fields: ['favorite_teacher_name', 'favorite_teacher_phone']
+    },
+    {
+      key: 'property',
+      title: 'Property Information',
+      icon: '🏘️',
+      fields: ['own_house', 'num_two_wheelers', 'num_four_wheelers', 'irrigation_land']
+    }
+  ];
 
   const genderOptions = [
     { label: "Male", value: "M" },
@@ -98,12 +143,9 @@ const ViewStudentInfo = () => {
             applicant_id: data.applicant_id,
             nmms_year: data.nmms_year,
             nmms_reg_number: data.nmms_reg_number,
-            app_state: data.app_state,
-            district: data.district,
-            state_name: data.state_name,
-            district_name: data.district_name,
-            block_name: data.block_name,
-            nmms_block: data.nmms_block,
+            app_state: data.state_name,
+            district: data.district_name,
+            nmms_block: data.block_name,
             student_name: data.student_name,
             father_name: data.father_name,
             mother_name: data.mother_name,
@@ -111,7 +153,7 @@ const ViewStudentInfo = () => {
             sat_score: data.sat_score,
             gender: data.gender,
             aadhaar: data.aadhaar,
-            DOB: formattedDOB, // Use formatted date
+            DOB: formattedDOB,
             home_address: data.home_address,
             family_income_total: data.family_income_total,
             contact_no1: data.contact_no1,
@@ -122,7 +164,6 @@ const ViewStudentInfo = () => {
           };
 
           const secondaryData = {
-            applicant_id: data.applicant_id,
             village: data.village || '',
             father_occupation: data.father_occupation || '',
             mother_occupation: data.mother_occupation || '',
@@ -147,22 +188,19 @@ const ViewStudentInfo = () => {
 
           setFormData(primaryData);
           setSecondaryData(secondaryData);
-          setPhotoPreview(data.photo ? `${process.env.REACT_APP_BACKEND_API_URL}/uploads/profile_photos/${data.photo}` : (data.gender === "M" ? "/default-boy.png" : "/default-girl.png"));
+          setPhotoPreview(data.photo 
+            ? `${process.env.REACT_APP_BACKEND_API_URL}/uploads/profile_photos/${data.photo}` 
+            : (data.gender === "M" ? "/default-boy.png" : "/default-girl.png")
+          );
 
-          // Fetch institutes after getting the block code
           if (primaryData.nmms_block) {
-            fetchInstitutes(primaryData.nmms_block);
+            fetchInstitutes(data.nmms_block);
           }
-
         } else {
           setError("Student not found.");
-          setFormData(null);
-          setSecondaryData(null);
         }
       } catch (err) {
         setError("Failed to fetch student data. Please try again.");
-        setFormData(null);
-        setSecondaryData(null);
         console.error("Error fetching student data:", err);
       } finally {
         setLoading(false);
@@ -175,62 +213,90 @@ const ViewStudentInfo = () => {
         setInstitutes(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error("Error fetching institutes", err);
-        setInstitutes([]); // Set to empty array on error
+        setInstitutes([]);
       }
     };
 
     fetchStudentDetails();
-
   }, [nmms_reg_number]);
 
   const toggleSection = (section) => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  // Function to get institute name from dise code
   const getInstituteName = (diseCode) => {
-    if (!diseCode || !institutes || institutes.length === 0) return `DISE: ${diseCode || 'N/A'}`;
+    if (!diseCode || !institutes || institutes.length === 0) {
+      return diseCode ? `DISE: ${diseCode}` : 'Not specified';
+    }
     const institute = institutes.find(inst => inst.dise_code === diseCode);
     return institute ? institute.institute_name : `DISE: ${diseCode}`;
   };
 
-  // Simplified renderField for viewing only
-  const renderField = (key, value) => {
-    const label = fieldLabels[key] || key;
-    let displayValue = value;
-
+  const formatValue = (key, value) => {
     if (value === null || value === undefined || value === '') {
-      displayValue = '-';
-    } else if (key === 'gender') {
-      const genderOption = genderOptions.find(opt => opt.value === value);
-      displayValue = genderOption ? genderOption.label : value;
-    } else if (['own_house', 'smart_phone_home', 'internet_facility_home'].includes(key)) {
-      const yesNoOption = yesNoOptions.find(opt => opt.value === value);
-      displayValue = yesNoOption ? yesNoOption.label : value;
-    } else if (key === 'current_institute_dise_code' || key === 'previous_institute_dise_code') {
-      displayValue = getInstituteName(value);
+      return 'Not specified';
     }
-    // Add more formatting here if needed
 
+    switch (key) {
+      case 'gender':
+        const genderOption = genderOptions.find(opt => opt.value === value);
+        return genderOption ? genderOption.label : value;
+      
+      case 'own_house':
+      case 'smart_phone_home':
+      case 'internet_facility_home':
+        const yesNoOption = yesNoOptions.find(opt => opt.value === value);
+        return yesNoOption ? yesNoOption.label : value;
+      
+      case 'current_institute_dise_code':
+      case 'previous_institute_dise_code':
+        return getInstituteName(value);
+      
+      case 'DOB':
+        return value ? new Date(value).toLocaleDateString('en-IN') : 'Not specified';
+      
+      case 'family_income_total':
+        return value ? `₹${Number(value).toLocaleString('en-IN')}` : 'Not specified';
+      
+      default:
+        return value;
+    }
+  };
+
+  const getValue = (field) => {
+    return formData?.[field] ?? secondaryData?.[field] ?? '';
+  };
+
+  const renderField = (field) => {
+    const value = getValue(field);
+    const formattedValue = formatValue(field, value);
+    
     return (
-      <div className={classes.formGroup} key={key}>
-        <label className={classes.formLabel}>{label}</label>
-        <div className={classes.formValue}>{displayValue}</div>
+      <div className={classes.formGroup} key={field}>
+        <label className={classes.formLabel}>{fieldLabels[field] || field}</label>
+        <div className={classes.formValue}>{formattedValue}</div>
       </div>
     );
   };
 
-  const renderSectionHeader = (title, section) => (
-    <div
-      className={`${classes.sectionHeader} ${expandedSections[section] ? classes.expanded : ''}`}
-      onClick={() => toggleSection(section)}
-    >
-      <div className={classes.sectionTitle}>
-        <span className={classes.sectionIcon}>{sectionIcons[section]}</span>
-        <h3>{title}</h3>
+  const renderSection = (section) => (
+    <div key={section.key}>
+      <div
+        className={`${classes.sectionHeader} ${expandedSections[section.key] ? classes.expanded : ''}`}
+        onClick={() => toggleSection(section.key)}
+      >
+        <div className={classes.sectionTitle}>
+          <span className={classes.sectionIcon}>{section.icon}</span>
+          <h3>{section.title}</h3>
+        </div>
+        <div className={classes.sectionToggle}>
+          {expandedSections[section.key] ? '−' : '+'}
+        </div>
       </div>
-      <div className={classes.sectionToggle}>
-        <span>{expandedSections[section] ? '−' : '+'}</span>
+      <div className={`${classes.sectionContent} ${expandedSections[section.key] ? classes.visible : ''}`}>
+        <div className={classes.formGrid}>
+          {section.fields.map(field => renderField(field))}
+        </div>
       </div>
     </div>
   );
@@ -240,7 +306,7 @@ const ViewStudentInfo = () => {
       <div className={classes.container}>
         <div className={classes.loadingMessage}>
           <div className={classes.spinner}></div>
-          <p>Loading student data...</p>
+          <p>Loading applicant information...</p>
         </div>
       </div>
     );
@@ -250,8 +316,8 @@ const ViewStudentInfo = () => {
     return (
       <div className={classes.container}>
         <div className={classes.errorMessage}>
-          <span className={classes.errorIcon}>⚠</span>
-          <span>No student data found for NMMS Registration Number: {nmms_reg_number}</span>
+          <span className={classes.errorIcon}>⚠️</span>
+          <span>{error || `No applicant found with registration number: ${nmms_reg_number}`}</span>
         </div>
       </div>
     );
@@ -261,32 +327,34 @@ const ViewStudentInfo = () => {
     <div className={classes.container}>
       <div className={classes.headerSection}>
         <div className={classes.headerContent}>
-          <h2 className={classes.pageTitle}>Applicant</h2>
+          <h1 className={classes.pageTitle}>Applicant Profile</h1>
           <div className={classes.studentMeta}>
-            <span className={classes.idLabel}>NMMS Reg No:</span>
+            <span className={classes.idLabel}>NMMS Registration No:</span>
             <span className={classes.idValue}>{nmms_reg_number}</span>
           </div>
           <div className={classes.studentIdRow}>
-            <span className={classes.idLabel}>Student ID:</span>
+            <span className={classes.idLabel}>Applicant ID:</span>
             <span className={classes.idValue}>{formData.applicant_id}</span>
           </div>
         </div>
         <div className={classes.profileImageContainer}>
           <img 
             src={photoPreview} 
-            alt="Profile" 
+            alt="Applicant Profile" 
             className={classes.profileImage} 
-            onError={(e) => { e.target.src = formData.gender === "M" ? "/default-boy.png" : "/default-girl.png"; }}
+            onError={(e) => { 
+              e.target.src = formData.gender === "M" ? "/default-boy.png" : "/default-girl.png"; 
+            }}
           />
         </div>
       </div>
 
-      {error && 
+      {error && (
         <div className={classes.errorMessage}>
-          <span className={classes.errorIcon}>⚠</span>
+          <span className={classes.errorIcon}>⚠️</span>
           <span>{error}</span>
         </div>
-      }
+      )}
 
       <div className={classes.sectionControls}>
         <button 
@@ -294,105 +362,12 @@ const ViewStudentInfo = () => {
           className={classes.editBtn} 
           onClick={() => navigate(`/admin/admissions/edit-form/${nmms_reg_number}`)}
         >
-          Edit Profile  
+          Edit Profile
         </button>
       </div>
 
       <div className={classes.studentForm}>
-        {/* Personal Information Section */}
-        {renderSectionHeader("Personal Information", "personal")}
-        <div className={`${classes.sectionContent} ${expandedSections.personal ? classes.visible : ''}`}>
-          <div className={classes.formGrid}>
-            {renderField("student_name", formData.student_name)}
-            {renderField("gender", formData.gender)}
-            {renderField("DOB", formData.DOB)}
-            {renderField("aadhaar", formData.aadhaar)}
-            {renderField("medium", formData.medium)}
-            {renderField("father_name", formData.father_name)}
-            {renderField("mother_name", formData.mother_name)}
-          </div>
-        </div>
-
-        {/* Address Information Section */}
-        {renderSectionHeader("Address Information", "address")}
-        <div className={`${classes.sectionContent} ${expandedSections.address ? classes.visible : ''}`}>
-          <div className={classes.formGrid}>
-            {renderField("app_state", formData.state_name)}
-            {renderField("district", formData.district_name)}
-            {renderField("nmms_block", formData.block_name)}
-            {renderField("home_address", formData.home_address)}
-            {secondaryData && renderField("village", secondaryData.village)}
-          </div>
-        </div>
-
-        {/* Educational Information Section */}
-        {renderSectionHeader("Educational Information", "educational")}
-        <div className={`${classes.sectionContent} ${expandedSections.educational ? classes.visible : ''}`}>
-          <div className={classes.formGrid}>
-            {renderField("current_institute_dise_code", formData.current_institute_dise_code)}
-            {renderField("previous_institute_dise_code", formData.previous_institute_dise_code)}
-            {renderField("gmat_score", formData.gmat_score)}
-            {renderField("sat_score", formData.sat_score)}
-            {secondaryData && renderField("subjects_of_interest", secondaryData.subjects_of_interest)}
-            {secondaryData && renderField("career_goals", secondaryData.career_goals)}
-          </div>
-        </div>
-
-        {/* Family Information Section */}
-        {renderSectionHeader("Family Information", "family")}
-        <div className={`${classes.sectionContent} ${expandedSections.family ? classes.visible : ''}`}>
-          <div className={classes.formGrid}>
-            {renderField("father_occupation", secondaryData?.father_occupation)}
-            {renderField("mother_occupation", secondaryData?.mother_occupation)}
-            {renderField("father_education", secondaryData?.father_education)}
-            {renderField("mother_education", secondaryData?.mother_education)}
-            {renderField("family_income_total", formData.family_income_total)}
-            {renderField("household_size", secondaryData?.household_size)}
-          </div>
-        </div>
-
-        {/* Contact Information Section */}
-        {renderSectionHeader("Contact Information", "contact")}
-        <div className={`${classes.sectionContent} ${expandedSections.contact ? classes.visible : ''}`}>
-          <div className={classes.formGrid}>
-            {renderField("contact_no1", formData.contact_no1)}
-            {renderField("contact_no2", formData.contact_no2)}
-            {renderField("neighbor_name", secondaryData?.neighbor_name)}
-            {renderField("neighbor_phone", secondaryData?.neighbor_phone)}
-          </div>
-        </div>
-
-        {/* Transportation Section */}
-        {renderSectionHeader("Transportation & Facilities", "transportation")}
-        <div className={`${classes.sectionContent} ${expandedSections.transportation ? classes.visible : ''}`}>
-          <div className={classes.formGrid}>
-            {renderField("transportation_mode", secondaryData?.transportation_mode)}
-            {renderField("distance_to_school", secondaryData?.distance_to_school)}
-            {renderField("smart_phone_home", secondaryData?.smart_phone_home)}
-            {renderField("internet_facility_home", secondaryData?.internet_facility_home)}
-          </div>
-        </div>
-
-        {/* Teacher Information Section */}
-        {renderSectionHeader("Teacher Information", "teacher")}
-        <div className={`${classes.sectionContent} ${expandedSections.teacher ? classes.visible : ''}`}>
-          <div className={classes.formGrid}>
-            {renderField("favorite_teacher_name", secondaryData?.favorite_teacher_name)}
-            {renderField("favorite_teacher_phone", secondaryData?.favorite_teacher_phone)}
-          </div>
-        </div>
-
-        {/* Property Information Section */}
-        {renderSectionHeader("Property Information", "property")}
-        <div className={`${classes.sectionContent} ${expandedSections.property ? classes.visible : ''}`}>
-          <div className={classes.formGrid}>
-            {renderField("own_house", secondaryData?.own_house)}
-            {renderField("num_two_wheelers", secondaryData?.num_two_wheelers)}
-            {renderField("num_four_wheelers", secondaryData?.num_four_wheelers)}
-            {renderField("irrigation_land", secondaryData?.irrigation_land)}
-          </div>
-        </div>
-
+        {sections.map(section => renderSection(section))}
       </div>
     </div>
   );

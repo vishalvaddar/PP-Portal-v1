@@ -15,9 +15,13 @@ router.get("/roles", UserRolesController.getAllRoles);
 router.post("/roles", UserRolesController.createRole);
 router.put("/roles/:roleId/status", UserRolesController.toggleRoleStatus); // ADDED: Route for toggling role status
 
-// These might not be directly used by your current frontend, but are valid for granular control
 router.post("/users/:userId/roles/:roleId", UserRolesController.assignRole);
 router.delete("/users/:userId/roles/:roleId", UserRolesController.removeRole);
+
+//Username and Password update route for MyProfile Page
+router.put("/user/change-username/:userId", UserRolesController.updateUsername)
+router.put("/user/change-password/:userId", UserRolesController.updatePassword)
+
 
 
 module.exports = router;

@@ -2,10 +2,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import Select from "react-select";
 import axios from "axios";
 import CreatableSelect from "react-select/creatable";
-import { PlusCircle, Pencil, Trash2, X } from "lucide-react";
+import { PlusCircle, Pencil, Trash2, X, Users } from "lucide-react";
 import classes from "./Batches.module.css";
 
-// Notification Component
 const Notification = ({ message, type, onDismiss }) => {
   if (!message) return null;
   return (
@@ -18,7 +17,6 @@ const Notification = ({ message, type, onDismiss }) => {
   );
 };
 
-// Confirmation Modal Component
 const ConfirmationModal = ({ show, onClose, onConfirm, title, message }) => {
   if (!show) return null;
   return (
@@ -36,14 +34,78 @@ const ConfirmationModal = ({ show, onClose, onConfirm, title, message }) => {
 };
 
 
+
+const StudentListModal = ({ show, onClose, students, batchName }) => {
+  if (!show) return null;
+
+  return (
+    <div className={classes.modalOverlay}>
+      <div className={`${classes.modal} ${classes.studentListModal}`}>
+        <div className={classes.modalHeader}>
+          <h3>Students in {batchName} Batch</h3>
+          <button onClick={onClose} className={classes.closeButton}>
+            <X size={24} />
+          </button>
+        </div>
+        <div className={classes.studentListContent}>
+          {students.length === 0 ? (
+            <p className={classes.noStudents}>No students are currently assigned to this batch.</p>
+          ) : (
+            <div className={classes.studentTableContainer}>
+              <table className={classes.studentTable}>
+                <thead>
+                  <tr>
+                    <th>Sl. No.</th>
+                    <th>Student Name</th>
+                    <th>Enrollment ID</th>
+                    <th>Father's Name</th>
+                    <th>Student Email</th>
+                    <th>Parent Email</th>
+                    <th>Contact No 1</th>
+                    <th>Contact No 2</th>
+                    <th>Sim Name</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {students.map((student, index) => (
+                    <tr key={student.student_id}>
+                      <td>{index + 1}</td>
+                      <td>{student.student_name}</td>
+                      <td>{student.enr_id || "N/A"}</td>
+                      <td>{student.father_name || "N/A"}</td>
+                      <td>{student.student_email || "N/A"}</td>
+                      <td>{student.parent_email || "N/A"}</td>
+                      <td>{student.sim_name || "N/A"}</td>
+                      <td>{student.contact_no1 || "N/A"}</td>
+                      <td>{student.contact_no2 || "N/A"}</td>
+
+                      <td>
+                        <span className={`${classes.statusBadge} ${classes.active}`}>
+                          Assigned
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+        <div className={classes.modalActions}>
+          <button onClick={onClose} className={classes.cancelBtn}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+};
 const Batches = () => {
   const [batch, setBatch] = useState({
     batch_name: "",
     cohort_number: "",
     coordinator_id: "",
-    batch_status: "Active", // Initial status for new batches
+    batch_status: "Active",
   });
-
   const [availableBatchNames, setAvailableBatchNames] = useState([]);
   const [coordinators, setCoordinators] = useState([]);
   const [batches, setBatches] = useState([]);
@@ -54,8 +116,7 @@ const Batches = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [sortBy, setSortBy] = useState("cohort_name");
-
-  // Cohort Modal State
+  
   const [showCohortModal, setShowCohortModal] = useState(false);
   const [newCohort, setNewCohort] = useState({
     cohort_name: "",
@@ -64,16 +125,19 @@ const Batches = () => {
     description: "",
   });
   const [cohortErrors, setCohortErrors] = useState({});
-
-  // Confirmation Modal State
+  
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [batchToDelete, setBatchToDelete] = useState(null);
-
-  // State for user status change confirmation
+  
   const [showStatusConfirmModal, setShowStatusConfirmModal] = useState(false);
   const [batchToToggleStatus, setBatchToToggleStatus] = useState(null);
   const [newStatus, setNewStatus] = useState('');
-
+  
+  const [showStudentListModal, setShowStudentListModal] = useState(false);
+  const [studentsInBatch, setStudentsInBatch] = useState([]);
+  const [currentBatchName, setCurrentBatchName] = useState("");
+  
+  const [loadingStudents, setLoadingStudents] = useState(false);
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
@@ -82,7 +146,7 @@ const Batches = () => {
 
   const fetchCohorts = useCallback(async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/batches/cohorts`);
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/batches/cohorts`);
       setCohorts(res.data.map((c) => ({ value: c.cohort_number, label: c.cohort_name })));
     } catch (err) {
       console.error("Error fetching cohorts", err);
@@ -92,7 +156,7 @@ const Batches = () => {
 
   const fetchCoordinators = useCallback(async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/batches/coordinators`);
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/batches/coordinators`);
       setCoordinators(res.data);
     } catch (err) {
       console.error("Error fetching coordinators", err);
@@ -102,7 +166,7 @@ const Batches = () => {
 
   const fetchBatches = useCallback(async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/batches`);
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/batches`);
       setBatches(res.data);
     } catch (err) {
       console.error("Error fetching Batches", err);
@@ -112,7 +176,7 @@ const Batches = () => {
 
   const fetchBatchNames = useCallback(async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/batches/names`);
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/batches/names`);
       setAvailableBatchNames(res.data);
     } catch (err) {
       console.error("Error fetching Batch Names", err);
@@ -151,14 +215,12 @@ const Batches = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateBatch(batch)) return;
-
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/api/batches`, {
+      await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/api/batches`, {
         ...batch,
         batch_name: batch.batch_name.trim(),
         coordinator_id: batch.coordinator_id || null,
       });
-
       setBatch({ batch_name: "", cohort_number: "", coordinator_id: "", batch_status: "Active" });
       fetchBatches();
       setShowCreateModal(false);
@@ -191,15 +253,13 @@ const Batches = () => {
 
   const handleSaveEdit = async () => {
     if (!validateBatch(editBatch)) return;
-
     try {
-      await axios.put(`${process.env.REACT_APP_API_URL}/api/batches/${editBatch.id}`, {
+      await axios.put(`${process.env.REACT_APP_BACKEND_API_URL}/api/batches/${editBatch.id}`, {
         batch_name: editBatch.batch_name,
         cohort_number: editBatch.cohort_number,
         batch_status: editBatch.batch_status,
         coordinator_id: editBatch.coordinator_id || null,
       });
-
       setEditBatch(null);
       setShowEditModal(false);
       fetchBatches();
@@ -221,7 +281,7 @@ const Batches = () => {
   const confirmDeleteBatch = async () => {
     if (!batchToDelete) return;
     try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}/api/batches/${batchToDelete}`);
+      await axios.delete(`${process.env.REACT_APP_BACKEND_API_URL}/api/batches/${batchToDelete}`);
       fetchBatches();
       showNotification("House deleted successfully!");
     } catch {
@@ -232,7 +292,6 @@ const Batches = () => {
     }
   };
 
-  // New function for status change
   const handleStatusToggle = (batch, status) => {
     setBatchToToggleStatus(batch);
     setNewStatus(status);
@@ -242,7 +301,7 @@ const Batches = () => {
   const confirmStatusChange = async () => {
     if (!batchToToggleStatus) return;
     try {
-      await axios.put(`${process.env.REACT_APP_API_URL}/api/batches/${batchToToggleStatus.id}`, {
+      await axios.put(`${process.env.REACT_APP_BACKEND_API_URL}/api/batches/${batchToToggleStatus.id}`, {
         ...batchToToggleStatus,
         batch_status: newStatus,
       });
@@ -255,6 +314,27 @@ const Batches = () => {
       setShowStatusConfirmModal(false);
       setBatchToToggleStatus(null);
       setNewStatus('');
+    }
+  };
+
+  const handleViewBatchDetails = async (batchId, batchName) => {
+    setLoadingStudents(true);
+    setShowStudentListModal(true);
+    setCurrentBatchName(batchName);
+    setStudentsInBatch([]);
+    console.log("Fetching students for batch:", batchId, batchName);
+
+    
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/batches/${batchId}/students`);
+      setStudentsInBatch(response.data);
+      console.log("Fetched students:", response.data);
+    } catch (err) {
+      console.error("Error fetching students", err);
+      showNotification("Could not fetch student list.", 'error');
+      setStudentsInBatch([]);
+    } finally {
+      setLoadingStudents(false);
     }
   };
 
@@ -279,11 +359,9 @@ const Batches = () => {
     if (!cohort_name.trim()) validationErrors.cohort_name = "Cohort name required";
     if (!start_date) validationErrors.start_date = "Start date required";
     setCohortErrors(validationErrors);
-
     if (Object.keys(validationErrors).length > 0) return;
-
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/api/batches/cohorts`, newCohort);
+      await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/api/batches/cohorts`, newCohort);
       setNewCohort({ cohort_name: "", start_date: "", description: "" });
       setShowCohortModal(false);
       fetchCohorts();
@@ -310,14 +388,19 @@ const Batches = () => {
         title="Confirm Deletion"
         message="Are you sure you want to delete this House? This action cannot be undone."
       />
-
-      {/* Confirmation Modal for Status Change */}
       <ConfirmationModal
         show={showStatusConfirmModal}
         onClose={() => setShowStatusConfirmModal(false)}
         onConfirm={confirmStatusChange}
         title={`Confirm ${newStatus === 'Active' ? 'Activation' : 'Deactivation'}`}
         message={`Are you sure you want to ${newStatus === 'Active' ? 'activate' : 'deactivate'} the House "${batchToToggleStatus?.batch_name}"?`}
+      />
+      
+      <StudentListModal 
+        show={showStudentListModal}
+        onClose={() => setShowStudentListModal(false)}
+        students={studentsInBatch}
+        batchName={currentBatchName}
       />
 
       <div className={classes.header}>
@@ -331,7 +414,6 @@ const Batches = () => {
           </button>
         </div>
       </div>
-
       <div className={classes.controls}>
         <label htmlFor="sortBy">Sort By:</label>
         <select id="sortBy" value={sortBy} onChange={(e) => setSortBy(e.target.value)} className={classes.sortSelect}>
@@ -340,7 +422,6 @@ const Batches = () => {
           <option value="coordinator_name">Coordinator</option>
         </select>
       </div>
-
       <div className={classes.cardGrid}>
         {sortedBatches.map((b) => (
           <div key={b.id} className={classes.card}>
@@ -354,15 +435,18 @@ const Batches = () => {
               <p><strong>Coordinator:</strong> {b.coordinator_name || ""}</p>
             </div>
             <div className={classes.cardActions}>
-              <button className={classes.actionBtn} /* onClick={() => handleViewBatchDetails(b.id)} */>View</button>
+              <button 
+                className={classes.actionBtn} 
+                onClick={() => handleViewBatchDetails(b.id, b.batch_name)}
+              >
+                <Users size={16} /> View Students
+              </button>
               <button className={classes.actionBtn} onClick={() => handleEdit(b)}><Pencil size={16} /></button>
               <button className={`${classes.actionBtn} ${classes.dangerBtnIcon}`} onClick={() => handleDeleteClick(b.id)}><Trash2 size={16} /></button>
             </div>
           </div>
         ))}
       </div>
-
-      {/* Create Modal */}
       {showCreateModal && (
         <div className={classes.modalOverlay}>
           <div className={classes.modal}>
@@ -380,7 +464,7 @@ const Batches = () => {
                     setBatch(prev => ({ ...prev, batch_name: value }));
                     if (action === "create-option" && value.trim()) {
                       try {
-                        await axios.post(`${process.env.REACT_APP_API_URL}/api/batches/names`, { name: value.trim() });
+                        await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/api/batches/names`, { name: value.trim() });
                         fetchBatchNames();
                       } catch (err) {
                         console.error("Error saving new house name", err);
@@ -392,7 +476,6 @@ const Batches = () => {
                 />
                 {errors.batch_name && <span className={classes.errorText}>{errors.batch_name}</span>}
               </div>
-
               <div className={classes.formGroup}>
                 <label>Cohort</label>
                 <Select
@@ -404,7 +487,6 @@ const Batches = () => {
                 />
                 {errors.cohort_number && <span className={classes.errorText}>{errors.cohort_number}</span>}
               </div>
-
               <div className={classes.formGroup}>
                 <label>Status</label>
                 <select name="batch_status" value={batch.batch_status} onChange={handleChange}>
@@ -412,7 +494,6 @@ const Batches = () => {
                   <option value="Inactive">Inactive</option>
                 </select>
               </div>
-
               <div className={classes.formGroup}>
                 <label>Coordinator</label>
                 <Select
@@ -423,7 +504,6 @@ const Batches = () => {
                   classNamePrefix="react-select"
                 />
               </div>
-
               <div className={classes.modalActions}>
                 <button type="submit" className={classes.saveBtn}>Create</button>
                 <button type="button" onClick={() => setShowCreateModal(false)} className={classes.cancelBtn}>Cancel</button>
@@ -432,8 +512,6 @@ const Batches = () => {
           </div>
         </div>
       )}
-
-      {/* Cohort Modal */}
       {showCohortModal && (
         <div className={classes.modalOverlay}>
           <div className={classes.modal}>
@@ -461,8 +539,6 @@ const Batches = () => {
           </div>
         </div>
       )}
-
-      {/* Edit Modal */}
       {showEditModal && editBatch && (
         <div className={classes.modalOverlay}>
           <div className={classes.modal}>

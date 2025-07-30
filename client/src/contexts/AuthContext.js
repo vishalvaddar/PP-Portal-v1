@@ -42,11 +42,23 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  // ✅ Update user profile in localStorage and state
+  const updateUserProfile = (updates) => {
+    if (!user) return;
+
+    const updatedUser = { ...user, ...updates };
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  };
+
   // Retrieve current token
-  const getToken = () => (user?.token && isTokenValid(user.token) ? user.token : null);
+  const getToken = () =>
+    user?.token && isTokenValid(user.token) ? user.token : null;
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, getToken }}>
+    <AuthContext.Provider
+      value={{ user, login, logout, getToken, updateUserProfile }}
+    >
       {children}
     </AuthContext.Provider>
   );

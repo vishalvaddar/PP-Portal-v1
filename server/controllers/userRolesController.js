@@ -1,5 +1,5 @@
 // userRolesController.js
-const pool = require("../config/db"); // Assuming this path is correct for your database connection pool
+const pool = require("../config/db");
 const bcrypt = require("bcrypt");
 
 // Get all users with their roles
@@ -380,5 +380,82 @@ exports.toggleRoleStatus = async (req, res) => {
   } catch (err) {
     console.error("Error toggling role status:", err);
     res.status(500).send("Failed to update role status");
+  }
+};
+
+exports.updateUsername = async (req, res) => {
+  const { userId } = req.params;
+  const username = req.body.username?.trim();
+
+  if (!username) {
+    return res.status(400).send("Username is required.");
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    const checkUser = await client.query(
+      "SELECT * FROM pp.user WHERE user_id = $1",
+      [userId]
+    );
+    if (checkUser.rowCount === 0) {
+      return res.status(404).send("User not found.");
+    }
+
+    const checkDuplicate = await client.query(
+      "SELECT * FROM pp.user WHERE user_name = $1 AND user_id != $2",
+      [username, userId]
+    );
+    if (checkDuplicate.rowCount > 0) {
+      return res.status(409).send("Username already taken.");
+    }
+
+    await client.query(
+      "UPDATE pp.user SET user_name = $1 WHERE user_id = $2",
+      [username, userId]
+    );
+
+    await client.query("COMMIT");
+    res.sendStatus(200);
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("Update error:", err);
+    res.status(500).send("Server error.");
+  } finally {
+    client.release();
+  }
+};
+
+
+exports.updatePassword = async (req, res) => {
+  const { userId } = req.params;
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) return res.status(400).json({ message: " Current and new passwords are required"});
+
+  const client = await pool.connect();
+  try {
+    const userQuery = "SELECT enc_password FROM pp.user WHERE user_id = $1";
+    const userResult = await client.query(userQuery, [userId]);
+
+    if (userResult.rowCount === 0) return res.status(404).json({ message: "User not found" });
+    const storedHash = userResult.rows[0].enc_password;
+
+    const passwordMatch = await bcrypt.compare(currentPassword, storedHash);
+    if (!passwordMatch) return res.status(401).json({ message: "Current password is incorrect."});
+
+    const newHashedPassword = await bcrypt.hash(newPassword, 10);
+
+    const updateQuery = "UPDATE pp.user SET enc_password = $1 WHERE user_id = $2";
+    await client.query(updateQuery, [newHashedPassword, userId]);
+
+    res.status(200).json({ message: "Password updated successfully." });
+
+  } catch (err) {
+    console.error("Error updating password:", err);
+    res.status(500).json({ message: "Internal server error." });
+  } finally {
+    client.release();
   }
 };

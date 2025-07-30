@@ -255,3 +255,21 @@ exports.createCohort = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+
+exports.getStudentsInBatch = async (req, res) => {
+  const { id } = req.params;
+
+  try{
+    const result = await pool.query(`
+      SELECT sm.*
+      FROM pp.batch b
+      JOIN pp.student_master sm ON sm.batch_id = b.batch_id
+      WHERE b.batch_id = $1
+    `, [id]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching students in batch:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};

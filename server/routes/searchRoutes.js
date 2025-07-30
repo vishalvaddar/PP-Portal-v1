@@ -2,7 +2,7 @@ const express = require("express");
 const pool = require("../config/db");
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+router.get("/search", async (req, res) => {
   try {
     const {
       nmms_year,
@@ -47,7 +47,7 @@ router.get("/", async (req, res) => {
     }
     if (student_name) {
       values.push(`%${student_name.trim()}%`);
-      whereClause += ` AND LOWER(a.student_name) ILIKE LOWER($${values.length})`;
+      whereClause += ` AND a.student_name ILIKE $${values.length}`;
     }
     if (nmms_year) {
       values.push(parseInt(nmms_year));

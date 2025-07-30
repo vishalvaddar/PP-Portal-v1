@@ -1,330 +1,270 @@
-/* MyProfile.module.css */
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'Fira Code', 'JetBrains Mono', monospace;
 
-/* --- Base Container & Card --- */
-.profileContainer {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start; /* Align card to the top */
-  min-height: calc(100vh - var(--navbar-height, 60px)); /* Adjust for navbar */
-  padding: 50px 20px; /* Increased padding for more breathing room */
-  background-color: #eef2f6; /* A very light, cool gray background */
-  font-family: 'Inter', sans-serif, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue'; /* Modern sans-serif font stack */
-  color: #333; /* Darker default text color */
+  /* Page & Card General Style */
+  --page-bg: #f8fafc;        /* Background color of the entire page */
+  --card-bg: #ffffff;       /* Background of cards on the main page */
+  --card-border-color: #e2e8f0;
+
+  /* Modal Style */
+  --modal-bg: #ffffff;
+  --modal-backdrop-bg: rgba(15, 23, 42, 0.85); /* The dark overlay */
+  --modal-header-bg: #f8fafc; /* Set to var(--modal-bg) for a flat look */
+  --modal-footer-bg: #f8fafc; /* Set to var(--modal-bg) for a flat look */
+  --modal-border-radius: 0.75rem;
+  --modal-border-color: #e2e8f0;
+  --modal-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* Text Colors */
+  --text-title: #1e293b;
+  --text-body: #334155;
+  --text-muted: #64748b;
+  --text-on-accent: #ffffff;
+
+  /* Input Fields Style */
+  --input-bg: #ffffff;
+  --input-border-color: #cbd5e1;
+  --input-focus-border-color: #4f46e5;
+  --input-focus-shadow-color: rgba(79, 70, 229, 0.2);
+  --input-text-color: #1e293b;
+  --input-placeholder-color: #94a3b8;
+
+  /* Buttons Style */
+  --button-primary-bg: linear-gradient(135deg, #6366f1, #4f46e5); /* Gradient for primary button */
+  --button-primary-hover-brightness: 1.1;
+  --button-secondary-bg: #e2e8f0;
+  --button-secondary-text: #475569;
+  --button-secondary-hover-bg: #cbd5e1;
+
+  /* Status Colors */
+  --color-error: #dc2626;
+  --color-success: #16a34a;
+
+  /* Sizing & Effects */
+  --transition: 200ms ease-in-out;
 }
 
-.card {
-  background-color: #ffffff;
-  border-radius: 18px; /* Even more rounded corners for a softer look */
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.09); /* Deeper, softer shadow */
-  padding: 45px; /* Generous internal padding */
-  width: 100%;
-  max-width: 750px; /* Wider card to feel less cramped */
-  box-sizing: border-box;
-  text-align: center;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother transition */
+/*
+========================================
+  2. CORE STRUCTURE & LAYOUT
+  -- (Generally no need to edit below this line) --
+========================================
+*/
+.loadingContainer {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100vh; gap: 1rem; color: var(--text-muted); background-color: var(--page-bg);
+  font-family: var(--font-sans);
 }
+.spinner { animation: spin 1s linear infinite; }
 
-.card:hover {
-  transform: translateY(-8px); /* More noticeable lift on hover */
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12); /* Enhanced shadow on hover */
+.pageContainer {
+  background-color: var(--page-bg);
+  min-height: 100vh;
+  padding: 2.5rem;
+  font-family: var(--font-sans);
 }
-
-/* --- Header Section --- */
-.header {
-  display: flex;
-  flex-direction: column; /* Stack vertically by default */
-  align-items: center;
-  margin-bottom: 40px; /* More space below header */
-  padding-bottom: 30px;
-  border-bottom: 1px solid #e0e6ed; /* Very light, clean border */
+.pageLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  gap: 2rem; max-width: 1280px; margin: 0 auto;
 }
+.leftColumn, .rightColumn { display: flex; flex-direction: column; gap: 1.5rem; }
 
-@media (min-width: 768px) { /* Tablet and Desktop layout */
-  .header {
-    flex-direction: row;
-    justify-content: center; /* Center content horizontally within header */
-    text-align: left;
-    align-items: center; /* Align items centrally */
-  }
-  .info {
-    margin-left: 35px; /* More space from avatar */
-  }
+/*
+========================================
+  3. PAGE CARDS & PROFILE INFO
+========================================
+*/
+:global(.Card) {
+  background-color: var(--card-bg);
+  border-radius: var(--modal-border-radius);
+  border: 1px solid var(--card-border-color);
+  box-shadow: none;
 }
-
+.profileHeader { text-align: center; padding: 2rem;  background-color: #d1d3d5; border-top-left-radius: 10px;
+  border-top-right-radius: 10px; }
+.avatarWrapper { position: relative; display: inline-block; margin-bottom: 1rem; }
 .avatar {
-  width: 130px; /* Larger avatar */
-  height: 130px;
-  border-radius: 50%;
-  background-image: linear-gradient(45deg, #7b1fa2, #9c27b0); /* Gradient for a richer look */
-  color: #ffffff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 64px; /* Larger font for initial */
-  font-weight: 700;
-  margin-bottom: 25px; /* Space on smaller screens */
-  flex-shrink: 0;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); /* More defined shadow for avatar */
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.2); /* Subtle text shadow for initial */
+  width: 90px; height: 90px; border-radius: 50%;
+  background: var(--button-primary-bg);
+  color: var(--text-on-accent);
+  display: flex; align-items: center; justify-content: center;
+}
+.profileName { font-size: 1.25rem; font-weight: 600; color: var(--text-title); }
+.profileContent { padding: 1.5rem; padding-top: 0; background-color: #d1d3d5; border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;}
+.profileStats { border-top: 1px solid var(--card-border-color); padding-top: 1.5rem; text-align: center; }
+.statValue { font-size: 1.125rem; font-weight: 600; color: var(--text-title); }
+.statLabel { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
+.infoSection { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 0; border-bottom: 1px solid var(--card-border-color); }
+.infoSection:first-of-type { padding-top: 0; }
+.infoSection:last-of-type { border-bottom: none; padding-bottom: 0; }
+.infoLabel { font-size: 0.875rem; font-weight: 500; color: var(--text-muted); margin: 0 0 0.1rem 0; }
+.infoValue { font-size: 1rem; font-family: var(--font-mono); color: var(--text-body); }
+.editIcon { margin-right: 0.5rem; }
+
+/*
+========================================
+  4. MODAL STYLES
+========================================
+*/
+.modalBackdrop {
+  position: fixed; inset: 0;
+  background-color: var(--modal-backdrop-bg);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; padding: 1rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn 200ms ease-out;
 }
 
-@media (min-width: 768px) {
-  .avatar {
-    margin-bottom: 0;
-  }
+.modalCard {
+  position: relative;
+  width: 100%; max-width: 520px;
+  background-color: var(--modal-bg);
+  border-radius: var(--modal-border-radius);
+  box-shadow: var(--modal-shadow);
+  animation: scaleUp 250ms ease-out;
+  border: 1px solid var(--modal-border-color);
 }
 
-.info {
-  flex-grow: 1;
+.closeButton {
+  position: absolute; top: 0.75rem; right: 0.75rem;
+  background-color: var(--button-secondary-bg);
+  border-radius: 50%; border: none; cursor: pointer;
+  padding: 0.5rem; color: var(--button-secondary-text);
+  transition: all var(--transition);
+  display: flex; align-items: center; justify-content: center;
+}
+.closeButton:hover {
+  background-color: var(--button-secondary-hover-bg);
+  transform: rotate(90deg);
 }
 
-.welcomeHeading {
-  margin: 0 0 12px 0;
-  color: #2c3e50; /* Darker, more professional heading text */
-  font-size: 2.5em; /* More prominent heading */
-  font-weight: 700;
-  letter-spacing: -0.5px; /* Tighten letter spacing slightly */
+.modalHeader {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--modal-border-color);
+  background-color: var(--modal-header-bg);
+  border-top-left-radius: var(--modal-border-radius);
+  border-top-right-radius: var(--modal-border-radius);
+}
+.modalTitle {
+  font-size: 1.25rem; font-weight: 600; color: var(--text-title);
+}
+.modalDesc {
+  margin-top: 0.25rem; font-size: 0.875rem; color: var(--text-muted);
+}
+.modalBody { padding: 1.5rem 2rem; }
+.modalFooter {
+  padding: 1rem 2rem;
+  background-color: var(--modal-footer-bg);
+  border-top: 1px solid var(--modal-border-color);
+  border-bottom-left-radius: var(--modal-border-radius);
+  border-bottom-right-radius: var(--modal-border-radius);
+  display: flex; justify-content: flex-end; gap: 0.75rem;
 }
 
-.roleBadge {
-  background-color: #e3f2fd; /* Light blue for badge */
-  color: #1976d2; /* Deeper blue for badge text */
-  padding: 8px 18px; /* More padding */
-  border-radius: 30px; /* More pill-shaped */
-  font-size: 0.95em;
-  font-weight: 600;
-  display: inline-block;
-  margin-bottom: 18px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Subtle shadow for badge */
+/*
+========================================
+  5. FORM ELEMENT STYLES
+========================================
+*/
+.formGroup { margin-bottom: 1.5rem; }
+.formGroup:last-child { margin-bottom: 0; }
+.label {
+  display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;
+  font-weight: 500; color: var(--text-body); margin-bottom: 0.5rem;
 }
-
-.detailItem {
-  color: #607d8b; /* Muted slate gray for details */
-  font-size: 1em; /* Slightly larger detail font */
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  word-break: break-all;
-}
-
-.detailValue {
-  font-weight: 500;
-  color: #455a64; /* Darker for the value itself */
-  margin-left: 8px; /* More space between label and value */
-}
-
-@media (min-width: 768px) {
-  .detailItem {
-    justify-content: flex-start;
-  }
-}
-
-/* --- Section Dividers --- */
-.divider {
-  border: 0;
-  height: 1px;
-  background: #e0e6ed;
-  margin: 45px 0; /* More vertical spacing */
-}
-
-/* --- Content Sections --- */
-.section {
-  text-align: left;
-  margin-bottom: 45px; /* More space between main sections */
-}
-
-.sectionHeading {
-  color: #2c3e50;
-  font-size: 2em; /* Larger section titles */
-  margin-bottom: 30px;
-  display: flex;
-  align-items: center;
-  font-weight: 600;
-  border-bottom: 2px solid #cfd8dc; /* Slightly more prominent underline */
-  padding-bottom: 12px;
-  letter-spacing: -0.2px;
-}
-
-/* --- Form Elements --- */
-.formGroup {
-  margin-bottom: 30px; /* More space between form groups */
-}
-
-.formLabel {
-  display: block;
-  margin-bottom: 12px; /* More space below label */
-  color: #455a64; /* Darker, clearer labels */
-  font-weight: 600;
-  font-size: 1.05em;
-}
-
 .input {
-  width: calc(100% - 30px); /* Account for more padding */
-  padding: 15px 15px; /* Increased padding */
-  margin-bottom: 20px; /* Space below input */
-  border: 1px solid #c5d0db; /* Softer border */
-  border-radius: 10px; /* More rounded */
-  font-size: 1.1em;
-  transition: all 0.3s ease-in-out;
-  box-sizing: border-box;
+  width: 100%; font-size: 1rem; padding: 0.75rem 1rem;
+  border: 1px solid var(--input-border-color);
+  border-radius: var(--modal-border-radius);
+  transition: all var(--transition);
+  background-color: var(--input-bg);
+  color: var(--input-text-color);
 }
-
 .input:focus {
   outline: none;
-  border-color: #4285f4; /* Google blue on focus */
-  box-shadow: 0 0 0 4px rgba(66, 133, 244, 0.25); /* More vibrant glow effect */
+  border-color: var(--input-focus-border-color);
+  box-shadow: 0 0 0 3px var(--input-focus-shadow-color);
 }
-
-/* --- Buttons --- */
-.button {
-  background-image: linear-gradient(45deg, #4285f4, #2979ff); /* Blue gradient for primary action */
-  color: white;
-  padding: 16px 35px; /* Even larger touch area */
+.input::placeholder { color: var(--input-placeholder-color); }
+.passwordInputWrapper { position: relative; }
+.passwordInput { padding-right: 3rem; }
+.togglePasswordButton {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0.5rem;
+  margin: auto 0;
+  background: none;
   border: none;
-  border-radius: 10px;
   cursor: pointer;
-  font-size: 1.15em; /* Larger font for buttons */
-  font-weight: 600;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  width: auto;
-  min-width: 200px; /* Wider buttons */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3); /* Clearer shadow for buttons */
-  text-transform: uppercase; /* Uppercase button text */
-  letter-spacing: 0.8px;
-}
-
-.button:hover:not(:disabled) {
-  background-image: linear-gradient(45deg, #2979ff, #4285f4); /* Reverse gradient on hover */
-  transform: translateY(-5px); /* More noticeable lift */
-  box-shadow: 0 8px 20px rgba(0, 123, 255, 0.4); /* Enhanced shadow on hover */
-}
-
-.button:disabled {
-  background-image: none; /* No gradient when disabled */
-  background-color: #e0e6ed; /* Lighter disabled background */
-  color: #aebecd; /* Muted disabled text */
-  cursor: not-allowed;
-  opacity: 0.7;
-  box-shadow: none;
-  transform: none;
-}
-
-/* --- Messages (Success/Error) --- */
-.message {
-  padding: 20px; /* More padding */
-  margin-top: 35px; /* More space above message */
-  border-radius: 10px;
-  font-weight: 500;
+  padding: 0.25rem;
+  color: var(--text-muted);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1em;
-  text-align: left;
-  line-height: 1.5;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Subtle shadow for messages */
 }
 
-.successMessage {
-  background-color: #e6ffed;
-  color: #28a745;
-  border: 1px solid #b3e6c9;
+.errorInput, .errorInput:focus {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error) 15%, transparent);
 }
-
 .errorMessage {
-  background-color: #ffebe6; /* Slightly softer red background */
-  color: #dc3545;
-  border: 1px solid #e6b3b3;
+  display: flex; align-items: center; gap: 0.375rem;
+  color: var(--color-error);
+  font-size: 0.875rem; margin-top: 0.5rem;
 }
-
-/* --- Responsive Adjustments --- */
-@media (max-width: 767px) { /* Tablets and smaller */
-  .card {
-    padding: 30px;
-  }
-
-  .header {
-    padding-bottom: 20px;
-  }
-
-  .avatar {
-    width: 100px;
-    height: 100px;
-    font-size: 50px;
-    margin-bottom: 20px;
-  }
-
-  .welcomeHeading {
-    font-size: 2em;
-  }
-
-  .roleBadge {
-    padding: 6px 14px;
-    font-size: 0.85em;
-  }
-
-  .detailItem {
-    font-size: 0.9em;
-  }
-
-  .sectionHeading {
-    font-size: 1.6em;
-    flex-direction: column; /* Stack icon above text on smaller screens */
-    text-align: center;
-    padding-bottom: 8px;
-  }
-
-  .sectionHeading svg {
-    margin-right: 0 !important;
-    margin-bottom: 10px;
-  }
-
-  .input {
-    padding: 12px 12px;
-    font-size: 1em;
-    width: calc(100% - 24px);
-  }
-
-  .button {
-    width: 100%; /* Full width buttons on smaller screens */
-    min-width: unset;
-    padding: 14px 25px;
-    font-size: 1.05em;
-  }
+:global(.Button[variant="ghost"]) {
+  background-color: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+  font-weight: 500;
 }
+:global(.Button[variant="ghost"]:hover) {
+  background-color: var(--button-secondary-hover-bg);
+}
+.submitButton {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: var(--button-primary-bg);
+  color: var(--text-on-accent);
+  font-weight: 500; border: none;
+}
+.submitButton:hover { filter: brightness(var(--button-primary-hover-brightness)); }
+.submitButton:disabled { opacity: 0.6; filter: none; cursor: not-allowed;}
 
-@media (max-width: 480px) { /* Very small screens / Mobile portrait */
-  .profileContainer {
-    padding: 30px 15px;
-  }
+/*
+========================================
+  6. NOTIFICATIONS & ANIMATIONS
+========================================
+*/
+.globalNotification {
+  position: fixed; top: 1.5rem; right: 1.5rem; width: 100%; max-width: 380px;
+  border-radius: var(--modal-border-radius); z-index: 100;
+  display: flex; align-items: stretch; overflow: hidden;
+  animation: slideIn 300ms ease-out;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+}
+.notificationIcon { display: flex; align-items: center; justify-content: center; padding: 1rem; color: var(--text-on-accent); }
+.globalNotification.success .notificationIcon { background-color: var(--color-success); }
+.globalNotification.error .notificationIcon { background-color: var(--color-error); }
+.notificationText { padding: 1rem; flex-grow: 1; font-size: 0.875rem; font-weight: 500; color: var(--text-body); background-color: var(--card-bg); }
+.dismissButton { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 1rem; transition: color var(--transition); background-color: var(--card-bg); }
+.dismissButton:hover { color: var(--text-body); }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+@keyframes slideIn { from { transform: translateX(calc(100% + 2rem)); } to { transform: translateX(0); } }
 
-  .card {
-    padding: 20px;
-    border-radius: 12px;
-  }
-
-  .avatar {
-    width: 90px;
-    height: 90px;
-    font-size: 45px;
-  }
-
-  .welcomeHeading {
-    font-size: 1.6em;
-  }
-
-  .sectionHeading {
-    font-size: 1.4em;
-  }
-
-  .message {
-    padding: 15px;
-    font-size: 0.95em;
-  }
+/*
+========================================
+  7. RESPONSIVE DESIGN
+========================================
+*/
+@media (max-width: 768px) {
+  .pageContainer { padding: 1rem; }
+  .pageLayout { grid-template-columns: 1fr; }
 }
