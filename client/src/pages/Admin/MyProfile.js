@@ -102,7 +102,7 @@ const PasswordInput = ({ label, error, showPassword, onTogglePassword, ...props 
         className={`${styles.input} ${styles.passwordInput} ${error ? styles.errorInput : ""}`}
       />
       <button type="button" className={styles.togglePasswordButton} onClick={onTogglePassword} aria-label={showPassword ? "Hide password" : "Show password"}>
-        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+        {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
       </button>
     </div>
     {error && (
