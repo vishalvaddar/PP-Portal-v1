@@ -3,7 +3,10 @@ import axios from "axios";
 import {UserCircle, Phone, Home, GraduationCap, Calculator} from "lucide-react";
 import classes from "./NewApplication.module.css";
 import { useFetchStates, useFetchDistricts, useFetchBlocks, useFetchInstitutes } from "../../hooks/useJurisData";
+import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
+
 const NewApplication = () => {
+  const currentPath = ['Admin','Admissions', 'Applications', 'NewApplication'];
   const currentYear = new Date().getFullYear();
   const yearOptions = [currentYear];
   const submitButtonRef = useRef(null);
@@ -277,6 +280,7 @@ const NewApplication = () => {
   
   return (
     <div className={classes.container}>
+      <Breadcrumbs path={currentPath} nonLinkSegments={['Admin', 'Admissions']} />
       <h2 className={classes.h2}>New Application</h2>
       {Object.keys(errors).length > 0 && (
         <div className={classes.errorContainer}>

@@ -1,4 +1,4 @@
-// routes/userRoles.js
+// routes/userRoleRoutes.js
 const express = require("express");
 const router = express.Router();
 const UserRolesController = require("../controllers/userRolesController"); // Corrected path if needed
@@ -13,7 +13,8 @@ router.put("/users/:userId/status", UserRolesController.toggleUserStatus);
 // Role Routes
 router.get("/roles", UserRolesController.getAllRoles);
 router.post("/roles", UserRolesController.createRole);
-router.put("/roles/:roleId/status", UserRolesController.toggleRoleStatus); // ADDED: Route for toggling role status
+router.delete("/roles/:roleId", UserRolesController.deleteRole);
+router.put("/roles/:roleId/status", UserRolesController.toggleRoleStatus);
 
 router.post("/users/:userId/roles/:roleId", UserRolesController.assignRole);
 router.delete("/users/:userId/roles/:roleId", UserRolesController.removeRole);

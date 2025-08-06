@@ -3,15 +3,20 @@
   --font-mono: 'Fira Code', 'JetBrains Mono', monospace;
 
   /* Page & Card General Style */
-  --page-bg: #f8fafc;        /* Background color of the entire page */
-  --card-bg: #ffffff;       /* Background of cards on the main page */
+  --page-bg: #f8fafc;
+  /* Background color of the entire page */
+  --card-bg: #ffffff;
+  /* Background of cards on the main page */
   --card-border-color: #e2e8f0;
 
   /* Modal Style */
   --modal-bg: #ffffff;
-  --modal-backdrop-bg: rgba(15, 23, 42, 0.85); /* The dark overlay */
-  --modal-header-bg: #f8fafc; /* Set to var(--modal-bg) for a flat look */
-  --modal-footer-bg: #f8fafc; /* Set to var(--modal-bg) for a flat look */
+  --modal-backdrop-bg: rgba(15, 23, 42, 0.85);
+  /* The dark overlay */
+  --modal-header-bg: #f8fafc;
+  /* Set to var(--modal-bg) for a flat look */
+  --modal-footer-bg: #f8fafc;
+  /* Set to var(--modal-bg) for a flat look */
   --modal-border-radius: 0.75rem;
   --modal-border-color: #e2e8f0;
   --modal-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
@@ -31,7 +36,8 @@
   --input-placeholder-color: #94a3b8;
 
   /* Buttons Style */
-  --button-primary-bg: linear-gradient(135deg, #6366f1, #4f46e5); /* Gradient for primary button */
+  --button-primary-bg: linear-gradient(135deg, #6366f1, #4f46e5);
+  /* Gradient for primary button */
   --button-primary-hover-brightness: 1.1;
   --button-secondary-bg: #e2e8f0;
   --button-secondary-text: #475569;
@@ -52,24 +58,43 @@
 ========================================
 */
 .loadingContainer {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  height: 100vh; gap: 1rem; color: var(--text-muted); background-color: var(--page-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 1rem;
+  color: var(--text-muted);
+  background-color: var(--page-bg);
   font-family: var(--font-sans);
 }
-.spinner { animation: spin 1s linear infinite; }
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
 
 .pageContainer {
   background-color: var(--page-bg);
   min-height: 100vh;
-  padding: 2.5rem;
+  /* padding: 2.5rem; */
   font-family: var(--font-sans);
 }
+
 .pageLayout {
   display: grid;
   grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
-  gap: 2rem; max-width: 1280px; margin: 0 auto;
+  gap: 2rem;
+  max-width: 1280px;
+  margin: 0 auto;
 }
-.leftColumn, .rightColumn { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.leftColumn,
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 
 /*
 ========================================
@@ -82,27 +107,115 @@
   border: 1px solid var(--card-border-color);
   box-shadow: none;
 }
-.profileHeader { text-align: center; padding: 2rem;  background-color: #d1d3d5; border-top-left-radius: 10px;
-  border-top-right-radius: 10px; }
-.avatarWrapper { position: relative; display: inline-block; margin-bottom: 1rem; }
+
+.profileTitle {
+  color: #4f46e5;
+  font-size: 26px;
+}
+
+.profileHeader {
+  text-align: center;
+  padding: 2rem;
+  background-color: #d1d3d5;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.avatarWrapper {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
 .avatar {
-  width: 90px; height: 90px; border-radius: 50%;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
   background: var(--button-primary-bg);
   color: var(--text-on-accent);
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.profileName { font-size: 1.25rem; font-weight: 600; color: var(--text-title); }
-.profileContent { padding: 1.5rem; padding-top: 0; background-color: #d1d3d5; border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;}
-.profileStats { border-top: 1px solid var(--card-border-color); padding-top: 1.5rem; text-align: center; }
-.statValue { font-size: 1.125rem; font-weight: 600; color: var(--text-title); }
-.statLabel { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
-.infoSection { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 0; border-bottom: 1px solid var(--card-border-color); }
-.infoSection:first-of-type { padding-top: 0; }
-.infoSection:last-of-type { border-bottom: none; padding-bottom: 0; }
-.infoLabel { font-size: 0.875rem; font-weight: 500; color: var(--text-muted); margin: 0 0 0.1rem 0; }
-.infoValue { font-size: 1rem; font-family: var(--font-mono); color: var(--text-body); }
-.editIcon { margin-right: 0.5rem; }
+
+.profileName {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-title);
+}
+
+.profileContent {
+  padding: 1.5rem;
+  padding-top: 0;
+  background-color: #d1d3d5;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.profileStats {
+  border-top: 1px solid var(--card-border-color);
+  padding-top: 1.5rem;
+  text-align: center;
+}
+
+.statValue {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-title);
+}
+
+.statLabel {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.25rem;
+}
+
+.infoSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--card-border-color);
+}
+
+.infoSection:first-of-type {
+  padding-top: 0;
+}
+
+.infoSection:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.infoLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin: 0 0 0.1rem 0;
+}
+
+.infoValue {
+  font-size: 1rem;
+  font-family: var(--font-mono);
+  color: var(--text-body);
+}
+
+.editIcon {
+  margin-right: 0.5rem;
+  color: ;
+}
+
+.infoButton {
+  border-radius: 4px;
+  background: gainsboro;
+  margin-right: 12px;
+  /* <-- move button left (adjust value as needed) */
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
 /*
 ========================================
@@ -110,10 +223,14 @@
 ========================================
 */
 .modalBackdrop {
-  position: fixed; inset: 0;
+  position: fixed;
+  inset: 0;
   background-color: var(--modal-backdrop-bg);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 100; padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   animation: fadeIn 200ms ease-out;
@@ -121,7 +238,8 @@
 
 .modalCard {
   position: relative;
-  width: 100%; max-width: 520px;
+  width: 100%;
+  max-width: 520px;
   background-color: var(--modal-bg);
   border-radius: var(--modal-border-radius);
   box-shadow: var(--modal-shadow);
@@ -130,13 +248,21 @@
 }
 
 .closeButton {
-  position: absolute; top: 0.75rem; right: 0.75rem;
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
   background-color: var(--button-secondary-bg);
-  border-radius: 50%; border: none; cursor: pointer;
-  padding: 0.5rem; color: var(--button-secondary-text);
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: var(--button-secondary-text);
   transition: all var(--transition);
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
 .closeButton:hover {
   background-color: var(--button-secondary-hover-bg);
   transform: rotate(90deg);
@@ -149,20 +275,32 @@
   border-top-left-radius: var(--modal-border-radius);
   border-top-right-radius: var(--modal-border-radius);
 }
+
 .modalTitle {
-  font-size: 1.25rem; font-weight: 600; color: var(--text-title);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-title);
 }
+
 .modalDesc {
-  margin-top: 0.25rem; font-size: 0.875rem; color: var(--text-muted);
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
 }
-.modalBody { padding: 1.5rem 2rem; }
+
+.modalBody {
+  padding: 1.5rem 2rem;
+}
+
 .modalFooter {
   padding: 1rem 2rem;
   background-color: var(--modal-footer-bg);
   border-top: 1px solid var(--modal-border-color);
   border-bottom-left-radius: var(--modal-border-radius);
   border-bottom-right-radius: var(--modal-border-radius);
-  display: flex; justify-content: flex-end; gap: 0.75rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
 }
 
 /*
@@ -170,28 +308,53 @@
   5. FORM ELEMENT STYLES
 ========================================
 */
-.formGroup { margin-bottom: 1.5rem; }
-.formGroup:last-child { margin-bottom: 0; }
-.label {
-  display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;
-  font-weight: 500; color: var(--text-body); margin-bottom: 0.5rem;
+.formGroup {
+  margin-bottom: 1.5rem;
 }
+
+.formGroup:last-child {
+  margin-bottom: 0;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-body);
+  margin-bottom: 0.5rem;
+}
+
 .input {
-  width: 100%; font-size: 1rem; padding: 0.75rem 1rem;
+  width: 100%;
+  font-size: 1rem;
+  padding: 0.75rem 1rem;
   border: 1px solid var(--input-border-color);
   border-radius: var(--modal-border-radius);
   transition: all var(--transition);
   background-color: var(--input-bg);
   color: var(--input-text-color);
 }
+
 .input:focus {
   outline: none;
   border-color: var(--input-focus-border-color);
   box-shadow: 0 0 0 3px var(--input-focus-shadow-color);
 }
-.input::placeholder { color: var(--input-placeholder-color); }
-.passwordInputWrapper { position: relative; }
-.passwordInput { padding-right: 3rem; }
+
+.input::placeholder {
+  color: var(--input-placeholder-color);
+}
+
+.passwordInputWrapper {
+  position: relative;
+}
+
+.passwordInput {
+  padding-right: 3rem;
+}
+
 .togglePasswordButton {
   position: absolute;
   top: 0;
@@ -209,31 +372,50 @@
   justify-content: center;
 }
 
-.errorInput, .errorInput:focus {
+.errorInput,
+.errorInput:focus {
   border-color: var(--color-error);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error) 15%, transparent);
 }
+
 .errorMessage {
-  display: flex; align-items: center; gap: 0.375rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
   color: var(--color-error);
-  font-size: 0.875rem; margin-top: 0.5rem;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
 }
+
 :global(.Button[variant="ghost"]) {
   background-color: var(--button-secondary-bg);
   color: var(--button-secondary-text);
   font-weight: 500;
 }
+
 :global(.Button[variant="ghost"]:hover) {
   background-color: var(--button-secondary-hover-bg);
 }
+
 .submitButton {
-  display: inline-flex; align-items: center; gap: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   background: var(--button-primary-bg);
   color: var(--text-on-accent);
-  font-weight: 500; border: none;
+  font-weight: 500;
+  border: none;
 }
-.submitButton:hover { filter: brightness(var(--button-primary-hover-brightness)); }
-.submitButton:disabled { opacity: 0.6; filter: none; cursor: not-allowed;}
+
+.submitButton:hover {
+  filter: brightness(var(--button-primary-hover-brightness));
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  filter: none;
+  cursor: not-allowed;
+}
 
 /*
 ========================================
@@ -241,23 +423,97 @@
 ========================================
 */
 .globalNotification {
-  position: fixed; top: 1.5rem; right: 1.5rem; width: 100%; max-width: 380px;
-  border-radius: var(--modal-border-radius); z-index: 100;
-  display: flex; align-items: stretch; overflow: hidden;
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 100%;
+  max-width: 380px;
+  border-radius: var(--modal-border-radius);
+  z-index: 100;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
   animation: slideIn 300ms ease-out;
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--border-color);
 }
-.notificationIcon { display: flex; align-items: center; justify-content: center; padding: 1rem; color: var(--text-on-accent); }
-.globalNotification.success .notificationIcon { background-color: var(--color-success); }
-.globalNotification.error .notificationIcon { background-color: var(--color-error); }
-.notificationText { padding: 1rem; flex-grow: 1; font-size: 0.875rem; font-weight: 500; color: var(--text-body); background-color: var(--card-bg); }
-.dismissButton { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 1rem; transition: color var(--transition); background-color: var(--card-bg); }
-.dismissButton:hover { color: var(--text-body); }
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-@keyframes slideIn { from { transform: translateX(calc(100% + 2rem)); } to { transform: translateX(0); } }
+
+.notificationIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  color: var(--text-on-accent);
+}
+
+.globalNotification.success .notificationIcon {
+  background-color: var(--color-success);
+}
+
+.globalNotification.error .notificationIcon {
+  background-color: var(--color-error);
+}
+
+.notificationText {
+  padding: 1rem;
+  flex-grow: 1;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-body);
+  background-color: var(--card-bg);
+}
+
+.dismissButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 1rem;
+  transition: color var(--transition);
+  background-color: var(--card-bg);
+}
+
+.dismissButton:hover {
+  color: var(--text-body);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(calc(100% + 2rem));
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
 
 /*
 ========================================
@@ -265,6 +521,11 @@
 ========================================
 */
 @media (max-width: 768px) {
-  .pageContainer { padding: 1rem; }
-  .pageLayout { grid-template-columns: 1fr; }
+  .pageContainer {
+    padding: 1rem;
+  }
+
+  .pageLayout {
+    grid-template-columns: 1fr;
+  }
 }

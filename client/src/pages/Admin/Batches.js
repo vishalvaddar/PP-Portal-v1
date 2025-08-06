@@ -4,6 +4,7 @@ import axios from "axios";
 import CreatableSelect from "react-select/creatable";
 import { PlusCircle, Pencil, Trash2, X, Users } from "lucide-react";
 import classes from "./Batches.module.css";
+import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 
 const Notification = ({ message, type, onDismiss }) => {
   if (!message) return null;
@@ -100,6 +101,7 @@ const StudentListModal = ({ show, onClose, students, batchName }) => {
   );
 };
 const Batches = () => {
+  const currentPath = ['Admin', 'Academics', 'Batches'];
   const [batch, setBatch] = useState({
     batch_name: "",
     cohort_number: "",
@@ -376,6 +378,7 @@ const Batches = () => {
 
   return (
     <div className={classes.container}>
+      <Breadcrumbs path = {currentPath} nonLinkSegments={['Admin', 'Academics']}/>
       <Notification
         message={notification.message}
         type={notification.type}

@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "./BulkUploadApplications.css";
+import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 
 const BulkUploadApplications = ({ refreshData }) => {
+  const currentPath = ['Admin', 'Admissions', 'Applications', 'BulkUploads'];
+  // State variables
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -11,8 +14,14 @@ const BulkUploadApplications = ({ refreshData }) => {
   const [logFileUrl, setLogFileUrl] = useState("");
   const [uploadStats, setUploadStats] = useState(null);
 
+  // File change handler
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
+    resetMessages();
+  };
+
+  // Reset messages and states
+  const resetMessages = () => {
     setMessage("");
     setError("");
     setValidationReport(null);
@@ -20,6 +29,7 @@ const BulkUploadApplications = ({ refreshData }) => {
     setUploadStats(null);
   };
 
+  // Download log file
   const downloadLogFile = async () => {
     if (!logFileUrl) return;
 
@@ -28,14 +38,12 @@ const BulkUploadApplications = ({ refreshData }) => {
     try {
       const response = await fetch(fullUrl);
       const text = await response.text();
-
       const blob = new Blob([text], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
-
       const downloadLink = document.createElement("a");
+
       downloadLink.href = url;
       downloadLink.download = logFileUrl;
-
       document.body.appendChild(downloadLink);
       downloadLink.click();
       document.body.removeChild(downloadLink);
@@ -46,6 +54,7 @@ const BulkUploadApplications = ({ refreshData }) => {
     }
   };
 
+  // Form submission handler
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) {
@@ -53,18 +62,7 @@ const BulkUploadApplications = ({ refreshData }) => {
       return;
     }
 
-    // Check file extension
-    const fileExt = file.name.split('.').pop().toLowerCase();
-    if (fileExt !== 'csv' && fileExt !== 'xlsx' && fileExt !== 'xls') {
-      setError("⚠ Please upload only CSV or Excel files (with .csv, .xlsx, or .xls extension).");
-      return;
-    }
-
-    // Check file size (e.g., 10MB limit)
-    if (file.size > 10 * 1024 * 1024) {
-      setError("❌ File Too Large!\n\nPlease upload a file smaller than 10MB.\n\nTry splitting your data into multiple files if needed.");
-      return;
-    }
+    if (!validateFile()) return;
 
     setIsLoading(true);
     const formData = new FormData();
@@ -75,129 +73,112 @@ const BulkUploadApplications = ({ refreshData }) => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      // Set upload statistics
-      setUploadStats({
-        totalRecords: response.data.totalRecords || 0,
-        submittedApplications: response.data.submittedApplications || 0,
-        rejectedApplications: response.data.rejectedApplications || 0,
-        duplicateRecords: response.data.duplicateRecords || 0
-      });
-
-      if (response.status === 200 || response.status === 207) {
-        if (response.data.validationErrors && response.data.validationErrors.length > 0) {
-          setValidationReport({
-            fileName: file.name,
-            totalRecords: response.data.totalRecords,
-            validRecords: response.data.validRecords,
-            invalidRecords: response.data.invalidRecords,
-            errors: response.data.validationErrors,
-          });
-          setMessage(`⚠ We found ${response.data.validationErrors.length} issues in your file. Please check the details below.`);
-        } else {
-          setMessage("✅ File uploaded successfully! All records were processed.");
-          setFile(null);
-          document.getElementById("file-upload").value = "";
-          if (typeof refreshData === "function") {
-            refreshData();
-          }
-        }
-
-        if (response.data.logFile) {
-          setLogFileUrl(response.data.logFile);
-        }
-      } else {
-        throw new Error("Failed to upload file");
-      }
+      handleResponse(response);
     } catch (error) {
-      const backendMessage = error.response?.data?.message || error.message;
-      let userFriendlyMessage = "❌ Oops! Something went wrong: ";
-
-      if (
-        backendMessage.includes("duplicate key value violates unique constraint") &&
-        backendMessage.includes("nmms_reg_number")
-      ) {
-        userFriendlyMessage =
-          "❌ Duplicate Registration Numbers found!\n\n" +
-          "Some students in your file have Registration Numbers that already exist in our system.\n\n" +
-          "Please check your file and make sure:\n" +
-          "• Each student has a unique Registration Number\n" +
-          "• No student is listed more than once\n\n" +
-          "Tip: Use 'Find duplicates' in Excel to locate these issues.";
-      } else if (
-        backendMessage.includes('null value in column "nmms_reg_number"') &&
-        backendMessage.includes("violates not-null constraint")
-      ) {
-        userFriendlyMessage =
-          "❌ Missing Registration Numbers!\n\n" +
-          "Some students in your file don't have a Registration Number filled in.\n\n" +
-          "Please check your file and make sure:\n" +
-          "• Every student has a Registration Number\n" +
-          "• No Registration Number field is left blank\n\n" +
-          "Tip: Sort by this column in Excel to quickly find empty cells.";
-      } else if (
-        backendMessage.includes('null value in column "nmms_year"') &&
-        backendMessage.includes("violates not-null constraint")
-      ) {
-        userFriendlyMessage =
-          "❌ Missing Year Information!\n\n" +
-          "Some records don't have the year filled in.\n\n" +
-          "Please check your file and make sure:\n" +
-          "• The 'Year' column is included\n" +
-          "• Every student has a year specified (e.g., 2023)\n\n" +
-          "Tip: Filter for blank cells in this column to find missing entries.";
-      } else if (backendMessage.includes("invalid input syntax")) {
-        userFriendlyMessage =
-          "❌ Incorrect Data Format!\n\n" +
-          "Some information is in the wrong format (like text where numbers are needed).\n\n" +
-          "Please check:\n" +
-          "• Scores should be numbers only\n" +
-          "• Dates should be in DD-MM-YYYY format\n" +
-          "• Phone numbers should be 10 digits only\n\n" +
-          "The detailed report will show which rows need correction.";
-      } else if (error.response?.status === 413) {
-        userFriendlyMessage =
-          "❌ File Too Large!\n\n" +
-          "The file you're trying to upload is too big.\n\n" +
-          "Please try:\n" +
-          "• Splitting your file into smaller parts\n" +
-          "• Removing any unnecessary data\n" +
-          "• Using a more compact file format\n\n" +
-          "Maximum allowed size is 10MB.";
-      } else {
-        userFriendlyMessage =
-          "❌ We couldn't process your file.\n\n" +
-          "This might be because:\n" +
-          "• The file is open in another program (please close it first)\n" +
-          "• Our system is temporarily busy (please try again in a minute)\n" +
-          "• The file structure doesn't match our requirements\n" +
-          "• Check the Complete Report for more details\n\n" +
-          "Please check the sample file format and try again.\n" +
-          "If the problem continues, contact support with your file.";
-      }
-
-      setError(userFriendlyMessage);
-
-      if (error.response?.data?.validationErrors) {
-        setValidationReport({
-          fileName: file.name,
-          errors: error.response.data.validationErrors,
-          totalRecords: error.response.data.totalRecords,
-          validRecords: error.response.data.validRecords,
-          invalidRecords: error.response.data.invalidRecords,
-        });
-        setMessage(`⚠ We found issues in your file. Please check the Report below.`);
-      }
-
-      if (error.response?.data?.logFile) {
-        setLogFileUrl(error.response.data.logFile);
-      }
+      handleError(error);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Validate file before upload
+  const validateFile = () => {
+    const fileExt = file.name.split('.').pop().toLowerCase();
+    if (!['csv', 'xlsx', 'xls'].includes(fileExt)) {
+      setError("⚠ Please upload only CSV or Excel files (with .csv, .xlsx, or .xls extension).");
+      return false;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setError("❌ File Too Large! Please upload a file smaller than 10MB.");
+      return false;
+    }
+
+    return true;
+  };
+
+  // Handle server response
+  const handleResponse = (response) => {
+    setUploadStats({
+      totalRecords: response.data.totalRecords || 0,
+      submittedApplications: response.data.submittedApplications || 0,
+      rejectedApplications: response.data.rejectedApplications || 0,
+      duplicateRecords: response.data.duplicateRecords || 0,
+    });
+
+    if (response.status === 200 || response.status === 207) {
+      if (response.data.validationErrors && response.data.validationErrors.length > 0) {
+        setValidationReport({
+          fileName: file.name,
+          totalRecords: response.data.totalRecords,
+          validRecords: response.data.validRecords,
+          invalidRecords: response.data.invalidRecords,
+          errors: response.data.validationErrors,
+        });
+        setMessage(`⚠ We found ${response.data.validationErrors.length} issues in your file. Please check the details below.`);
+      } else {
+        setMessage("✅ File uploaded successfully! All records were processed.");
+        resetFileInput();
+        if (typeof refreshData === "function") {
+          refreshData();
+        }
+      }
+
+      if (response.data.logFile) {
+        setLogFileUrl(response.data.logFile);
+      }
+    } else {
+      throw new Error("Failed to upload file");
+    }
+  };
+
+  // Reset file input
+  const resetFileInput = () => {
+    setFile(null);
+    document.getElementById("file-upload").value = "";
+  };
+
+  // Handle errors from server
+  const handleError = (error) => {
+    const backendMessage = error.response?.data?.message || error.message;
+    let userFriendlyMessage = "❌ Oops! Something went wrong: ";
+
+    // Custom error messages based on backend response
+    if (backendMessage.includes("duplicate key value violates unique constraint")) {
+      userFriendlyMessage = "❌ Duplicate Registration Numbers found! Please check your file.";
+    } else if (backendMessage.includes('null value in column "nmms_reg_number"')) {
+      userFriendlyMessage = "❌ Missing Registration Numbers! Please check your file.";
+    } else if (backendMessage.includes('null value in column "nmms_year"')) {
+      userFriendlyMessage = "❌ Missing Year Information! Please check your file.";
+    } else if (backendMessage.includes("invalid input syntax")) {
+      userFriendlyMessage = "❌ Incorrect Data Format! Please check your file.";
+    } else if (error.response?.status === 413) {
+      userFriendlyMessage = "❌ File Too Large! Maximum allowed size is 10MB.";
+    } else {
+      userFriendlyMessage = "❌ We couldn't process your file. Please check the sample file format and try again.";
+    }
+
+    setError(userFriendlyMessage);
+
+    if (error.response?.data?.validationErrors) {
+      setValidationReport({
+        fileName: file.name,
+        errors: error.response.data.validationErrors,
+        totalRecords: error.response.data.totalRecords,
+        validRecords: error.response.data.validRecords,
+        invalidRecords: error.response.data.invalidRecords,
+      });
+      setMessage(`⚠ We found issues in your file. Please check the Report below.`);
+    }
+
+    if (error.response?.data?.logFile) {
+      setLogFileUrl(error.response.data.logFile);
+    }
+  };
+
   return (
     <div className="bulk-upload-container">
+      <Breadcrumbs path={currentPath} nonLinkSegments={['Admin', 'Admissions']} />
       <h2>📂 Bulk Upload Applications</h2>
       <div className="upload-instructions">
         <h3>Upload a CSV or Excel file containing multiple student applications</h3>
@@ -256,11 +237,7 @@ const BulkUploadApplications = ({ refreshData }) => {
         >
           {isLoading ? (
             <>
-              <span
-                className="spinner-border spinner-border-sm"
-                role="status"
-                aria-hidden="true"
-              ></span>
+              <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
               <span className="ms-2">Uploading...</span>
             </>
           ) : (
@@ -337,8 +314,7 @@ const BulkUploadApplications = ({ refreshData }) => {
             📝 Download Complete Report
           </button>
           <p className="mt-1 small text-muted">
-            The detailed report contains all records processed, errors found, and suggestions for
-            fixing issues.
+            The detailed report contains all records processed, errors found, and suggestions for fixing issues.
           </p>
         </div>
       )}
@@ -367,8 +343,7 @@ const BulkUploadApplications = ({ refreshData }) => {
             </li>
           </ul>
           <p className="mt-2">
-            <strong>Still having trouble?</strong> Try downloading our sample file and comparing it
-            with yours.
+            <strong>Still having trouble?</strong> Try downloading our sample file and comparing it with yours.
           </p>
         </div>
       </div>

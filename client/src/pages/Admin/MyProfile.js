@@ -23,6 +23,8 @@ import {
   Save,
 } from "lucide-react";
 import styles from "./MyProfile.module.css";
+import Breadcrumbs from '../../components/Breadcrumbs/Breadcrumbs';
+
 
 // --- Helper Components (No changes needed) ---
 
@@ -64,7 +66,7 @@ const InfoSection = ({ label, value, onEditClick }) => (
       <p className={styles.infoLabel}>{label}</p>
       <p className={styles.infoValue}>{value}</p>
     </div>
-    <Button variant="outline" size="sm" onClick={onEditClick}>
+    <Button className={styles.infoButton} onClick={onEditClick}>
       <Edit3 size={14} className={styles.editIcon} />
       Edit
     </Button>
@@ -116,6 +118,7 @@ const PasswordInput = ({ label, error, showPassword, onTogglePassword, ...props 
 // --- Main Profile Page Component ---
 
 const MyProfile = () => {
+  const currentPath = ['Admin', 'System-Settings', 'MyProfile'];
   const { user, updateUserProfile } = useAuth();
 
   const [modalType, setModalType] = useState(null);
@@ -303,6 +306,7 @@ const MyProfile = () => {
       <Notification message={notification.message} type={notification.type} onDismiss={() => setNotification({ message: "" })} />
       
       <div className={styles.pageContainer}>
+      <Breadcrumbs path={currentPath} nonLinkSegments={['Admin', 'System-Settings']}/>
         <div className={styles.pageLayout}>
           <aside className={styles.leftColumn}>
             <Card>
@@ -319,9 +323,9 @@ const MyProfile = () => {
           </aside>
 
           <main className={styles.rightColumn}>
-            <Card>
+            <Card className={styles.myCard}>
               <CardHeader>
-                <CardTitle>My Profile</CardTitle>
+                <CardTitle className={styles.profileTitle}>My Profile</CardTitle>
                 <CardDescription>Manage your public profile and security settings.</CardDescription>
               </CardHeader>
               <CardContent>

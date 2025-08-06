@@ -9,8 +9,10 @@ import {
   useFetchBlocks,
 } from "../../hooks/useJurisData"; // Removed unused useFetchInstitutes
 import classes from "./SearchApplications.module.css";
+import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 
 const SearchApplications = () => {
+  const currentPath = ['Admin', 'Admissions', 'Applications', 'Search Application']
   const navigate = useNavigate();
   const [toastMessage, setToastMessage] = useState('');
 
@@ -126,6 +128,7 @@ const SearchApplications = () => {
 
   return (
     <div className={classes.pageContainer}>
+      <Breadcrumbs path={currentPath} nonLinkSegments={['Admin', 'Admissions']} />
       {toastMessage && (
         <div className={`${classes.toast} ${classes.toastVisible}`}>
           {toastMessage}

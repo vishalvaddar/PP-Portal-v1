@@ -4,8 +4,10 @@ import {
   MapPin, Building2, ListChecks, Edit, Play, AlertTriangle, CheckCircle, Loader, FileText
 } from 'lucide-react';
 import styles from "./GenerateShortlist.module.css";
+import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 
 const GenerateShortlist = () => {
+  const currentPath = ['Admin', 'Admissions', 'Shortlisting', 'Generate-Shortlist'];
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [blocks, setBlocks] = useState([]);
@@ -164,6 +166,7 @@ const GenerateShortlist = () => {
 
   return (
     <div className={styles.page}>
+      <Breadcrumbs path={currentPath} nonLinkSegments={['Admin', 'Admissions']} />
         <div className={styles.header}>
             <h1>Generate New Shortlist</h1>
             <p>Create a targeted list by selecting jurisdiction, criteria, and providing details.</p>

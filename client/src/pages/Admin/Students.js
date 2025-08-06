@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import axios from "axios";
 import Select from "react-select";
-
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -22,7 +21,7 @@ import {
   Info,
   ChevronDown,
 } from "lucide-react";
-
+import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 import classes from "./Students.module.css";
 
 const downloadCSV = (data, filename) => {
@@ -74,6 +73,7 @@ const genderOptions = [
 
 
 const Students = () => {
+  const currentPath = ['Admin', 'Academics', 'Students Search']
   const initialFilters = useMemo(() => ({
     name: "", enr_id: "", batch: "", cohort: "", gender: "",
   }), []);
@@ -236,6 +236,7 @@ const Students = () => {
 
   return (
     <div className={classes.pageContainer}>
+      <Breadcrumbs path = {currentPath} nonLinkSegments={['Admin', 'Academics']}/>
       <div className={classes.searchCard}>
         <div className={classes.header}>
           <div className={classes.headerIcon}><Users size={28} /></div>
