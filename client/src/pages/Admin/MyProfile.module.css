@@ -204,19 +204,18 @@
 
 .editIcon {
   margin-right: 0.5rem;
-  color: ;
 }
 
 .infoButton {
   border-radius: 4px;
-  background: gainsboro;
+  background: rgb(103, 239, 223);
   margin-right: 12px;
   /* <-- move button left (adjust value as needed) */
   display: flex;
   align-items: center;
   gap: 6px;
 }
-
+  
 /*
 ========================================
   4. MODAL STYLES
