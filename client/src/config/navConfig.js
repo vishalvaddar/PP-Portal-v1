@@ -25,6 +25,7 @@ import {
   Quiz,
   AssignmentInd,
   Schedule,
+  CalendarMonth
 } from '@mui/icons-material';
 
 export const navConfig = {
@@ -46,9 +47,8 @@ export const navConfig = {
       icon: <MenuBook />,
       children: [
         { path: "/admin/academics/students", icon: <Group />, label: "Students" },
-        // Uncomment below if teachers page is needed later
-        // { path: "/admin/academics/teachers", icon: <SupervisorAccount />, label: "Teachers" },
         { path: "/admin/academics/batches", icon: <Badge />, label: "Batches" },
+        { path: "/admin/academics/time-table-dashboard", icon: <CalendarMonth />, label: "Time Table" },
         { path: "/admin/academics/reports", icon: <Assessment />, label: "Reports"},
       ],
     },

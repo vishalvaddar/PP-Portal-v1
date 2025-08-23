@@ -1,217 +1,194 @@
-/* ========== Container ========== */
+/* NewApplication.module.css */
+
+/* =================================
+   :ROOT & FONT IMPORT
+   ================================= */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --background-color: #f9fafb;
+  --form-background: #ffffff;
+  --primary-color: #3b82f6;
+  --primary-hover: #2563eb;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --border-color: #d1d5db;
+  --border-focus-color: #3b82f6;
+  --danger-color: #ef4444;
+  --border-radius: 0.5rem; /* 8px */
+  --box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+/* =================================
+   MAIN CONTAINER & LAYOUT
+   ================================= */
 .container {
-    max-width: 950px;
-    margin: 0px 40px;
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 10px 32px rgba(67, 97, 238, 0.10);
-    border: 1px solid #e0e7ef;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--background-color);
+  font-family: 'Inter', sans-serif;
+  color: var(--text-primary);
+  padding: 2rem;
+  box-sizing: border-box;
 }
 
 .h2 {
-  color: #2d3a4a;
-  margin-bottom: 32px;
+  font-size: 2.25rem;
   font-weight: 700;
-  font-size: 2rem;
-  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-  border-bottom: 2px solid #4361ee;
-  padding-bottom: 10px;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--text-primary);
 }
-
 
 .formContent {
   max-width: 1000px;
-  margin: 2rem auto;
-  padding: 2.8rem;
-  background: #ffffff;
-  border-radius: 12px;
-  border: 1px solid #d1d5db;
+  margin: 0 auto;
+  padding: 2.5rem;
+  background: var(--form-background);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--box-shadow);
 }
 
+/* =================================
+   FORM SECTIONS
+   ================================= */
 .formSection {
-  margin-bottom: 34px;
-  background: #f9fafb;
-  padding: 28px 34px;
-  border-radius: 10px;
-  border-left: 4px solid #4a90e2;
+  margin-bottom: 2rem;
 }
 
 .sectionTitle {
   display: flex;
   align-items: center;
-  gap: 14px;
-  font-size: 20px;
-  font-weight: 700;
-  color: #183153;
-  margin-bottom: 24px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #e5e7eb;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--primary-color);
 }
 
 .sectionIcon {
-  width: 22px;
-  height: 22px;
-  color: #4a90e2;
+  width: 24px;
+  height: 24px;
 }
 
 .sectionDivider {
+  border: 0;
   height: 1px;
-  background: #e5e7eb;
-  margin: 34px 0;
+  background-color: var(--border-color);
+  margin: 2.5rem 0;
 }
 
+/* =================================
+   FIELD GROUPS & LABELS
+   ================================= */
 .fieldGroup {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 34px;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .formField {
-  flex: 1 1 45%;
   display: flex;
   flex-direction: column;
-  margin-bottom: 22px;
-  min-width: 260px;
-  max-width: calc(50% - 17px);
-  position: relative;
 }
 
-@media (max-width: 768px) {
-  .formField {
-    flex: 1 1 100%;
-    max-width: 100%;
-  }
-  .container {
-    padding: 18px;
-  }
-  form {
-    padding: 1.2rem;
-  }
-  .formSection {
-    padding: 16px 10px;
-  }
-}
-
-.label {
-  font-size: 15px;
+.label, label {
+  font-size: 0.875rem; /* 14px */
   font-weight: 500;
-  color: #374151;
-  margin-bottom: 7px;
-}
-
-input[type="text"],
-input[type="email"],
-input[type="number"],
-input[type="password"],
-select,
-textarea {
-  padding: 12px 14px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #183153;
-  font-size: 15px;
-  outline: none;
-}
-
-input[type="date" i] {
-    font-family: monospace;
-    padding-inline-start: 1px;
-    cursor: default;
-    padding: 0px;
-    padding-top: 1px;
-    padding-right: 1px;
-    padding-bottom: 1px;
-    padding-left: 1px;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  border-color: #4a90e2;
-}
-
-input:disabled,
-select:disabled,
-textarea:disabled {
-  background: #f1f1f1;
-  color: #9ca3af;
-  cursor: not-allowed;
-}
-
-.button,
-.submitButton {
-  background: #4a90e2;
-  color: #fff;
-  font-weight: 600;
-  font-size: 16px;
-  padding: 12px 30px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-top: 18px;
-}
-
-.button:hover,
-.button:focus,
-.submitButton:hover,
-.submitButton:focus {
-  background: #3b7fc4;
-}
-
-.button:active,
-.submitButton:active {
-  background: #316aa3;
-}
-
-.submitButton:disabled {
-  background: #ccc;
-  cursor: not-allowed;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
 }
 
 .required {
-  color: #ef4444;
-  margin-left: 2px;
-  font-size: 14px;
+  color: var(--danger-color);
+  margin-left: 0.25rem;
 }
 
-.error {
-  color: #ef4444;
-  font-size: 13px;
-  margin-top: 4px;
-  font-weight: 500;
+/* =================================
+   INPUTS, SELECTS, TEXTAREAS
+   ================================= */
+.formField input[type="text"],
+.formField input[type="date"],
+.formField input[type="number"],
+.formField select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  background-color: #fff;
+  color: var(--text-primary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
 }
 
-.message.success {
-  color: #2f855a;
-  background-color: #f0fdf4;
-  border: 1px solid #c6f6d5;
-  padding: 10px;
-  border-radius: 6px;
+.formField input:focus,
+.formField select:focus {
+  outline: none;
+  border-color: var(--border-focus-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
-.message.error {
-  color: #dc3545;
-  background-color: #fff5f5;
-  border: 1px solid #f5c6cb;
-  padding: 10px;
-  border-radius: 6px;
+/* =================================
+   ERROR & SUBMIT
+   ================================= */
+.errorContainer {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 2rem;
 }
 
-.heading {
-  font-size: 2rem;
-  color: #2d3a4a;
-  margin-bottom: 28px;
-  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+.submitButton {
+  display: block;
+  max-width: 400px;
+  width: 100%; 
+  margin-left: auto; 
+  margin-right: auto;
+  padding: 1rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: white;
+  background-color: var(--primary-color);
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: 2rem;
 }
 
-::-webkit-scrollbar {
-  width: 8px;
-  background: #f3f4f6;
+.submitButton:hover {
+  background-color: var(--primary-hover);
 }
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+
+/* Submit button animation states */
+.submitButton.animated {
+  transition: all 0.5s ease-in-out;
+}
+.submitButton.state-1 {
+  background-color: #fbbf24;
+}
+.submitButton.state-2 {
+  background-color: var(--secondary-accent);
+}
+
+/* =================================
+   RESPONSIVENESS
+   ================================= */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  .formContent {
+    padding: 1.5rem;
+  }
+  .fieldGroup {
+    grid-template-columns: 1fr;
+  }
 }

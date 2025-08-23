@@ -1,0 +1,165 @@
+/* General Layout */
+.pageContainer {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  padding: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.mainContent {
+  max-width: 80rem;
+  margin: 0 auto;
+  display: grid;
+  gap: 1.5rem;
+}
+
+/* Card Styles */
+.card {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.headerCard {
+  composes: card;
+  border-left: 5px solid #3b82f6;
+}
+
+.cardTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.mainTitle {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: #4b5563;
+}
+
+/* Filter Section */
+.filterContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.filterGroup {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 150px;
+}
+
+.filterGroup label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.selectInput {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background-color: #fff;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: border-color 0.2s;
+}
+
+.selectInput:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* Reports Section */
+.reportsHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.exportButtons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.exportButtonCsv,
+.exportButtonPdf {
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: white;
+}
+
+.exportButtonCsv {
+    background-color: #107c41;
+}
+.exportButtonCsv:hover {
+    background-color: #0f6d38;
+}
+
+.exportButtonPdf {
+    background-color: #b91c1c;
+}
+.exportButtonPdf:hover {
+    background-color: #991b1b;
+}
+
+.reportsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.reportCard {
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.reportCardTitle {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+.reportCardDescription {
+    color: #4b5563;
+    flex-grow: 1;
+    margin-bottom: 1rem;
+}
+
+.generateButton {
+    background-color: #3b82f6;
+    color: white;
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    align-self: flex-start;
+}
+
+.generateButton:hover {
+    background-color: #2563eb;
+}
