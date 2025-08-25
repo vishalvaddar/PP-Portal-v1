@@ -25,8 +25,6 @@ const ViewApplications = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    
-
     // Fetch applications
     const fetchApplications = useCallback(async (currentOffset, currentSortBy, currentSortOrder) => {
         setLoading(true);
@@ -68,7 +66,6 @@ const ViewApplications = () => {
         }
     }, [filters, pagination.limit]);
 
-
     // Fetch data on page or sort change
     useEffect(() => {
         fetchApplications(pagination.offset, sorting.sortBy, sorting.sortOrder);
@@ -83,14 +80,16 @@ const ViewApplications = () => {
 
     return (
         <div className={classes.container}>
-            <h1>View Applications</h1>
-            <button onClick={() => navigate('/admin/admissions/search-applications')} className={classes.backButton}>
-                Back to Search
-            </button>
+            <div className={classes.header}>
+                <h1 className={classes.title}>View Applications</h1>
+                <button onClick={() => navigate('/admin/admissions/search-applications')} className={classes.backButton}>
+                    Back to Search
+                </button>
+            </div>
 
             {error && <p className={classes.error}>{error}</p>}
-            {loading && <p>Loading...</p>}
-            {!loading && applications.length === 0 && <p>No applications found for the selected criteria.</p>}
+            {loading && <p className={classes.loading}>Loading...</p>}
+            {!loading && applications.length === 0 && <p className={classes.noResults}>No applications found for the selected criteria.</p>}
 
             {!loading && applications.length > 0 && (
                 <>
@@ -114,7 +113,7 @@ const ViewApplications = () => {
                                     <tr key={app.applicant_id}>
                                         <td>{app.applicant_id}</td>
                                         <td>
-                                            <Link to={`/admin/admissions/view-student-info/${app.nmms_reg_number}`}>
+                                            <Link to={`/admin/admissions/view-student-info/${app.nmms_reg_number}`} className={classes.link}>
                                                 {app.nmms_reg_number}
                                             </Link>
                                         </td>
@@ -139,12 +138,14 @@ const ViewApplications = () => {
                         <button
                             onClick={() => handlePageChange(pagination.offset - pagination.limit)}
                             disabled={pagination.offset === 0 || loading}
+                            className={classes.paginationButton}
                         >
                             Previous
                         </button>
                         <button
                             onClick={() => handlePageChange(pagination.offset + pagination.limit)}
                             disabled={pagination.offset + pagination.limit >= pagination.total || loading}
+                            className={classes.paginationButton}
                         >
                             Next
                         </button>

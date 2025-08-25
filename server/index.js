@@ -64,7 +64,7 @@ app.use("/api/batches", batchRoutes);
 app.use("/api", userRoleRoutes);
 app.use("/api/upload", bulkUploadRoutes);
 app.use("/api/bulk-upload", bulkUploadRoutes);
-app.use("/api/search", searchRoutes);
+app.use("/api", searchRoutes);
 app.use("/api", jurisdictionRoutes);
 app.use("/api/shortlist/generate", generateShortlistRoutes);
 app.use("/api/shortlist-info", shortlistInfoRoutes);

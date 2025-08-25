@@ -1,166 +1,312 @@
-.pageBg {
+/* --- CSS Variables for easy theming --- */
+:root {
+  --primary-color: #0056b3;
+  --primary-hover: #004494;
+  --secondary-color: #6c757d;
+  --secondary-hover: #5a6268;
+  --background-color: #f8f9fa;
+  --card-background: #ffffff;
+  --text-color: #343a40;
+  --label-color: #495057;
+  --border-color: #dee2e6;
+  --input-background: #ffffff;
+  --input-focus-border: #80bdff;
+  --error-color: #dc3545;
+  --info-panel-bg: #e9f5ff;
+  --info-panel-border: #b3d7ff;
+  --info-icon-color: #0056b3;
+  --divider-color: #ced4da;
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --border-radius: 8px;
+}
+
+/* --- Main Page Layout --- */
+.pageContainer {
+  background-color: var(--background-color);
+  padding: 2rem;
   min-height: 100vh;
+}
+
+.searchGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Responsive layout for smaller screens */
+@media (max-width: 1024px) {
+  .searchGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Search Form Card --- */
+.searchCard {
+  background: var(--card-background);
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  padding: 2rem 2.5rem;
+}
+
+.cardHeader {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  color: var(--primary-color);
 }
 
-.centerCard {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 6px 32px rgba(34, 34, 59, 0.12);
-  padding: 36px 32px 28px 32px;
-  width: 100%;
-  max-width: 905.5px;
-  margin: 32px 0;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
-.header h2 {
-  font-size: 1.55rem;
-  font-weight: 700;
-  color: #22223b;
+.cardHeader h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
   margin: 0;
-  letter-spacing: 0.5px;
 }
 
-.icon {
-  color: #3a86ff;
-}
-
+/* --- Form & Fields --- */
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 1.5rem;
 }
 
-.formRow {
-  display: flex;
-  gap: 24px;
-  width: 100%;
-}
-
-.formGroup {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  min-width: 0;
-}
-
-.formGroup label {
-  font-size: 1rem;
-  color: #495057;
-  font-weight: 500;
-}
-
-.formGroup input,
-.formGroup select {
-  padding: 9px 12px;
-  border: 1.5px solid #dbeafe;
-  border-radius: 6px;
-  font-size: 1rem;
-  background: #f7fafc;
-  transition: border 0.2s;
-  outline: none;
-}
-
-.formGroup input:focus,
-.formGroup select:focus {
-  border-color: #3a86ff;
-  background: #fff;
-}
-
-.selectInput :global(.react-select__control) {
-  border-radius: 6px;
-  border: 1.5px solid #dbeafe;
-  background: #f7fafc;
-  min-height: 40px;
-}
-
-.selectInput :global(.react-select__control--is-focused) {
-  border-color: #3a86ff;
-  background: #fff;
-}
-
-.error {
-  color: #e63946;
-  font-size: 0.93rem;
-  margin-top: 2px;
-}
-
-.orSeparator {
-  text-align: center;
-  color: #adb5bd;
-  font-size: 1.1rem;
-  font-weight: 600;
-  position: relative;
-  margin: 8px 0 12px 0;
-  letter-spacing: 1px;
-}
-
-.orSeparator span {
-  background: #fff;
-  padding: 0 16px;
-  position: relative;
-  z-index: 2;
-}
-
-.orSeparator:before {
-  content: "";
+.label {
   display: block;
-  border-top: 1.5px dashed #ced4da;
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  z-index: 1;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--label-color);
+  font-size: 0.9rem;
 }
 
-.errorSummary {
-  color: #e63946;
-  background: #fff0f3;
-  border: 1px solid #f8d7da;
-  border-radius: 5px;
-  padding: 7px 12px;
-  margin-bottom: 10px;
-  font-size: 0.98rem;
-}
-
-.submitButton {
-  margin-top: 10px;
-  background: linear-gradient(90deg, #3a86ff 0%, #00b4d8 100%);
-  color: #fff;
-  border: none;
-  width: 60%;
-  margin-left: 180px;
+.input, .react-select__control {
+  width: 100%;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
-  padding: 12px 0;
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: 1px;
+  background-color: var(--input-background);
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+.inputGroup {
+  position: relative;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--secondary-color);
+}
+
+.inputGroup .input {
+  padding-left: 2.5rem;
+}
+
+.errorText {
+  color: var(--error-color);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* --- Divider --- */
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--secondary-color);
+  font-weight: 500;
+  font-size: 0.8rem;
+  margin: 1rem 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--divider-color);
+}
+
+.divider span {
+  padding: 0 1rem;
+}
+
+
+/* --- Fieldset and Grids --- */
+.fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Style for disabled state */
+.fieldset:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.filterGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+/* --- Action Buttons --- */
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background 0.18s;
-  box-shadow: 0 2px 8px rgba(58, 134, 255, 0.10);
+  transition: background-color 0.2s, transform 0.1s;
 }
 
-.submitButton:hover {
-  background: linear-gradient(90deg, #00b4d8 0%, #3a86ff 100%);
+.btn:active {
+    transform: translateY(1px);
 }
 
-@media (max-width: 800px) {
-  .centerCard {
-    padding: 24px 8px;
-    max-width: 98vw;
-  }
-  .formRow {
-    flex-direction: column;
-    gap: 8px;
-  }
+.btnPrimary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btnPrimary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btnSecondary {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+.btnSecondary:hover {
+  background-color: var(--secondary-hover);
+}
+
+/* --- Info Panel --- */
+.infoPanel {
+  background-color: var(--info-panel-bg);
+  border: 1px solid var(--info-panel-border);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  height: fit-content; /* Panel only takes up as much height as its content */
+}
+
+.infoIconContainer {
+  background-color: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.infoIcon {
+    color: var(--info-icon-color);
+}
+
+.infoPanel h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  color: var(--text-color);
+}
+
+.infoPanel p {
+  line-height: 1.6;
+  color: var(--label-color);
+}
+
+.infoPanel ul {
+  padding-left: 20px;
+  line-height: 1.8;
+  color: var(--label-color);
+}
+
+.infoPanel li {
+  margin-bottom: 0.75rem;
+}
+
+/* --- React Select Custom Styles --- */
+.react-select__control {
+  padding: 0.2rem; /* Adjusted padding for react-select */
+}
+
+.react-select__control--is-focused {
+  border-color: var(--input-focus-border);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+.react-select__control--menu-is-open {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.react-select__menu {
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  margin-top: -1px;
+}
+
+.react-select__option {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+}
+
+.react-select__option--is-focused {
+  background-color: var(--info-panel-bg);
+}
+
+.react-select__option--is-selected {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* --- Toast Notification --- */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: var(--error-color);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.toastVisible {
+  opacity: 1;
+  transform: translateY(0);
 }

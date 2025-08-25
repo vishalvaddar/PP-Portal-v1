@@ -2,8 +2,10 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { FilePlus, Upload, Search, FileText, AlertTriangle } from "lucide-react";
 import styles from "./Applications.module.css";
+import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 
 const Applications = () => {
+  const currentPath = ['Admin', 'Admissions', 'Applications'];
   const features = [
     {
       title: "New Application",
@@ -29,6 +31,7 @@ const Applications = () => {
 
   return (
     <div className={styles.dashboardContainer}>
+      <Breadcrumbs path={currentPath} nonLinkSegments={['Admin', 'Admissions']} />
       <div className={styles.header}>
         <div className={styles.titleContainer}>
           <FileText size={28} className={styles.titleIcon} />

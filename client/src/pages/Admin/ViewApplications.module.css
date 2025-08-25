@@ -1,125 +1,183 @@
-/* ViewApplications.module.css */
+/*
+ * This stylesheet is adapted from your reference UI to ensure
+ * a consistent design across the application.
+*/
 
-.container {
-  padding: 2rem;
-  background-color: #f9fafb;
-  min-height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* --- UI Theme Variables (from reference) --- */
+:root {
+  --primary-color: #4a90e2;
+  --primary-color-dark: #3b7fc4;
+  --heading-color: #2d3a4a;
+  --text-primary: #183153;
+  --text-secondary: #374151;
+  --border-color: #d1d5db;
+  --border-light: #e5e7eb;
+  --bg-section: #f9fafb;
+  --bg-page: #f0f4f8; /* A light background for the page */
+  --error-color: #ef4444;
+  --error-bg: #fff5f5;
 }
 
-h1 {
+/* --- Main Layout & Container --- */
+.container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 40px;
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: 0 10px 32px rgba(67, 97, 238, 0.10);
+  border: 1px solid #e0e7ef;
+}
+
+/* --- Header --- */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--primary-color);
+}
+
+.title {
+  color: var(--heading-color);
+  font-weight: 700;
   font-size: 2rem;
-  margin-bottom: 1rem;
-  color: #2d3748;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  margin: 0;
 }
 
 .backButton {
-  background-color: #3b82f6;
-  color: white;
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
+  background: transparent;
+  color: var(--primary-color);
+  font-weight: 600;
+  font-size: 16px;
+  padding: 10px 20px;
+  border: 1px solid var(--primary-color);
+  border-radius: 6px;
   cursor: pointer;
-  margin-bottom: 1.5rem;
-  transition: background-color 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .backButton:hover {
-  background-color: #2563eb;
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* --- Status Messages (Loading, Error, No Results) --- */
+.loading,
+.error,
+.noResults {
+  text-align: center;
+  padding: 3rem 1rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background-color: var(--bg-section);
+  border-radius: 10px;
 }
 
 .error {
-  color: #dc2626;
-  font-weight: bold;
-  margin-bottom: 1rem;
+  color: var(--error-color);
+  background-color: var(--error-bg);
+  border: 1px solid var(--error-color);
 }
 
+/* --- Table Styles --- */
 .tableContainer {
-  overflow-x: auto;
+  overflow-x: auto; /* Ensures table is scrollable on small screens */
+  border: 1px solid var(--border-light);
   border-radius: 10px;
-  background-color: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 800px;
+  font-size: 15px;
 }
 
-.table th, 
+.table th,
 .table td {
-  padding: 0.75rem 1rem;
+  padding: 14px 18px;
   text-align: left;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-light);
+  white-space: nowrap;
+}
+
+.table thead {
+  background-color: var(--bg-section);
 }
 
 .table th {
-  background-color: #f1f5f9;
-  color: #374151;
-  font-size: 0.95rem;
-  cursor: pointer;
-  position: relative;
-  /* user-select: none; */
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
-.table th:hover {
-  background-color: #e2e8f0;
+.table tbody tr:hover {
+  background-color: #f3f7fd;
 }
 
-.table td {
-  font-size: 0.9rem;
-  color: #4b5563;
-}
-
-.table a {
-  color: #3b82f6;
+.link {
+  color: var(--primary-color);
+  font-weight: 600;
   text-decoration: none;
 }
 
-.table a:hover {
+.link:hover {
   text-decoration: underline;
+  color: var(--primary-color-dark);
 }
 
+/* --- Pagination Controls --- */
 .pagination {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 1.5rem;
-  padding: 0.5rem;
-  background-color: #f1f5f9;
-  border-radius: 8px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  font-size: 15px;
 }
 
-.pagination span {
-  font-size: 1rem;
-  color: #374151;
-}
-
-.pagination button {
-  background-color: #3b82f6;
-  color: white;
-  border: none;
-  padding: 0.6rem 1rem;
-  margin: 0 0.5rem;
-  border-radius: 8px;
+.paginationButton {
+  background: #fff;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 15px;
+  padding: 10px 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.2s ease;
 }
 
-.pagination button:hover {
-  background-color: #2563eb;
+.paginationButton:hover:not(:disabled) {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background-color: #f3f7fd;
 }
 
-.pagination button:disabled {
-  background-color: #9ca3af;
+.paginationButton:disabled {
+  background: #f1f1f1;
+  color: #9ca3af;
   cursor: not-allowed;
+  border-color: var(--border-color);
 }
 
-/* Loading state */
-.container p {
-  color: #4b5563;
-  font-size: 1rem;
-  margin-top: 1rem;
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+  .container {
+    padding: 18px;
+    margin: 20px;
+  }
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .pagination {
+    flex-direction: column;
+    gap: 1rem;
+  }
 }

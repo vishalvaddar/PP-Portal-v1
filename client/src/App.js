@@ -9,7 +9,7 @@ function ProtectedApp() {
   const { user } = useAuth();
 
   if (!user) {
-    return <div>Please login first</div>; // Optional: or redirect manually
+    return <div>Please login first</div>;
   }
 
   return (

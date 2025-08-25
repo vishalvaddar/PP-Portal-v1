@@ -7,6 +7,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import styles from "./Shortlisting.module.css";
+import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 
 const features = [
   {
@@ -74,8 +75,10 @@ const InfoSection = ({ title, icon, items, isList = true }) => (
 );
 
 const Shortlisting = () => {
+  const currentPath = ['Admin', 'Admissions', 'Shortlisting'];
   return (
     <div className={styles.dashboardContainer}>
+      <Breadcrumbs path={currentPath} nonLinkSegments={['Admin', 'Admissions']} />
       <header className={styles.header}>
         <div className={styles.titleContainer}>
           <ScrollText size={28} className={styles.titleIcon} />

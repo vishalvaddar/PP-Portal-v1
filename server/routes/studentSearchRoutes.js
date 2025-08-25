@@ -1,10 +1,9 @@
-// studentSearchRoutes.js
-
 const express = require('express');
 const router = express.Router();
-const { studentSearchController } = require('../controllers/studentSearchController');
+const { studentSearchController, advancedStudentSearch, getStudentById } = require('../controllers/studentSearchController');
 
-// Define the route for student search
 router.get('/search-students', studentSearchController);
+router.get('/advanced-search-students', advancedStudentSearch);
+router.get('/student/:student_id', getStudentById);
 
 module.exports = router;

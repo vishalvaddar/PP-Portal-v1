@@ -15,7 +15,7 @@ const validateField = (field, value, rowIndex) => {
     'nmms_year', 'nmms_reg_number', 'student_name', 'father_name', 'gender', 'gmat_score', 'sat_score',
   ];
 
-  if (requiredFields.includes(field) && (!value || value.toString().trim() === '')) {
+  if (requiredFields.includes(field) && (value === null || value === undefined || value.toString().trim() === '')) {
     errors.push(`This field is required.`);
   }
 
@@ -36,7 +36,7 @@ const validateField = (field, value, rowIndex) => {
     case 'gmat_score':
     case 'sat_score':
       if (value && isNaN(value)) errors.push('Must be a number.');
-      else if (value && (value < 0 || value > 90)) {
+      else if (value && (value <= 0 || value >= 90)) {
         errors.push('Score must be between 0 and 90.');
       }
       break;
@@ -46,10 +46,10 @@ const validateField = (field, value, rowIndex) => {
       if (value && !/^\d{10}$/.test(value)) errors.push('Must be a 10-digit phone number.');
       break;
 
-    case 'current_institute_dise_code':
-    case 'previous_institute_dise_code':
-      if (value && !/^\d{11}$/.test(value)) errors.push('Must be an 11-digit DISE code.');
-      break;
+    // case 'current_institute_dise_code':
+    // case 'previous_institute_dise_code':
+    //   if (value && !/^\d{11}$/.test(value)) errors.push('Must be an 11-digit DISE code.');
+    //   break;
 
     case 'gender':
       if (value && !['M', 'F', 'O'].includes(value.toUpperCase())) {

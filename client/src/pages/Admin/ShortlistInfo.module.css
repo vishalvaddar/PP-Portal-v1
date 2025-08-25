@@ -1,289 +1,270 @@
-/* Main Container Styles */
-.container {
+/* ShortlistInfo.module.css */
+
+.shortlistInfoContainer {
+  padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+/* Breadcrumbs */
+.breadcrumbs {
+  margin-bottom: 20px;
+}
+
+/* Heading styles */
+.heading {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 15px;
   color: #333;
 }
 
-/* Header Styles */
-h1, h2, h3 {
-  color: #2c3e50;
-  margin-bottom: 1.5rem;
-  font-weight: 600;
-}
-
-h1 {
-  font-size: 2.5rem;
-  text-align: center;
-  border-bottom: 2px solid #3498db;
-  padding-bottom: 1rem;
-  margin-bottom: 2rem;
-}
-
-h2 {
-  font-size: 1.8rem;
-  color: #2980b9;
-}
-
-/* Count Boxes */
+/* Counts Container */
 .countsContainer {
   display: flex;
-  justify-content: center;
-  gap: 2rem;
-  margin-bottom: 3rem;
+  gap: 20px;
+  margin-bottom: 30px;
   flex-wrap: wrap;
 }
 
 .countBox {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border-radius: 10px;
-  padding: 1.5rem 2.5rem;
-  text-align: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
-  min-width: 200px;
+  flex: 1 1 200px;
+  background-color: #fff;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
 }
 
 .countBox:hover {
-  transform: translateY(-5px);
-}
-
-.countBox p {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #2c3e50;
-  margin: 0;
-}
-
-/* Option Grid */
-.shortlistingStepsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-top: 2rem;
-}
-
-.optionBox {
-  background: white;
-  border-radius: 8px;
-  padding: 1.5rem;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e0e0e0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 150px;
-}
-
-.optionBox:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  border-color: #3498db;
-}
-
-.icon-box {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  color: #3498db;
-}
-
-.text-box {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: #2c3e50;
-}
-
-/* Detailed Views */
-.detailed-view {
-  background: white;
-  border-radius: 10px;
-  padding: 2rem;
-  margin: 2rem auto;
-  max-width: 800px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Select Dropdowns */
-select {
-  width: 100%;
-  padding: 0.8rem 1rem;
-  margin: 1rem 0;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
-  background-color: #f8f9fa;
-  transition: border-color 0.3s;
-}
-
-select:focus {
-  outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-}
-
-/* Buttons */
-button {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  padding: 0.8rem 1.5rem;
-  border-radius: 5px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin: 0.5rem 0;
-}
-
-button:hover {
-  background-color: #2980b9;
   transform: translateY(-2px);
 }
 
-button:disabled {
-  background-color: #95a5a6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.back-button-container {
-  margin-top: 2rem;
+.countBoxText {
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin: 0;
+  color: #555;
   text-align: center;
 }
 
-/* Shortlist Details */
-.shortlist-details-info {
-  background: #f8f9fa;
-  padding: 1.5rem;
-  border-radius: 8px;
-  margin-top: 1.5rem;
-  border-left: 4px solid #3498db;
+/* Grid for options */
+.shortlistingStepsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
 }
 
-.shortlist-details-info p {
-  margin-bottom: 0.8rem;
-  line-height: 1.6;
+/* Individual option box styles */
+.optionBox {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s, transform 0.2s;
 }
 
-.justified-text {
-  text-align: justify;
+.optionBox:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
 }
 
-/* Table Styles */
-table {
+.iconBox {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.textBox {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+}
+
+/* Detailed View Containers */
+.detailedView {
+  background-color: #fff;
+  padding: 30px 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-top: 20px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.detailedViewHeading {
+  font-size: 1.75rem;
+  margin-bottom: 20px;
+  color: #222;
+  text-align: center;
+}
+
+.selectContainer {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+select {
   width: 100%;
-  border-collapse: collapse;
-  margin: 1.5rem 0;
-  font-size: 0.9rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  padding: 10px 15px;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  transition: border-color 0.2s;
 }
 
-th {
-  background-color: #3498db;
-  color: white;
-  padding: 0.75rem;
-  text-align: left;
+select:focus {
+  border-color: #007bff;
+  outline: none;
 }
 
-td {
-  padding: 0.6rem;
-  border-bottom: 1px solid #ddd;
+.detailsText {
+  margin-top: 15px;
+  line-height: 1.5;
+  font-size: 1rem;
+  color: #555;
 }
 
-tr:nth-child(even) {
-  background-color: #f2f2f2;
+.backButton {
+  margin-top: 30px;
+  padding: 10px 20px;
+  background-color: #6c757d;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
-tr:hover {
-  background-color: #e3f2fd;
+.backButton:hover {
+  background-color: #5a6268;
+}
+
+/* Action Buttons */
+.freezeButton,
+.deleteButton,
+.downloadButton {
+  width: 100%;
+  max-width: 250px;
+  padding: 12px 20px;
+  margin: 10px auto;
+  display: block;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.freezeButton {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.freezeButton:disabled {
+  background-color: #94d3a2;
+  cursor: not-allowed;
+}
+
+.deleteButton {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.deleteButton:disabled {
+  background-color: #e6a5ad;
+  cursor: not-allowed;
+}
+
+.downloadButton {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.downloadButton:disabled {
+  background-color: #80c1ff;
+  cursor: not-allowed;
+}
+
+.belowButton {
+  margin-top: 15px;
 }
 
 /* Confirmation Popup */
-.download-confirmation-popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: white;
-  padding: 2rem;
+.downloadConfirmation {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  text-align: center;
   max-width: 400px;
-  width: 90%;
-}
-
-.download-confirmation-popup p {
-  margin-bottom: 1.5rem;
-}
-
-.download-confirmation-popup button {
-  margin: 0 0.5rem;
-  min-width: 80px;
-}
-
-.download-confirmation-popup button:last-child {
-  background-color: #e74c3c;
-}
-
-.download-confirmation-popup button:last-child:hover {
-  background-color: #c0392b;
-}
-
-/* Loading States */
-.loading-message {
-  color: #7f8c8d;
-  font-style: italic;
+  margin: 20px auto;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   text-align: center;
-  padding: 1rem;
 }
 
-.error-message {
-  color: #e74c3c;
-  text-align: center;
-  padding: 1rem;
-  font-weight: 500;
+.confirmationButtons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
 }
 
-/* Responsive Adjustments */
+.confirmYesButton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: #28a745;
+  color: #fff;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.confirmNoButton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: #dc3545;
+  color: #fff;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.confirmYesButton:hover {
+  background-color: #218838;
+}
+
+.confirmNoButton:hover {
+  background-color: #c82333;
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
-  .container {
-    padding: 1rem;
-  }
-  
-  h1 {
-    font-size: 2rem;
-  }
-  
   .countsContainer {
     flex-direction: column;
-    align-items: center;
-    gap: 1rem;
   }
-  
-  .countBox {
-    width: 100%;
-    max-width: 300px;
-  }
-  
-  .shortlistingStepsGrid {
-    grid-template-columns: 1fr;
-  }
-}
 
-@media (max-width: 480px) {
-  .detailed-view {
-    padding: 1rem;
+  .optionBox {
+    padding: 15px;
   }
-  
-  button {
+
+  .detailedView {
+    padding: 20px;
+  }
+
+  select {
     width: 100%;
   }
 }
