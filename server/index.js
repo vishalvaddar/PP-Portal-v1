@@ -52,6 +52,7 @@ const studentSearchRoutes = require("./routes/studentSearchRoutes");
 
 const examCentres = require('./routes/examRoutes');
 
+const interviewRoutes = require('./routes/interviewRoutes'); 
 
 app.use("/auth", authRoutes);
 
@@ -78,6 +79,9 @@ app.use("/api/coordinator", coordinatorRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/exams", examRoutes);
 app.use("/api", studentSearchRoutes);
+
+app.use('/api/interview', interviewRoutes); 
+
 
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
