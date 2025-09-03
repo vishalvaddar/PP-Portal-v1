@@ -1,0 +1,292 @@
+.evaluation-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+.evaluation-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.evaluation-header h1 {
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.evaluation-header p {
+  color: #7f8c8d;
+  font-size: 1.1em;
+}
+
+.content-wrapper {
+  display: flex;
+  gap: 30px;
+}
+
+.instructions-panel {
+  flex: 1;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.upload-panel {
+  flex: 1;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.tab {
+  padding: 15px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  color: #7f8c8d;
+  transition: all 0.3s;
+}
+
+.tab.active {
+  color: #3498db;
+  border-bottom: 2px solid #3498db;
+}
+
+.tab-content {
+  padding: 25px;
+}
+
+.instructions h3, .format-info h3 {
+  color: #2c3e50;
+  margin-top: 0;
+}
+
+.instructions ol, .instructions ul {
+  padding-left: 20px;
+  line-height: 1.6;
+}
+
+.instructions li {
+  margin-bottom: 10px;
+}
+
+.important-notes {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 6px;
+  margin-top: 20px;
+  border-left: 4px solid #e74c3c;
+}
+
+.important-notes h4 {
+  color: #e74c3c;
+  margin-top: 0;
+}
+
+.format-table {
+  margin: 20px 0;
+}
+
+.format-row {
+  display: flex;
+  border-bottom: 1px solid #eee;
+  padding: 10px 0;
+}
+
+.format-row.header {
+  font-weight: bold;
+  background: #f8f9fa;
+}
+
+.format-cell {
+  flex: 1;
+  padding: 0 10px;
+}
+
+.sample-section {
+  margin-top: 30px;
+}
+
+.sample-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.sample-table th, .sample-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.sample-table th {
+  background-color: #f2f2f2;
+}
+
+.section {
+  margin-bottom: 30px;
+}
+
+.section h3 {
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.exam-dropdown {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: #fff;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-download {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.btn-download:hover:not(.disabled) {
+  background-color: #27ae60;
+}
+
+.btn-upload {
+  background-color: #3498db;
+  color: white;
+  margin-top: 15px;
+  width: 100%;
+}
+
+.btn-upload:hover:not(.disabled) {
+  background-color: #2980b9;
+}
+
+.btn.disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.file-upload-area {
+  margin: 20px 0;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-label {
+  display: inline-block;
+  padding: 12px 20px;
+  background-color: #f8f9fa;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.file-label:hover {
+  background-color: #e9ecef;
+}
+
+.file-selected {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #e8f5e9;
+  border-radius: 4px;
+}
+
+.file-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.btn-clear {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #e74c3c;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border-radius: 4px;
+  margin-top: 20px;
+}
+
+.status.success {
+  background-color: #e8f5e9;
+  color: #2ecc71;
+}
+
+.status.error {
+  background-color: #ffebee;
+  color: #e74c3c;
+}
+
+.status-icon {
+  font-size: 20px;
+  margin-right: 10px;
+}
+
+.status-message {
+  flex: 1;
+}
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .content-wrapper {
+    flex-direction: column;
+  }
+  
+  .format-row {
+    flex-direction: column;
+  }
+  
+  .format-cell {
+    margin-bottom: 5px;
+  }
+}

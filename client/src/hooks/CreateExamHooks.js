@@ -14,23 +14,21 @@ const useCreateExamHooks = () => {
   const [examBlocks, setExamBlocks] = useState({});
   
   const [formData, setFormData] = useState({
-    centreId: "",
-    examName: "",
-    examDate: "",
-    district: "",
-    blocks: [],
+     centreId: "",
+      examName: "",
+      examDate: "",
     app_state: 1,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch all exams when component mounts
+  // Fetch all exams student assigned  when component mounts
   useEffect(() => {
     const fetchExams = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams`);
+        const response = await axios.get("http://localhost:5000/api/exams/assigned");
         // console.log('Exam API Response:', response.data);
         //  console.log("log data:",formData.blocks);
         console.log("the raw things in e entry ",entries);
@@ -60,7 +58,7 @@ const useCreateExamHooks = () => {
           await Promise.all(formattedEntries.map(async (exam) => {
             if (exam.district && exam.district !== ':district') {
               try {
-                const blocksResponse = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/blocks-by-district/${exam.district}`);
+                const blocksResponse = await axios.get(`http://localhost:5000/api/exams/blocks-by-district/${exam.district}`);
                 setExamBlocks(prev => ({
                   ...prev,
                   [exam.district]: blocksResponse.data
@@ -86,7 +84,7 @@ const useCreateExamHooks = () => {
   useEffect(() => {
     const fetchCentres = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/exam-centres`);
+        const response = await axios.get("http://localhost:5000/api/exams/exam-centres");
         setCentres(response.data);
       } catch (error) {
         console.error("Error fetching centres:", error);
@@ -100,7 +98,7 @@ const useCreateExamHooks = () => {
     if (!formData.app_state) return;
     const fetchDistricts = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/districts-by-state/${formData.app_state}`);
+        const response = await axios.get(`http://localhost:5000/api/exams/districts-by-state/${formData.app_state}`);
         setDistricts(response.data);
       } catch (error) {
         console.error("Error fetching districts:", error);
@@ -115,7 +113,7 @@ useEffect(() => {
   const fetchBlocks = async () => {
     if (!formData.district) return;
     try {
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/blocks-by-district/${formData.district}`);
+      const response = await axios.get(`http://localhost:5000/api/exams/blocks-by-district/${formData.district}`);
       setBlocks(response.data);
       
     } catch (error) {
@@ -131,7 +129,7 @@ useEffect(() => {
   useEffect(() => {
     const fetchUsedBlocks = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/used-blocks`);
+        const response = await axios.get("http://localhost:5000/api/exams/used-blocks");
         setUsedBlocks(response.data);
       } catch (error) {
         console.error("Error fetching used blocks:", error);
@@ -157,68 +155,55 @@ useEffect(() => {
 
 
   //main submit button
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
-    
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setMessage("");
 
-    try {
-      const payload = {
-        centreId: formData.centreId,
-        Exam_name: formData.examName,
-        date: formData.examDate,
-        district: formData.district,
-        blocks: formData.blocks,
-      };
+  try {
+   const payload = {
+  centreId: formData.centreId,
+  examName: formData.examName,
+  date: formData.examDate
+};
+console.log("Payload being sent to backend:", payload);
+const response = await axios.post("http://localhost:5000/api/exams/create", payload);
 
-      const response = await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/create`, payload);
 
-      // Fetch updated exam list after creation
-      const updatedExamsResponse = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams`);
-      setEntries(updatedExamsResponse.data);
-       
-       
-      
-     
-      setFormData({
-        centreId: "",
-        examName: "",
-        examDate: "",
-        district: "",
-        blocks: [],
-        app_state: formData.app_state,
-      });
-      setShowForm(false);
-      setMessage("✅ Exam Created and Students Assigned Successfully");
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      
-      if (error.response) {
-        if (error.response.status === 400) {
-          setMessage(`❌ ${error.response.data.error || "Missing required fields"}`);
-        } else if (error.response.status === 404) {
-          setMessage(`❌ ${error.response.data.message || "No applicants found for selected blocks"}`);
-        } else if (error.response.status === 409) {
-          setMessage(`❌ ${error.response.data.message || "Conflict with existing data"}`);
-        } else {
-          setMessage(`❌ Server error: ${error.response.data.message || "Unknown error"}`);
-        }
-      } else if (error.request) {
-        setMessage("❌ No response from server. Check your connection.");
-      } else {
-        setMessage(`❌ Error: ${error.message}`);
-      }
-    } finally {
-      setLoading(false);
+    // Fetch updated exam list after creation
+    const updatedExamsResponse = await axios.get("http://localhost:5000/api/exams");
+    setEntries(updatedExamsResponse.data);
+
+    setFormData({
+      centreId: "",
+      examName: "",
+      examDate: "",
+      app_state: formData.app_state,
+      // Do not reset district or blocks here
+    });
+    setShowForm(false);
+    setMessage("✅ Exam Created Successfully"); // Change message as appropriate
+  } catch (error) {
+    console.error("Error submitting form:", error);
+    if (error.response) {
+      setMessage(`❌ ${error.response.data.error || "Missing required fields"}`);
+    } else if (error.request) {
+      setMessage("❌ No response from server. Check your connection.");
+    } else {
+      setMessage(`❌ Error: ${error.message}`);
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
      //delete centre done
   const deleteExam = async (examId) => {
     try {
-      await axios.delete(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/${examId}`);
+      await axios.delete(`http://localhost:5000/api/exams/${examId}`);
       // Fetch updated exam list after deletion
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams`);
+      const response = await axios.get("http://localhost:5000/api/exams");
       setEntries(response.data);
       setMessage("✅ Exam deleted successfully");
     } catch (err) {
@@ -230,7 +215,7 @@ useEffect(() => {
   //create centre done
   const createCentre = async () => {
     try {
-      const res = await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/exam-centres`, {
+      const res = await axios.post("http://localhost:5000/api/exams/exam-centres", {
         pp_exam_centre_name: newCentreName,
       });
       setCentres([...centres, res.data]);
@@ -244,7 +229,7 @@ useEffect(() => {
   //delete the centre done
   const deleteCentre = async (id) => {
     try {
-      await axios.delete(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/exam-centres/${id}`);
+      await axios.delete(`http://localhost:5000/api/exams/exam-centres/${id}`);
       setCentres(centres.filter((c) => c.pp_exam_centre_id !== id));
       if (formData.centreId === id) {
         setFormData({ ...formData, centreId: "" });
@@ -264,7 +249,7 @@ useEffect(() => {
 
 const toggleFreezeExam = async (examId) => {
   try {
-    const response = await fetch(`${process.env.REACT_APP_BACKEND_API_URL}/api/exams/${examId}/freeze`, {
+    const response = await fetch(`http://localhost:5000/api/exams/${examId}/freeze`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

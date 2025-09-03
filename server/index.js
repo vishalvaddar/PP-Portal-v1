@@ -45,6 +45,7 @@ const shortlistInfoRoutes = require("./routes/shortlistInfoRoutes");
 const batchRoutes = require("./routes/batchRoutes");
 const userRoleRoutes = require("./routes/userRoleRoutes");
 const examRoutes = require("./routes/examRoutes");
+const evaluationRoutes =require('./routes/evaluationRoutes');
 const studentSearchRoutes = require("./routes/studentSearchRoutes");
 const timetableRoutes = require("./routes/timeTableRoutes");
 const interviewRoutes = require("./routes/interviewRoutes"); // <-- From feature branch
@@ -81,6 +82,9 @@ app.use("/api/student", studentRoutes);
 
 // Exams
 app.use("/api/exams", examRoutes);
+
+//evaluation
+app.use('/evaluation',evaluationRoutes)
 
 // Interview <-- From feature branch
 app.use("/api/interview", interviewRoutes);

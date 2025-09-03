@@ -104,6 +104,29 @@ async function getAllExams() {
     return result.rows;
 }
 
+async function getAllExamsnotassigned() {
+  const result = await pool.query(`
+    SELECT
+      e.exam_id,
+      e.exam_name,
+      e.exam_date,
+      e.frozen_yn,
+      e.pp_exam_centre_id,
+      c.pp_exam_centre_name
+    FROM pp.examination e
+    LEFT JOIN pp.pp_exam_centre c ON e.pp_exam_centre_id = c.pp_exam_centre_id
+    WHERE NOT EXISTS (
+      SELECT 1
+      FROM pp.applicant_exam ae
+      WHERE ae.exam_id = e.exam_id
+    )
+    ORDER BY e.exam_date DESC;
+  `);
+  return result.rows;
+}
+
+
+
 async function deleteExamById(examId) {
     await pool.query("BEGIN");
     await pool.query("DELETE FROM pp.applicant_exam WHERE exam_id = $1", [examId]);
@@ -120,5 +143,6 @@ module.exports = {
     getBlocksByDistrict,
     getUsedBlocks,
     getAllExams,
+    getAllExamsnotassigned,
     deleteExamById
 };
