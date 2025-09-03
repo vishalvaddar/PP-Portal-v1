@@ -3,8 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import classes from "./EditForm.module.css";
 
-// Renamed component to EditStudent
-const EditStudent = () => {
+const EditForm = () => {
   const { nmms_reg_number } = useParams();
   const navigate = useNavigate(); // Added useNavigate
   const [formData, setFormData] = useState(null);
@@ -677,4 +676,4 @@ const EditStudent = () => {
   );
 };
 
-export default EditStudent;
+export default EditForm;

@@ -89,7 +89,6 @@ const Students = () => {
 
   const fetchStudents = useCallback(async (currentFilters = {}) => {
     setLoading(true);
-    console.log("Sending filters:", currentFilters);
     setError(null);
     try {
       const { data } = await axios.get(
