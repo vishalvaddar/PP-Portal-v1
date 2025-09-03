@@ -47,8 +47,9 @@ const userRoleRoutes = require("./routes/userRoleRoutes");
 const examRoutes = require("./routes/examRoutes");
 const studentSearchRoutes = require("./routes/studentSearchRoutes");
 const timetableRoutes = require("./routes/timeTableRoutes");
+const interviewRoutes = require("./routes/interviewRoutes"); // <-- From feature branch
 
-// Use Routes
+// ───── Use Routes ─────
 app.use("/auth", authRoutes);
 
 // Applicant Management
@@ -81,9 +82,11 @@ app.use("/api/student", studentRoutes);
 // Exams
 app.use("/api/exams", examRoutes);
 
-// Timetable <-- USE NEW TIMETABLE ROUTES
-app.use("/api/timetable", timetableRoutes);
+// Interview <-- From feature branch
+app.use("/api/interview", interviewRoutes);
 
+// Timetable <-- From main branch
+app.use("/api/timetable", timetableRoutes);
 
 // 404 Handler for unknown routes
 app.use((req, res) => {
