@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 5000;
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+    fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
 // ───── Middleware ─────
@@ -25,69 +25,75 @@ app.use("/logs", express.static(path.join(__dirname, "logs")));
 app.use("/halltickets", express.static(path.join(__dirname, "public", "halltickets")));
 
 // ───── Routes ─────
+// Import Routes
 const authRoutes = require("./routes/authRoutes");
 const adminDashboardRoutes = require("./routes/adminDashboardRoutes");
 const coordinatorRoutes = require("./routes/coordinatorRoutes");
 const studentRoutes = require("./routes/studentRoutes");
-
 const applicantCreateRoutes = require("./routes/applicantCreateRoutes");
 const applicantViewRoutes = require("./routes/applicantViewRoutes");
 const applicantUpdateRoutes = require("./routes/applicantUpdateRoutes");
 const applicantDeleteRoutes = require("./routes/applicantDeleteRoutes");
-
 const bulkUploadRoutes = require("./routes/bulkUploadRoutes");
 const searchRoutes = require("./routes/searchRoutes");
 const jurisdictionRoutes = require("./routes/jurisdictionRoutes");
 const districtRoutes = require("./routes/districtRoutes");
 const institutesRoutes = require("./routes/institutesRoutes");
 const jurisNamesRoutes = require("./routes/jurisNames");
-
 const generateShortlistRoutes = require("./routes/generateShortlistRoutes");
 const shortlistInfoRoutes = require("./routes/shortlistInfoRoutes");
-
 const batchRoutes = require("./routes/batchRoutes");
 const userRoleRoutes = require("./routes/userRoleRoutes");
 const examRoutes = require("./routes/examRoutes");
 const studentSearchRoutes = require("./routes/studentSearchRoutes");
+const timetableRoutes = require("./routes/timeTableRoutes");
+const interviewRoutes = require("./routes/interviewRoutes"); // <-- From feature branch
 
-const examCentres = require('./routes/examRoutes');
-
-const interviewRoutes = require('./routes/interviewRoutes'); 
-
+// ───── Use Routes ─────
 app.use("/auth", authRoutes);
 
+// Applicant Management
 app.use("/api/applicants", applicantCreateRoutes);
 app.use("/api/applicants", applicantViewRoutes);
 app.use("/api/applicants/update", applicantUpdateRoutes);
 app.use("/api/applicants/delete", applicantDeleteRoutes);
 
+// Data & Utilities
 app.use("/api/batches", batchRoutes);
 app.use("/api", userRoleRoutes);
 app.use("/api/upload", bulkUploadRoutes);
 app.use("/api/bulk-upload", bulkUploadRoutes);
 app.use("/api", searchRoutes);
 app.use("/api", jurisdictionRoutes);
-app.use("/api/shortlist/generate", generateShortlistRoutes);
-app.use("/api/shortlist-info", shortlistInfoRoutes);
-
 app.use("/api/juris-names", jurisNamesRoutes);
 app.use("/api/institutes", institutesRoutes);
 app.use("/api/districts", districtRoutes);
+app.use("/api", studentSearchRoutes);
 
+// Shortlisting
+app.use("/api/shortlist/generate", generateShortlistRoutes);
+app.use("/api/shortlist-info", shortlistInfoRoutes);
+
+// Dashboards & Roles
 app.use("/api/admin-dashboard", adminDashboardRoutes);
 app.use("/api/coordinator", coordinatorRoutes);
 app.use("/api/student", studentRoutes);
+
+// Exams
 app.use("/api/exams", examRoutes);
-app.use("/api", studentSearchRoutes);
 
-app.use('/api/interview', interviewRoutes); 
+// Interview <-- From feature branch
+app.use("/api/interview", interviewRoutes);
 
+// Timetable <-- From main branch
+app.use("/api/timetable", timetableRoutes);
 
+// 404 Handler for unknown routes
 app.use((req, res) => {
-  res.status(404).json({ error: "Route not found" });
+    res.status(404).json({ error: "Route not found" });
 });
 
 // ───── Start Server ─────
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
