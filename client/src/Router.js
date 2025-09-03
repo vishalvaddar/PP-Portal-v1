@@ -22,11 +22,11 @@ import Reports from "./pages/Admin/Reports";
 import UserRoles from "./pages/Admin/UserRoles";
 import System from "./pages/Admin/System";
 import MyProfile from "./pages/Admin/MyProfile";
-import CreateExam from "./pages/Admin/CreateExam";
+import CreateExam from "./pages/Admin/Exam/CreateExam";
 import TimeTableDashboard from "./pages/Admin/TimeTableDashboard";
-      //Admin-Evaluation pages
-      import EvaluationDashboard from "./pages/Admin/Evaluation/EvaluationDashboard";
-      import EvaluationMarksEntry from "./pages/Admin/Evaluation/EvaluatioinMarksEntry";
+ //Admin-Evaluation pages
+ import EvaluationDashboard from "./pages/Admin/Evaluation/EvaluationDashboard";
+import EvaluationMarksEntry from "./pages/Admin/Evaluation/EvaluationMarksEntry";
       import EvaluationInterview from "./pages/Admin/Evaluation/EvaluationInterview";
       import EvaluationTracking from "./pages/Admin/Evaluation/EvaluationTracking";
 

@@ -8,6 +8,7 @@ const {
     getBlocksByDistrict,
     getUsedBlocks,
     getAllExams,
+    getAllExamsnotassigned,
     deleteExamById
 } = require('../models/examModels');
 const PDFDocument = require('pdfkit');
@@ -99,6 +100,15 @@ const fetchUsedBlocks = async (req, res) => {
 };
 
 // Exam Controllers
+const fetchAllExamsnotassigned = async (req, res) => {
+    try {
+        const exams = await getAllExamsnotassigned();
+        res.json(exams);
+    } catch (error) {
+        console.error("Error fetching exams:", error);
+        res.status(500).json({ message: "Failed to fetch exams" });
+    }
+};
 const fetchAllExams = async (req, res) => {
     try {
         const exams = await getAllExams();
@@ -240,12 +250,20 @@ async function generateStudentList(req, res) {
     const logoPath = path.join(__dirname, '../../client/src/assets/logo.png');
 
     const result = await pool.query(`
-      SELECT ae.pp_hall_ticket_no, api.student_name, api.current_institute_dise_code, 
-             api.contact_no1, api.contact_no2,ee.exam_name
-             from pp.examination ee join 
-       pp.applicant_exam ae on ee.exam_id = ae.exam_id
-      JOIN pp.applicant_primary_info api ON ae.applicant_id = api.applicant_id
-      WHERE ae.exam_id = $1
+     SELECT 
+  ae.pp_hall_ticket_no, 
+  api.student_name, 
+  api.current_institute_dise_code, 
+  api.contact_no1, 
+  api.contact_no2,
+  ee.exam_name, 
+  ee.exam_date,
+  ec.pp_exam_centre_name
+FROM pp.examination ee
+JOIN pp.applicant_exam ae ON ee.exam_id = ae.exam_id
+JOIN pp.applicant_primary_info api ON ae.applicant_id = api.applicant_id
+JOIN pp.pp_exam_centre ec ON ee.pp_exam_centre_id = ec.pp_exam_centre_id
+WHERE ae.exam_id = $1
     `, [examId]);
 
     if (result.rows.length === 0) {
@@ -348,7 +366,7 @@ stream.on('finish', () => {
   }
 }
 
-
+// async function generateStudentList(req, res)
 async function downloadAllHallTickets(req, res) {
   const examId = req.params.examId;
   const dirPath = path.join(__dirname, `../public/halltickets`);
@@ -364,7 +382,7 @@ async function downloadAllHallTickets(req, res) {
     const archive = archiver('zip', { zlib: { level: 9 } });
 
     // Set response headers
-    res.setHeader('Content-Disposition', `attachment; filename=_Hall_Tickets_${examId}.zip`);
+    res.setHeader('Content-Disposition', `attachment; filename=All_Hall_Tickets_${examId}.zip`);
     res.setHeader('Content-Type', 'application/zip');
 
     // Pipe archive to the response
@@ -712,7 +730,7 @@ doc.text("Seal", 50 + (boxWidth + gap) * 3, signatureY + boxPadding + 15, {
     res.status(500).json({ message: "Failed to generate hall tickets", error: error.message });
   }
 }
-
+// async function downloadAllHallTickets(req, res)
 
 const freezeExam = async (req, res) => {
   const { examId } = req.params;
@@ -730,6 +748,107 @@ const freezeExam = async (req, res) => {
   }
 };
 
+// Create only the exam – does not assign applicants
+async function createExamOnly(req, res) {
+  const { centreId, examName, date } = req.body;
+
+  if (!centreId || !examName || !date) {
+    return res.status(400).json({ error: "Missing required fields." });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    const examInsertResult = await client.query(
+      `INSERT INTO pp.examination (exam_name, exam_date, pp_exam_centre_id)
+       VALUES ($1, $2, $3) RETURNING exam_id`,
+      [examName, date, centreId]
+    );
+    const examId = examInsertResult.rows[0].exam_id;
+
+    await client.query("COMMIT");
+
+    res.status(201).json({ message: "Exam created", examId });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error(error);
+    res.status(500).json({ message: "Server error.", error: error.message });
+  } finally {
+    client.release();
+  }
+}
+
+// Assign applicants to an existing exam
+async function assignApplicantsToExam(req, res) {
+  const { examId } = req.params;
+  const { district, blocks } = req.body;
+
+  if (!examId || !district || !blocks || !Array.isArray(blocks) || blocks.length === 0) {
+    return res.status(400).json({ error: "Missing required fields." });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // Check if exam exists (optional)
+    const examExists = await client.query(
+      `SELECT exam_id FROM pp.examination WHERE exam_id = $1`,
+      [examId]
+    );
+    if (examExists.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ error: "Exam does not exist." });
+    }
+
+    // Fetch shortlisted applicants from given blocks
+    const applicantsResult = await client.query(
+      `SELECT DISTINCT api.applicant_id, api.student_name, api.father_name, api.mother_name, api.dob, api.aadhaar, api.current_institute_dise_code, api.contact_no1, api.contact_no2, api.nmms_block
+       FROM pp.applicant_primary_info api
+       JOIN pp.applicant_shortlist_info si ON api.applicant_id = si.applicant_id
+       WHERE api.nmms_block = ANY($1) AND si.shortlisted_yn = 'Y'`,
+      [blocks]
+    );
+    const applicants = applicantsResult.rows;
+    if (applicants.length === 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ message: "No applicants found for the selected blocks." });
+    }
+
+    // Generate hall tickets and insert into applicant_exam
+    for (const applicant of applicants) {
+      const hallTicketNo = `25${applicant.applicant_id}`;
+      await client.query(
+        `INSERT INTO pp.applicant_exam (applicant_id, exam_id, pp_hall_ticket_no)
+         VALUES ($1, $2, $3)`,
+        [applicant.applicant_id, examId, hallTicketNo]
+      );
+      // (PDF generation can be left as per your original logic)
+    }
+
+    await client.query("COMMIT");
+
+    res.status(201).json({
+      message: "Applicants assigned successfully ✅",
+      examId,
+      applicants: applicants.map(applicant => ({
+        applicant_id: applicant.applicant_id,
+        applicant_name: applicant.student_name,
+        hall_ticket_no: `25${applicant.applicant_id}`
+      }))
+    });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error(error);
+    res.status(500).json({ message: "Server error.", error: error.message });
+  } finally {
+    client.release();
+  }
+}
+
+
+
 
 
 module.exports = {
@@ -746,12 +865,17 @@ module.exports = {
     
     // Exam exports
     fetchAllExams,
+    fetchAllExamsnotassigned,
     deleteExam,
+    
     
     // Existing exports
     createExamAndAssignApplicants,
     generateStudentList,
     downloadAllHallTickets,
-    freezeExam 
+    freezeExam,
+
+    createExamOnly,
+    assignApplicantsToExam
 };
 
