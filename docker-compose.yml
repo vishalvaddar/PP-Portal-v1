@@ -3,7 +3,7 @@ services:
   client:
     build: ./client
     ports:
-      - "80:80"   # Nginx serves frontend
+      - "80:80"
     depends_on:
       - server
 
@@ -14,8 +14,11 @@ services:
     environment:
       - DB_HOST=db
       - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_NAME=pp_portal
+      - DB_PASSWORD=1234
+      - DB_NAME=pp_portal_db
+      - DB_PORT=5432
+      - JWT_SECRET=your_secure_jwt_secret_here
+      - DB_CONNECTION_STRING=postgres://postgres:1234@db:5432/pp_portal_db
     depends_on:
       - db
 
@@ -23,12 +26,22 @@ services:
     image: postgres:15
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: pp_portal
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: pp_portal_db
     volumes:
       - db_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@pp.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
 
 volumes:
   db_data:
