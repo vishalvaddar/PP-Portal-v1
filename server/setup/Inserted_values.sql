@@ -1,7 +1,8 @@
 -- Insert into pp.user
 
-INSERT INTO pp.user (user_name, enc_password, locked_yn)
-  VALUES ('admin1', '$2b$10$pOiCjyrD8qzI7ItiZ.8c3uA3/s54TRsVMWNdiWw8mE9M8p4BdXuvO', 'N');
+INSERT INTO pp."user" (user_name, enc_password, locked_yn)
+VALUES ('admin1', '$2b$10$pOiCjyrD8qzI7ItiZ.8c3uA3/s54TRsVMWNdiWw8mE9M8p4BdXuvO', 'N');
+
 
 -- INSERT INTO PP.ROLE
 INSERT INTO PP.ROLE (ROLE_NAME, ACTIVE_YN) VALUES
@@ -12,7 +13,7 @@ INSERT INTO PP.ROLE (ROLE_NAME, ACTIVE_YN) VALUES
 ('INTERVIEWER', 'Y');
 
 -- INSERT INTO PP.USER_ROLE
-INSERT INTO pp.user_role (user_id, role_id) VALUES("user_id" as per ur db, 1)
+INSERT INTO pp.user_role (user_id, role_id) VALUES(1, 1);
 
 
 -- INSERT INTO PP.JURISDICTION_TYPE
