@@ -1,21 +1,10 @@
-  db:
-    image: postgres:15
-    container_name: pp-postgres
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1234
-      POSTGRES_DB: pp_portal_db
-    volumes:
-      - db_data:/var/lib/postgresql/data
-      - ./server/setup/insert_values.sql:/docker-entrypoint-initdb.d/insert_values.sql
+services:
+  client:
+    build: ./client
     ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d pp_portal_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      - "80:80"
+    depends_on:
+      - server
 
   server:
     build: ./server
@@ -30,5 +19,37 @@
       - JWT_SECRET=your_secure_jwt_secret_here
       - DB_CONNECTION_STRING=postgres://postgres:1234@db:5432/pp_portal_db
     depends_on:
-      db:
-        condition: service_healthy
+      - db
+
+  db:
+    image: postgres:15
+    container_name: pp-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: pp_portal_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d pp_portal_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pp-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@pp.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+
+volumes:
+  db_data:
