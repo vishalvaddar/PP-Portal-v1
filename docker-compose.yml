@@ -11,6 +11,8 @@ services:
     build: ./server
     ports:
       - "5001:5000"
+    env_file:
+      - ./server/.env    
     environment:
       - DB_HOST=db
       - DB_USER=postgres
