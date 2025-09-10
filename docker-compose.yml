@@ -1,4 +1,5 @@
 version: "3.9"
+
 services:
   client:
     build: ./client
@@ -10,7 +11,7 @@ services:
   server:
     build: ./server
     ports:
-      - "5000:5000"
+      - "5001:5000"   # map host 5001 → container 5000
     environment:
       - DB_HOST=db
       - DB_USER=postgres
@@ -24,17 +25,24 @@ services:
 
   db:
     image: postgres:15
+    container_name: pp-postgres
+    restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
       POSTGRES_DB: pp_portal_db
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./server/setup/insert_values.sql:/docker-entrypoint-initdb.d/insert_values.sql
+    # Don’t expose Postgres publicly unless needed
+    # If you want external tools to connect, keep this:
     ports:
       - "5432:5432"
 
   pgadmin:
     image: dpage/pgadmin4
+    container_name: pp-pgadmin
+    restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@pp.com
       PGADMIN_DEFAULT_PASSWORD: admin123
