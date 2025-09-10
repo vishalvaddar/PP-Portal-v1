@@ -1,3 +1,4 @@
+version: "3.9"
 
 services:
   client:
@@ -12,17 +13,10 @@ services:
     ports:
       - "5001:5000"
     env_file:
-      - ./server/.env    
-    environment:
-      - DB_HOST=db
-      - DB_USER=postgres
-      - DB_PASSWORD=1234
-      - DB_NAME=pp_portal_db
-      - DB_PORT=5432
-      - JWT_SECRET=your_secure_jwt_secret_here
-      - DB_CONNECTION_STRING=postgres://postgres:1234@db:5432/pp_portal_db
+      - ./server/.env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:15
@@ -34,8 +28,9 @@ services:
       POSTGRES_DB: pp_portal_db
     volumes:
       - db_data:/var/lib/postgresql/data
+    # you can remove the ports section if you don’t need to connect from outside VPS
     ports:
-      - "5432:5432"   # optional, remove if DB should be internal only
+      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d pp_portal_db"]
       interval: 5s
