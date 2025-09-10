@@ -1,3 +1,4 @@
+
 services:
   client:
     build: ./client
@@ -32,24 +33,13 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5432:5432"   # optional, remove if DB should be internal only
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d pp_portal_db"]
       interval: 5s
       timeout: 5s
       retries: 10
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pp-pgadmin
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@pp.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
-    ports:
-      - "5050:80"
-    depends_on:
-      - db
-
 volumes:
   db_data:
+    driver: local
