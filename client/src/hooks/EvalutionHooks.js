@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
+const API_BASE_URL = process.env.REACT_APP_BACKEND_API_URL;
+
 const useEvaluationModule = () => {
   const [examNames, setExamNames] = useState([]);
   const [responseData, setResponseData] = useState(null);
@@ -9,7 +11,7 @@ const useEvaluationModule = () => {
   useEffect(() => {
     const fetchExamName = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/evaluation/exam_names");
+        const response = await axios.get(`${API_BASE_URL}/evaluation/exam_names`);
         setExamNames(response.data.message || []);
       } catch (error) {
         console.error("Failed to fetch exam name:", error);
@@ -23,7 +25,7 @@ const useEvaluationModule = () => {
     const sendSelectedExam = async () => {
       if (selectedExam) {
         try {
-          const res = await axios.post("http://localhost:5000/evaluation/exam_query", {
+          const res = await axios.post(`${API_BASE_URL}/evaluation/exam_query`, {
             exam_name: selectedExam,
           });
           setResponseData(res.data);
@@ -40,15 +42,15 @@ const useEvaluationModule = () => {
     
     try {
       const response = await axios.post(
-        "http://localhost:5000/evaluation/download_excel",
+        `${API_BASE_URL}/evaluation/download_excel`,
         { exam_name: selectedExam },
-        { responseType: 'blob' }
+        { responseType: "blob" }
       );
       
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', `students_${selectedExam}.xlsx`);
+      link.setAttribute("download", `students_${selectedExam}.xlsx`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -61,40 +63,37 @@ const useEvaluationModule = () => {
 
   const uploadBulkData = async (file) => {
     const formData = new FormData();
-    formData.append('excelFile', file);
+    formData.append("excelFile", file);
 
     try {
       const response = await axios.post(
-        'http://localhost:5000/evaluation/bulk-upload',
+        `${API_BASE_URL}/evaluation/bulk-upload`,
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data'
+            "Content-Type": "multipart/form-data",
           },
-          responseType: 'blob' // Important for file downloads
+          responseType: "blob",
         }
       );
       
-      // Success case
-      console.log('Upload successful:', response.data);
+      console.log("Upload successful:", response.data);
       return { success: true, data: response.data };
-      
     } catch (error) {
       if (error.response && error.response.data instanceof Blob) {
-        // Handle error file download
-        const blob = new Blob([error.response.data], { type: 'text/plain' });
+        const blob = new Blob([error.response.data], { type: "text/plain" });
         const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
+        const link = document.createElement("a");
         link.href = url;
-        link.download = 'upload_errors.txt';
+        link.download = "upload_errors.txt";
         document.body.appendChild(link);
         link.click();
         link.remove();
         window.URL.revokeObjectURL(url);
         
-        throw new Error('Upload failed. Please check the error file for details.');
+        throw new Error("Upload failed. Please check the error file for details.");
       } else {
-        throw new Error('Upload failed: ' + (error.message || 'Unknown error'));
+        throw new Error("Upload failed: " + (error.message || "Unknown error"));
       }
     }
   };
@@ -105,7 +104,7 @@ const useEvaluationModule = () => {
     selectedExam,
     setSelectedExam,
     downloadExcel,
-    uploadBulkData
+    uploadBulkData,
   };
 };
 

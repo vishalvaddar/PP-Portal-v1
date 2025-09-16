@@ -1,20 +1,19 @@
-# Start with a lightweight version of Node.js
-FROM node:20-alpine
+FROM node:18
 
-# Set the working directory inside the container
+# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy dependency files
 COPY package*.json ./
 
-# Install only production dependencies to keep the image small
-RUN npm install --only=production
+# Install dependencies
+RUN npm install --production
 
-# Copy the rest of your application's source code
+# Copy source code
 COPY . .
 
-# Expose the port your backend runs on (e.g., 3000)
+# Expose backend port
 EXPOSE 5000
 
-# Command to run your application
+# Start app
 CMD ["node", "index.js"]
