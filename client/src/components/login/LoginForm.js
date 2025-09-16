@@ -34,7 +34,7 @@ const LoginForm = () => {
         password: credentials.password,
       });
 
-      const { roles, user_id, user_name } = response.data;
+      const { roles, user_name } = response.data;
 
       if (roles?.length === 1) {
         // If only one role, auto-select and proceed to next step
