@@ -79,7 +79,8 @@ const downloadStudentExcel = asyncHandler(async (req, res) => {
             { header: 'Neighbor Name', key: 'neighbor_name', width: 20 },
             { header: 'Neighbor Phone', key: 'neighbor_phone', width: 15 },
             { header: 'Favorite Teacher Name', key: 'favorite_teacher_name', width: 25 },
-            { header: 'Favorite Teacher Phone', key: 'favorite_teacher_phone', width: 15 }
+            { header: 'Favorite Teacher Phone', key: 'favorite_teacher_phone', width: 15 },
+            {header: 'Exam cleared Y/N', key: 'pp_exam_cleared', width: 15}
         ];
         
         // Add data
@@ -108,7 +109,8 @@ const downloadStudentExcel = asyncHandler(async (req, res) => {
                 neighbor_name: student.neighbor_name,
                 neighbor_phone: student.neighbor_phone,
                 favorite_teacher_name: student.favorite_teacher_name,
-                favorite_teacher_phone: student.favorite_teacher_phone
+                favorite_teacher_phone: student.favorite_teacher_phone,
+                pp_exam_cleared:student.pp_exam_cleared
             });
         });
         
@@ -194,7 +196,8 @@ const uploadBulkData = asyncHandler(async (req, res) => {
       NEIGHBOR_NAME: 21,     // U
       NEIGHBOR_PHONE: 22,    // V
       FAV_TEACHER_NAME: 23,  // W
-      FAV_TEACHER_PHONE: 24  // X
+      FAV_TEACHER_PHONE: 24,
+      PP_EXAM_CLEARED:25  // X
     };
 
     worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
@@ -234,6 +237,7 @@ const uploadBulkData = asyncHandler(async (req, res) => {
             neighbor_phone: safeString(row, COLUMNS.NEIGHBOR_PHONE),
             favorite_teacher_name: safeString(row, COLUMNS.FAV_TEACHER_NAME),
             favorite_teacher_phone: safeString(row, COLUMNS.FAV_TEACHER_PHONE)
+            
           };
 
           secondaryInfoData.push(secondaryInfo);
@@ -241,7 +245,8 @@ const uploadBulkData = asyncHandler(async (req, res) => {
           // Prepare exam results data
           examResultsData.push({
             applicant_id: applicantId,
-            pp_exam_score: safeFloat(row, COLUMNS.EXAM_SCORE, 0)
+            pp_exam_score: safeFloat(row, COLUMNS.EXAM_SCORE, 0),
+            pp_exam_cleared:safeYN(row,COLUMNS.PP_EXAM_CLEARED)
           });
 
           // Prepare exam attendance data
@@ -368,34 +373,3 @@ module.exports ={
      upload
 }
 
-const handleBulkUpload = async (selectedFile) => {
-  try {
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-
-    const response = await axios.post('/evaluation/upload-bulk', formData, {
-      responseType: 'blob' // Important for file downloads
-    });
-
-    // Success case
-    console.log('Upload successful:', response.data);
-
-  } catch (error) {
-    if (error.response && error.response.data instanceof Blob) {
-      // Handle error file download
-      const blob = new Blob([error.response.data], { type: 'text/plain' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'upload_errors.txt';
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-
-      alert('Upload failed. Please check the error file for details.');
-    } else {
-      alert('Upload failed: ' + error.message);
-    }
-  }
-};
