@@ -53,6 +53,7 @@ const studentSearchRoutes = require("./routes/studentSearchRoutes");
 const examCentres = require('./routes/examRoutes');
 
 const interviewRoutes = require('./routes/interviewRoutes'); 
+const evaluationDashboard = require('./routes/evaluationDashboardRoutes');
 
 app.use("/auth", authRoutes);
 
@@ -81,7 +82,7 @@ app.use("/api/exams", examRoutes);
 app.use("/api", studentSearchRoutes);
 
 app.use('/api/interview', interviewRoutes); 
-
+app.use('/api/evaluation-dashboard',evaluationDashboard)
 
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
@@ -91,3 +92,6 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
+
+
+
