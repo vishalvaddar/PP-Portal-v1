@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  client:
+    build: ./client
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+
+  server:
+    build: ./server
+    ports:
+      - "5001:5000"
+    env_file:
+      - ./server/.env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:15
+    container_name: pp-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: pp_portal_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    # you can remove the ports section if you don’t need to connect from outside VPS
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d pp_portal_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db_data:
+    driver: local

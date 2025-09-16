@@ -20,14 +20,15 @@ const loginController = async (req, res) => {
   try {
     // Step 3: Query user and their roles
     const query = `
-      SELECT u.user_id, u.user_name, u.enc_password, r.role_name
-      FROM pp.user u
-      JOIN pp.user_role ur ON u.user_id = ur.user_id
-      JOIN pp.role r ON ur.role_id = r.role_id
-      WHERE LOWER(u.user_name) = LOWER($1)
-        AND u.locked_yn = 'N'
-        AND r.active_yn = 'Y';
-    `;
+  SELECT u.user_id, u.user_name, u.enc_password, r.role_name
+  FROM "pp"."user" u
+  JOIN "pp"."user_role" ur ON u.user_id = ur.user_id
+  JOIN "pp"."role" r ON ur.role_id = r.role_id
+  WHERE LOWER(u.user_name) = LOWER($1)
+    AND u.locked_yn = 'N'
+    AND r.active_yn = 'Y';
+`;
+
 
     const result = await pool.query(query, [user_name]);
 
