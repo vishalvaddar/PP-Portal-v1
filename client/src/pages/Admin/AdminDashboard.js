@@ -7,9 +7,7 @@ const AdminDashboard = () => {
   return (
     <div className={styles.container}>
       <h1 className={styles.heading}>Dashboard</h1>
-      <p className={styles.subheading}>Welcome to Pratibha Poshak Portal - NGO Administrative System</p>
-      <p>This is test.</p>
-      <p>This is another test.</p>
+      <p className={styles.subheading}>Welcome to RCF-Pratibha Poshak - IMAS Portal</p>
       <div className={styles.statsGrid}>
         <StatCard title="Total Applications" value="2,847" icon={<FileText size={24} />} change="+12%" />
         <StatCard title="Active Students" value="1,245" icon={<UserCheck size={24} />} change="+8%" />

@@ -15,11 +15,15 @@ const {
     
     // Exam routes
     fetchAllExams,
+    fetchAllExamsnotassigned,
     createExamAndAssignApplicants,
     generateStudentList,
     deleteExam,
     downloadAllHallTickets,
-    freezeExam
+    freezeExam,
+
+    createExamOnly,
+    assignApplicantsToExam
 } = require('../controllers/examControllers');
 
 // Exam Centre Routes
@@ -34,12 +38,20 @@ router.get("/blocks-by-district/:districtId", fetchBlocksByDistrict);
 router.get("/used-blocks", fetchUsedBlocks);
 
 // Exam Routes
-router.get("/", fetchAllExams);
-router.post("/create", createExamAndAssignApplicants);
+router.get("/notassigned", fetchAllExamsnotassigned);
+router.get("/assigned", fetchAllExams);
+// router.post("/create", createExamAndAssignApplicants);
 router.get("/:examId/student-list", generateStudentList);
 router.delete("/:examId", deleteExam);
 router.get("/:examId/download-all-hall-tickets", downloadAllHallTickets);
 router.put("/:examId/freeze", freezeExam);
+
+//changed data
+router.post("/create", createExamOnly); // Only create the exam, no applicant assignment
+router.post("/:examId/assign-students", assignApplicantsToExam); // Assign applicants to an existing exam
+
+
+
 
 // GET /api/exams/count?centreId=1&date=2025-07-30
 router.get("/count", async (req, res) => {

@@ -62,7 +62,8 @@ const studentSearchController = async (req, res) => {
         sm.gender,
         b.batch_name,
         c.cohort_name,
-        api.nmms_year
+        api.nmms_year,
+        api.nmms_reg_number
       ${baseQuery}
       ${whereClause}
       ORDER BY sm.student_name ASC, sm.student_id ASC

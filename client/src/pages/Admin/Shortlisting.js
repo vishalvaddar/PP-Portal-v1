@@ -80,11 +80,12 @@ const Shortlisting = () => {
     <div className={styles.dashboardContainer}>
       <Breadcrumbs path={currentPath} nonLinkSegments={['Admin', 'Admissions']} />
       <header className={styles.header}>
-        <div className={styles.titleContainer}>
-          <ScrollText size={28} className={styles.titleIcon} />
-          <h1 className={styles.title}>Shortlisting Dashboard</h1>
+        <div className={styles.titleWrapper}>
+          <div className={styles.titleContainer}>
+            <ScrollText size={28} className={styles.titleIcon} />
+            <h1 className={styles.title}>Shortlisting Dashboard</h1>
+          </div>
         </div>
-        <p className={styles.subtitle}>Manage student selection process efficiently</p>
       </header>
 
       <main className={styles.contentWrapper}>
