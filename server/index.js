@@ -53,7 +53,7 @@ const resultandrankinkRoutes =require("./routes/resultandrankinkRoutes")
 
 const examCentres = require('./routes/examRoutes');
 
-const interviewRoutes = require('./routes/interviewRoutes'); 
+// const interviewRoutes = require('./routes/interviewRoutes'); 
 const evaluationDashboard = require('./routes/evaluationDashboardRoutes');
 
 app.use("/auth", authRoutes);
@@ -114,5 +114,5 @@ app.listen(PORT, () => {
 
 
 
-    console.log(`🚀 Server running at http://localhost:${PORT}`);
-});
+//     console.log(`🚀 Server running at http://localhost:${PORT}`);
+// });
