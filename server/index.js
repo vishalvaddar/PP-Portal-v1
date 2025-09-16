@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 5000;
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
+  fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
 // ───── Middleware ─────
@@ -20,12 +20,14 @@ app.use(cors({ origin: "*" }));
 app.use(bodyParser.json());
 
 // ───── Static Files ─────
-app.use("/uploads/profile_photos", express.static(path.join(__dirname, "uploads", "profile_photos")));
+app.use(
+  "/uploads/profile_photos",
+  express.static(path.join(__dirname, "uploads", "profile_photos"))
+);
 app.use("/logs", express.static(path.join(__dirname, "logs")));
 app.use("/halltickets", express.static(path.join(__dirname, "public", "halltickets")));
 
 // ───── Routes ─────
-// Import Routes
 const authRoutes = require("./routes/authRoutes");
 const adminDashboardRoutes = require("./routes/adminDashboardRoutes");
 const coordinatorRoutes = require("./routes/coordinatorRoutes");
@@ -45,16 +47,13 @@ const shortlistInfoRoutes = require("./routes/shortlistInfoRoutes");
 const batchRoutes = require("./routes/batchRoutes");
 const userRoleRoutes = require("./routes/userRoleRoutes");
 const examRoutes = require("./routes/examRoutes");
-const evaluationRoutes =require('./routes/evaluationRoutes');
+const evaluationRoutes = require("./routes/evaluationRoutes");
+const evaluationDashboardRoutes = require("./routes/evaluationDashboardRoutes");
 const studentSearchRoutes = require("./routes/studentSearchRoutes");
 const timetableRoutes = require("./routes/timeTableRoutes");
-const interviewRoutes = require("./routes/interviewRoutes"); // <-- From feature branch
+const interviewRoutes = require("./routes/interviewRoutes");
 
-const examCentres = require('./routes/examRoutes');
-
-const interviewRoutes = require('./routes/interviewRoutes'); 
-const evaluationDashboard = require('./routes/evaluationDashboardRoutes');
-
+// ───── Use Routes ─────
 app.use("/auth", authRoutes);
 
 // Applicant Management
@@ -84,32 +83,23 @@ app.use("/api/admin-dashboard", adminDashboardRoutes);
 app.use("/api/coordinator", coordinatorRoutes);
 app.use("/api/student", studentRoutes);
 
-// Exams
+// Exams & Evaluation
 app.use("/api/exams", examRoutes);
+app.use("/api/evaluation", evaluationRoutes);
+app.use("/api/evaluation-dashboard", evaluationDashboardRoutes);
 
-app.use('/api/interview', interviewRoutes); 
-app.use('/api/evaluation-dashboard',evaluationDashboard)
-
-//evaluation
-app.use('/evaluation',evaluationRoutes)
-
-// Interview <-- From feature branch
+// Interview
 app.use("/api/interview", interviewRoutes);
 
-// Timetable <-- From main branch
+// Timetable
 app.use("/api/timetable", timetableRoutes);
 
 // 404 Handler for unknown routes
 app.use((req, res) => {
-    res.status(404).json({ error: "Route not found" });
+  res.status(404).json({ error: "Route not found" });
 });
 
 // ───── Start Server ─────
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
-});
-
-
-
-    console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
