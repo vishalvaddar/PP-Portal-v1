@@ -5,11 +5,11 @@ const path = require("path");
 require("dotenv").config();
 const fs = require("fs");
 
-const pool = require("./config/db");
+const pool = require("./config/db"); // Ensure DB connection is working
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Ensure uploads directory exists
+// ───── Ensure Uploads Directory ─────
 const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
@@ -32,30 +32,34 @@ const authRoutes = require("./routes/authRoutes");
 const adminDashboardRoutes = require("./routes/adminDashboardRoutes");
 const coordinatorRoutes = require("./routes/coordinatorRoutes");
 const studentRoutes = require("./routes/studentRoutes");
+
 const applicantCreateRoutes = require("./routes/applicantCreateRoutes");
 const applicantViewRoutes = require("./routes/applicantViewRoutes");
 const applicantUpdateRoutes = require("./routes/applicantUpdateRoutes");
 const applicantDeleteRoutes = require("./routes/applicantDeleteRoutes");
+
 const bulkUploadRoutes = require("./routes/bulkUploadRoutes");
 const searchRoutes = require("./routes/searchRoutes");
 const jurisdictionRoutes = require("./routes/jurisdictionRoutes");
 const districtRoutes = require("./routes/districtRoutes");
 const institutesRoutes = require("./routes/institutesRoutes");
 const jurisNamesRoutes = require("./routes/jurisNames");
+
 const generateShortlistRoutes = require("./routes/generateShortlistRoutes");
 const shortlistInfoRoutes = require("./routes/shortlistInfoRoutes");
+
 const batchRoutes = require("./routes/batchRoutes");
 const userRoleRoutes = require("./routes/userRoleRoutes");
+
 const examRoutes = require("./routes/examRoutes");
 const evaluationRoutes = require("./routes/evaluationRoutes");
 const evaluationDashboardRoutes = require("./routes/evaluationDashboardRoutes");
+
 const studentSearchRoutes = require("./routes/studentSearchRoutes");
 const timetableRoutes = require("./routes/timeTableRoutes");
-const interviewRoutes = require("./routes/interviewRoutes"); // <-- From feature branch
-
-
-const interviewRoutes = require('./routes/interviewRoutes'); 
-const evaluationDashboard = require('./routes/evaluationDashboardRoutes');
+const interviewRoutes = require("./routes/interviewRoutes");
+const resultandrankinkRoutes = require("./routes/resultandrankinkRoutes");
+const systemConfigRoutes = require("./routes/systemConfigRoutes");
 
 // ───── Use Routes ─────
 app.use("/auth", authRoutes);
@@ -93,15 +97,14 @@ app.use("/api/exams", examRoutes);
 app.use("/api/evaluation", evaluationRoutes);
 app.use("/api/evaluation-dashboard", evaluationDashboardRoutes);
 
-// Interview
+// Interviews & Results
 app.use("/api/interview", interviewRoutes);
-
-app.use("/api/resultandrank",resultandrankinkRoutes)
+app.use("/api/resultandrank", resultandrankinkRoutes);
 
 // Timetable
 app.use("/api/timetable", timetableRoutes);
 
-// 404 Handler for unknown routes
+// ───── 404 Handler ─────
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
@@ -109,9 +112,4 @@ app.use((req, res) => {
 // ───── Start Server ─────
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
-});
-
-
-
-    console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
