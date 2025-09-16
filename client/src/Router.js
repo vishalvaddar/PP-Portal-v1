@@ -31,7 +31,7 @@ import EvaluationMarksEntry from "./pages/Admin/Evaluation/EvaluationMarksEntry"
       import EvaluationTracking from "./pages/Admin/Evaluation/EvaluationTracking";
 
 
-// import Results from "./pages/Admin/Results";
+import Resultandrank from "./pages/Admin/Result/Resultandranking"
 
 // Coordinator pages
 import CoordinatorDashboard from "./pages/Coordinator/CoordinatorDashboard";
@@ -73,6 +73,7 @@ export const appRouter = createBrowserRouter([
           { path: "exam-management", element: <CreateExam /> },
           { path: "view-student-info/:nmms_reg_number", element: <ViewStudentInfo /> },
           { path: "view-applications", element: <ViewApplications /> },
+          { path: "results", element: <Resultandrank /> },
           { path: "edit-form/:nmms_reg_number", element: <EditForm /> },
           { path: "evaluation", 
             children:[
@@ -100,7 +101,7 @@ export const appRouter = createBrowserRouter([
         { path: "system", element: <System /> },
       ]},
       // { path: "exam-management", element: <ExamManagement /> },
-      // { path: "results", element: <Results /> },
+       
     ],
   },
   {
