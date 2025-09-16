@@ -17,6 +17,12 @@
   margin-bottom: 0.5rem;
 }
 
+.titleWrapper {
+  display: flex;
+  flex-direction: column; 
+  align-items: flex-start;
+}
+
 .title {
   font-size: 2rem;
   font-weight: 700;

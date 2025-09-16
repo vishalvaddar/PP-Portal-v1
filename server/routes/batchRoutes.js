@@ -11,6 +11,7 @@ router.post("/names", batchCreateController.addBatchName);
 router.get("/cohorts", batchCreateController.getAllCohorts);
 router.post("/cohorts", batchCreateController.createCohort);
 router.get("/cohorts/active", batchCreateController.getActiveCohorts);
+router.get("/:cohort_number/batches", batchCreateController.getBatchesByCohort);
 
 // 🔹 Batch CRUD routes
 // --- (FIXED) Standardized on /:batchId to match the controller ---
@@ -24,6 +25,7 @@ router.delete("/:batchId", batchCreateController.deleteBatch);
 // --- (FIXED) Standardized on /:batchId to match the controller ---
 // router.get("/:batchId/students", batchCreateController.getStudentsInBatch);
 router.get("/:id/students", batchCreateController.getStudentsInBatch);
+router.get("/students/:enr_id", batchCreateController.getStudentsInfoFromBatch);
 
 
 module.exports = router;

@@ -51,7 +51,11 @@ const timetableRoutes = require("./routes/timeTableRoutes");
 const interviewRoutes = require("./routes/interviewRoutes"); // <-- From feature branch
 const resultandrankinkRoutes =require("./routes/resultandrankinkRoutes")
 
-// ───── Use Routes ─────
+const examCentres = require('./routes/examRoutes');
+
+const interviewRoutes = require('./routes/interviewRoutes'); 
+const evaluationDashboard = require('./routes/evaluationDashboardRoutes');
+
 app.use("/auth", authRoutes);
 
 // Applicant Management
@@ -84,6 +88,9 @@ app.use("/api/student", studentRoutes);
 // Exams
 app.use("/api/exams", examRoutes);
 
+app.use('/api/interview', interviewRoutes); 
+app.use('/api/evaluation-dashboard',evaluationDashboard)
+
 //evaluation
 app.use('/evaluation',evaluationRoutes)
 
@@ -102,5 +109,10 @@ app.use((req, res) => {
 
 // ───── Start Server ─────
 app.listen(PORT, () => {
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
+});
+
+
+
     console.log(`🚀 Server running at http://localhost:${PORT}`);
 });

@@ -15,10 +15,10 @@
   display: flex;
   align-items: center;
 }
-
 .header-logo {
-  height: 50px;
-  margin-right: 16px;
+  max-height: 60px;
+  height: auto;
+  margin-right: 20px;
 }
 
 .header-text {
@@ -39,7 +39,7 @@
 }
 
 .logout-button {
-  background-color: #2563eb;
+  background-color: #0C0356;
   color: #fff;
   padding: 8px 16px;
   font-size: 0.9rem;

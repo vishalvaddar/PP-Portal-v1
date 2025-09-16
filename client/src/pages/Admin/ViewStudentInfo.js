@@ -1,27 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import ProfileSection from "../../components/ProfileSection";
+import ProfileField from "../../components/ProfileField";
 import classes from "./ViewStudentInfo.module.css";
 
 const ViewStudentInfo = () => {
   const { nmms_reg_number } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState(null);
   const [secondaryData, setSecondaryData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [photoPreview, setPhotoPreview] = useState("");
   const [institutes, setInstitutes] = useState([]);
-  const [expandedSections, setExpandedSections] = useState({
-    personal: true,
-    address: false,
-    educational: false,
-    family: false,
-    contact: false,
-    transportation: false,
-    teacher: false,
-    property: false
-  });
+  const [expandedSections, setExpandedSections] = useState({});
+
+  const isFromBatches = location.pathname.includes("/batches/view-student-info/");
+  const pageTitle = isFromBatches ? "Student Profile" : "Applicant Profile";
 
   const fieldLabels = {
     nmms_year: "NMMS Year",
@@ -66,7 +63,8 @@ const ViewStudentInfo = () => {
     sat_score: "SAT Score"
   };
 
-  const sections = [
+
+const sections = [
     {
       key: 'personal',
       title: 'Personal Information',
@@ -117,16 +115,6 @@ const ViewStudentInfo = () => {
     }
   ];
 
-  const genderOptions = [
-    { label: "Male", value: "M" },
-    { label: "Female", value: "F" },
-    { label: "Other", value: "O" },
-  ];
-  
-  const yesNoOptions = [
-    { label: "Yes", value: "Y" },
-    { label: "No", value: "N" }
-  ];
 
   useEffect(() => {
     const fetchStudentDetails = async () => {
@@ -220,155 +208,51 @@ const ViewStudentInfo = () => {
     fetchStudentDetails();
   }, [nmms_reg_number]);
 
-  const toggleSection = (section) => {
-    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
-  };
-
-  const getInstituteName = (diseCode) => {
-    if (!diseCode || !institutes || institutes.length === 0) {
-      return diseCode ? `DISE: ${diseCode}` : 'Not specified';
-    }
-    const institute = institutes.find(inst => inst.dise_code === diseCode);
-    return institute ? institute.institute_name : `DISE: ${diseCode}`;
+  const toggleSection = (key) => {
+    setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   const formatValue = (key, value) => {
-    if (value === null || value === undefined || value === '') {
-      return 'Not specified';
-    }
-
-    switch (key) {
-      case 'gender':
-        const genderOption = genderOptions.find(opt => opt.value === value);
-        return genderOption ? genderOption.label : value;
-      
-      case 'own_house':
-      case 'smart_phone_home':
-      case 'internet_facility_home':
-        const yesNoOption = yesNoOptions.find(opt => opt.value === value);
-        return yesNoOption ? yesNoOption.label : value;
-      
-      case 'current_institute_dise_code':
-      case 'previous_institute_dise_code':
-        return getInstituteName(value);
-      
-      case 'DOB':
-        return value ? new Date(value).toLocaleDateString('en-IN') : 'Not specified';
-      
-      case 'family_income_total':
-        return value ? `₹${Number(value).toLocaleString('en-IN')}` : 'Not specified';
-      
-      default:
-        return value;
-    }
-  };
-
-  const getValue = (field) => {
-    return formData?.[field] ?? secondaryData?.[field] ?? '';
+    if (!value) return "Not specified";
+    if (key === "DOB") return new Date(value).toLocaleDateString("en-IN");
+    if (key === "family_income_total") return `₹${Number(value).toLocaleString("en-IN")}`;
+    return value;
   };
 
   const renderField = (field) => {
-    const value = getValue(field);
-    const formattedValue = formatValue(field, value);
-    
-    return (
-      <div className={classes.formGroup} key={field}>
-        <label className={classes.formLabel}>{fieldLabels[field] || field}</label>
-        <div className={classes.formValue}>{formattedValue}</div>
-      </div>
-    );
+    const value = formData?.[field] ?? secondaryData?.[field] ?? "";
+    return <ProfileField key={field} label={fieldLabels[field] || field} value={formatValue(field, value)} />;
   };
 
-  const renderSection = (section) => (
-    <div key={section.key}>
-      <div
-        className={`${classes.sectionHeader} ${expandedSections[section.key] ? classes.expanded : ''}`}
-        onClick={() => toggleSection(section.key)}
-      >
-        <div className={classes.sectionTitle}>
-          <span className={classes.sectionIcon}>{section.icon}</span>
-          <h3>{section.title}</h3>
-        </div>
-        <div className={classes.sectionToggle}>
-          {expandedSections[section.key] ? '−' : '+'}
-        </div>
-      </div>
-      <div className={`${classes.sectionContent} ${expandedSections[section.key] ? classes.visible : ''}`}>
-        <div className={classes.formGrid}>
-          {section.fields.map(field => renderField(field))}
-        </div>
-      </div>
-    </div>
-  );
-
-  if (loading) {
-    return (
-      <div className={classes.container}>
-        <div className={classes.loadingMessage}>
-          <div className={classes.spinner}></div>
-          <p>Loading applicant information...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!formData) {
-    return (
-      <div className={classes.container}>
-        <div className={classes.errorMessage}>
-          <span className={classes.errorIcon}>⚠️</span>
-          <span>{error || `No applicant found with registration number: ${nmms_reg_number}`}</span>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <p>Loading...</p>;
+  if (!formData) return <p>{error || "No applicant found"}</p>;
 
   return (
     <div className={classes.container}>
+      <h1 className={classes.pageTitle}>{pageTitle}</h1>
+
+      {/* Profile Header */}
       <div className={classes.headerSection}>
-        <div className={classes.headerContent}>
-          <h1 className={classes.pageTitle}>Applicant Profile</h1>
-          <div className={classes.studentMeta}>
-            <span className={classes.idLabel}>NMMS Registration No:</span>
-            <span className={classes.idValue}>{nmms_reg_number}</span>
-          </div>
-          <div className={classes.studentIdRow}>
-            <span className={classes.idLabel}>Applicant ID:</span>
-            <span className={classes.idValue}>{formData.applicant_id}</span>
-          </div>
+        <div>
+          <p><strong>NMMS Reg No:</strong> {formData.nmms_reg_number}</p>
+          <p><strong>Applicant ID:</strong> {formData.applicant_id}</p>
         </div>
-        <div className={classes.profileImageContainer}>
-          <img 
-            src={photoPreview} 
-            alt="Applicant Profile" 
-            className={classes.profileImage} 
-            onError={(e) => { 
-              e.target.src = formData.gender === "M" ? "/default-boy.png" : "/default-girl.png"; 
-            }}
-          />
-        </div>
+        <img src={photoPreview} alt="Applicant" className={classes.profileImage} />
       </div>
 
-      {error && (
-        <div className={classes.errorMessage}>
-          <span className={classes.errorIcon}>⚠️</span>
-          <span>{error}</span>
-        </div>
-      )}
+      <button className={classes.editBtn} onClick={() => navigate(`/admin/admissions/edit-form/${nmms_reg_number}`)}>
+        Edit Profile
+      </button>
 
-      <div className={classes.sectionControls}>
-        <button 
-          type="button" 
-          className={classes.editBtn} 
-          onClick={() => navigate(`/admin/admissions/edit-form/${nmms_reg_number}`)}
-        >
-          Edit Profile
-        </button>
-      </div>
-
-      <div className={classes.studentForm}>
-        {sections.map(section => renderSection(section))}
-      </div>
+      {sections.map(section => (
+        <ProfileSection
+          key={section.key}
+          section={section}
+          expanded={expandedSections[section.key]}
+          toggle={toggleSection}
+          renderField={renderField}
+        />
+      ))}
     </div>
   );
 };

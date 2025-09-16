@@ -8,7 +8,6 @@ import classes from "./Batches.module.css";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 
 const Notification = ({ message, type, onDismiss }) => {
-    // ... (component code remains the same)
     if (!message) return null;
     return (
         <div className={`${classes.notification} ${classes[type]}`}>
@@ -21,7 +20,6 @@ const Notification = ({ message, type, onDismiss }) => {
 };
 
 const ConfirmationModal = ({ show, onClose, onConfirm, title, message }) => {
-    // ... (component code remains the same)
     if (!show) return null;
     return (
         <div className={classes.modalOverlay}>
@@ -38,7 +36,7 @@ const ConfirmationModal = ({ show, onClose, onConfirm, title, message }) => {
 };
 
 const Batches = () => {
-    const navigate = useNavigate(); // Initialize navigate
+    const navigate = useNavigate();
     const currentPath = ['Admin', 'Academics', 'Batches'];
     const [batch, setBatch] = useState({
         batch_name: "",
@@ -73,7 +71,6 @@ const Batches = () => {
     const [batchToToggleStatus, setBatchToToggleStatus] = useState(null);
     const [newStatus, setNewStatus] = useState('');
 
-    // --- (REMOVED) State for student list modal is no longer needed ---
 
     const showNotification = (message, type = 'success') => {
         setNotification({ message, type });
@@ -253,7 +250,6 @@ const Batches = () => {
         }
     };
 
-    // --- (MODIFIED) Navigate to the new page instead of opening a modal ---
     const handleViewBatchDetails = (batchId) => {
         navigate(`/admin/academics/batches/${batchId}/students`);
     };
@@ -317,7 +313,6 @@ const Batches = () => {
                 message={`Are you sure you want to ${newStatus === 'Active' ? 'activate' : 'deactivate'} the House "${batchToToggleStatus?.batch_name}"?`}
             />
             
-            {/* --- (REMOVED) StudentListModal is no longer rendered here --- */}
 
             <div className={classes.header}>
                 <h1 className={classes.title}>Batches</h1>
@@ -352,7 +347,6 @@ const Batches = () => {
                         <div className={classes.cardActions}>
                             <button 
                                 className={classes.actionBtn} 
-                                // --- (MODIFIED) Updated onClick handler ---
                                 onClick={() => handleViewBatchDetails(b.id)}
                             >
                                 <Users size={16} /> View Students
@@ -435,8 +429,19 @@ const Batches = () => {
                         <form onSubmit={handleCohortSubmit} className={classes.modalContent}>
                             <div className={classes.formGroup}>
                                 <label>Cohort Name</label>
-                                <input name="cohort_name" value={newCohort.cohort_name} onChange={handleCohortInputChange} className={cohortErrors.cohort_name ? classes.errorInput : ''} />
-                                {cohortErrors.cohort_name && <span className={classes.errorText}>{cohortErrors.cohort_name}</span>}
+                                <input
+                                    name="cohort_name"
+                                    value={newCohort.cohort_name}
+                                    onChange={(e) =>
+                                    handleCohortInputChange({
+                                        target: { name: "cohort_name", value: e.target.value.toUpperCase() },
+                                    })
+                                    }
+                                    className={cohortErrors.cohort_name ? classes.errorInput : ''}
+                                />
+                                {cohortErrors.cohort_name && (
+                                    <span className={classes.errorText}>{cohortErrors.cohort_name}</span>
+                                )}
                             </div>
                             <div className={classes.formGroup}>
                                 <label>Start Date</label>

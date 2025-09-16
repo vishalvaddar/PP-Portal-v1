@@ -352,15 +352,16 @@ exports.updateCohort = async (req, res) => {
     }
 };
 
-
+//12. Students present in the batch.
 exports.getStudentsInBatch = async (req, res) => {
   const { id } = req.params;
 
   try{
     const result = await pool.query(`
-      SELECT sm.*
+      SELECT sm.*, api.nmms_reg_number
       FROM pp.batch b
       JOIN pp.student_master sm ON sm.batch_id = b.batch_id
+      JOIN pp.applicant_primary_info api ON sm.applicant_id = api.applicant_id
       WHERE b.batch_id = $1
     `, [id]);
     res.json(result.rows);
@@ -370,7 +371,8 @@ exports.getStudentsInBatch = async (req, res) => {
   }
 };
 
-//12. Get active cohorts
+
+//13. Get active cohorts
 exports.getActiveCohorts = async (req, res) => {
   try {
     const result = await pool.query(`
@@ -382,5 +384,92 @@ exports.getActiveCohorts = async (req, res) => {
   } catch (err) {
     console.error("Error fetching active cohorts:", err);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+//14.
+exports.getBatchesByCohort = async (req, res) => {
+  try {
+    const { cohort_number } = req.params;
+    if (!cohort_number) {
+      return res.status(400).json({ error: "cohort_number query parameter is required" });
+    }
+
+    const result = await pool.query(`
+      SELECT * 
+      FROM pp.batch
+      WHERE cohort_number = $1
+    `, [cohort_number]);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching batches by cohort:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+
+};
+
+//15. Get students info
+exports.getStudentsInfoFromBatch = async (req, res) => {
+  try {
+    const { enr_id } = req.params;
+
+    const result = await pool.query(
+      `SELECT 
+          sm.enr_id,
+          api.nmms_reg_number,
+          api.nmms_year,
+          api.student_name,
+          api.father_name,
+          api.mother_name,
+          api.gender,
+          api.aadhaar,
+          api.dob,
+          api.medium,
+          api.home_address,
+          api.family_income_total,
+          api.contact_no1,
+          api.contact_no2,
+          api.current_institute_dise_code,
+          api.previous_institute_dise_code,
+          asi.village,
+          asi.father_occupation,
+          asi.mother_occupation,
+          asi.father_education,
+          asi.mother_education,
+          asi.household_size,
+          asi.own_house,
+          asi.smart_phone_home,
+          asi.internet_facility_home,
+          asi.career_goals,
+          asi.subjects_of_interest,
+          asi.transportation_mode,
+          asi.distance_to_school,
+          asi.num_two_wheelers,
+          asi.num_four_wheelers,
+          asi.irrigation_land,
+          asi.neighbor_name,
+          asi.neighbor_phone,
+          asi.favorite_teacher_name,
+          asi.favorite_teacher_phone
+       FROM pp.student_master sm
+       JOIN pp.applicant_primary_info api USING (applicant_id)
+       JOIN pp.applicant_secondary_info asi USING (applicant_id)
+       WHERE sm.enr_id = $1`,
+      [enr_id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    // ✅ Return reg_number explicitly with other fields
+    res.json({
+      reg_number: result.rows[0].nmms_reg_number,
+      ...result.rows[0]
+    });
+  } catch (err) {
+    console.error("Error fetching student info:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
 };

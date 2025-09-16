@@ -15,6 +15,241 @@ const api = {
     reassignStudents: (applicantIds, newInterviewerId, nmmsYear) => axios.post(`${API_BASE_URL}/reassign-students`, { applicantIds, newInterviewerId, nmmsYear }),
     
 };
+api.getStates = () => axios.get(`${API_BASE_URL}/states`);
+api.getDistricts = (stateName) => axios.get(`${API_BASE_URL}/districts/${encodeURIComponent(stateName)}`);
+api.getBlocks = (districtName) => axios.get(`${API_BASE_URL}/blocks/${encodeURIComponent(districtName)}`);
+api.getUnassignedBlockStudents = (stateName, districtName, blockName, nmmsYear) =>
+  axios.get(`${API_BASE_URL}/unassignedStudentsByBlock`, { params: { stateName, districtName, blockName, nmmsYear } });
+
+api.getReassignableBlockStudents = (stateName, districtName, blockName, nmmsYear) =>
+  axios.get(`${API_BASE_URL}/reassignableStudentsByBlock`, { params: { stateName, districtName, blockName, nmmsYear } });
+function BlockAssignmentView() {
+    const [states, setStates] = useState([]);
+    const [districts, setDistricts] = useState([]);
+    const [blocks, setBlocks] = useState([]);
+    const [selectedState, setSelectedState] = useState('');
+    const [selectedDistrict, setSelectedDistrict] = useState('');
+    const [selectedBlock, setSelectedBlock] = useState('');
+    const [assignmentType, setAssignmentType] = useState('');
+    const [students, setStudents] = useState([]);
+    const [selectedStudents, setSelectedStudents] = useState([]);
+    const [selectedInterviewer, setSelectedInterviewer] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [messages, setMessages] = useState([]);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
+    const nmmsYear = new Date().getFullYear();
+
+    useEffect(() => {
+        api.getStates().then(res => setStates(res.data)).catch(() => setStates([]));
+    }, []);
+
+    useEffect(() => {
+        if (selectedState) {
+            api.getDistricts(selectedState).then(res => setDistricts(res.data)).catch(() => setDistricts([]));
+        } else {
+            setDistricts([]);
+            setSelectedDistrict('');
+        }
+    }, [selectedState]);
+
+    useEffect(() => {
+        if (selectedDistrict) {
+            api.getBlocks(selectedDistrict).then(res => setBlocks(res.data)).catch(() => setBlocks([]));
+        } else {
+            setBlocks([]);
+            setSelectedBlock('');
+        }
+    }, [selectedDistrict]);
+
+    useEffect(() => {
+        if (selectedState && selectedDistrict && selectedBlock && assignmentType) {
+            setLoading(true);
+            setStudents([]);
+            setSelectedStudents([]);
+            setMessages([]);
+            setSelectedInterviewer(null);
+            const fetchFn = assignmentType === 'unassigned'
+                ? api.getUnassignedBlockStudents
+                : api.getReassignableBlockStudents;
+            fetchFn(selectedState, selectedDistrict, selectedBlock, nmmsYear)
+                .then(res => setStudents(res.data))
+                .catch(() => setStudents([]))
+                .finally(() => setLoading(false));
+        }
+    }, [selectedState, selectedDistrict, selectedBlock, assignmentType, nmmsYear]);
+
+    const handleStudentSelect = (applicantId, isChecked) => {
+        if (isChecked) {
+            setSelectedStudents(prev => [...prev, applicantId]);
+        } else {
+            setSelectedStudents(prev => prev.filter(id => id !== applicantId));
+        }
+    };
+
+    const handleAssignOrReassign = () => {
+        if (selectedStudents.length === 0) {
+            setMessages(['Please select students.']);
+            return;
+        }
+        if (!selectedInterviewer || !selectedInterviewer.id) {
+            setMessages(['Please select an interviewer.']);
+            return;
+        }
+        setModalMessage(`Are you sure you want to ${assignmentType === 'unassigned' ? 'assign' : 'reassign'} ${selectedStudents.length} student(s) to ${selectedInterviewer.name}?`);
+        setShowConfirmModal(true);
+    };
+
+    const handleConfirm = async () => {
+        setShowConfirmModal(false);
+        setLoading(true);
+        setMessages([]);
+        try {
+            let response;
+            if (assignmentType === 'unassigned') {
+                response = await api.assignStudents(selectedStudents, selectedInterviewer.id, nmmsYear);
+            } else {
+                response = await api.reassignStudents(selectedStudents, selectedInterviewer.id, nmmsYear);
+            }
+            const results = response.data?.results || [];
+            const studentNameMap = new Map();
+            students.forEach(s => studentNameMap.set(s.applicant_id, s.student_name));
+            const feedback = results.map(result => {
+                const name = studentNameMap.get(result.applicantId) || `Applicant ID ${result.applicantId}`;
+                switch (result.status) {
+                    case 'Skipped': return `⚠️ Skipped: ${name} - ${result.reason || 'Reason unknown.'}`;
+                    case 'Assigned': return `✅ Assigned: ${name} has been successfully assigned for Interview Round ${result.interviewRound}.`;
+                    case 'Reassigned': return `✅ Reassigned: ${name} was successfully reassigned for Interview Round ${result.interviewRound}.`;
+                    case 'Failed': return `❌ Failed: ${name} - ${result.reason || 'An unexpected error occurred.'}`;
+                    default: return `ℹ️ Status: ${name} ${result.status}`;
+                }
+            });
+            setMessages(feedback);
+            // Refresh students
+            const fetchFn = assignmentType === 'unassigned'
+                ? api.getUnassignedBlockStudents
+                : api.getReassignableBlockStudents;
+            const refreshed = await fetchFn(selectedState, selectedDistrict, selectedBlock, nmmsYear);
+            setStudents(refreshed.data);
+            setSelectedStudents([]);
+            setSelectedInterviewer(null);
+        } catch (err) {
+            setMessages([`Error: ${err.response?.data?.error || err.message}`]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="p-6 bg-gray-50 rounded-xl shadow-lg">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Assign/Reassign by Block</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label>State</label>
+                    <select value={selectedState} onChange={e => setSelectedState(e.target.value)}>
+                        <option value="">Select State</option>
+                        {states.map(s => (
+                            <option key={s.juris_code} value={s.juris_name}>{s.juris_name}</option>
+                        ))}
+                    </select>
+                </div>
+                <div>
+                    <label>District</label>
+                    <select value={selectedDistrict} onChange={e => setSelectedDistrict(e.target.value)} disabled={!selectedState}>
+                        <option value="">Select District</option>
+                        {districts.map(d => (
+                            <option key={d.juris_code} value={d.juris_name}>{d.juris_name}</option>
+                        ))}
+                    </select>
+                </div>
+                <div>
+                    <label>Block</label>
+                    <select value={selectedBlock} onChange={e => setSelectedBlock(e.target.value)} disabled={!selectedDistrict}>
+                        <option value="">Select Block</option>
+                        {blocks.map(b => (
+                            <option key={b.juris_code} value={b.juris_name}>{b.juris_name}</option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+            <AssignmentTypeSelector onSelectType={setAssignmentType} selectedType={assignmentType} />
+            {selectedBlock && assignmentType && (
+                <>
+                    {loading ? (
+                        <div>Loading students...</div>
+                    ) : students.length === 0 ? (
+                        <div>No students found for this block and type.</div>
+                    ) : (
+                        <>
+                            {/* Select All Checkbox on the right side */}
+<div className="mb-2 flex justify-end items-center">
+    <label htmlFor="select-all-block" className="mr-2 text-gray-700 font-medium cursor-pointer">
+        Select All
+    </label>
+    <input
+        type="checkbox"
+        id="select-all-block"
+        checked={selectedStudents.length === students.length && students.length > 0}
+        onChange={e => {
+            if (e.target.checked) {
+                setSelectedStudents(students.map(s => s.applicant_id));
+            } else {
+                setSelectedStudents([]);
+            }
+        }}
+        className="form-checkbox h-5 w-5 text-blue-600 rounded-full transition-colors"
+    />
+</div>
+<ul className="space-y-3 mt-4">
+    {students.map(student => (
+        <li key={student.applicant_id} className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm">
+            <input
+                type="checkbox"
+                checked={selectedStudents.includes(student.applicant_id)}
+                onChange={e => handleStudentSelect(student.applicant_id, e.target.checked)}
+            />
+            <span>{student.student_name} - Score: {student.pp_exam_score}</span>
+        </li>
+    ))}
+</ul>
+                            <div className="mt-6 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
+                                <InterviewerDropdown
+                                    onSelectInterviewer={setSelectedInterviewer}
+                                    selectedInterviewerId={selectedInterviewer?.id}
+                                />
+                                <button
+                                    onClick={handleAssignOrReassign}
+                                    disabled={loading || selectedStudents.length === 0 || !selectedInterviewer || !selectedInterviewer.id}
+                                    className="w-full md:w-auto px-8 py-3 bg-blue-600 text-white rounded-full font-bold shadow-lg hover:bg-blue-700 disabled:bg-gray-400 transition-all duration-300 transform hover:scale-105"
+                                >
+                                    {assignmentType === 'unassigned' ? 'Assign Selected Students' : 'Reassign Selected Students'}
+                                </button>
+                            </div>
+                            {messages.length > 0 && (
+                                <div className="mt-4 space-y-2">
+                                    {messages.map((msg, idx) => (
+                                        <p key={idx} className={`p-3 rounded-lg text-sm ${
+                                            msg.includes('Error') ? 'bg-red-100 text-red-700' :
+                                            (msg.includes('Skipped') ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700')
+                                        }`}>{msg}</p>
+                                    ))}
+                                </div>
+                            )}
+                        </>
+                    )}
+                </>
+            )}
+            {showConfirmModal && (
+                <ConfirmationModal
+                    message={modalMessage}
+                    onConfirm={handleConfirm}
+                    onCancel={() => setShowConfirmModal(false)}
+                />
+            )}
+        </div>
+    );
+}
+
 
 // --- Component: ExamCenterDropdown ---
 function ExamCenterDropdown({ onSelectCenter }) {
@@ -299,71 +534,94 @@ function UnassignedStudentsList({ selectedCenter }) {
     if (error) return <div className="p-6 text-center text-red-500 bg-red-50 rounded-lg">Error: {error}</div>;
 
     return (
-        <div className="p-6 bg-gray-50 rounded-xl shadow-lg">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Unassigned Students for {selectedCenter}</h2>
-            
-            {students.length === 0 ? (
-                <p className="p-4 text-center text-gray-600 bg-gray-100 rounded-lg">No unassigned students found for this center.</p>
-            ) : (
-                <>
-                    <div className="overflow-y-auto max-h-96 pr-2">
-                        <ul className="space-y-3">
-                            {students.map((student) => (
-                                <li key={student.applicant_id} className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                                    <input
-                                        type="checkbox"
-                                        id={`unassigned-student-${student.applicant_id}`}
-                                        checked={selectedStudents.includes(student.applicant_id)}
-                                        onChange={(e) => handleStudentSelect(student.applicant_id, e.target.checked)}
-                                        className="form-checkbox h-5 w-5 text-blue-600 rounded-full transition-colors"
-                                    />
-                                    <label htmlFor={`unassigned-student-${student.applicant_id}`} className="flex-1 text-gray-700 cursor-pointer">
-                                        <span className="font-semibold">{student.student_name}</span> - Score: {student.pp_exam_score} - School: {student.institute_name || 'N/A'}
-                                    </label>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                    <div className="mt-6 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
-                        <InterviewerDropdown
-                            onSelectInterviewer={setSelectedInterviewer}
-                            selectedInterviewerId={selectedInterviewer?.id}
-                        />
-                        <button
-                            onClick={handleAssign}
-                            disabled={loading || selectedStudents.length === 0 || !selectedInterviewer || !selectedInterviewer.id}
-                            className="w-full md:w-auto px-8 py-3 bg-blue-600 text-white rounded-full font-bold shadow-lg hover:bg-blue-700 disabled:bg-gray-400 transition-all duration-300 transform hover:scale-105"
-                        >
-                            Assign Selected Students
-                        </button>
-                    </div>
-                    {assignmentMessages.length > 0 && (
-                        <div className="mt-4 space-y-2">
-                            {assignmentMessages.map((msg, index) => (
-                                <p 
-                                    key={index} 
-                                    className={`p-3 rounded-lg text-sm ${
-                                        msg.includes('Error') ? 'bg-red-100 text-red-700' : 
-                                        (msg.includes('Skipped') ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700')
-                                    }`}
-                                >
-                                    {msg}
-                                </p>
-                            ))}
-                        </div>
-                    )}
-                </>
-            )}
+    <div className="p-6 bg-gray-50 rounded-xl shadow-lg">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">
+            Unassigned Students for {selectedCenter}
+        </h2>
 
-            {showConfirmModal && (
-                <ConfirmationModal
-                    message={modalMessage}
-                    onConfirm={handleConfirmAssignment}
-                    onCancel={handleCancelAssignment}
-                />
-            )}
-        </div>
-    );
+        {students.length === 0 ? (
+            <p className="p-4 text-center text-gray-600 bg-gray-100 rounded-lg">
+                No unassigned students found for this center.
+            </p>
+        ) : (
+            <>
+                {/* Select All Checkbox on the right side */}
+                <div className="mb-2 flex justify-end items-center">
+                    <label htmlFor="select-all-unassigned" className="mr-2 text-gray-700 font-medium cursor-pointer">
+                        Select All
+                    </label>
+                    <input
+                        type="checkbox"
+                        id="select-all-unassigned"
+                        checked={selectedStudents.length === students.length && students.length > 0}
+                        onChange={e => {
+                            if (e.target.checked) {
+                                setSelectedStudents(students.map(s => s.applicant_id));
+                            } else {
+                                setSelectedStudents([]);
+                            }
+                        }}
+                        className="form-checkbox h-5 w-5 text-blue-600 rounded-full transition-colors"
+                    />
+                </div>
+                <div className="overflow-y-auto max-h-96 pr-2">
+                    <ul className="space-y-3">
+                        {students.map((student) => (
+                            <li key={student.applicant_id} className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                                <input
+                                    type="checkbox"
+                                    id={`unassigned-student-${student.applicant_id}`}
+                                    checked={selectedStudents.includes(student.applicant_id)}
+                                    onChange={(e) => handleStudentSelect(student.applicant_id, e.target.checked)}
+                                    className="form-checkbox h-5 w-5 text-blue-600 rounded-full transition-colors"
+                                />
+                                <label htmlFor={`unassigned-student-${student.applicant_id}`} className="flex-1 text-gray-700 cursor-pointer">
+                                    <span className="font-semibold">{student.student_name}</span> - Score: {student.pp_exam_score} - School: {student.institute_name || 'N/A'}
+                                </label>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+                <div className="mt-6 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
+                    <InterviewerDropdown
+                        onSelectInterviewer={setSelectedInterviewer}
+                        selectedInterviewerId={selectedInterviewer?.id}
+                    />
+                    <button
+                        onClick={handleAssign}
+                        disabled={loading || selectedStudents.length === 0 || !selectedInterviewer || !selectedInterviewer.id}
+                        className="w-full md:w-auto px-8 py-3 bg-blue-600 text-white rounded-full font-bold shadow-lg hover:bg-blue-700 disabled:bg-gray-400 transition-all duration-300 transform hover:scale-105"
+                    >
+                        Assign Selected Students
+                    </button>
+                </div>
+                {assignmentMessages.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                        {assignmentMessages.map((msg, index) => (
+                            <p
+                                key={index}
+                                className={`p-3 rounded-lg text-sm ${
+                                    msg.includes('Error') ? 'bg-red-100 text-red-700' :
+                                    (msg.includes('Skipped') ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700')
+                                }`}
+                            >
+                                {msg}
+                            </p>
+                        ))}
+                    </div>
+                )}
+            </>
+        )}
+
+        {showConfirmModal && (
+            <ConfirmationModal
+                message={modalMessage}
+                onConfirm={handleConfirmAssignment}
+                onCancel={handleCancelAssignment}
+            />
+        )}
+    </div>
+);
 }
 
 // --- Component: ReassignStudentsList ---
@@ -498,102 +756,139 @@ function ReassignStudentsList({ selectedCenter }) {
     if (error) return <div className="p-6 text-center text-red-500 bg-red-50 rounded-lg">Error: {error}</div>;
 
     return (
-        <div className="p-6 bg-gray-50 rounded-xl shadow-lg">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Reassign Students for {selectedCenter}</h2>
-            {students.length === 0 ? (
-                <p className="p-4 text-center text-gray-600 bg-gray-100 rounded-lg">No students found for reassigning in this center with 'Scheduled' status and no interview result.</p>
-            ) : (
-                <>
-                    <div className="overflow-y-auto max-h-96 pr-2">
-                        <ul className="space-y-3">
-                            {students.map((student) => (
-                                <li key={student.applicant_id} className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                                    <input
-                                        type="checkbox"
-                                        id={`reassign-student-${student.applicant_id}`}
-                                        checked={selectedStudents.includes(student.applicant_id)}
-                                        onChange={(e) => handleStudentSelect(student.applicant_id, e.target.checked)}
-                                        className="form-checkbox h-5 w-5 text-blue-600 rounded-full transition-colors"
-                                    />
-                                    <label htmlFor={`reassign-student-${student.applicant_id}`} className="flex-1 text-gray-700 cursor-pointer">
-                                        <span className="font-semibold">{student.student_name}</span> - Score: {student.pp_exam_score} - Current Interviewer: <span className="font-bold">{student.current_interviewer || 'N/A'}</span> - Round: {student.interview_round}
-                                    </label>
-                                </li>
-                            ))}
-                        </ul>
+    <div className="p-6 bg-gray-50 rounded-xl shadow-lg">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Reassign Students for {selectedCenter}</h2>
+        {students.length === 0 ? (
+            <p className="p-4 text-center text-gray-600 bg-gray-100 rounded-lg">
+                No students found for reassigning in this center with 'Scheduled' status and no interview result.
+            </p>
+        ) : (
+            <>
+                {/* Select All Checkbox on the right side */}
+                <div className="mb-2 flex justify-end items-center">
+                    <label htmlFor="select-all-reassign" className="mr-2 text-gray-700 font-medium cursor-pointer">
+                        Select All
+                    </label>
+                    <input
+                        type="checkbox"
+                        id="select-all-reassign"
+                        checked={selectedStudents.length === students.length && students.length > 0}
+                        onChange={e => {
+                            if (e.target.checked) {
+                                setSelectedStudents(students.map(s => s.applicant_id));
+                            } else {
+                                setSelectedStudents([]);
+                            }
+                        }}
+                        className="form-checkbox h-5 w-5 text-blue-600 rounded-full transition-colors"
+                    />
+                </div>
+                <div className="overflow-y-auto max-h-96 pr-2">
+                    <ul className="space-y-3">
+                        {students.map((student) => (
+                            <li key={student.applicant_id} className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                                <input
+                                    type="checkbox"
+                                    id={`reassign-student-${student.applicant_id}`}
+                                    checked={selectedStudents.includes(student.applicant_id)}
+                                    onChange={(e) => handleStudentSelect(student.applicant_id, e.target.checked)}
+                                    className="form-checkbox h-5 w-5 text-blue-600 rounded-full transition-colors"
+                                />
+                                <label htmlFor={`reassign-student-${student.applicant_id}`} className="flex-1 text-gray-700 cursor-pointer">
+                                    <span className="font-semibold">{student.student_name}</span> - Score: {student.pp_exam_score} - Current Interviewer: <span className="font-bold">{student.current_interviewer || 'N/A'}</span> - Round: {student.interview_round}
+                                </label>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+                <div className="mt-6 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
+                    <InterviewerDropdown
+                        onSelectInterviewer={setNewInterviewer}
+                        selectedInterviewerId={newInterviewer?.id}
+                    />
+                    <button
+                        onClick={handleReassign}
+                        disabled={loading || selectedStudents.length === 0 || !newInterviewer || !newInterviewer.id}
+                        className="w-full md:w-auto px-8 py-3 bg-orange-600 text-white rounded-full font-bold shadow-lg hover:bg-orange-700 disabled:bg-gray-400 transition-all duration-300 transform hover:scale-105"
+                    >
+                        Reassign Selected Students
+                    </button>
+                </div>
+                {reassignmentMessages.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                        {reassignmentMessages.map((msg, index) => (
+                            <p
+                                key={index}
+                                className={`p-3 rounded-lg text-sm ${
+                                    msg.includes('Error') ? 'bg-red-100 text-red-700' :
+                                    (msg.includes('Skipped') ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700')
+                                }`}
+                            >
+                                {msg}
+                            </p>
+                        ))}
                     </div>
-                    <div className="mt-6 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
-                        <InterviewerDropdown
-                            onSelectInterviewer={setNewInterviewer}
-                            selectedInterviewerId={newInterviewer?.id}
-                        />
-                        <button
-                            onClick={handleReassign}
-                            disabled={loading || selectedStudents.length === 0 || !newInterviewer || !newInterviewer.id}
-                            className="w-full md:w-auto px-8 py-3 bg-orange-600 text-white rounded-full font-bold shadow-lg hover:bg-orange-700 disabled:bg-gray-400 transition-all duration-300 transform hover:scale-105"
-                        >
-                            Reassign Selected Students
-                        </button>
-                    </div>
-                    {reassignmentMessages.length > 0 && (
-                        <div className="mt-4 space-y-2">
-                            {reassignmentMessages.map((msg, index) => (
-                                <p 
-                                    key={index} 
-                                    className={`p-3 rounded-lg text-sm ${
-                                        msg.includes('Error') ? 'bg-red-100 text-red-700' : 
-                                        (msg.includes('Skipped') ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700')
-                                    }`}
-                                >
-                                    {msg}
-                                </p>
-                            ))}
-                        </div>
-                    )}
-                </>
-            )}
+                )}
+            </>
+        )}
 
-            {showConfirmModal && (
-                <ConfirmationModal
-                    message={modalMessage}
-                    onConfirm={handleConfirmReassignment}
-                    onCancel={handleCancelReassignment}
-                />
-            )}
-        </div>
-    );
+        {showConfirmModal && (
+            <ConfirmationModal
+                message={modalMessage}
+                onConfirm={handleConfirmReassignment}
+                onCancel={handleCancelReassignment}
+            />
+        )}
+    </div>
+);
 }
 
-// All other components (ExamCenterDropdown, AssignmentTypeSelector, InterviewerDropdown, ConfirmationModal, AssignInterviewView, and FillInterviewView) remain unchanged.
 
 function AssignInterviewView() {
     const [selectedCenter, setSelectedCenter] = useState('');
     const [assignmentType, setAssignmentType] = useState('');
+    const [assignmentFilter, setAssignmentFilter] = useState('exam'); // 'exam' or 'block'
 
     return (
         <div className="p-6 bg-white rounded-xl shadow-lg">
-
+            {/* Assignment Filter Dropdown */}
             <div className="section-container mb-6">
-                <h2 className="text-xl font-bold text-gray-800 mb-2">Select Exam Center</h2>
-                <ExamCenterDropdown onSelectCenter={setSelectedCenter} />
+                <label htmlFor="assignment-filter" className="block text-sm font-medium text-gray-700 mb-1">Assignment Filter</label>
+                <select
+                    id="assignment-filter"
+                    value={assignmentFilter}
+                    onChange={e => setAssignmentFilter(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="exam">Assign by Exam</option>
+                    <option value="block">Assign by Block</option>
+                </select>
             </div>
-
-            {selectedCenter && (
-                <div className="section-container mb-6">
-                    <h2 className="text-xl font-bold text-gray-800 mb-2">Select Assignment Type</h2>
-                    <AssignmentTypeSelector
-                        onSelectType={setAssignmentType}
-                        selectedType={assignmentType}
-                    />
-                </div>
+            {assignmentFilter === 'exam' && (
+                <>
+                    <div className="section-container mb-6">
+                        <h2 className="text-xl font-bold text-gray-800 mb-2">Select Exam Center</h2>
+                        <ExamCenterDropdown onSelectCenter={setSelectedCenter} />
+                    </div>
+                    {selectedCenter && (
+                        <div className="section-container mb-6">
+                            <h2 className="text-xl font-bold text-gray-800 mb-2">Select Assignment Type</h2>
+                            <AssignmentTypeSelector
+                                onSelectType={setAssignmentType}
+                                selectedType={assignmentType}
+                            />
+                        </div>
+                    )}
+                    {selectedCenter && assignmentType === 'unassigned' && (
+                        <UnassignedStudentsList selectedCenter={selectedCenter} />
+                    )}
+                    {selectedCenter && assignmentType === 'reassign' && (
+                        <ReassignStudentsList selectedCenter={selectedCenter} />
+                    )}
+                </>
             )}
-
-            {selectedCenter && assignmentType === 'unassigned' && (
-                <UnassignedStudentsList selectedCenter={selectedCenter} />
-            )}
-
-            {selectedCenter && assignmentType === 'reassign' && (
-                <ReassignStudentsList selectedCenter={selectedCenter} />
+            {assignmentFilter === 'block' && (
+                <BlockAssignmentView />
             )}
         </div>
     );
