@@ -49,6 +49,7 @@ const evaluationRoutes =require('./routes/evaluationRoutes');
 const studentSearchRoutes = require("./routes/studentSearchRoutes");
 const timetableRoutes = require("./routes/timeTableRoutes");
 const interviewRoutes = require("./routes/interviewRoutes"); // <-- From feature branch
+const resultandrankinkRoutes =require("./routes/resultandrankinkRoutes")
 
 // ───── Use Routes ─────
 app.use("/auth", authRoutes);
@@ -88,6 +89,8 @@ app.use('/evaluation',evaluationRoutes)
 
 // Interview <-- From feature branch
 app.use("/api/interview", interviewRoutes);
+
+app.use("/api/resultandrank",resultandrankinkRoutes)
 
 // Timetable <-- From main branch
 app.use("/api/timetable", timetableRoutes);

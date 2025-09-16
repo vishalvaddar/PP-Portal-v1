@@ -35,7 +35,8 @@ async function getStudents(exam_name) {
             asi.favorite_teacher_name,
             asi.favorite_teacher_phone,
             aea.pp_exam_appeared_yn,
-            er.pp_exam_cleared
+            er.pp_exam_cleared,
+            er.interview_required_yn
         FROM 
             pp.examination ex
         LEFT JOIN 
@@ -108,15 +109,22 @@ async function insertBulkData(secondaryInfoData, examResultsData, examAttendance
 
     // Insert/update exam results (removed student_name)
     for (const data of examResultsData) {
-      await client.query(`
-        INSERT INTO pp.exam_results (
-          applicant_id, pp_exam_score ,pp_exam_cleared
-        ) VALUES ($1, $2, $3)
-        ON CONFLICT (applicant_id) DO UPDATE SET
-          pp_exam_score = EXCLUDED.pp_exam_score,
-          pp_exam_cleared =EXCLUDED.pp_exam_cleared
-      `, [data.applicant_id, data.pp_exam_score,data.pp_exam_cleared]);
-    }
+  await client.query(`
+    INSERT INTO pp.exam_results (
+      applicant_id, pp_exam_score, pp_exam_cleared, interview_required_yn
+    ) VALUES ($1, $2, $3, $4)
+    ON CONFLICT (applicant_id) DO UPDATE SET
+      pp_exam_score = EXCLUDED.pp_exam_score,
+      pp_exam_cleared = EXCLUDED.pp_exam_cleared,
+      interview_required_yn = EXCLUDED.interview_required_yn
+  `, [
+    data.applicant_id,
+    data.pp_exam_score,
+    data.pp_exam_cleared,
+    data.interview_required_yn
+  ]);
+}
+
 
     // Insert/update exam attendance
     for (const data of examAttendance) {

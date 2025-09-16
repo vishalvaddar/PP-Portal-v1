@@ -462,7 +462,7 @@ const NewApplication = () => {
         </div>
         <div className={classes.sectionDivider} />
         <div className={classes.formSection}>
-          <h3 className={classes.sectionTitle}><GraduationCap className={classes.sectionIcon} />Eductaional Information</h3>
+          <h3 className={classes.sectionTitle}><GraduationCap className={classes.sectionIcon} />Educational Information</h3>
           <div className={classes.fieldGroup}>
             <div className={classes.formField}>
               <label className="required">State: <span className={classes.required}>*</span></label>
