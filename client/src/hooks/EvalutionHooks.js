@@ -11,7 +11,7 @@ const useEvaluationModule = () => {
   useEffect(() => {
     const fetchExamName = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/evaluation/exam_names`);
+        const response = await axios.get(`${API_BASE_URL}/api/evaluation/exam_names`);
         setExamNames(response.data.message || []);
       } catch (error) {
         console.error("Failed to fetch exam name:", error);
@@ -25,7 +25,7 @@ const useEvaluationModule = () => {
     const sendSelectedExam = async () => {
       if (selectedExam) {
         try {
-          const res = await axios.post(`${API_BASE_URL}/evaluation/exam_query`, {
+          const res = await axios.post(`${API_BASE_URL}/api/evaluation/exam_query`, {
             exam_name: selectedExam,
           });
           setResponseData(res.data);
@@ -42,7 +42,7 @@ const useEvaluationModule = () => {
     
     try {
       const response = await axios.post(
-        `${API_BASE_URL}/evaluation/download_excel`,
+        `${API_BASE_URL}/api/evaluation/download_excel`,
         { exam_name: selectedExam },
         { responseType: "blob" }
       );
@@ -67,7 +67,7 @@ const useEvaluationModule = () => {
 
     try {
       const response = await axios.post(
-        `${API_BASE_URL}/evaluation/bulk-upload`,
+        `${API_BASE_URL}/api/evaluation/bulk-upload`,
         formData,
         {
           headers: {

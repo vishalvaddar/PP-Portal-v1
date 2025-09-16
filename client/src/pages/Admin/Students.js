@@ -153,7 +153,6 @@ const Students = () => {
         { params: currentFilters, timeout: 15000 }
       );
       setResults(data.data || []);
-      console.log("Fetched students:", data.data);
     } catch (err) {
       const message =
         err.code === "ECONNABORTED"

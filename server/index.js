@@ -53,8 +53,12 @@ const studentSearchRoutes = require("./routes/studentSearchRoutes");
 const timetableRoutes = require("./routes/timeTableRoutes");
 const interviewRoutes = require("./routes/interviewRoutes");
 
+
+const systemConfigRoutes = require("./routes/systemConfigRoutes");
+
 // ───── Use Routes ─────
 app.use("/auth", authRoutes);
+app.use("/api/system-config", systemConfigRoutes);
 
 // Applicant Management
 app.use("/api/applicants", applicantCreateRoutes);

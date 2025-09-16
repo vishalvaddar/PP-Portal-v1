@@ -3,8 +3,6 @@ import React from "react";
 import { RouterProvider } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import { RoleProvider } from "./contexts/RoleContext";
-import { SystemConfigProvider } from "./contexts/SystemConfigContext"; 
 import { appRouter } from "../src/Router";
 
 function ProtectedApp() {
@@ -16,9 +14,7 @@ function ProtectedApp() {
 
   return (
     <RoleProvider>
-      <SystemConfigProvider>
-        <RouterProvider router={appRouter} />
-      </SystemConfigProvider>
+      <RouterProvider router={appRouter} />
     </RoleProvider>
   );
 }

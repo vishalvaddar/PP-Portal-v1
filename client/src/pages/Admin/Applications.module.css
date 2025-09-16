@@ -1,189 +1,185 @@
-/* Inherits all base styles from Shortlisting */
+/* Applications.module.css */
+
+/* ===== Dashboard Layout ===== */
 .dashboardContainer {
-  padding: 2rem;
-  max-width: 1400px;
+  padding: 24px;
+  max-width: 1200px;
   margin: 0 auto;
-  color: #333;
+  font-family: "Inter", system-ui, sans-serif;
+  color: #1f2937; /* gray-800 */
 }
 
+/* ===== Header ===== */
 .header {
-  margin-bottom: 2.5rem;
+  margin-bottom: 24px;
 }
 
 .titleContainer {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
+  gap: 12px;
 }
 
 .title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1a365d;
-  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #111827; /* gray-900 */
 }
 
 .titleIcon {
-  color: #48bb78; /* Green instead of blue for differentiation */
+  color: #2563eb; /* blue-600 */
 }
 
-.subtitle {
-  font-size: 1.1rem;
-  color: #4a5568;
-  margin: 0;
+/* ===== Features Grid ===== */
+.contentWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-/* Features Grid - Same as Shortlisting */
 .featuresGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
 }
 
+/* ===== Feature Card ===== */
 .featureCard {
-  background: white;
-  border-radius: 10px;
-  padding: 1.75rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
   position: relative;
-  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  text-align: center;
+  transition: all 0.25s ease;
+  text-decoration: none;
+  color: inherit;
 }
 
 .featureCard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-  border-color: #c6f6d5; /* Green hover border */
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
-.featureIconContainer {
-  background: #f0fff4; /* Light green background */
-  width: 60px;
-  height: 60px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1.25rem;
-}
-
-.featureIcon {
-  color: #38a169; /* Green icon color */
-}
-
-.featureTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0 0 0.75rem 0;
-  color: #2d3748;
-}
-
-.featureDescription {
-  color: #4a5568;
-  margin: 0 0 1.5rem 0;
-  line-height: 1.5;
-}
-
-.featureArrow {
-  color: #48bb78; /* Green arrow */
-  font-weight: bold;
-  font-size: 1.25rem;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.featureCard:hover .featureArrow {
-  opacity: 1;
+.featureCardDisabled {
+  background: #f9fafb;
+  border: 1px dashed #d1d5db; /* gray-300 */
+  cursor: not-allowed;
+  opacity: 0.7;
+  box-shadow: none;
 }
 
 .featureBadge {
   position: absolute;
-  top: -10px;
-  right: 15px;
-  background: #48bb78; /* Green badge */
+  top: 12px;
+  right: 12px;
+  background: #2563eb; /* blue-600 */
   color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
   font-size: 0.75rem;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
+
+.featureIconContainer {
+  height: 60px;
+  width: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eff6ff; /* blue-50 */
+  border-radius: 50%;
+  margin-bottom: 16px;
+}
+
+.featureIcon {
+  color: #2563eb; /* blue-600 */
+}
+
+.featureTitle {
+  font-size: 1.1rem;
   font-weight: 600;
+  margin-bottom: 8px;
 }
 
-/* Info Section - Modified for Applications */
+.featureDescription {
+  font-size: 0.9rem;
+  color: #6b7280; /* gray-500 */
+  margin-bottom: 16px;
+}
+
+.featureArrow {
+  margin-top: auto;
+  font-size: 1.25rem;
+  color: #9ca3af; /* gray-400 */
+  transition: transform 0.2s ease;
+}
+
+.featureCard:hover .featureArrow {
+  transform: translateX(4px);
+  color: #2563eb; /* blue-600 */
+}
+
+/* ===== Disabled Notice ===== */
+.disabledNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #fff7ed; /* orange-50 */
+  color: #b45309; /* orange-700 */
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #fed7aa; /* orange-200 */
+  font-size: 0.9rem;
+}
+
+.disabledNoticeIcon {
+  margin-top: 2px;
+  color: #f59e0b; /* amber-500 */
+}
+
+/* ===== Info Section ===== */
 .infoSection {
-  display: block;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+  margin-top: 16px;
 }
 
-.statsCard, 
 .alertCard {
-  background: white;
-  border-radius: 10px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
 }
 
 .sectionTitle {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
   font-size: 1.1rem;
-  margin-top: 0;
-  margin-bottom: 1.25rem;
-  color: #2d3748;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #374151; /* gray-700 */
 }
 
 .sectionIcon {
-  color: #48bb78; /* Green icon */
-}
-
-.statsGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-}
-
-.statItem {
-  text-align: center;
-}
-
-.statValue {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #2b6cb0;
-  margin-bottom: 0.25rem;
-}
-
-.statLabel {
-  font-size: 0.875rem;
-  color: #718096;
+  color: #f59e0b; /* amber-500 */
 }
 
 .alertList {
-  padding-left: 1.25rem;
-  margin: 0;
-  line-height: 1.6;
+  list-style: disc inside;
+  color: #4b5563; /* gray-600 */
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.alertList li {
-  margin-bottom: 0.75rem;
-  color: #4a5568;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .featuresGrid {
-    grid-template-columns: 1fr;
-  }
-  
-  .infoSection {
-    grid-template-columns: 1fr;
-  }
-  
-  .statsGrid {
-    grid-template-columns: 1fr;
-  }
+/* ===== Loader ===== */
+.loader {
+  text-align: center;
+  padding: 40px;
+  font-size: 1rem;
+  color: #6b7280; /* gray-500 */
 }

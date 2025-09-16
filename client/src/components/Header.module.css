@@ -1,0 +1,99 @@
+/* Header.module.css */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.headerLogo {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+  /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.headerTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: #1f2937; /* gray-800 */
+}
+
+.headerSubtitle {
+  font-size: 0.85rem;
+  color: #6b7280; /* gray-500 */
+}
+
+.headerAcademicYear {
+  margin-top: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #374151; /* gray-700 */
+}
+
+.headerAcademicYear strong {
+  color: #111827; /* gray-900 */
+}
+
+.logoutButton {
+  background: #ef4444; /* red-500 */
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+.logoutButton:hover {
+  background: #dc2626; /* red-600 */
+}
+
+.logoutButton:active {
+  background: #b91c1c; /* red-700 */
+}
+
+/* Add these styles to your existing Header.module.css file */
+
+.systemStatus {
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.statusText {
+  background-color: #eef2ff; /* Light indigo background */
+  color: #4f46e5; /* Indigo text */
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+.errorText {
+  background-color: #fee2e2; /* Light red background */
+  color: #b91c1c; /* Red text */
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-weight: 500;
+}

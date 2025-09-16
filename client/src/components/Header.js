@@ -1,27 +1,47 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Header.css';
-import logo from '../assets/logo.png';
-import rcf_pp from '../assets/RCF-PP2.jpg';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import styles from "./Header.module.css";
+import rcf_pp from "../assets/RCF-PP2.jpg";
+import { useSystemConfig } from "../contexts/SystemConfigContext";
 
 const Header = () => {
   const navigate = useNavigate();
+  const { config, loading, error } = useSystemConfig();
 
   const handleLogout = () => {
     localStorage.clear();
-    navigate('/');
+    navigate("/login");
   };
 
   return (
-    <header className="header">
-      <div className="header-left ">
-        <img src={rcf_pp} alt="RCF Pratibha Poshak Academy Logo" className="header-logo" />
-        <div className="header-text">
-          <h3 className="header-title">Pratibha Poshak Portal</h3>
-          <span className="header-subtitle">Integrated Management & Administration System</span>
+    <header className={styles.header}>
+      <div className={styles.headerLeft}>
+        <img
+          src={rcf_pp}
+          alt="RCF Pratibha Poshak Academy Logo"
+          className={styles.headerLogo}
+        />
+        <div className={styles.headerText}>
+          <h3 className={styles.headerTitle}>Pratibha Poshak Portal</h3>
+          <span className={styles.headerSubtitle}>
+            Integrated Management & Administration System
+          </span>
         </div>
       </div>
-      <button className="logout-button" onClick={handleLogout}>Logout</button>
+
+      <div className={styles.systemStatus}>
+        {loading && <span className={styles.statusText}>Loading Config...</span>}
+        {error && <span className={styles.errorText}>Config Unavailable</span>}
+        {config && !loading && !error && (
+          <span className={styles.statusText}>
+            <strong>Phase:</strong> {config.phase} (AY: {config.academic_year})
+          </span>
+        )}
+      </div>
+
+      <button className={styles.logoutButton} onClick={handleLogout}>
+        Logout
+      </button>
     </header>
   );
 };
