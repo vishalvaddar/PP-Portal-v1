@@ -37,7 +37,6 @@ const Applications = () => {
           <FileText size={28} className={styles.titleIcon} />
           <h1 className={styles.title}>Applications Management</h1>
         </div>
-        <p className={styles.subtitle}>Handle all application processes in one place.</p>
       </div>
 
       <div className={styles.contentWrapper}>

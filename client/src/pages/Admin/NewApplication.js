@@ -237,18 +237,14 @@ const NewApplication = () => {
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/applicants/create`, formData);
 
       if (response.status === 201) {
-        // If primary data submission is successful, create an empty secondary data record
-        // with just the applicant_id to establish the relationship
         if (response.data && response.data.applicant_id) {
           try {
-            // Only send the applicant_id to create a placeholder record
             await axios.post(
               `${process.env.REACT_APP_API_URL}/api/secondaryApplicants/create`,
               { applicant_id: response.data.applicant_id }
             );
           } catch (error) {
             console.error("Error creating secondary data record:", error);
-            // Continue with success message even if secondary data creation fails
           }
         }
         

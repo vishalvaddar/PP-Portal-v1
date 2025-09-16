@@ -1,8 +1,6 @@
-/* Navbar.css */
-
 .navbar {
   width: 240px;
-  background: linear-gradient(120deg, #2341a0 0%, #4361ee 100%);
+  background: linear-gradient(120deg, #0C0356 0%, #4361ee 100%);
   color: #fff;
   height: calc(100vh - 75px);
   padding: 1rem 0.5rem;
@@ -12,7 +10,6 @@
   left: 0;
   z-index: 100;
 
-  /* ✅ CHANGED: Use Flexbox to separate the top button from the scrollable list */
   display: flex;
   flex-direction: column;
 }
@@ -25,8 +22,8 @@
 .navbar-top {
   display: flex;
   justify-content: center;
-  padding-bottom: 0.5rem; /* Add some space below the button */
-  flex-shrink: 0; /* Prevents the top section from shrinking */
+  padding-bottom: 0.5rem; 
+  flex-shrink: 0;
 }
 
 .navbar-collapse-btn {
@@ -61,21 +58,19 @@
   padding: 0;
   margin: 0;
   
-  /* ✅ ADDED: This makes the list itself scrollable and fill available space */
   overflow-y: auto;
   overflow-x: hidden;
   flex-grow: 1;
 }
 
 
-/* ✅ ADDED: Custom scrollbar styling for a cleaner look */
 .nav-list::-webkit-scrollbar {
   width: 6px;
 }
 
 .nav-list::-webkit-scrollbar-track {
   background: transparent;
-  margin: 0.25rem 0; /* Align with list item margin */
+  margin: 0.25rem 0;
 }
 
 .nav-list::-webkit-scrollbar-thumb {
@@ -101,16 +96,17 @@
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
   transition: background-color 0.2s ease, color 0.2s ease;
-  white-space: nowrap; /* Prevent text wrapping */
 }
 
-.nav-list a:hover,
+.nav-list a:hover{
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
 .submenu-toggle:hover {
   background-color: rgba(255, 255, 255, 0.9);
-  color: #3f51b5;
+  /* color: #3f51b5; */
 }
 
-/* Style for the active link */
 .nav-list a.active {
     background-color: #ffffff;
     color: #3f51b5;
@@ -121,7 +117,7 @@
 .nav-icon {
   margin-right: 0.75rem;
   font-size: 1.2rem;
-  flex-shrink: 0; /* Prevent icon from shrinking */
+  flex-shrink: 0;
 }
 
 .navbar.collapsed .nav-label,
@@ -150,14 +146,14 @@
 
 .submenu-list {
   list-style: none;
-  padding-left: 1rem; /* Indent submenu */
+  padding-left: 1rem; 
   margin: 0.25rem 0;
   background-color: rgba(0, 0, 0, 0.15);
   border-radius: 0.5rem;
 }
 
 .submenu-item a {
-  padding-left: 1rem; /* Adjust padding for nested items */
+  padding-left: 1rem;
 }
 
 .submenu-item a .nav-icon {

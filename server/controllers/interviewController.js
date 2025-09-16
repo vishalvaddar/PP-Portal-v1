@@ -12,7 +12,48 @@ const InterviewController = {
     }
   },
 
-  // Controller to get students who are not yet assigned to an interviewer
+  // Controller to get all states
+  async getAllStates(req, res) {
+    try {
+      const states = await InterviewModel.getAllStates();
+      res.status(200).json(states);
+    } catch (error) {
+      console.error('Controller Error - getAllStates:', error);
+      res.status(500).json({ message: 'Internal server error while fetching states.' });
+    }
+  },
+
+  // Controller to get districts by state name
+  async getDistrictsByState(req, res) {
+    const { stateName } = req.params;
+    if (!stateName) {
+      return res.status(400).json({ message: 'Missing stateName parameter.' });
+    }
+    try {
+      const districts = await InterviewModel.getDistrictsByState(stateName);
+      res.status(200).json(districts);
+    } catch (error) {
+      console.error('Controller Error - getDistrictsByState:', error);
+      res.status(500).json({ message: 'Internal server error while fetching districts.' });
+    }
+  },
+
+  // Controller to get blocks by district name
+  async getBlocksByDistrict(req, res) {
+    const { districtName } = req.params;
+    if (!districtName) {
+      return res.status(400).json({ message: 'Missing districtName parameter.' });
+    }
+    try {
+      const blocks = await InterviewModel.getBlocksByDistrict(districtName);
+      res.status(200).json(blocks);
+    } catch (error) {
+      console.error('Controller Error - getBlocksByDistrict:', error);
+      res.status(500).json({ message: 'Internal server error while fetching blocks.' });
+    }
+  },
+
+  // Controller to get students eligible for interview by exam center
   async getUnassignedStudents(req, res) {
     const { centerName, nmmsYear } = req.query;
     if (!centerName || !nmmsYear) {
@@ -27,6 +68,37 @@ const InterviewController = {
     }
   },
 
+  // Controller to get students eligible for interview by block
+  // Controller to get students eligible for interview by block
+async getUnassignedStudentsByBlock(req, res) {
+  const { stateName, districtName, blockName, nmmsYear } = req.query;
+  if (!stateName || !districtName || !blockName || !nmmsYear) {
+    return res.status(400).json({ message: 'Missing required query parameters.' });
+  }
+  try {
+    const students = await InterviewModel.getUnassignedStudentsByBlock(stateName, districtName, blockName, nmmsYear);
+    res.status(200).json(students);
+  } catch (error) {
+    console.error('Controller Error - getUnassignedStudentsByBlock:', error);
+    res.status(500).json({ message: 'Internal server error while fetching unassigned students by block.' });
+  }
+},
+
+// Controller to get students eligible for reassignment by block
+async getReassignableStudentsByBlock(req, res) {
+  const { stateName, districtName, blockName, nmmsYear } = req.query;
+  if (!stateName || !districtName || !blockName || !nmmsYear) {
+    return res.status(400).json({ message: 'Missing required query parameters.' });
+  }
+  try {
+    const students = await InterviewModel.getReassignableStudentsByBlock(stateName, districtName, blockName, nmmsYear);
+    res.status(200).json(students);
+  } catch (error) {
+    console.error('Controller Error - getReassignableStudentsByBlock:', error);
+    res.status(500).json({ message: 'Internal server error while fetching reassignable students by block.' });
+  }
+},
+
   // Controller to get all available interviewers
   async getInterviewers(req, res) {
     try {
@@ -38,7 +110,7 @@ const InterviewController = {
     }
   },
 
-  // Controller to assign students to a specific interviewer
+  // Controller to assign students to an interviewer
   async assignStudents(req, res) {
     const { applicantIds, interviewerId, nmmsYear } = req.body;
     if (!applicantIds || !interviewerId || !nmmsYear) {
@@ -113,14 +185,6 @@ const InterviewController = {
     if (!applicantId || !interviewData) {
       return res.status(400).json({ message: 'Missing applicantId or interview data in body.' });
     }
-
-    // --- FIX FOR CHECK CONSTRAINT ERROR ---
-    // The database likely expects a NULL value for interview_result when the status is 'Rescheduled'.
-    // The frontend should not be sending 'Next Round' for this status.
-    if (interviewData.interviewStatus === 'Rescheduled') {
-      interviewData.interviewResult = null;
-    }
-    // --- END FIX ---
 
     try {
       const updatedInterview = await InterviewModel.submitInterviewDetails(applicantId, interviewData);

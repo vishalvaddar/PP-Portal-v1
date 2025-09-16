@@ -493,3 +493,29 @@
     height: 1.25rem;
     width: 1.25rem;
 }
+
+
+
+.modalContentWide {
+  width: 600px;
+  max-width: 90%;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.gridForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.formGroupFull {
+  grid-column: span 2;
+}

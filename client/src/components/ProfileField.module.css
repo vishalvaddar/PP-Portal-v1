@@ -1,0 +1,16 @@
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.formLabel {
+  font-weight: 600;
+  color: #333;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.formValue {
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}

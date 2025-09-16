@@ -169,7 +169,6 @@ const GenerateShortlist = () => {
       <Breadcrumbs path={currentPath} nonLinkSegments={['Admin', 'Admissions']} />
         <div className={styles.header}>
             <h1>Generate New Shortlist</h1>
-            <p>Create a targeted list by selecting jurisdiction, criteria, and providing details.</p>
         </div>
 
         <div className={styles.container}>
