@@ -51,10 +51,11 @@ const evaluationRoutes = require("./routes/evaluationRoutes");
 const evaluationDashboardRoutes = require("./routes/evaluationDashboardRoutes");
 const studentSearchRoutes = require("./routes/studentSearchRoutes");
 const timetableRoutes = require("./routes/timeTableRoutes");
-const interviewRoutes = require("./routes/interviewRoutes");
+const interviewRoutes = require("./routes/interviewRoutes"); // <-- From feature branch
 
 
-const systemConfigRoutes = require("./routes/systemConfigRoutes");
+const interviewRoutes = require('./routes/interviewRoutes'); 
+const evaluationDashboard = require('./routes/evaluationDashboardRoutes');
 
 // ───── Use Routes ─────
 app.use("/auth", authRoutes);
@@ -95,6 +96,8 @@ app.use("/api/evaluation-dashboard", evaluationDashboardRoutes);
 // Interview
 app.use("/api/interview", interviewRoutes);
 
+app.use("/api/resultandrank",resultandrankinkRoutes)
+
 // Timetable
 app.use("/api/timetable", timetableRoutes);
 
@@ -106,4 +109,9 @@ app.use((req, res) => {
 // ───── Start Server ─────
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
+});
+
+
+
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
