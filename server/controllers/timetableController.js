@@ -163,7 +163,7 @@ const getTeachers = async (req, res) => {
             FROM pp.user u
             JOIN pp.user_role ur ON u.user_id = ur.user_id
             JOIN pp.role r ON ur.role_id = r.role_id
-            WHERE r.role_name = 'Teacher'
+            WHERE r.role_name = 'TEACHER'
             ORDER BY u.user_name;
         `;
         const { rows } = await pool.query(query);
@@ -185,6 +185,84 @@ const getPlatforms = async (req, res) => {
     }
 };
 
+const getBatchesByCohort = async (req, res) => {
+  try {
+    const { cohort_number } = req.query;
+    if (!cohort_number) {
+      return res.status(400).json({ error: "cohort_number query parameter is required" });
+    }
+
+    const result = await pool.query(`
+      SELECT * 
+      FROM pp.batch
+      WHERE cohort_number = $1
+    `, [cohort_number]);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching batches by cohort:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+
+};
+
+const addSubject = async (req, res) => {
+    const { subject_name } = req.body;
+    if (!subject_name) {
+        return res.status(400).json({ message: 'Subject name is required.' });
+    }
+    try {
+        const query = 'INSERT INTO pp.subject (subject_name) VALUES ($1) RETURNING *';
+        const { rows } = await pool.query(query, [subject_name]);
+        res.status(201).json({ message: 'Subject added successfully.', subject: rows[0] });
+    } catch (error) {
+        console.error('Error adding subject:', error);
+        res.status(500).json({ message: 'Server error while adding subject.' });
+    }
+};
+
+const addPlatform = async (req, res) => {
+    const { platform_name } = req.body;
+    if (!platform_name) {
+        return res.status(400).json({ message: 'Platform name is required.' });
+    }
+    try {
+        const query = 'INSERT INTO pp.platform (platform_name) VALUES ($1) RETURNING *';
+        const { rows } = await pool.query(query, [platform_name]);
+        res.status(201).json({ message: 'Platform added successfully.', platform: rows[0] });
+    } catch (error) {
+        console.error('Error adding platform:', error);
+        res.status(500).json({ message: 'Server error while adding platform.' });
+    }
+};
+const deleteSubject = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const { rowCount } = await pool.query('DELETE FROM pp.subject WHERE subject_id = $1', [id]);
+        if (rowCount === 0) {
+            return res.status(404).json({ message: 'Subject not found.' });
+        }
+        res.status(200).json({ message: 'Subject deleted successfully.' });
+    } catch (error) {
+        console.error('Error deleting subject:', error);
+        res.status(500).json({ message: 'Server error while deleting subject.' });
+    }
+};
+
+const deletePlatform = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const { rowCount } = await pool.query('DELETE FROM pp.platform WHERE platform_id = $1', [id]);
+        if (rowCount === 0) {
+            return res.status(404).json({ message: 'Platform not found.' });
+        }
+        res.status(200).json({ message: 'Platform deleted successfully.' });
+    } catch (error) {
+        console.error('Error deleting platform:', error);
+        res.status(500).json({ message: 'Server error while deleting platform.' });
+    }
+};
+
 
 module.exports = {
     getTimeTableByBatch,
@@ -195,4 +273,9 @@ module.exports = {
     getTeachers,
     getPlatforms,
     getActiveCohorts,
+    getBatchesByCohort,
+    addSubject,
+    addPlatform,
+    deleteSubject,
+    deletePlatform,
 };

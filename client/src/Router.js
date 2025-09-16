@@ -20,7 +20,7 @@ import Batches from "./pages/Admin/Batches";
 import ViewBatchStudents from "./pages/Admin/ViewBatchStudents";
 import Reports from "./pages/Admin/Reports";
 import UserRoles from "./pages/Admin/UserRoles";
-import System from "./pages/Admin/System";
+import System from "./pages/Admin/SystemConfig";
 import MyProfile from "./pages/Admin/MyProfile";
 import CreateExam from "./pages/Admin/Exam/CreateExam";
 import TimeTableDashboard from "./pages/Admin/TimeTableDashboard";
@@ -89,6 +89,7 @@ export const appRouter = createBrowserRouter([
           { path: "students", element: <Students /> },
           { path: "batches", element: <Batches /> },
           { path: "batches/:batchId/students", element: <ViewBatchStudents /> },
+          { path: "batches/view-student-info/:nmms_reg_number", element: <ViewStudentInfo /> },
           { path: "time-table-dashboard", element: <TimeTableDashboard /> },
           { path: "reports", element: <Reports /> },
         ]

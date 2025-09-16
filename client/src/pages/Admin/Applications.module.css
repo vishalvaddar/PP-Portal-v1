@@ -112,7 +112,7 @@
 
 /* Info Section - Modified for Applications */
 .infoSection {
-  display: grid;
+  display: block;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
 }
