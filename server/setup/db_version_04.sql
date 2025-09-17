@@ -31,6 +31,10 @@ DROP TABLE IF EXISTS
     pp.user,
     pp.tab_inventory,
     pp.student_master
+    pp.system_config
+    pp.subject,
+    pp.platform,
+    pp.timetable_slot
 CASCADE;
 
 DROP SEQUENCE IF EXISTS 
@@ -54,7 +58,10 @@ DROP SEQUENCE IF EXISTS
     pp.cohort_seq,
     pp.batch_id_seq,
     pp.tab_id_seq,
-    pp.student_id_seq
+    pp.student_id_seq,
+    pp.subject_seq,
+    pp.platform_seq,
+    pp.timetable_slot_seq
 CASCADE;
 
 DROP SCHEMA IF EXISTS pp CASCADE;
@@ -84,7 +91,12 @@ CREATE SEQUENCE pp.cohort_seq              START 1;
 /* --- NEW SEQUENCES FOR TABLES USING EXPLICIT NEXTVAL --- */
 CREATE SEQUENCE pp.batch_id_seq            START 1;   -- for pp.batch.batch_id
 CREATE SEQUENCE pp.tab_id_seq              START 1;   -- for pp.tab_inventory.tab_id
-CREATE SEQUENCE pp.student_id_seq          START 1;   -- for pp.student_master.student_id
+CREATE SEQUENCE pp.student_id_seq          START 1;  
+
+CREATE SEQUENCE pp.subject_seq         START 1;
+CREATE SEQUENCE pp.platform_seq        START 1;
+CREATE SEQUENCE pp.timetable_slot_seq  START 1;
+ -- for pp.student_master.student_id
 
 
 CREATE TABLE pp.user (
@@ -392,7 +404,46 @@ CREATE TABLE pp.student_master (
     previous_institute_dise_code numeric(14,0) REFERENCES pp.institute(dise_code)
 );
 
+CREATE TABLE pp.system_config (
+    id SERIAL PRIMARY KEY,
+    academic_year VARCHAR(9) NOT NULL,  -- e.g. "2025-26"
+    phase VARCHAR(50) NOT NULL,         -- e.g. "Admissions in Progress"
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 
+ALTER TABLE pp.system_config
+ADD CONSTRAINT chk_academic_year_format
+CHECK (academic_year ~ '^[0-9]{4}-[0-9]{2,4}$');
 
 
+CREATE TABLE pp.subject (
+    subject_id    integer PRIMARY KEY DEFAULT nextval('pp.subject_seq'),
+    subject_name  varchar(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE pp.platform (
+    platform_id   integer PRIMARY KEY DEFAULT nextval('pp.platform_seq'),
+    platform_name varchar(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE pp.timetable_slot (
+    slot_id       integer PRIMARY KEY DEFAULT nextval('pp.timetable_slot_seq'),
+    
+    -- Foreign key to your existing batch table
+    batch_id      integer REFERENCES pp.batch(batch_id) ON DELETE CASCADE,
+    
+    -- Foreign key to your existing user table (assuming teachers are users)
+    teacher_id    numeric(8,0) REFERENCES pp.user(user_id) ON DELETE SET NULL,
+    
+    -- Foreign keys to the new tables created above
+    subject_id    integer REFERENCES pp.subject(subject_id) ON DELETE SET NULL,
+    platform_id   integer REFERENCES pp.platform(platform_id) ON DELETE SET NULL,
+    
+    day_of_week   varchar(10) NOT NULL CHECK (day_of_week IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')),
+    start_time    time NOT NULL,
+    end_time      time,
+    
+    -- Ensures that a teacher cannot be scheduled for two classes at the same time
+    UNIQUE (teacher_id, day_of_week, start_time)
+);
