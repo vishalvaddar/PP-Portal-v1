@@ -1,150 +1,334 @@
-.container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 24px;
+/* --- Page Layout & Header --- */
+.pageContainer {
+  padding: 24px 48px;
+  background-color: #f8fafc;
+  min-height: 100vh;
 }
 
 .pageHeader {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
+  /* gap: 16px; */
   margin-bottom: 24px;
 }
 
 .pageIcon {
-  width: 28px;
-  height: 28px;
-  color: #2563eb;
+  color: #4f46e5;
+  width: 40px;
+  height: 40px;
 }
 
-.header {
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: #111827;
+.pageTitle {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #1e293b;
   margin: 0;
 }
 
-.subtitle {
-  font-size: 0.95rem;
-  color: #6b7280;
+.pageSubtitle {
+  font-size: 1.1rem;
+  color: #64748b;
   margin-top: 4px;
 }
 
+.mainLayout {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* --- General Card Styling --- */
 .card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+}
+
+/* --- Form Styling --- */
+.formColumn .card {
+  padding: 24px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
 }
 
 .formGroup {
-  margin-bottom: 16px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+}
+
+.createButton {
+  margin-top: 8px;
+  width: 100%;
+  gap: 8px;
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+}
+.createButton:hover {
+  background-color: #4338ca;
 }
 
 .inputError {
-  border: 1px solid #ef4444 !important;
+  border-color: #ef4444 !important;
 }
 
 .errorText {
-  font-size: 0.8rem;
   color: #ef4444;
+  font-size: 0.875rem;
+  margin: 0;
 }
 
-/* Select (Phase) */
-.selectTrigger {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  background: #fff;
-  border: 1px solid #d1d5db;
+.nativeSelect {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
+  background-color: #fff;
+  font-size: 1rem;
+  min-height: 42px;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  font-size: 0.95rem;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
 }
 
-.selectTrigger:hover {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+/* --- Table Styling --- */
+.tableColumn .card {
+  padding: 0;
+}
+
+.tableColumn .card > header,
+.tableColumn .card > div {
+  padding: 24px;
+}
+
+.tableWrapper {
+  overflow-x: auto;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.table th, .table td {
+  padding: 12px 24px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
 }
 
 .table th {
-  text-align: left;
-  padding: 12px;
-  background: #f9fafb;
-  font-size: 0.9rem;
+  background-color: #f8fafc;
   font-weight: 600;
-  color: #374151;
+  color: #475569;
 }
 
-.table td {
-  padding: 12px;
-  border-top: 1px solid #e5e7eb;
-  font-size: 0.9rem;
-  color: #1f2937;
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.table tr:hover {
+  background-color: #f7f7f9;
+}
+
+.actionsHeader {
+  text-align: right;
 }
 
 .actionButtons {
   display: flex;
-  gap: 10px;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
-.activateBtn {
-  background: #2563eb !important;
-  color: #fff !important;
+.actionButtons button {
+  gap: 6px;
+}
+
+.phaseSelect {
+  width: 100%;
+  padding: 6px 8px;
   border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: #fff;
+  font-size: 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.activateBtn:hover {
-  background: #1d4ed8 !important;
+.phaseSelect:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
 }
 
-.deleteBtn {
-  background: #ef4444 !important;
-  color: #fff !important;
-  border-radius: 6px;
-}
-
-.deleteBtn:hover {
-  background: #dc2626 !important;
+/* --- Badges, Spinners, etc. --- */
+.activeBadge, .inactiveBadge {
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 0.8rem;
+  display: inline-block;
 }
 
 .activeBadge {
-  background: #d1fae5;
-  color: #065f46;
-  font-size: 0.75rem;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-weight: 600;
+  background-color: #dcfce7;
+  color: #166534;
 }
 
 .inactiveBadge {
-  background: #fef3c7;
-  color: #92400e;
-  font-size: 0.75rem;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-weight: 600;
+  background-color: #e2e8f0;
+  color: #475569;
 }
 
 .spinner {
-  width: 18px;
-  height: 18px;
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loaderContainer, .emptyState {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 150px;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* --- Modal Styles --- */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: white;
+  padding: 0;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.closeButton {
+  padding: 4px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  transition: background-color 0.2s, color 0.2s;
+}
+.closeButton:hover {
+  background-color: #f1f5f9;
+  color: #1e293b;
+}
+
+.modalBody {
+  padding: 24px;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  background-color: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.menuItem:hover {
+  background-color: #f1f5f9;
+}
+
+.deleteItem {
+  color: #ef4444; /* Red for delete action */
+}
+
+.deleteItem:hover {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #334155;
+  transition: background-color 0.2s;
+}
+
+.actionsCellWrapper {
+  position: relative;
+  width: 5%; /* Give the cell a defined width */
+  text-align: right;
+}
+
+.dropdownMenu {
+  position: absolute;
+  right: 60px; /* Position next to the button */
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+  width: 180px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
 }

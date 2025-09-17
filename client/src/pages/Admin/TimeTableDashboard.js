@@ -1,32 +1,27 @@
-    import React, { useState, useEffect, useCallback, useMemo } from "react";
-    import jsPDF from "jspdf";
-    import autoTable from "jspdf-autotable";
-    import * as XLSX from "xlsx";
-    import axios from 'axios';
-    import styles from "./TimeTableDashboard.module.css";
-    import { Plus, Trash2, Edit, Download, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
+import axios from 'axios';
+import styles from "./TimeTableDashboard.module.css";
+import { Plus, Trash2, Edit, Download, AlertCircle, Settings, BookOpen, Clock, Users, Tv } from 'lucide-react';
 
-    // --- API Service Functions ---
-    const API_URL = process.env.REACT_APP_BACKEND_API_URL;
+// --- API Service Functions ---
+const API_URL = process.env.REACT_APP_BACKEND_API_URL;
+const fetchActiveCohorts = () => axios.get(`${API_URL}/api/batches/cohorts/active`);
+const fetchBatchesByCohort = (cohortId) => axios.get(`${API_URL}/api/batches/${cohortId}/batches`);
+const fetchConfigData = () => Promise.all([
+    axios.get(`${API_URL}/api/timetable/data/subjects`),
+    axios.get(`${API_URL}/api/timetable/data/teachers`),
+    axios.get(`${API_URL}/api/timetable/data/platforms`),
+]);
+const addSubject = (name) => axios.post(`${API_URL}/api/timetable/data/subjects`, { subject_name: name });
+const deleteSubject = (id) => axios.delete(`${API_URL}/api/timetable/data/subjects/${id}`);
+const addPlatform = (name) => axios.post(`${API_URL}/api/timetable/data/platforms`, { platform_name: name });
+const deletePlatform = (id) => axios.delete(`${API_URL}/api/timetable/data/platforms/${id}`);
 
-    const fetchActiveCohorts = () => axios.get(`${API_URL}/api/batches/cohorts/active`);
-    const fetchBatchesByCohort = (cohortId) => axios.get(`${API_URL}/api/batches/${cohortId}/batches`);
-    const fetchConfigData = () => Promise.all([
-        axios.get(`${API_URL}/api/timetable/data/subjects`),
-        axios.get(`${API_URL}/api/timetable/data/teachers`),
-        axios.get(`${API_URL}/api/timetable/data/platforms`),
-    ]);
-
-    // Specific API functions for adding/deleting configuration items
-    const addSubject = (name) => axios.post(`${API_URL}/api/timetable/data/subjects`, { subject_name: name });
-    const deleteSubject = (id) => axios.delete(`${API_URL}/api/timetable/data/subjects/${id}`);
-
-    const addPlatform = (name) => axios.post(`${API_URL}/api/timetable/data/platforms`, { platform_name: name });
-    const deletePlatform = (id) => axios.delete(`${API_URL}/api/timetable/data/platforms/${id}`);
-
-
-    // --- Custom Hooks ---
-    const useFetchCohorts = (setCohorts, setLoading, setError) => {
+// --- Custom Hooks ---
+const useFetchCohorts = (setCohorts, setLoading, setError) => {
         useEffect(() => {
             const fetchCohorts = async () => {
                 try {
@@ -67,16 +62,16 @@
         }, [cohortId, setBatches, setLoading, setError]);
     };
 
-    // --- Helper Functions ---
-    const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const generateEmptyTimetable = () => {
+// --- Helper Functions ---
+const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const generateEmptyTimetable = () => {
         const timetable = {};
         daysOfWeek.forEach(day => { timetable[day] = []; });
         return timetable;
     };
 
-    // --- Child Components ---
-    const DataManagementModal = ({ isOpen, onClose, title, items, placeholder, onAdd, onRemove }) => {
+// --- Child Components ---
+const DataManagementModal = ({ isOpen, onClose, title, items, placeholder, onAdd, onRemove }) => {
         const [newItem, setNewItem] = useState('');
         const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -494,26 +489,26 @@
         );
     };
 
-    // --- Main Component ---
-    const TimetableDashboard = () => {
-        const [selectedCohort, setSelectedCohort] = useState(null);
-        const [selectedBatch, setSelectedBatch] = useState(null);
-        const [editingSlot, setEditingSlot] = useState(null);
-        const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-        const [loading, setLoading] = useState(true);
-        const [viewMode, setViewMode] = useState('day');
-        const [modalType, setModalType] = useState(null);
-        const [error, setError] = useState(null);
+// --- Main Dashboard Component ---
+const TimetableDashboard = () => {
+    // All state and handler logic remains the same
+    const [selectedCohort, setSelectedCohort] = useState(null);
+    const [selectedBatch, setSelectedBatch] = useState(null);
+    const [editingSlot, setEditingSlot] = useState(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [viewMode, setViewMode] = useState('day');
+    const [modalType, setModalType] = useState(null);
+    const [error, setError] = useState(null);
+    const [cohorts, setCohorts] = useState([]);
+    const [batches, setBatches] = useState([]);
+    const [timetable, setTimetable] = useState(generateEmptyTimetable());
+    const [dropdownData, setDropdownData] = useState({ subjects: [], teachers: [], platforms: [] });
 
-        const [cohorts, setCohorts] = useState([]);
-        const [batches, setBatches] = useState([]);
-        const [timetable, setTimetable] = useState(generateEmptyTimetable());
-        const [dropdownData, setDropdownData] = useState({ subjects: [], teachers: [], platforms: [] });
+    useFetchCohorts(setCohorts, setLoading, setError);
+    useFetchBatches(selectedCohort?.cohort_number, setBatches, setLoading, setError);
 
-        useFetchCohorts(setCohorts, setLoading, setError);
-        useFetchBatches(selectedCohort?.cohort_number, setBatches, setLoading, setError);
-
-        const fetchDropdownData = useCallback(async () => {
+const fetchDropdownData = useCallback(async () => {
             try {
                 const [subjectsRes, teachersRes, platformsRes] = await fetchConfigData();
                 setDropdownData({
@@ -526,12 +521,9 @@
                 console.error("Failed to fetch dropdown data:", err);
             }
         }, []);
+    useEffect(() => { fetchDropdownData(); }, [fetchDropdownData]);
 
-        useEffect(() => {
-            fetchDropdownData();
-        }, [fetchDropdownData]);
-
-        const handleCohortChange = useCallback((cohort) => {
+const handleCohortChange = useCallback((cohort) => {
             setSelectedCohort(cohort);
             setSelectedBatch(null);
             setTimetable(generateEmptyTimetable());
@@ -653,102 +645,99 @@
             }
         };
 
-        return (
-            <div className={styles.appContainer}>
-                <header className={styles.header}>
-                    <div className={styles.container}>
-                        <h1 className={styles.mainTitle}>Timetable Management System</h1>
-                        <p className={styles.subtitle}>A flexible and modern scheduling tool.</p>
+    return (
+        <div className={styles.dashboardPage}>
+            <header className={styles.pageHeader}>
+                <h1 className={styles.pageTitle}>Timetable Management</h1>
+                <p className={styles.pageSubtitle}>Design, manage, and view academic schedules.</p>
+            </header>
+
+            {error && <div className={`${styles.card} ${styles.errorCard}`}><AlertCircle size={20} /> {error}</div>}
+            
+            {/* --- Main Two-Column Layout --- */}
+            <div className={styles.mainLayout}>
+                
+                {/* --- Left Column: Controls --- */}
+                <div className={styles.leftColumn}>
+                    <div className={styles.card}>
+                        <h2 className={styles.cardTitle}>Controls</h2>
+                        <div className={styles.selectionGroup}>
+                            <label className={styles.selectionLabel}>1. Select Cohort</label>
+                            <select
+                                value={selectedCohort ? selectedCohort.cohort_number : ''}
+                                onChange={(e) => handleCohortChange(cohorts.find(c => c.cohort_number.toString() === e.target.value))}
+                                className={styles.selectInput}
+                            >
+                                <option value="" disabled>Choose a cohort...</option>
+                                {cohorts.map(c => <option key={c.cohort_number} value={c.cohort_number}>{c.cohort_name}</option>)}
+                            </select>
+                        </div>
+                        <div className={styles.selectionGroup}>
+                            <label className={styles.selectionLabel}>2. Select Batch</label>
+                            <select
+                                value={selectedBatch ? selectedBatch.batch_id : ''}
+                                onChange={(e) => handleBatchChange(batches.find(b => b.batch_id.toString() === e.target.value))}
+                                className={styles.selectInput}
+                                disabled={!selectedCohort || batches.length === 0}
+                            >
+                                <option value="" disabled>Choose a batch...</option>
+                                {batches.map(b => <option key={b.batch_id} value={b.batch_id}>{b.batch_name}</option>)}
+                            </select>
+                        </div>
                     </div>
-                </header>
-                <main className={`${styles.container} ${styles.mainContent}`}>
-                    {error && <div className={`${styles.card} ${styles.error}`}><AlertCircle size={20} /> {error}</div>}
-                    
                     <div className={styles.card}>
                         <h2 className={styles.cardTitle}>Configuration</h2>
                         <div className={styles.configGrid}>
-                            <button onClick={() => openDataModal('subjects')} className={styles.button}>Manage Subjects</button>
-                            <button onClick={() => openDataModal('platforms')} className={styles.button}>Manage Platforms</button>
+                            <button onClick={() => openDataModal('subjects')} className={styles.button}><BookOpen size={16} /> Manage Subjects</button>
+                            <button onClick={() => openDataModal('platforms')} className={styles.button}><Tv size={16} /> Manage Platforms</button>
                         </div>
                     </div>
-                    
-                    {loading && !cohorts.length ? (
-                        <div className={styles.card}><div className={styles.loader}></div><p className={styles.loadingText}>Loading initial data...</p></div>
+                </div>
+
+                {/* --- Right Column: Display --- */}
+                <div className={styles.rightColumn}>
+                    {!selectedBatch ? (
+                        <div className={`${styles.card} ${styles.placeholderCard}`}>
+                            <Clock size={48} />
+                            <h3 className={styles.placeholderTitle}>Select a Cohort and Batch</h3>
+                            <p className={styles.placeholderText}>Choose a cohort and batch from the controls to view or edit the timetable.</p>
+                        </div>
+                    ) : loading ? (
+                        <div className={`${styles.card} ${styles.placeholderCard}`}>
+                            <div className={styles.loader}></div>
+                            <p className={styles.loadingText}>Loading Timetable...</p>
+                        </div>
                     ) : (
                         <>
-                            <CohortSelector cohorts={cohorts} selectedCohort={selectedCohort} onCohortChange={handleCohortChange} />
-                            <BatchSelector batches={batches} selectedBatch={selectedBatch} onBatchChange={handleBatchChange} cohortSelected={!!selectedCohort} />
+                            <div className={styles.card}>
+                                <div className={styles.cardHeader}>
+                                    <h2 className={styles.cardTitle}>Weekly Timetable for {selectedBatch.batch_name}</h2>
+                                    <div className={styles.cardActions}>
+                                        <button onClick={() => handleAddSlot()} className={`${styles.button} ${styles.buttonPrimary}`}><Plus size={16} /> Add Class</button>
+                                    </div>
+                                </div>
+                                <TimetableGridView
+                                    timetable={timetable}
+                                    onEditSlot={handleEditSlot}
+                                    onDeleteSlot={handleDeleteSlot}
+                                    isBatchSelected={!!selectedBatch}
+                                />
+                            </div>
+                            <div className={styles.card}>
+                                <TeacherLoadReport timetable={timetable} teachers={dropdownData.teachers} />
+                            </div>
+                            <div className={styles.card}>
+                                <DownloadButtons timetable={timetable} batchName={selectedBatch.batch_name} />
+                            </div>
                         </>
                     )}
-
-                    {loading && selectedBatch && (
-                        <div className={styles.card}><div className={styles.loader}></div><p className={styles.loadingText}>Loading timetable...</p></div>
-                    )}
-
-                    {!loading && selectedBatch && (
-                        <div className={styles.layoutGrid}>
-                            <div className={styles.mainColumn}>
-                                <div className={styles.card}>
-                                    <div className={styles.cardHeader}>
-                                        <h2 className={styles.cardTitle}>Weekly Timetable for {selectedBatch.batch_name}</h2>
-                                        <div className={styles.viewToggle}>
-                                            <button onClick={() => setViewMode('day')} className={viewMode === 'day' ? styles.active : ''}>Day View</button>
-                                            <button onClick={() => setViewMode('teacher')} className={viewMode === 'teacher' ? styles.active : ''}>Teacher View</button>
-                                        </div>
-                                        {viewMode === 'day' && <button onClick={() => handleAddSlot()} className={styles.buttonSmall}><Plus size={16} /> Add Class</button>}
-                                    </div>
-                                    {viewMode === 'day' ? (
-                                        <TimetableGridView
-                                            timetable={timetable}
-                                            onEditSlot={handleEditSlot}
-                                            onDeleteSlot={handleDeleteSlot}
-                                            isBatchSelected={!!selectedBatch}
-                                        />
-                                    ) : (
-                                        <TeacherTimetableView
-                                            timetable={timetable}
-                                            teachers={dropdownData.teachers}
-                                        />
-                                    )}
-                                </div>
-                            </div>
-                            <div className={styles.sidebarColumn}>
-                                <TeacherLoadReport
-                                    timetable={timetable}
-                                    teachers={dropdownData.teachers}
-                                />
-                                <DownloadButtons
-                                    timetable={timetable}
-                                    batchName={selectedBatch.batch_name}
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {isEditModalOpen && (
-                        <EditTimetableModal
-                            isOpen={isEditModalOpen}
-                            onClose={handleCloseModal}
-                            slotData={editingSlot?.slot}
-                            day={editingSlot?.day}
-                            onSave={handleSaveSlot}
-                            dropdownData={dropdownData}
-                            batchId={selectedBatch?.batch_id}
-                        />
-                    )}
-                    
-                    {modalType && (
-                        <DataManagementModal
-                            isOpen={!!modalType}
-                            onClose={closeDataModal}
-                            onAdd={handleAddItem}
-                            onRemove={handleRemoveItem}
-                            {...getModalProps()}
-                        />
-                    )}
-                </main>
+                </div>
             </div>
-        );
-    };
 
-    export default TimetableDashboard;
+            {isEditModalOpen && <EditTimetableModal isOpen={isEditModalOpen} onClose={handleCloseModal} slotData={editingSlot?.slot} day={editingSlot?.day} onSave={handleSaveSlot} dropdownData={dropdownData} batchId={selectedBatch?.batch_id} />}
+            {modalType && <DataManagementModal isOpen={!!modalType} onClose={closeDataModal} onAdd={handleAddItem} onRemove={handleRemoveItem} {...getModalProps()} />}
+        </div>
+    );
+};
+
+export default TimetableDashboard;
