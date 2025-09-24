@@ -1,3 +1,4 @@
+-- Drop all tables if exist
 DROP TABLE IF EXISTS 
     pp.tab_assignment_history,
     pp.batch_coordinator_batches,
@@ -30,13 +31,14 @@ DROP TABLE IF EXISTS
     pp.role,
     pp.user,
     pp.tab_inventory,
-    pp.student_master
-    pp.system_config
+    pp.student_master,
+    pp.system_config,
     pp.subject,
     pp.platform,
     pp.timetable_slot
 CASCADE;
 
+-- Drop sequences
 DROP SEQUENCE IF EXISTS 
     pp.user_id_seq,
     pp.role_id_seq,
@@ -64,11 +66,13 @@ DROP SEQUENCE IF EXISTS
     pp.timetable_slot_seq
 CASCADE;
 
+-- Drop schema
 DROP SCHEMA IF EXISTS pp CASCADE;
 
+-- Recreate schema
 CREATE SCHEMA IF NOT EXISTS pp;
 
-
+-- Recreate sequences
 CREATE SEQUENCE pp.user_id_seq             START 1;
 CREATE SEQUENCE pp.role_id_seq             START 1;
 CREATE SEQUENCE pp.jurisdiction_code_seq   START 1;
@@ -87,16 +91,12 @@ CREATE SEQUENCE pp.pp_exam_centre_seq      START 1;
 CREATE SEQUENCE pp.shortlist_info_seq      START 1;
 CREATE SEQUENCE pp.examination_seq         START 1;
 CREATE SEQUENCE pp.cohort_seq              START 1;
-
-/* --- NEW SEQUENCES FOR TABLES USING EXPLICIT NEXTVAL --- */
 CREATE SEQUENCE pp.batch_id_seq            START 1;   -- for pp.batch.batch_id
 CREATE SEQUENCE pp.tab_id_seq              START 1;   -- for pp.tab_inventory.tab_id
-CREATE SEQUENCE pp.student_id_seq          START 1;  
-
-CREATE SEQUENCE pp.subject_seq         START 1;
-CREATE SEQUENCE pp.platform_seq        START 1;
-CREATE SEQUENCE pp.timetable_slot_seq  START 1;
- -- for pp.student_master.student_id
+CREATE SEQUENCE pp.student_id_seq          START 1;   -- for pp.student_master.student_id
+CREATE SEQUENCE pp.subject_seq             START 1;
+CREATE SEQUENCE pp.platform_seq            START 1;
+CREATE SEQUENCE pp.timetable_slot_seq      START 1;
 
 
 CREATE TABLE pp.user (

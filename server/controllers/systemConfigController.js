@@ -1,5 +1,6 @@
 const pool = require("../config/db");
 
+// Get all configs, including is_active field
 exports.getAllConfigs = async (req, res) => {
   try {
     const result = await pool.query(
@@ -12,12 +13,12 @@ exports.getAllConfigs = async (req, res) => {
   }
 };
 
+// Create a new config
 exports.createConfig = async (req, res) => {
   const { academic_year, phase } = req.body;
   try {
     const result = await pool.query(
-      `INSERT INTO pp.system_config (academic_year, phase) 
-       VALUES ($1, $2) RETURNING *`,
+      `INSERT INTO pp.system_config (academic_year, phase) VALUES ($1, $2) RETURNING *`,
       [academic_year, phase]
     );
     res.json(result.rows[0]);
@@ -27,6 +28,7 @@ exports.createConfig = async (req, res) => {
   }
 };
 
+// Activate a config (set all others inactive)
 exports.activateConfig = async (req, res) => {
   const { id } = req.params;
   try {
@@ -42,6 +44,30 @@ exports.activateConfig = async (req, res) => {
   }
 };
 
+// Edit all fields in a config
+exports.editConfig = async (req, res) => {
+  const { id } = req.params;
+  const { academic_year, phase, is_active } = req.body;
+  try {
+    // If activating this row, deactivate others
+    if (typeof is_active !== 'undefined' && is_active === true) {
+      await pool.query("UPDATE pp.system_config SET is_active = false WHERE is_active = true AND id != $1", [id]);
+    }
+    const result = await pool.query(
+      `UPDATE pp.system_config 
+         SET academic_year = $1, phase = $2, is_active = $3 
+         WHERE id = $4 RETURNING *`,
+      [academic_year, phase, is_active, id]
+    );
+    if (!result.rows[0]) return res.status(404).json({ error: "Configuration not found" });
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Error updating config:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// Delete a config
 exports.deleteConfig = async (req, res) => {
   const { id } = req.params;
   try {
@@ -49,7 +75,8 @@ exports.deleteConfig = async (req, res) => {
       "DELETE FROM pp.system_config WHERE id = $1 RETURNING *",
       [id]
     );
-    if (!result.rows[0]) return res.status(404).json({ error: "Configuration not found" });
+    if (!result.rows[0])
+      return res.status(404).json({ error: "Configuration not found" });
     res.json({ message: "Configuration deleted" });
   } catch (err) {
     console.error("Error deleting config:", err);
@@ -57,6 +84,7 @@ exports.deleteConfig = async (req, res) => {
   }
 };
 
+// Get active config
 exports.getActiveConfig = async (req, res) => {
   try {
     const result = await pool.query(
