@@ -67,6 +67,8 @@ export const navConfig = {
     { path: "/coordinator/coordinator-dashboard", label: "Dashboard", icon: <Dashboard /> },
     { path: "/coordinator/batch-management", icon: <GroupWork />, label: "Batch Management" },
     { path: "/coordinator/batch-reports", icon: <Assessment />, label: "Batch Reports" },
+    { path: "/coordinator/attendance-tracker", icon: <Assessment />, label: "Student Attendance" },
+    { path: "/", icon: <Logout />, label: "Logout" },
   ],
 
   student: [
