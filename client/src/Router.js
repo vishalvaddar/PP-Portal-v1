@@ -50,6 +50,13 @@ import StudentDashboard from "./pages/Student/StudentDashboard";
 import StudentProfile from "./pages/Student/StudentProfile";
 import StudentCorner from "./pages/Student/StudentCorner";
 
+// Interviewer pages
+import InterviewerDashboard from "./pages/Interviewer/InterviewerDashboard";
+import InterviewSchedule from "./pages/Interviewer/InterviewSchedule";
+import InterviewFeedback from "./pages/Interviewer/InterviewFeedback";
+
+import LogoutHandler from "./components/LogoutHandler";
+
 export const appRouter = createBrowserRouter([
   {
     path: "/login",
@@ -149,6 +156,20 @@ export const appRouter = createBrowserRouter([
           { path: "time-table", element: <TimeTable /> },
         ],
       },
+      // --- Interviewer Layout and Routes ---
+      {
+        path: "interviewer",
+        element: <Layout />,
+        children: [
+          { path: "interviewer-dashboard", element: <InterviewerDashboard /> },
+          { path: "interview-schedule", element: <InterviewSchedule /> },
+          { path: "interview-feedback", element: <InterviewFeedback /> },
+        ],
+      },
+      {
+        path: "logout",
+        element: <LogoutHandler />,
+      },
     ],
   },
   
@@ -159,30 +180,3 @@ export const appRouter = createBrowserRouter([
     element: <div>404 - Page Not Found</div>,
   },
 ]);
-
-export const sidebarLinks = [
-  {
-    title: "Dashboard",
-    icon: "🏠",
-    path: "/admin/admin-dashboard"
-  },
-  {
-    title: "Admissions",
-    icon: "📝",
-    submenu: true,
-    submenuItems: [
-      {
-        title: "New Application",
-        path: "/admin/admissions/new-application" 
-      },
-      {
-        title: "Bulk Upload",
-        path: "/admin/admissions/bulk-upload-applications" 
-      },
-      {
-        title: "View Applications",
-        path: "/admin/admissions/applications" 
-      }
-    ]
-  }
-];

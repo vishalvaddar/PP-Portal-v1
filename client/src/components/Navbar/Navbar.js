@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { navConfig } from "../../config/navConfig";
 import { useAuth } from "../../contexts/AuthContext";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { MoveLeft, MoveRight, ChevronDown, ChevronRight } from "lucide-react";
 import "./Navbar.css";
 
@@ -10,18 +10,19 @@ const roleMap = {
   "BATCH COORDINATOR": "coordinator",
   STUDENT: "student",
   TEACHER: "teacher",
+  INTERVIEWER: "interviewer",
 };
 
 const Navbar = ({ isCollapsed, toggleSidebar, navItems }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+
   const normalizedRole = user?.role?.trim().toUpperCase();
   const roleKey = roleMap[normalizedRole];
 
-
-const navItemsToRender = (navItems && navItems.length > 0)
-  ? navItems
-  : navConfig[roleKey];
+  const navItemsToRender =
+    navItems && navItems.length > 0 ? navItems : navConfig[roleKey];
 
   const [openSubmenus, setOpenSubmenus] = useState({});
 
@@ -44,6 +45,13 @@ const navItemsToRender = (navItems && navItems.length > 0)
       ...prev,
       [label]: !prev[label],
     }));
+  };
+
+  const handleAction = (action) => {
+    if (action === "logout") {
+      logout();
+      navigate("/login");
+    }
   };
 
   if (!roleKey || !navItemsToRender) {
@@ -102,6 +110,17 @@ const navItemsToRender = (navItems && navItems.length > 0)
                   ))}
                 </ul>
               )}
+            </li>
+          ) : item.action ? (
+            <li key={item.label}>
+              <button
+                onClick={() => handleAction(item.action)}
+                title={isCollapsed ? item.label : undefined}
+                className="nav-button"
+              >
+                <span className="nav-icon">{item.icon}</span>
+                <span className="nav-label">{item.label}</span>
+              </button>
             </li>
           ) : (
             <li key={item.path}>

@@ -24,6 +24,15 @@ const LoginForm = () => {
     }
   }, [auth.user, navigate]);
 
+  // Map backend roles to normalized frontend keys
+  const roleMap = {
+    ADMIN: 'admin',
+    'BATCH COORDINATOR': 'coordinator',
+    TEACHER: 'teacher',
+    STUDENT: 'student',
+    INTERVIEWER: 'interviewer',
+  };
+
   const handleFirstStep = async (e) => {
     e.preventDefault();
     setError('');
@@ -34,14 +43,19 @@ const LoginForm = () => {
         password: credentials.password,
       });
 
-      const { roles, user_name } = response.data;
+      const { roles: backendRoles, user_name } = response.data;
 
-      if (roles?.length === 1) {
+      if (backendRoles?.length === 1) {
         // If only one role, auto-select and proceed to next step
-        setSelectedRole(roles[0]);
-        handleRoleSelection(roles[0], user_name);
-      } else if (roles?.length > 1) {
-        setRoles(roles);
+        const normalizedRole = roleMap[backendRoles[0].toUpperCase()] || backendRoles[0].toLowerCase();
+        setSelectedRole(normalizedRole);
+        handleRoleSelection(normalizedRole, user_name);
+      } else if (backendRoles?.length > 1) {
+        // Normalize all roles for selection
+        const normalizedRoles = backendRoles.map(
+          (r) => roleMap[r.toUpperCase()] || r.toLowerCase()
+        );
+        setRoles(normalizedRoles);
         setStep(2);
       } else {
         setError('No roles assigned to this user.');
@@ -52,7 +66,7 @@ const LoginForm = () => {
   };
 
   const handleRoleSelection = async (eOrRole, overrideUsername = null) => {
-    if (typeof eOrRole === 'object') eOrRole.preventDefault(); // if triggered via form
+    if (typeof eOrRole === 'object') eOrRole.preventDefault();
 
     const role = typeof eOrRole === 'string' ? eOrRole : selectedRole;
     const username = overrideUsername || credentials.user_name;
@@ -73,21 +87,24 @@ const LoginForm = () => {
       const { token, user } = response.data;
       const { user_id, user_name: dbUserName, role_name } = user;
 
+      // Normalize role for frontend use
+      const normalizedRole = roleMap[role_name.toUpperCase()] || role_name.toLowerCase();
+
       const userData = {
         user_id,
         user_name: dbUserName,
-        role: role_name,
+        role: normalizedRole,
         token,
       };
 
       auth.login(userData);
 
-      // Navigate based on role
-      switch (role_name.toLowerCase()) {
+      // Navigate based on normalized role
+      switch (normalizedRole) {
         case 'admin':
           navigate('/admin/admin-dashboard');
           break;
-        case 'batch coordinator':
+        case 'coordinator':
           navigate('/coordinator/coordinator-dashboard');
           break;
         case 'student':
@@ -95,6 +112,9 @@ const LoginForm = () => {
           break;
         case 'teacher':
           navigate('/teacher/teacher-dashboard');
+          break;
+        case 'interviewer':
+          navigate('/interviewer/interviewer-dashboard');
           break;
         default:
           navigate('/');
@@ -174,7 +194,7 @@ const LoginForm = () => {
                         onChange={() => setSelectedRole(role)}
                         className={styles.roleRadioGroupItem}
                       />
-                      {role}
+                      {role.charAt(0).toUpperCase() + role.slice(1)}
                     </label>
                   ))}
                 </div>

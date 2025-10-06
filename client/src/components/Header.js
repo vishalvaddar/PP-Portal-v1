@@ -3,14 +3,16 @@ import { useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
 import rcf_pp from "../assets/RCF-PP2.jpg";
 import { useSystemConfig } from "../contexts/SystemConfigContext";
+import { useAuth } from "../contexts/AuthContext";
 
 const Header = () => {
   const navigate = useNavigate();
   const { config, loading, error } = useSystemConfig();
-
+  const { logout } = useAuth();
+  
   const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
+    logout();
+    navigate("/login"); // redirect to login
   };
 
   return (
