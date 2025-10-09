@@ -1,0 +1,340 @@
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.header {
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: #64748b;
+  font-weight: 400;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.weekSelector {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: white;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.weekBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #f8fafc;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.weekBtn:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.weekLabel {
+  font-weight: 500;
+  color: #1e293b;
+  min-width: 150px;
+  text-align: center;
+}
+
+.filters {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.batchSelect {
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.batchSelect:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.exportBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.exportBtn:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.statCard {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.2s ease;
+}
+
+.statCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.iconContainer {
+  padding: 0.75rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconContainer.good {
+  background: #dcfce7;
+  color: #059669;
+}
+
+.iconContainer.poor {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.iconContainer.warning {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.iconContainer:not(.good):not(.poor):not(.warning) {
+  background: #f1f5f9;
+  color: #3b82f6;
+}
+
+.cardTitle {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+.cardValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.attendanceTable {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.table th {
+  background: #f8fafc;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.tableRow:hover {
+  background: #f8fafc;
+}
+
+.studentCell {
+  min-width: 150px;
+}
+
+.studentName {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.batchCell {
+  color: #64748b;
+  min-width: 120px;
+}
+
+.dayCell {
+  text-align: center;
+  width: 60px;
+}
+
+.present {
+  color: #059669;
+}
+
+.absent {
+  color: #dc2626;
+}
+
+.totalCell {
+  text-align: center;
+  font-weight: 600;
+}
+
+.totalCount.good {
+  color: #059669;
+}
+
+.totalCount.poor {
+  color: #dc2626;
+}
+
+.remarksCell {
+  min-width: 200px;
+}
+
+.remarksInput {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  background: #f8fafc;
+  transition: all 0.2s ease;
+}
+
+.remarksInput:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: white;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.actionsCell {
+  min-width: 100px;
+}
+
+.followUpBtn {
+  padding: 0.5rem 1rem;
+  background: #f59e0b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.followUpBtn:hover {
+  background: #d97706;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .weekSelector {
+    justify-content: center;
+  }
+  
+  .filters {
+    flex-direction: column;
+  }
+  
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .table {
+    font-size: 0.75rem;
+  }
+  
+  .table th,
+  .table td {
+    padding: 0.5rem;
+  }
+  
+  .remarksInput {
+    font-size: 0.75rem;
+  }
+}

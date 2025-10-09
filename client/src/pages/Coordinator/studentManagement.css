@@ -1,0 +1,288 @@
+/*
+  TimetableView.css
+
+  This stylesheet provides the styling for the TimetableView React component.
+  It uses a clean, modern design with a consistent color palette, responsive
+  layout, and distinct colors for different subjects to improve readability.
+*/
+
+/* General & Layout */
+.timetable-container {
+  font-family: 'Inter', sans-serif;
+  background-color: #f3f4f6; /* Light gray background */
+  padding: 2rem;
+  min-height: 100vh;
+  color: #1f2937; /* Dark gray for text */
+}
+
+/* Header */
+.timetable-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.timetable-header h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.timetable-header p {
+  font-size: 1rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+/* Filters */
+.timetable-filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.timetable-filters > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 150px;
+}
+
+.timetable-filters label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.timetable-filters select,
+.timetable-filters input[type="week"] {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background-color: #f9fafb;
+  font-size: 1rem;
+  color: #374151;
+  transition: border-color 0.2s;
+}
+
+.timetable-filters select:focus,
+.timetable-filters input[type="week"]:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.class-count {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.count-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.count-note {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+/* Teacher Summary */
+.teacher-summary {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.teacher-summary h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 1.5rem;
+}
+
+.teacher-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.teacher-card {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.teacher-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.teacher-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.teacher-header p {
+  font-weight: 500;
+  color: #1f2937;
+  margin: 0;
+}
+
+.teacher-card p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.classes-note {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+/* Timetable Grid */
+.timetable-grid {
+  background-color: #fff;
+  border-radius: 0.75rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+}
+
+.timetable-grid h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 1.5rem;
+}
+
+.timetable-grid table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.timetable-grid th,
+.timetable-grid td {
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  text-align: center;
+  min-width: 120px;
+}
+
+.timetable-grid thead th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #4b5563;
+  padding: 1rem;
+}
+
+.time-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+/* Class Cells */
+.class-cell {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  min-height: 100px; /* Ensure a minimum height for all cells */
+}
+
+.free-cell {
+  background-color: #f1f5f9;
+  color: #9ca3af;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 500;
+  min-height: 100px; /* Match class cell height */
+}
+
+.subject-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+}
+
+.teacher-name,
+.room-name {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  color: #e5e7eb;
+}
+
+/* Subject-specific Colors */
+.subject-mathematics { background-color: #2563eb; }
+.subject-physics { background-color: #b91c1c; }
+.subject-chemistry { background-color: #14b8a6; }
+.subject-biology { background-color: #d97706; }
+.subject-english { background-color: #7c3aed; }
+.subject-cs { background-color: #4b5563; }
+.subject-break { background-color: #94a3b8; }
+.subject-study { background-color: #06b6d4; }
+.subject-lab { background-color: #0d9488; }
+.subject-review { background-color: #c084fc; }
+.subject-default { background-color: #64748b; }
+
+/* Icons */
+.icon-sm {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #6b7280;
+}
+
+.icon-xs {
+  width: 1rem;
+  height: 1rem;
+  color: #e5e7eb;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .timetable-container {
+    padding: 1rem;
+  }
+  .timetable-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .timetable-filters > div {
+    min-width: 100%;
+  }
+  .teacher-list {
+    grid-template-columns: 1fr;
+  }
+}
