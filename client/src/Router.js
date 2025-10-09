@@ -4,7 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Layout from "./Layout";
 import LoginForm from "./components/login/LoginForm";
 
-// Admin pages
+// --- Admin pages ---
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import Applications from "./pages/Admin/Applications";
 import NewApplication from "./pages/Admin/NewApplication";
@@ -31,36 +31,27 @@ import EvaluationDashboard from "./pages/Admin/Evaluation/EvaluationDashboard";
 import EvaluationMarksEntry from "./pages/Admin/Evaluation/EvaluationMarksEntry";
 import EvaluationInterview from "./pages/Admin/Evaluation/EvaluationInterview";
 import EvaluationTracking from "./pages/Admin/Evaluation/EvaluationTracking";
-import Resultandrank from "./pages/Admin/Result/Resultandranking";
-import CreateExam from "./pages/Admin/CreateExam";
-      //Admin-Evaluation pages
-      import EvaluationDashboard from "./pages/Admin/Evaluation/EvaluationDashboard";
-      import EvaluationMarksEntry from "./pages/Admin/Evaluation/EvaluatioinMarksEntry";
-      import EvaluationInterview from "./pages/Admin/Evaluation/EvaluationInterview";
-      import EvaluationTracking from "./pages/Admin/Evaluation/EvaluationTracking";
+import Resultandrank from "./pages/Admin/Result/Resultandranking"
 
-
-// import Results from "./pages/Admin/Results";
-
-// Coordinator pages
+// --- Coordinator pages ---
 import CoordinatorDashboard from "./pages/Coordinator/CoordinatorDashboard";
 import ViewApplication from "./pages/Coordinator/ViewApplication";
 import BatchManagement from "./pages/Coordinator/BatchManagement";
 import BatchReports from "./pages/Coordinator/BatchReports";
 import AttendanceTracker from "./pages/Coordinator/AttendanceTracker";
 
-// Teacher pages
+// --- Teacher pages ---
 import TeacherDashboard from "./pages/Teacher/TeacherDashboard";
 import StudentsList from "./pages/Teacher/StudentsList";
 import AssignedBatches from "./pages/Teacher/AssignedBatches";
 import TimeTable from "./pages/Teacher/TimeTable";
 
-// Student pages
+// --- Student pages ---
 import StudentDashboard from "./pages/Student/StudentDashboard";
 import StudentProfile from "./pages/Student/StudentProfile";
 import StudentCorner from "./pages/Student/StudentCorner";
 
-// Interviewer pages
+// --- Interviewer pages ---
 import InterviewerDashboard from "./pages/Interviewer/InterviewerDashboard";
 import InterviewSchedule from "./pages/Interviewer/InterviewSchedule";
 import InterviewFeedback from "./pages/Interviewer/InterviewFeedback";
@@ -72,16 +63,13 @@ export const appRouter = createBrowserRouter([
     path: "/login",
     element: <LoginForm />,
   },
-
   {
     path: "/",
     element: <ProtectedRoute />,
     children: [
-      {
-        index: true, 
-        element: <Navigate to="/admin/admin-dashboard" replace />,
-      },
-      // --- Admin Layout and Routes ---
+      { index: true, element: <Navigate to="/admin/admin-dashboard" replace /> },
+
+      // --- Admin Routes ---
       {
         path: "admin",
         element: <Layout />,
@@ -100,12 +88,12 @@ export const appRouter = createBrowserRouter([
               { path: "exam-management", element: <CreateExam /> },
               { path: "view-student-info/:nmms_reg_number", element: <ViewStudentInfo /> },
               { path: "view-applications", element: <ViewApplications /> },
-              { path: "results", element: <Resultandrank /> },
               { path: "edit-form/:nmms_reg_number", element: <EditForm /> },
-              { 
-                path: "evaluation", 
-                children:[
-                  { path: "", element: <EvaluationDashboard />},
+              { path: "results", element: <Resultandrank /> },
+              {
+                path: "evaluation",
+                children: [
+                  { path: "", element: <EvaluationDashboard /> },
                   { path: "marks-entry", element: <EvaluationMarksEntry /> },
                   { path: "interview", element: <EvaluationInterview /> },
                   { path: "tracking", element: <EvaluationTracking /> },
@@ -113,8 +101,8 @@ export const appRouter = createBrowserRouter([
               },
             ],
           },
-          { 
-            path: "academics", 
+          {
+            path: "academics",
             children: [
               { path: "students", element: <Students /> },
               { path: "batches", element: <Batches /> },
@@ -122,19 +110,20 @@ export const appRouter = createBrowserRouter([
               { path: "batches/view-student-info/:nmms_reg_number", element: <ViewStudentInfo /> },
               { path: "time-table-dashboard", element: <TimeTableDashboard /> },
               { path: "reports", element: <Reports /> },
-            ]
+            ],
           },
-          { 
-            path: "settings", 
+          {
+            path: "settings",
             children: [
               { path: "my-profile", element: <MyProfile /> },
               { path: "user-roles", element: <UserRoles /> },
               { path: "system", element: <SystemConfig /> },
-            ]
+            ],
           },
         ],
       },
-      // --- Coordinator Layout and Routes ---
+
+      // --- Coordinator Routes ---
       {
         path: "coordinator",
         element: <Layout />,
@@ -143,9 +132,11 @@ export const appRouter = createBrowserRouter([
           { path: "view-application", element: <ViewApplication /> },
           { path: "batch-management", element: <BatchManagement /> },
           { path: "batch-reports", element: <BatchReports /> },
+          { path: "attendance-tracker", element: <AttendanceTracker /> },
         ],
       },
-      // --- Student Layout and Routes ---
+
+      // --- Student Routes ---
       {
         path: "student",
         element: <Layout />,
@@ -155,7 +146,8 @@ export const appRouter = createBrowserRouter([
           { path: "student-corner", element: <StudentCorner /> },
         ],
       },
-      // --- Teacher Layout and Routes ---
+
+      // --- Teacher Routes ---
       {
         path: "teacher",
         element: <Layout />,
@@ -166,7 +158,8 @@ export const appRouter = createBrowserRouter([
           { path: "time-table", element: <TimeTable /> },
         ],
       },
-      // --- Interviewer Layout and Routes ---
+
+      // --- Interviewer Routes ---
       {
         path: "interviewer",
         element: <Layout />,
@@ -176,89 +169,12 @@ export const appRouter = createBrowserRouter([
           { path: "interview-feedback", element: <InterviewFeedback /> },
         ],
       },
-      {
-        path: "logout",
-        element: <LogoutHandler />,
-      },
-    ],
-  },
-  
-  // --- CATCH-ALL 404 ROUTE ---
-  // This should be the last route in the list.
-      { path: "admin-dashboard", element: <AdminDashboard /> },
-      {
-        path: "admissions",
-        children: [
-          { path: "new-application", element: <NewApplication /> },
-          { path: "bulk-upload-applications", element: <BulkUploadApplications /> },
-          { path: "search-applications", element: <SearchApplications /> },
-          { path: "applications", element: <Applications /> },
-          { path: "shortlisting", element: <Shortlisting /> },
-          { path: "generate-shortlist", element: <GenerateShortlist /> },
-          { path: "shortlist-info", element: <ShortlistInfo /> },
-          { path: "exam-management", element: <CreateExam /> },
-          { path: "view-student-info/:nmms_reg_number", element: <ViewStudentInfo /> },
-          { path: "view-applications", element: <ViewApplications /> },
-          { path: "edit-form/:nmms_reg_number", element: <EditForm /> },
-          { path: "evaluation", 
-            children:[
-              { path:"", element:<EvaluationDashboard />},
-              { path: "marks-entry", element: <EvaluationMarksEntry /> },
-              { path: "interview", element: <EvaluationInterview /> },
-              { path: "tracking", element: <EvaluationTracking /> },
 
-            ],
-          },
-        ],
-      },
-      { path: "academics", children: [
-          { path: "students", element: <Students /> },
-          // { path: "teachers", element: <Teachers /> },
-          { path: "batches", element: <Batches /> },
-          { path: "reports", element: <Reports /> },
-        ]
-      },
-      { path: "settings", children: [
-        { path: "my-profile", element: <MyProfile /> },
-        { path: "user-roles", element: <UserRoles /> },
-        { path: "system", element: <System /> },
-      ]},
-      // { path: "exam-management", element: <ExamManagement /> },
-      // { path: "results", element: <Results /> },
+      // --- Logout ---
+      { path: "logout", element: <LogoutHandler /> },
+
+      // --- Catch-all 404 ---
+      { path: "*", element: <div>404 - Page Not Found</div> },
     ],
-  },
-  {
-    path: "/coordinator",
-    element: <Layout />,
-    children: [
-      { path: "coordinator-dashboard", element: <CoordinatorDashboard /> },
-      { path: "view-application", element: <ViewApplication /> },
-      { path: "batch-management", element: <BatchManagement /> },
-      { path: "batch-reports", element: <BatchReports /> },
-      { path: "attendance-tracker", element:<AttendanceTracker/>},
-    ],
-  },
-  {
-    path: "/student",
-    element: <Layout />,
-    children: [
-      { path: "student-dashboard", element: <StudentDashboard /> },
-      { path: "student-profile", element: <StudentProfile /> },
-      { path: "student-corner", element: <StudentCorner /> },
-    ],
-  },
-  {
-    path: "/teacher",
-    element: <Layout />,
-    children: [
-      { path: "teacher-dashboard", element: <TeacherDashboard /> },
-      { path: "students-list", element: <StudentsList /> },
-      { path: "assigned-batches", element: <AssignedBatches /> },
-      { path: "time-table", element: <TimeTable /> },
-    ],
-  },
-  {
-    path: "*",
-    element: <div>404 - Page Not Found</div>,
   },
 ]);
