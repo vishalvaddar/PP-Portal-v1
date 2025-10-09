@@ -1,0 +1,331 @@
+/* Container */
+.container {
+  padding: 6rem 2rem 2rem; /* top padding to avoid overlap with fixed header */
+  max-width: 1400px;
+  margin: 0 auto;
+  color: #333;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Header */
+.sticky-header {
+  display: flex;
+  justify-content: space-between; /* header + add button */
+  align-items: center;
+  gap: 1rem;
+  background: white;
+  padding: 1.25rem 1.75rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 1rem;
+}
+
+.header-texts {
+  flex-grow: 1;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a365d;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: #4a5568;
+  margin-top: 0.25rem;
+}
+
+/* Add Button */
+.add-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #14f63a;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.add-button:hover {
+  background: #38a169;
+  transform: translateY(-2px);
+}
+
+/* Filters Row */
+.filter-bar {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.filter-bar .filter-item,
+.filter-bar .search-box,
+.filter-bar .export-button {
+  flex: 0 0 auto; /* do not shrink */
+}
+
+.filter-bar input,
+.filter-bar select {
+  width: 180px; /* uniform width */
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.search-box {
+  position: relative;
+}
+
+.search-box input {
+  padding-left: 2rem; /* space for icon */
+}
+
+.search-box .input-icon {
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #718096;
+}
+
+.export-button {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1rem;
+  background: #edf2f7;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.export-button:hover {
+  background: #e2e8f0;
+}
+
+/* Table */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.students-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.students-table th,
+.students-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.students-table th {
+  background: #f7fafc;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #2d3748;
+}
+
+.students-table tr:hover {
+  background: #f9fafb;
+}
+
+.student-info .name {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.student-info .id {
+  font-size: 0.8rem;
+  color: #718096;
+}
+
+.badge {
+  display: inline-block;
+  background: #ebf8ff;
+  color: #2b6cb0;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.sub-info {
+  font-size: 0.8rem;
+  color: #718096;
+}
+
+/* Attendance */
+.progress-bar-container {
+  width: 100%;
+  background: #edf2f7;
+  border-radius: 6px;
+  overflow: hidden;
+  height: 8px;
+  margin-bottom: 0.3rem;
+}
+
+.progress-bar {
+  height: 100%;
+}
+
+.progress-bar.green {
+  background: #48bb78;
+}
+
+.progress-bar.yellow {
+  background: #ecc94b;
+}
+
+.progress-bar.red {
+  background: #e53e3e;
+}
+
+.percent {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4a5568;
+}
+
+/* Status */
+.status {
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status.active {
+  background: #c6f6d5;
+  color: #2f855a;
+}
+
+.status.inactive {
+  background: #fed7d7;
+  color: #c53030;
+}
+
+/* Actions */
+.actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 0.35rem;
+  padding: 0.3rem;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.actions button:hover {
+  background: #edf2f7;
+}
+
+.icon {
+  color: #4a5568;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.edit-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.edit-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: #2d3748;
+  text-transform: capitalize;
+}
+
+.edit-form input {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.save-btn {
+  background: #48bb78;
+  color: white;
+  padding: 0.75rem 1.25rem;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.save-btn:hover {
+  background: #38a169;
+  transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sticky-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filter-bar {
+    overflow-x: auto;
+  }
+
+  .students-table th,
+  .students-table td {
+    padding: 0.75rem;
+  }
+}

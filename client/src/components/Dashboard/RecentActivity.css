@@ -1,0 +1,73 @@
+.recent-activity-card {
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.recent-activity-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 16px;
+}
+
+.recent-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.activity-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icon-green {
+  background-color: #d1fae5;
+  color: #059669;
+}
+
+.icon-blue {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.icon-purple {
+  background-color: #ede9fe;
+  color: #7c3aed;
+}
+
+.icon-orange {
+  background-color: #ffedd5;
+  color: #f97316;
+}
+
+.activity-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-message {
+  font-size: 14px;
+  color: #111827;
+  margin: 0;
+}
+
+.activity-time {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}

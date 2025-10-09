@@ -1,0 +1,99 @@
+.dashboard-container {
+  padding: 24px;
+  background-color: #f5f7fa;
+  font-family: Arial, sans-serif;
+}
+
+.dashboard-header {
+  margin-bottom: 24px;
+}
+
+.dashboard-header h1 {
+  font-size: 24px;
+  color: #1f2937;
+  margin: 0;
+}
+
+.dashboard-header p {
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.quick-actions {
+  background: #ffffff;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.quick-actions h3 {
+  margin-bottom: 16px;
+  font-size: 16px;
+  color: #1f2937;
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  font-size: 14px;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.action-btn .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.action-btn.blue {
+  background-color: #3b82f6;
+}
+
+.action-btn.green {
+  background-color: #10b981;
+}
+
+.action-btn.purple {
+  background-color: #8b5cf6;
+}
+
+.action-btn.orange {
+  background-color: #f97316;
+}
+
+.action-btn:hover {
+  opacity: 0.9;
+}
