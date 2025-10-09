@@ -27,7 +27,7 @@ const LoginForm = () => {
   // Map backend roles to normalized frontend keys
   const roleMap = {
     ADMIN: 'admin',
-    'BATCH COORDINATOR': 'coordinator',
+    'BATCH COORDINATOR': 'BATCH COORDINATOR',
     TEACHER: 'teacher',
     STUDENT: 'student',
     INTERVIEWER: 'interviewer',
