@@ -4,9 +4,9 @@ import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import axios from 'axios';
 import styles from "./TimeTableDashboard.module.css";
+import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 import { Plus, Trash2, Edit, Download, AlertCircle, Settings, BookOpen, Clock, Users, Tv } from 'lucide-react';
 
-// --- API Service Functions ---
 const API_URL = process.env.REACT_APP_BACKEND_API_URL;
 const fetchActiveCohorts = () => axios.get(`${API_URL}/api/batches/cohorts/active`);
 const fetchBatchesByCohort = (cohortId) => axios.get(`${API_URL}/api/batches/${cohortId}/batches`);
@@ -20,7 +20,6 @@ const deleteSubject = (id) => axios.delete(`${API_URL}/api/timetable/data/subjec
 const addPlatform = (name) => axios.post(`${API_URL}/api/timetable/data/platforms`, { platform_name: name });
 const deletePlatform = (id) => axios.delete(`${API_URL}/api/timetable/data/platforms/${id}`);
 
-// --- Custom Hooks ---
 const useFetchCohorts = (setCohorts, setLoading, setError) => {
         useEffect(() => {
             const fetchCohorts = async () => {
@@ -62,7 +61,6 @@ const useFetchCohorts = (setCohorts, setLoading, setError) => {
         }, [cohortId, setBatches, setLoading, setError]);
     };
 
-// --- Helper Functions ---
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const generateEmptyTimetable = () => {
         const timetable = {};
@@ -70,7 +68,6 @@ const generateEmptyTimetable = () => {
         return timetable;
     };
 
-// --- Child Components ---
 const DataManagementModal = ({ isOpen, onClose, title, items, placeholder, onAdd, onRemove }) => {
         const [newItem, setNewItem] = useState('');
         const [isSubmitting, setIsSubmitting] = useState(false);
@@ -489,9 +486,7 @@ const DataManagementModal = ({ isOpen, onClose, title, items, placeholder, onAdd
         );
     };
 
-// --- Main Dashboard Component ---
 const TimetableDashboard = () => {
-    // All state and handler logic remains the same
     const [selectedCohort, setSelectedCohort] = useState(null);
     const [selectedBatch, setSelectedBatch] = useState(null);
     const [editingSlot, setEditingSlot] = useState(null);
@@ -504,6 +499,8 @@ const TimetableDashboard = () => {
     const [batches, setBatches] = useState([]);
     const [timetable, setTimetable] = useState(generateEmptyTimetable());
     const [dropdownData, setDropdownData] = useState({ subjects: [], teachers: [], platforms: [] });
+    const currentPath = ['Admin','Academics', 'TimeTable'];
+
 
     useFetchCohorts(setCohorts, setLoading, setError);
     useFetchBatches(selectedCohort?.cohort_number, setBatches, setLoading, setError);
@@ -647,17 +644,15 @@ const handleCohortChange = useCallback((cohort) => {
 
     return (
         <div className={styles.dashboardPage}>
+          <Breadcrumbs path={currentPath} nonLinkSegments={['Admin', 'Academics']} />    
             <header className={styles.pageHeader}>
                 <h1 className={styles.pageTitle}>Timetable Management</h1>
-                <p className={styles.pageSubtitle}>Design, manage, and view academic schedules.</p>
             </header>
 
             {error && <div className={`${styles.card} ${styles.errorCard}`}><AlertCircle size={20} /> {error}</div>}
             
-            {/* --- Main Two-Column Layout --- */}
             <div className={styles.mainLayout}>
                 
-                {/* --- Left Column: Controls --- */}
                 <div className={styles.leftColumn}>
                     <div className={styles.card}>
                         <h2 className={styles.cardTitle}>Controls</h2>
@@ -694,7 +689,6 @@ const handleCohortChange = useCallback((cohort) => {
                     </div>
                 </div>
 
-                {/* --- Right Column: Display --- */}
                 <div className={styles.rightColumn}>
                     {!selectedBatch ? (
                         <div className={`${styles.card} ${styles.placeholderCard}`}>

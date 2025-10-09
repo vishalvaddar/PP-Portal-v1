@@ -8,6 +8,7 @@ import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Loader2, Trash2, PlusCircle, Edit3, Settings } from "lucide-react";
 import styles from "./SystemConfig.module.css";
+import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 import { useSystemConfig } from "../../contexts/SystemConfigContext";
 
 const statusOptions = [
@@ -22,6 +23,7 @@ const phaseOptions = [
 
 const SystemConfig = () => {
   const { refetchConfig } = useSystemConfig();
+  const currentPath = ['Admin','System-Settings', 'System'];
   const [configs, setConfigs] = useState([]);
   const [form, setForm] = useState({ academicYear: "", phase: "", is_active: false });
   const [errors, setErrors] = useState({});
@@ -153,6 +155,7 @@ const SystemConfig = () => {
 
   return (
     <div className={styles.pageContainer}>
+      <Breadcrumbs path={currentPath} nonLinkSegments={['Admin', 'System-Settings']}/>
       <header className={styles.pageHeader}>
         <Settings className={styles.pageIcon} />
         <div>
