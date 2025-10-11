@@ -1,8 +1,8 @@
 import React from 'react';
 import { Clock, MapPin } from 'lucide-react';
 
-export default function UpcomingClasses() {
-  const classes = [
+export default function Upcomingstyles() {
+  const styles = [
     { subject: 'Mathematics', time: '09:00 AM', room: 'Room 101', batch: 'Batch A' },
     { subject: 'Physics', time: '11:00 AM', room: 'Room 102', batch: 'Batch B' },
     { subject: 'Chemistry', time: '02:00 PM', room: 'Room 103', batch: 'Batch A' },
@@ -11,9 +11,9 @@ export default function UpcomingClasses() {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Today's Classes</h3>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">Today's styles</h3>
       <div className="space-y-4">
-        {classes.map((class_, index) => (
+        {styles.map((class_, index) => (
           <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
             <div>
               <p className="font-medium text-gray-900">{class_.subject}</p>

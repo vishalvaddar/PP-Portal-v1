@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom'; 
-import classes from './Breadcrumbs.module.css';
+import styles from './Breadcrumbs.module.css';
 
 const Breadcrumbs = ({ path = [], nonLinkSegments = [] }) => {
   let currentPath = '';
 
   return (
-    <nav className={classes.breadcrumbs} aria-label="breadcrumb">
+    <nav className={styles.breadcrumbs} aria-label="breadcrumb">
       {path.map((segment, index) => {
         const slug = (segment || '').toLowerCase().replace(/\s+/g, '-');
         currentPath += `/${slug}`;
@@ -16,16 +16,16 @@ const Breadcrumbs = ({ path = [], nonLinkSegments = [] }) => {
         return (
           <React.Fragment key={currentPath}>
             {isLast || isNonLink ? (
-              <span className={`${classes.pathSegment} ${classes.active}`}>
+              <span className={`${styles.pathSegment} ${styles.active}`}>
                 {segment}
               </span>
             ) : (
-              <Link to={currentPath} className={classes.pathSegment}>
+              <Link to={currentPath} className={styles.pathSegment}>
                 {segment}
               </Link>
             )}
 
-            {!isLast && <span className={classes.separator}>/</span>}
+            {!isLast && <span className={styles.separator}>/</span>}
           </React.Fragment>
         );
       })}

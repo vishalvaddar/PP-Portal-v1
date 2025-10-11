@@ -6,6 +6,7 @@ import CreatableSelect from "react-select/creatable";
 import { PlusCircle, Pencil, Trash2, X, Users } from "lucide-react";
 import classes from "./Batches.module.css";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
+import { useSystemConfig } from "../../contexts/SystemConfigContext";
 
 const Notification = ({ message, type, onDismiss }) => {
     if (!message) return null;
@@ -54,6 +55,7 @@ const Batches = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [sortBy, setSortBy] = useState("cohort_name");
+    const { appliedConfig, loading: configLoading } = useSystemConfig();
     
     const [showCohortModal, setShowCohortModal] = useState(false);
     const [newCohort, setNewCohort] = useState({

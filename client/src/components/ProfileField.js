@@ -1,10 +1,10 @@
 import React from "react";
-import classes from "./ProfileField.module.css";
+import styles from "./ProfileField.module.css";
 
 const ProfileField = ({ label, value }) => (
-  <div className={classes.formGroup}>
-    <label className={classes.formLabel}>{label}</label>
-    <div className={classes.formValue}>{value}</div>
+  <div className={styles.formGroup}>
+    <label className={styles.formLabel}>{label}</label>
+    <div className={styles.formValue}>{value}</div>
   </div>
 );
 

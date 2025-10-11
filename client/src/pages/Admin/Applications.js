@@ -33,9 +33,11 @@ const FeatureCard = ({ title, icon, description, link, badge, isDisabled }) => {
 
 const Applications = () => {
   const currentPath = ["Admin", "Admissions", "Applications"];
-  const { config, loading } = useSystemConfig();
+  const { appliedConfig, loading, error } = useSystemConfig();
+
+  // Check if admissions are open based on the system phase
   const isAdmissionsOpen =
-    !loading && config?.phase === "Admissions in Progress";
+    !loading && appliedConfig?.phase === "Admissions are started";
 
   const features = useMemo(
     () => [
@@ -59,13 +61,20 @@ const Applications = () => {
         link: "/admin/admissions/search-applications",
       },
     ],
-    [isAdmissionsOpen]
+    []
   );
 
   if (loading)
     return (
       <div className={styles.loader}>
         Retrieving system configuration, please wait...
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className={styles.error}>
+        <AlertTriangle size={18} /> Failed to load system configuration.
       </div>
     );
 

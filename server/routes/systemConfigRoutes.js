@@ -8,16 +8,16 @@ router.get("/all", SystemConfigController.getAllConfigs);
 // Create a config
 router.post("/", SystemConfigController.createConfig);
 
-// Activate a config
+// Activate a config (optional)
 router.put("/:id/activate", SystemConfigController.activateConfig);
 
-// Edit ALL config fields (new route)
+// Edit ALL config fields
 router.put("/:id", SystemConfigController.editConfig);
 
 // Delete a config
 router.delete("/:id", SystemConfigController.deleteConfig);
 
-// Get the currently active config
-router.get("/active", SystemConfigController.getActiveConfig);
+// Get all active configs
+router.get("/active", SystemConfigController.getActiveConfigs);
 
 module.exports = router;

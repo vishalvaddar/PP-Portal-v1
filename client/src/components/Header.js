@@ -7,12 +7,12 @@ import { useAuth } from "../contexts/AuthContext";
 
 const Header = () => {
   const navigate = useNavigate();
-  const { config, loading, error } = useSystemConfig();
+  const { appliedConfig, loading, error } = useSystemConfig();
   const { logout } = useAuth();
-  
+
   const handleLogout = () => {
     logout();
-    navigate("/login"); // redirect to login
+    navigate("/login");
   };
 
   return (
@@ -34,10 +34,13 @@ const Header = () => {
       <div className={styles.systemStatus}>
         {loading && <span className={styles.statusText}>Loading Config...</span>}
         {error && <span className={styles.errorText}>Config Unavailable</span>}
-        {config && !loading && !error && (
+        {!loading && !error && appliedConfig && (
           <span className={styles.statusText}>
-            <strong>Phase:</strong> {config.phase} (AY: {config.academic_year})
+            <strong>Phase:</strong> {appliedConfig.phase} (AY: {appliedConfig.academic_year})
           </span>
+        )}
+        {!loading && !error && !appliedConfig && (
+          <span className={styles.statusText}>No Applied Academic Year</span>
         )}
       </div>
 

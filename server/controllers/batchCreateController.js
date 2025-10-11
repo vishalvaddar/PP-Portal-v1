@@ -209,7 +209,7 @@ exports.assignCoordinator = async (req, res) => {
 // 7. Get Batch Names
 exports.getBatchNames = async (req, res) => {
   try {
-    const result = await pool.query(`SELECT name FROM pp.batch_names ORDER BY name ASC`);
+    const result = await pool.query(`SELECT batch_name FROM pp.batch ORDER BY name ASC`);
     res.json(result.rows.map((row) => ({ label: row.name, value: row.name })));
   } catch (err) {
     console.error("Error fetching batch names:", err);
@@ -219,28 +219,41 @@ exports.getBatchNames = async (req, res) => {
 
 // 8. Add Batch Name
 exports.addBatchName = async (req, res) => {
-  const { name } = req.body;
-  if (!name || name.trim().length < 2)
+  const { batch_name, cohort_number, created_by } = req.body;
+
+  if (!batch_name || batch_name.trim().length < 2) {
     return res.status(400).json({ error: "Batch name must be at least 2 characters" });
+  }
+  if (!cohort_number) {
+    return res.status(400).json({ error: "Cohort number is required" });
+  }
+  if (!created_by) {
+    return res.status(400).json({ error: "Created by (user ID) is required" });
+  }
 
   try {
     const result = await pool.query(
-      `INSERT INTO pp.batch_names (name)
-       VALUES ($1)
-       ON CONFLICT (name) DO NOTHING
+      `INSERT INTO pp.batch (batch_name, cohort_number, created_by, updated_by)
+       VALUES ($1, $2, $3, $3)
+       ON CONFLICT (cohort_number, batch_name) DO NOTHING
        RETURNING *`,
-      [name.trim()]
+      [batch_name.trim(), cohort_number, created_by]
     );
 
-    if (result.rows.length === 0)
-      return res.status(200).json({ message: "Name already exists" });
+    if (result.rows.length === 0) {
+      return res.status(200).json({ message: "Batch name already exists for this cohort" });
+    }
 
-    res.status(201).json(result.rows[0]);
+    res.status(201).json({
+      message: "Batch created successfully",
+      batch: result.rows[0]
+    });
   } catch (err) {
-    console.error("Error saving batch name:", err);
+    console.error("Error saving batch:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 // 9. Get All Cohorts
 exports.getAllCohorts = async (req, res) => {
