@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from "./Layout";
 import LoginForm from "./components/login/LoginForm";
+import { useAuth } from "./contexts/AuthContext";
 
 // --- Admin pages ---
 import AdminDashboard from "./pages/Admin/AdminDashboard";

@@ -2,34 +2,46 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 
 const AuthContext = createContext();
 
-// Hook for using Auth context
 export const useAuth = () => useContext(AuthContext);
 
-// Validate token expiry
 const isTokenValid = (token) => {
   try {
-    const payload = JSON.parse(atob(token.split(".")[1])); // decode JWT payload
-    return payload.exp * 1000 > Date.now(); // exp is in seconds, convert to ms
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.exp * 1000 > Date.now();
   } catch {
     return false;
   }
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    try {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        const parsed = JSON.parse(storedUser);
-        return parsed.token && isTokenValid(parsed.token) ? parsed : null;
-      }
-    } catch (err) {
-      console.error("Error parsing stored user:", err);
-    }
-    return null;
-  });
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // ✅ Auto logout if token expires
+  // ✅ Define logout BEFORE useEffect to prevent “Cannot access before initialization”
+  const logout = useCallback(() => {
+    localStorage.removeItem("user");
+    setUser(null);
+  }, []);
+
+  // ✅ Load user from storage on mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        if (parsed.token && isTokenValid(parsed.token)) {
+          setUser(parsed);
+        } else {
+          logout();
+        }
+      } catch {
+        logout();
+      }
+    }
+    setLoading(false);
+  }, [logout]);
+
+  // ✅ Auto logout when token expires
   useEffect(() => {
     if (!user?.token) return;
 
@@ -47,22 +59,14 @@ export const AuthProvider = ({ children }) => {
     } catch {
       logout();
     }
-  }, [user]);
+  }, [user, logout]);
 
-  // ✅ Login
   const login = useCallback(({ token, ...userData }) => {
     const userWithToken = { ...userData, token };
     localStorage.setItem("user", JSON.stringify(userWithToken));
     setUser(userWithToken);
   }, []);
 
-  // ✅ Logout
-  const logout = useCallback(() => {
-    localStorage.removeItem("user");
-    setUser(null);
-  }, []);
-
-  // ✅ Update profile info
   const updateUserProfile = useCallback(
     (updates) => {
       if (!user) return;
@@ -73,14 +77,15 @@ export const AuthProvider = ({ children }) => {
     [user]
   );
 
-  // ✅ Get valid token
   const getToken = useCallback(
     () => (user?.token && isTokenValid(user.token) ? user.token : null),
     [user]
   );
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, getToken, updateUserProfile }}>
+    <AuthContext.Provider
+      value={{ user, login, logout, getToken, updateUserProfile, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );
