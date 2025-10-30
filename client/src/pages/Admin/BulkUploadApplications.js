@@ -2,43 +2,161 @@ import React, { useState } from "react";
 import axios from "axios";
 import classes from "./BulkUploadApplications.module.css";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
-import { UploadCloud, FileText, Download, AlertTriangle, CheckCircle, XCircle, Info } from 'lucide-react';
+import {
+  UploadCloud,
+  FileText,
+  Download,
+  AlertTriangle,
+  CheckCircle,
+  Info,
+} from "lucide-react";
 
 const BulkUploadApplications = ({ refreshData }) => {
-  const currentPath = ['Admin', 'Admissions', 'Applications', 'BulkUploads'];
-  
-  // State variables
+  const currentPath = ["Admin", "Admissions", "Applications", "BulkUploads"];
+
+  // States
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [validationReport, setValidationReport] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  // --- CORRECTION 1: Removed validationReport state ---
+  // The backend only sends a *count* of validation errors, not the full array.
+  // The full error list is in the log file.
   const [logFileUrl, setLogFileUrl] = useState("");
   const [uploadStats, setUploadStats] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  // File change handler
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-        setFile(selectedFile);
-        resetMessages();
-    }
-  };
-
+  // Reset all messages
   const resetMessages = () => {
     setMessage("");
     setError("");
-    setValidationReport(null);
     setLogFileUrl("");
     setUploadStats(null);
   };
 
+  // File selection
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      resetMessages();
+    }
+  };
+
+  // Validate file
+  const validateFile = () => {
+    const fileExt = file.name.split(".").pop().toLowerCase();
+    if (!["csv", "xlsx", "xls"].includes(fileExt)) {
+      setError("Please upload only CSV or Excel files (.csv, .xlsx, .xls).");
+      return false;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setError("File too large! Upload files smaller than 10MB.");
+      return false;
+    }
+    return true;
+  };
+
+  // Handle file upload
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!file) {
+      setError("Please select a file to upload.");
+      return;
+    }
+    if (!validateFile()) return;
+
+    setIsLoading(true);
+    resetMessages(); // Reset messages on new submission
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await axios.post(
+        // Ensure this URL is correct (e.g., http://localhost:5000/api/upload)
+        `${process.env.REACT_APP_BACKEND_API_URL}/api/upload`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+      handleResponse(response);
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // --- CORRECTION 2: Completely rewrote handleResponse ---
+  // This now matches the actual API response from your backend controller.
+  const handleResponse = (response) => {
+    const { data } = response;
+    // data = { totalRecords, insertedRecords, validationErrors, dbErrors, status, logFile }
+
+    const rejectedCount = (data.validationErrors || 0) + (data.dbErrors || 0);
+
+    setUploadStats({
+      totalRecords: data.totalRecords || 0,
+      insertedRecords: data.insertedRecords || 0,
+      rejectedCount: rejectedCount,
+    });
+
+    if (data.logFile) {
+      setLogFileUrl(data.logFile);
+    }
+
+    // Use the 'status' string from the backend for messaging
+    switch (data.status) {
+      case "success":
+        setMessage(
+          `✅ File uploaded successfully! All ${data.insertedRecords} records were processed.`
+        );
+        if (typeof refreshData === "function") refreshData();
+        break;
+      case "partial_success":
+        setError(
+          `Upload complete with issues: ${data.insertedRecords} records added, ${rejectedCount} failed. Download the report for details.`
+        );
+        break;
+      case "failed":
+        setError(
+          `Upload failed. All ${rejectedCount} records failed. Download the report for details.`
+        );
+        break;
+      case "no_valid_data":
+        setError(
+          "Upload processed, but no valid data was found to insert. Check the log file for details."
+        );
+        break;
+      default:
+        setError("⚠️ Unexpected response from server.");
+        break;
+    }
+  };
+
+  // Handle backend/network errors
+  const handleError = (error) => {
+    const backendMessage =
+      error.response?.data?.message ||
+      "❌ Upload failed due to a server or network error.";
+    setError(backendMessage);
+
+    if (error.response?.data?.logFile)
+      setLogFileUrl(error.response.data.logFile);
+
+    setUploadStats(null);
+  };
+
+  // Download log file
   const downloadLogFile = async () => {
     if (!logFileUrl) return;
+    // This assumes your backend serves the 'logs' folder statically
+    // e.g., http://localhost:5000/logs/upload_log_...txt
     const fullUrl = `${process.env.REACT_APP_BACKEND_API_URL}/logs/${logFileUrl}`;
     try {
       const response = await fetch(fullUrl);
+      if (!response.ok) {
+        throw new Error(`Log file not found or server error: ${response.statusText}`);
+      }
       const text = await response.text();
       const blob = new Blob([text], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
@@ -49,74 +167,13 @@ const BulkUploadApplications = ({ refreshData }) => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error downloading log file:", error);
+    } catch (err) {
+      console.error("Error downloading log file:", err);
       setError("Couldn't download the report. Please try again.");
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!file) {
-      setError("Please select a file to upload first.");
-      return;
-    }
-    if (!validateFile()) return;
-
-    setIsLoading(true);
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const response = await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/api/upload`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      handleResponse(response);
-    } catch (error) {
-      handleError(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const validateFile = () => {
-    const fileExt = file.name.split('.').pop().toLowerCase();
-    if (!['csv', 'xlsx', 'xls'].includes(fileExt)) {
-      setError("Please upload only CSV or Excel files.");
-      return false;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      setError("File is too large! Please upload a file smaller than 10MB.");
-      return false;
-    }
-    return true;
-  };
-
-  const handleResponse = (response) => {
-    setUploadStats({
-        totalRecords: response.data.totalRecords || 0,
-        submittedApplications: response.data.submittedApplications || 0,
-        rejectedApplications: response.data.rejectedApplications || 0,
-        duplicateRecords: response.data.duplicateRecords || 0,
-    });
-
-    if (response.data.validationErrors?.length > 0) {
-        setValidationReport({ errors: response.data.validationErrors });
-        setMessage(`Upload complete with ${response.data.validationErrors.length} issues found.`);
-    } else {
-        setMessage("File uploaded successfully! All records were processed.");
-        if (typeof refreshData === "function") refreshData();
-    }
-    if (response.data.logFile) setLogFileUrl(response.data.logFile);
-  };
-
-  const handleError = (error) => {
-    const backendMessage = error.response?.data?.message || "An unexpected error occurred.";
-    setError(backendMessage);
-    if (error.response?.data?.logFile) setLogFileUrl(error.response.data.logFile);
-  };
-  
-  // Drag and drop handlers
+  // Drag and Drop Handlers (No changes)
   const handleDragOver = (e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -130,42 +187,78 @@ const BulkUploadApplications = ({ refreshData }) => {
     setIsDragging(false);
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile) {
-        setFile(droppedFile);
-        resetMessages();
+      setFile(droppedFile);
+      resetMessages();
     }
   };
 
   return (
     <div className={classes.pageContainer}>
-      <Breadcrumbs path={currentPath} nonLinkSegments={['Admin', 'Admissions']}/>
+      <Breadcrumbs path={currentPath} nonLinkSegments={["Admin", "Admissions"]} />
+
       <div className={classes.mainContent}>
+        {/* Left Section (No changes) */}
         <div className={classes.leftColumn}>
           <h2>📂 Bulk Upload Applications</h2>
-          <h3>Upload a CSV or Excel file containing multiple student applications</h3>
+
           <div className={classes.card}>
-            <h2 className={classes.cardTitle}><FileText size={20} /> File Requirements</h2>
+            <h2 className={classes.cardTitle}>
+              <FileText size={20} /> File Requirements
+            </h2>
+
             <div className={classes.requirementsGrid}>
-                <div className={classes.requirementItem}>CSV or Excel format (.csv, .xlsx, .xls)</div>
-                <div className={classes.requirementItem}>Maximum file size: 10MB</div>
+              <div className={classes.requirementItem}>
+                CSV or Excel format (.csv, .xlsx, .xls)
+              </div>
+              <div className={classes.requirementItem}>
+                Maximum file size: 10MB
+              </div>
             </div>
+
             <h3 className={classes.subHeading}>Required Fields:</h3>
             <div className={classes.tagsContainer}>
-                {['NMMS Year', 'Registration Number', 'Student Name', 'Father\'s Name', 'Gender', 'GMAT Score', 'SAT Score'].map(tag => <span key={tag} className={classes.tag}>{tag}</span>)}
+              {[
+                "NMMS Year",
+                "Registration Number",
+                "Student Name",
+                "Father's Name",
+                "Gender",
+                "GMAT Score",
+                "SAT Score",
+              ].map((tag) => (
+                <span key={tag} className={classes.tag}>
+                  {tag}
+                </span>
+              ))}
             </div>
-             <div className={classes.requirementItemFull}>Each Registration Number must be unique</div>
-            <a href="/sample_bulk_upload.csv" download className={classes.downloadLink}>
+
+            <div className={classes.requirementItemFull}>
+              Each Registration Number must be unique
+            </div>
+
+            <a
+              href="/sample_bulk_upload.csv"
+              download
+              className={classes.downloadLink}
+            >
               <Download size={16} /> Download Sample CSV File
             </a>
-            <p className={classes.sampleFileText}>Need help formatting your file? Use our sample as a template.</p>
+            <p className={classes.sampleFileText}>
+              Need help formatting your file? Use our sample as a template.
+            </p>
           </div>
 
           <form onSubmit={handleSubmit}>
-            <div 
-              className={`${classes.dropzone} ${isDragging ? classes.dragging : ''}`}
+            <div
+              className={`${classes.dropzone} ${
+                isDragging ? classes.dragging : ""
+              }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
-              onClick={() => document.getElementById('file-upload-input').click()}
+              onClick={() =>
+                document.getElementById("file-upload-input").click()
+              }
             >
               <input
                 type="file"
@@ -175,77 +268,125 @@ const BulkUploadApplications = ({ refreshData }) => {
                 accept=".csv, .xlsx, .xls"
               />
               <UploadCloud size={48} className={classes.dropzoneIcon} />
+
               {file ? (
                 <div>
-                    <p className={classes.dropzoneText}><strong>Selected File:</strong> {file.name}</p>
-                    <p className={classes.dropzoneSubtext}>({(file.size / 1024).toFixed(2)} KB)</p>
+                  <p className={classes.dropzoneText}>
+                    <strong>Selected File:</strong> {file.name}
+                  </p>
+                  <p className={classes.dropzoneSubtext}>
+                    ({(file.size / 1024).toFixed(2)} KB)
+                  </p>
                 </div>
               ) : (
                 <div>
-                    <p className={classes.dropzoneText}>Drag and drop your file here, or click to browse</p>
-                    <p className={classes.dropzoneSubtext}>Supports CSV, XLSX, and XLS files up to 10MB</p>
+                  <p className={classes.dropzoneText}>
+                    Drag and drop your file here, or click to browse
+                  </p>
+                  <p className={classes.dropzoneSubtext}>
+                    Supports CSV, XLSX, and XLS files up to 10MB
+                  </p>
                 </div>
               )}
             </div>
-            <button type="submit" className={classes.uploadButton} disabled={isLoading || !file}>
-              {isLoading ? 'Uploading...' : 'Upload File'}
+
+            <button
+              type="submit"
+              className={classes.uploadButton}
+              disabled={isLoading || !file}
+            >
+              {isLoading ? "Uploading..." : "Upload File"}
             </button>
           </form>
         </div>
 
+        {/* Right Section - Help (No changes) */}
         <div className={classes.rightColumn}>
           <div className={`${classes.card} ${classes.helpCard}`}>
-             <h2 className={classes.cardTitle}><Info size={20} /> Need Help With Your Upload?</h2>
-             <p className={classes.helpIntro}>Common issues and how to fix them:</p>
-             <ul className={classes.helpList}>
-                <li><strong>Blank cells:</strong> Make sure all required fields have information.</li>
-                <li><strong>Dates:</strong> Use exactly DD-MM-YYYY format (e.g., 15-01-2023).</li>
-                <li><strong>Phone numbers:</strong> Should be 10 digits only (no spaces or symbols).</li>
-                <li><strong>Scores:</strong> Must be numbers only (no letters or symbols).</li>
-                <li><strong>Registration Numbers:</strong> Each one must be unique - no duplicates.</li>
-             </ul>
-             <p className={classes.helpFooter}><strong>Still having trouble?</strong> Try downloading our sample file and comparing it with yours.</p>
+            <h2 className={classes.cardTitle}>
+              <Info size={20} /> Need Help With Your Upload?
+            </h2>
+            <p className={classes.helpIntro}>Common issues and how to fix them:</p>
+            <ul className={classes.helpList}>
+              <li>
+                <strong>Blank cells:</strong> Make sure all required fields have
+                data.
+              </li>
+              <li>
+                <strong>Dates:</strong> Use DD-MM-YYYY format.
+              </li>
+              <li>
+                <strong>Phone numbers:</strong> 10 digits only.
+              </li>
+              <li>
+                <strong>Scores:</strong> Numbers only.
+              </li>
+              <li>
+                <strong>Registration Numbers:</strong> Must be unique.
+              </li>
+            </ul>
+            <p className={classes.helpFooter}>
+              <strong>Still having trouble?</strong> Try downloading our sample
+              file and comparing it with yours.
+            </p>
           </div>
         </div>
       </div>
-      
+
+      {/* Report Section */}
       {(error || message || uploadStats) && (
         <div className={classes.reportSection}>
-            {error && <div className={`${classes.alert} ${classes.alertError}`}><AlertTriangle size={18}/> {error}</div>}
-            {message && <div className={`${classes.alert} ${classes.alertSuccess}`}><CheckCircle size={18}/> {message}</div>}
+          {error && (
+            <div className={`${classes.alert} ${classes.alertError}`}>
+              <AlertTriangle size={18} /> {error}
+            </div>
+          )}
+          {message && (
+            <div className={`${classes.alert} ${classes.alertSuccess}`}>
+              <CheckCircle size={18} /> {message}
+            </div>
+          )}
 
-            {uploadStats && (
-                <div className={classes.statsGrid}>
-                    <div className={classes.statBox}><span>{uploadStats.totalRecords}</span>Total Records</div>
-                    <div className={`${classes.statBox} ${classes.success}`}><span>{uploadStats.submittedApplications}</span>Successfully Added</div>
-                    <div className={`${classes.statBox} ${classes.error}`}><span>{uploadStats.rejectedApplications}</span>Rejected</div>
-                    {uploadStats.duplicateRecords > 0 && <div className={`${classes.statBox} ${classes.warning}`}><span>{uploadStats.duplicateRecords}</span>Duplicates</div>}
-                </div>
-            )}
+          {/* --- CORRECTION 3: Updated stats grid --- */}
+          {uploadStats && (
+            <div className={classes.statsGrid}>
+              <div className={classes.statBox}>
+                <span>{uploadStats.totalRecords}</span>Total Records
+              </div>
+              <div className={`${classes.statBox} ${classes.success}`}>
+                <span>{uploadStats.insertedRecords}</span> Successfully Added
+              </div>
+              <div className={`${classes.statBox} ${classes.error}`}>
+                <span>{uploadStats.rejectedCount}</span> Rejected
+              </div>
+              {/* Removed 'DuplicateRecords' as backend doesn't provide this count */}
+            </div>
+          )}
 
-            {validationReport?.errors?.length > 0 && (
-                <div className={classes.validationReport}>
-                    <h4><AlertTriangle size={18}/> Issues Found in Your File</h4>
-                    <ul className={classes.errorList}>
-                        {validationReport.errors.slice(0, 5).map((err, index) => (
-                            <li key={index}>
-                                <strong>Row {err.row}:</strong> [{err.field}] - {err.message}
-                            </li>
-                        ))}
-                    </ul>
-                    {validationReport.errors.length > 5 && <p>...and {validationReport.errors.length - 5} more issues.</p>}
-                </div>
-            )}
+          {/* --- CORRECTION 4: Removed validationReport list --- */}
+          {/* This was removed because the backend doesn't send the error array. */}
 
-            {logFileUrl && (
-                <div className={classes.downloadReport}>
-                    <h4>Generate Full Report</h4>
-                    <p>The detailed report contains all records processed, errors found, and suggestions for fixing issues.</p>
-                    <button onClick={downloadLogFile} className={classes.reportButton}>
-                        <Download size={16} /> Download Complete Report
-                    </button>
-                </div>
-            )}
+          {logFileUrl && (
+            <div className={classes.downloadReport}>
+              <h4>Generate Full Report</h4>
+              <p>
+                Download a detailed log of all processed records and issues
+                found.
+                {/* --- CORRECTION 5: Added text to guide user --- */}
+                <br />
+                <strong>
+                  This report includes all row-by-row validation and database
+                  errors.
+                </strong>
+              </p>
+              <button
+                onClick={downloadLogFile}
+                className={classes.reportButton}
+              >
+                <Download size={16} /> Download Complete Report
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

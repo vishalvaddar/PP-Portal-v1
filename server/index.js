@@ -19,6 +19,10 @@ if (!fs.existsSync(uploadsDir)) {
 app.use(cors({ origin: "*" }));
 app.use(bodyParser.json());
 
+// ───── Logging Middleware ─────
+const actionLogger = require("./middleware/loggingMiddleware");
+app.use(actionLogger({ logBody: true, logQuery: true }));
+
 // ───── Static Files ─────
 app.use(
   "/uploads/profile_photos",

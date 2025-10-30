@@ -1,10 +1,14 @@
 const pool = require('../config/db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const logger = require('../utils/logger');
 
 const loginController = async (req, res) => {
   const { user_name, password, selectedRole } = req.body;
   console.log('Login attempt:', { user_name, selectedRole });
+  
+  // Get client IP for logging
+  const clientIp = logger.constructor.getClientIp(req);
 
   // Step 1: Validate input
   if (!user_name || !password) {
@@ -34,6 +38,13 @@ const loginController = async (req, res) => {
 
     if (result.rows.length === 0) {
       console.log('No matching user or active roles found');
+      // Log failed login attempt
+      logger.logLogin({
+        user_name,
+        status: 'failed',
+        reason: 'invalid_username',
+        ip: clientIp
+      });
       return res.status(401).json({ error: 'Invalid username or no active roles assigned' });
     }
 
@@ -42,6 +53,14 @@ const loginController = async (req, res) => {
     const isMatch = await bcrypt.compare(password, enc_password);
     if (!isMatch) {
       console.log('Incorrect password');
+      // Log failed login attempt
+      logger.logLogin({
+        user_name,
+        user_id,
+        status: 'failed',
+        reason: 'incorrect_password',
+        ip: clientIp
+      });
       return res.status(401).json({ error: 'Incorrect password' });
     }
 
@@ -82,6 +101,15 @@ const loginController = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '1d' }
     );
+
+    // Log successful login
+    logger.logLogin({
+      user_id,
+      user_name: dbUserName,
+      role_name: roleToUse,
+      status: 'success',
+      ip: clientIp
+    });
 
     // Step 9: Send response
     return res.status(200).json({

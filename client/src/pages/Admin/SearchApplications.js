@@ -5,7 +5,7 @@ import { FileSearch, Search, RotateCcw, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   useFetchStates,
-  useFetchDistricts,
+  useFetchEducationDistricts,
   useFetchBlocks,
 } from "../../hooks/useJurisData"; // Removed unused useFetchInstitutes
 import classes from "./SearchApplications.module.css";
@@ -48,7 +48,7 @@ const SearchApplications = () => {
 
   // Custom hooks for fetching jurisdictional data
   useFetchStates(setStates);
-  useFetchDistricts(formData.app_state, setDistricts);
+  useFetchEducationDistricts(formData.app_state, setDistricts);
   useFetchBlocks(formData.district, setBlocks);
 
   const handleChange = (e) => {

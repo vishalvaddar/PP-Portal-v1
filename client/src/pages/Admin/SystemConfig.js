@@ -307,7 +307,7 @@ const SystemConfig = () => {
                   {configs
                     .filter((c) => c.is_active)
                     .map((c) => (
-                      <option key={c.id} value={c.academic_year}>
+                      <option key={c.system_config_id} value={c.academic_year}>
                         {c.academic_year}
                       </option>
                     ))}

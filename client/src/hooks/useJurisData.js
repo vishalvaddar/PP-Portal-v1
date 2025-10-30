@@ -17,12 +17,30 @@ export function useFetchStates(setStates) {
   }, [setStates]);
 }
 
-export function useFetchDistricts(stateId, setDistricts) {
+export function useFetchDivisions(stateId, setDivisions) {
   useEffect(() => {
-    const fetchDistricts = async () => {
+    const fetchDivisions = async () => {
       if (stateId) {
         try {
-          const response = await axios.get(`${API_BASE_URL}/api/districts-by-state/${stateId}`);
+          const response = await axios.get(`${API_BASE_URL}/api/divisions-by-state/${stateId}`);
+          setDivisions(response.data);
+        } catch (error) {
+          console.error("Error fetching divisions:", error);
+        }
+      } else {
+        setDivisions([]);
+      }
+    };
+    fetchDivisions();
+  }, [stateId, setDivisions]);
+}
+
+export function useFetchEducationDistricts(divisionId, setDistricts) {
+  useEffect(() => {
+    const fetchDistricts = async () => {
+      if (divisionId) {
+        try {
+          const response = await axios.get(`${API_BASE_URL}/api/districts-by-division/${divisionId}`);
           setDistricts(response.data);
         } catch (error) {
           console.error("Error fetching districts:", error);
@@ -32,7 +50,7 @@ export function useFetchDistricts(stateId, setDistricts) {
       }
     };
     fetchDistricts();
-  }, [stateId, setDistricts]);
+  }, [divisionId, setDistricts]);
 }
 
 export function useFetchBlocks(districtId, setBlocks) {

@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import {UserCircle, Phone, Home, GraduationCap, Calculator} from "lucide-react";
 import classes from "./NewApplication.module.css";
-import { useFetchStates, useFetchDistricts, useFetchBlocks, useFetchInstitutes } from "../../hooks/useJurisData";
+import { useFetchStates, useFetchEducationDistricts, useFetchBlocks, useFetchInstitutes } from "../../hooks/useJurisData";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 
 const NewApplication = () => {
@@ -67,7 +67,7 @@ const NewApplication = () => {
   const [errors, setErrors] = useState({});
   
   useFetchStates(setStates);
-  useFetchDistricts(formData.app_state, setDistricts);
+  useFetchEducationDistricts(formData.app_state, setDistricts);
   useFetchBlocks(formData.district, setBlocks);
   useFetchInstitutes(formData.nmms_block, setInstitutes);
 
@@ -524,6 +524,7 @@ const NewApplication = () => {
                 <option value="ENGLISH">ENGLISH</option>
                 <option value="URDU">URDU</option>
                 <option value="MARATHI">MARATHI</option>
+                <option value="HINDI">HINDI</option>
               </select>
             </div>
           </div>
