@@ -1,4 +1,5 @@
 const express = require("express");
+    const fileUpload = require('express-fileupload');
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const path = require("path");
@@ -14,10 +15,28 @@ const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
+    const interviewDataDir = path.join(__dirname, "Data", "Interview-data"); // Correct path for interview data
 
+    if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+    }
 // ───── Middleware ─────
 app.use(cors({ origin: "*" }));
 app.use(bodyParser.json());
+ app.use(bodyParser.urlencoded({ extended: true })); // This is good practice for form data
+    app.use(fileUpload());
+
+    app.use(express.json()); 
+    app.use(express.urlencoded({ extended: true }));
+
+      app.use(
+        "/Data/Interview-data",
+        express.static(path.join(__dirname, "Data", "Interview-data"))
+    );
+    app.use(
+    "/Data/Home-verification-data",
+    express.static(path.join(__dirname, "Data", "Home-verification-data"))
+    );
 
 // ───── Logging Middleware ─────
 const actionLogger = require("./middleware/loggingMiddleware");
@@ -58,6 +77,7 @@ const userRoleRoutes = require("./routes/userRoleRoutes");
 const examRoutes = require("./routes/examRoutes");
 const evaluationRoutes = require("./routes/evaluationRoutes");
 const evaluationDashboardRoutes = require("./routes/evaluationDashboardRoutes");
+const trackingRoutes = require('./routes/trackingRoutes'); // Import your tracking routes
 
 const studentSearchRoutes = require("./routes/studentSearchRoutes");
 const timetableRoutes = require("./routes/timeTableRoutes");
@@ -100,6 +120,7 @@ app.use("/api/student", studentRoutes);
 app.use("/api/exams", examRoutes);
 app.use("/api/evaluation", evaluationRoutes);
 app.use("/api/evaluation-dashboard", evaluationDashboardRoutes);
+    app.use('/api/tracking', trackingRoutes);
 
 // Interviews & Results
 app.use("/api/interview", interviewRoutes);

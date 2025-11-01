@@ -1,0 +1,72 @@
+/* src/EvaluationTracking.css */
+
+/* --- Essential Tailwind Imports --- */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- Custom Round Selector Box Styles --- */
+
+/* Base style applied to all selector boxes */
+.round-box-base {
+    /* Applying Tailwind classes directly here */
+    padding: 1rem;
+    border-radius: 0.75rem; /* rounded-xl */
+    border-width: 1px;
+    transition: all 150ms ease-in-out;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Style for ACTIVE/Selected Box (CHANGED TO LIGHT BLUE PALETTE) */
+.round-box-active {
+    /* Corresponds to: border-blue-500, bg-blue-50, text-blue-800, ring-blue-300 */
+    border-color: #a9b4c5; /* border-blue-500 */
+    background-color: #eff6ff; /* bg-blue-50 */
+    color: #9cafeb; /* text-blue-800 (A dark blue for high contrast text) */
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.5); /* ring-2 ring-blue-300 shadow-md */
+}
+
+/* Status Classes: These control the default (non-active) background/border color */
+
+/* GREEN: Data Submitted and Accepted/Verified */
+.status-success {
+    border-color: #4ade80; /* border-green-400 */
+    background-color: #f0fdf4; /* bg-green-50 */
+    color: #047857; /* text-green-700 */
+}
+.status-success:hover {
+    background-color: #dcfce7; /* hover:bg-green-100 */
+}
+
+/* RED: Data NOT SUBMITTED OR Submitted and Rejected/Failed */
+.status-not-submitted, .status-failure {
+    border-color: #f87171; /* border-red-400 */
+    background-color: #fef2f2; /* bg-red-50 */
+    color: #b91c1c; /* text-red-700 */
+}
+.status-not-submitted:hover, .status-failure:hover {
+    background-color: #fee2e2; /* hover:bg-red-100 */
+}
+
+/* YELLOW: Scheduled, Rescheduled, or Submitted and Pending */
+.status-pending {
+    border-color: #fbbf24; /* border-yellow-400 */
+    background-color: #fffdf6; /* bg-yellow-50 */
+    color: #92400e; /* text-yellow-800 */
+}
+.status-pending:hover {
+    background-color: #fef3c7; /* hover:bg-yellow-100 */
+}
+
+/* Default Fallback Style */
+.status-default {
+    border-color: #d1d5db; /* border-gray-300 */
+    background-color: #fff; /* bg-white */
+    color: #4b5563; /* text-gray-700 */
+}
+.status-default:hover {
+    background-color: #f3f4f6; /* hover:bg-gray-100 */
+}
