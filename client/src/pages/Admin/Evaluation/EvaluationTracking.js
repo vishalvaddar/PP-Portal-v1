@@ -310,7 +310,7 @@ const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload }) => {
     return (
         <div className="bg-white p-6 rounded-xl shadow-inner border border-gray-200 mt-4">
             <h3 className="text-xl font-bold text-gray-800 mb-3 border-b pb-2">
-                {isHomeVerification ? `Home Verification Details (#${round.verification_id || 'N/A'})` : `Interview Evaluation (Round ${round.interview_round || 'N/A'})`}
+                {isHomeVerification ? `Home Verification Details` : `Interview Evaluation (Round ${round.interview_round || 'N/A'})`}
             </h3>
             
             {/* --- PRIMARY DETAILS SECTION --- */}
@@ -319,8 +319,6 @@ const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload }) => {
                 <div>
                     <p className="font-semibold text-gray-800 mb-2">Round Details</p>
                     <p className="mb-1">Date: {round.interview_date || round.date_of_verification || 'N/A'}</p>
-                    <p className="mb-1">Time: {round.interview_time || 'N/A'}</p>
-                    <p className="mb-1">Mode: {round.interview_mode || 'N/A'}</p>
                 </div>
                 
                 {/* Col 2: Assignment, Status, Result */}
@@ -368,7 +366,7 @@ const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload }) => {
                         onClick={() => handleDocumentDownload(applicantId, roundType, cohortId)}
                         className="flex items-center text-xs font-semibold px-3 py-1 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition shadow-md"
                     >
-                        View/Download
+                        View
                     </button>
                 </div>
             )}

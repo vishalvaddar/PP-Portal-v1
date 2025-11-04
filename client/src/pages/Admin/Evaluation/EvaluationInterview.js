@@ -33,7 +33,6 @@ api.getUnassignedBlockStudents = (stateName, districtName, blockName, nmmsYear) 
 api.getReassignableBlockStudents = (stateName, districtName, blockName, nmmsYear) =>
   axios.get(`${API_BASE_URL}/reassignableStudentsByBlock`, { params: { stateName, districtName, blockName, nmmsYear } });
 
-
 function BlockAssignmentView() {
     const [states, setStates] = useState([]);
     const [districts, setDistricts] = useState([]);
@@ -49,6 +48,7 @@ function BlockAssignmentView() {
     const [messages, setMessages] = useState([]);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
+    // Assuming NO_INTERVIEWER_ID is available in this file scope (from your previous code)
     const nmmsYear = new Date().getFullYear();
 
     useEffect(() => {
@@ -107,7 +107,12 @@ function BlockAssignmentView() {
             setMessages(['Please select an interviewer.']);
             return;
         }
-        setModalMessage(`Are you sure you want to ${assignmentType === 'unassigned' ? 'assign' : 'reassign'} ${selectedStudents.length} student(s) to ${selectedInterviewer.name}?`);
+        // Handle Cancel Assignment case for reassignment view (optional based on your InterviewerDropdown behavior)
+        const actionText = selectedInterviewer.id === NO_INTERVIEWER_ID 
+            ? `CANCEL the assignment for ${selectedStudents.length} student(s)`
+            : `${assignmentType === 'unassigned' ? 'assign' : 'reassign'} ${selectedStudents.length} student(s) to ${selectedInterviewer.name}`;
+            
+        setModalMessage(`Are you sure you want to ${actionText}?`);
         setShowConfirmModal(true);
     };
 
@@ -115,27 +120,55 @@ function BlockAssignmentView() {
         setShowConfirmModal(false);
         setLoading(true);
         setMessages([]);
+        
+        const isCancellation = selectedInterviewer.id === NO_INTERVIEWER_ID;
+        
         try {
             let response;
+            // The assignment/reassignment API handles cancellation if NO_INTERVIEWER_ID is passed
             if (assignmentType === 'unassigned') {
                 response = await api.assignStudents(selectedStudents, selectedInterviewer.id, nmmsYear);
             } else {
                 response = await api.reassignStudents(selectedStudents, selectedInterviewer.id, nmmsYear);
             }
+            
             const results = response.data?.results || [];
             const studentNameMap = new Map();
             students.forEach(s => studentNameMap.set(s.applicant_id, s.student_name));
+            
             const feedback = results.map(result => {
                 const name = studentNameMap.get(result.applicantId) || `Applicant ID ${result.applicantId}`;
                 switch (result.status) {
-                    case 'Skipped': return `⚠️ Skipped: ${name} - ${result.reason || 'Reason unknown.'}`;
+                    case 'Skipped': return `⚠️ Skipped: ${name} - Same interviewer assigend for previous interview`;
                     case 'Assigned': return `✅ Assigned: ${name} has been successfully assigned for Interview Round ${result.interviewRound}.`;
                     case 'Reassigned': return `✅ Reassigned: ${name} was successfully reassigned for Interview Round ${result.interviewRound}.`;
+                    case 'Cancelled': return `🗑️ Unassigned: ${name} was successfully unassigned.`; // Add Cancelled status if needed
                     case 'Failed': return `❌ Failed: ${name} - ${result.reason || 'An unexpected error occurred.'}`;
                     default: return `ℹ️ Status: ${name} ${result.status}`;
                 }
             });
             setMessages(feedback);
+
+            // 🚀 AUTOMATIC REPORT DOWNLOAD LOGIC (Required Fix) 🚀
+            
+            // 1. Filter for students successfully assigned/reassigned (do NOT download for cancellation)
+            const successfullyAssignedIds = results
+                .filter(r => (r.status === 'Assigned' || r.status === 'Reassigned') && !isCancellation)
+                .map(r => r.applicantId);
+
+            // 2. Trigger the download if any students were successfully processed
+            if (successfullyAssignedIds.length > 0) {
+                console.log(`Triggering auto-download for ${successfullyAssignedIds.length} students via Block View.`);
+                // handleDownloadFile must be defined outside this component but within the file scope
+                await handleDownloadFile({
+                    applicantIds: successfullyAssignedIds,
+                    nmmsYear: nmmsYear,
+                    interviewerId: selectedInterviewer.id,
+                    interviewerName: selectedInterviewer.name
+                });
+            }
+            // 🚀 END DOWNLOAD LOGIC 🚀
+
             // Refresh students
             const fetchFn = assignmentType === 'unassigned'
                 ? api.getUnassignedBlockStudents
@@ -144,6 +177,7 @@ function BlockAssignmentView() {
             setStudents(refreshed.data);
             setSelectedStudents([]);
             setSelectedInterviewer(null);
+            
         } catch (err) {
             setMessages([`Error: ${err.response?.data?.error || err.message}`]);
         } finally {
@@ -193,36 +227,36 @@ function BlockAssignmentView() {
                     ) : (
                         <>
                             {/* Select All Checkbox on the right side */}
-<div className="mb-2 flex justify-end items-center">
-    <label htmlFor="select-all-block" className="mr-2 text-gray-700 font-medium cursor-pointer">
-        Select All
-    </label>
-    <input
-        type="checkbox"
-        id="select-all-block"
-        checked={selectedStudents.length === students.length && students.length > 0}
-        onChange={e => {
-            if (e.target.checked) {
-                setSelectedStudents(students.map(s => s.applicant_id));
-            } else {
-                setSelectedStudents([]);
-            }
-        }}
-        className="form-checkbox h-5 w-5 text-blue-600 rounded-full transition-colors"
-    />
-</div>
-<ul className="space-y-3 mt-4">
-    {students.map(student => (
-        <li key={student.applicant_id} className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm">
-            <input
-                type="checkbox"
-                checked={selectedStudents.includes(student.applicant_id)}
-                onChange={e => handleStudentSelect(student.applicant_id, e.target.checked)}
-            />
-            <span>{student.student_name} - Score: {student.pp_exam_score}</span>
-        </li>
-    ))}
-</ul>
+                            <div className="mb-2 flex justify-end items-center">
+                                <label htmlFor="select-all-block" className="mr-2 text-gray-700 font-medium cursor-pointer">
+                                    Select All
+                                </label>
+                                <input
+                                    type="checkbox"
+                                    id="select-all-block"
+                                    checked={selectedStudents.length === students.length && students.length > 0}
+                                    onChange={e => {
+                                        if (e.target.checked) {
+                                            setSelectedStudents(students.map(s => s.applicant_id));
+                                        } else {
+                                            setSelectedStudents([]);
+                                        }
+                                    }}
+                                    className="form-checkbox h-5 w-5 text-blue-600 rounded-full transition-colors"
+                                />
+                            </div>
+                            <ul className="space-y-3 mt-4">
+                                {students.map(student => (
+                                    <li key={student.applicant_id} className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedStudents.includes(student.applicant_id)}
+                                            onChange={e => handleStudentSelect(student.applicant_id, e.target.checked)}
+                                        />
+                                        <span>{student.student_name} - Score: {student.pp_exam_score}</span>
+                                    </li>
+                                ))}
+                            </ul>
                             <div className="mt-6 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
                                 <InterviewerDropdown
                                     onSelectInterviewer={setSelectedInterviewer}
@@ -260,7 +294,6 @@ function BlockAssignmentView() {
         </div>
     );
 }
-
 
 // --- Component: ExamCenterDropdown ---
 function ExamCenterDropdown({ onSelectCenter }) {
@@ -691,7 +724,7 @@ function UnassignedStudentsList({ selectedCenter }) {
 
             switch (result.status) {
                 case 'Skipped':
-                    message = `⚠️ Skipped: ${studentName} - ${result.reason || 'Reason unknown.'}`;
+                    message = `⚠️ Skipped: ${studentName} - Same interviewer assigend for previous interview`;
                     break;
                 case 'Assigned':
                     message = `✅ Assigned: ${studentName} has been successfully assigned for Interview Round ${result.interviewRound}.`;
@@ -1028,7 +1061,7 @@ function ReassignStudentsList({ selectedCenter = "Center A" }) {
 
             switch (status) {
                 case 'Skipped':
-                    message = `⚠️ Skipped: ${studentName} - ${result.reason || 'Reason unknown.'}`;
+                    message = `⚠️ Skipped: ${studentName} - Same interviewer assigend for previous interview'`;
                     break;
                 case 'Reassigned':
                     message = `✅ Reassigned: ${studentName} was successfully reassigned for Interview Round ${result.interviewRound}.`;
@@ -1755,7 +1788,7 @@ const FillInterviewView = () => {
                                                 <>
                                                     {/* MODIFICATION 3: Show "Another Interviewer Required" ONLY if NOT round 3 */}
                                                     {!isRound3 && (
-                                                         <option value="Another Interviewe Required">Another Interviewer Required</option>
+                                                         <option value="Another Interview Required">Another Interview Required</option>
                                                     )}
                                                     <option value="Home Verification Required">Home Verification Required</option>
                                                 </>
