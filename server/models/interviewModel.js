@@ -2,8 +2,8 @@ const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 const pool = require("../config/db");
 const fs = require("fs/promises");
-const NO_INTERVIEWER_ID = "NO_ONE";
 const format = require("pg-format");
+const { existsSync: fsExistsSync } = require('fs');
 
 const InterviewModel = {
   // Fetches a list of all available exam centers
@@ -141,7 +141,7 @@ const InterviewModel = {
                         li.applicant_id IS NULL -- Applicant has no interview records
                         OR (
                             li.status = 'Rescheduled' -- Latest interview was rescheduled
-                            AND li.interview_result = 'Another Interviewe Required' 
+                            AND li.interview_result = 'Another Interview Required' 
                             AND li.interview_round < 3 -- And it's less than round 3
                         )
                           OR (li.status ='Cancelled'
@@ -226,7 +226,7 @@ const InterviewModel = {
                         li.applicant_id IS NULL
                         OR (
                             li.status = 'Rescheduled'
-                            AND li.interview_result = 'Another Interviewe Required'
+                            AND li.interview_result = 'Another Interview Required'
                             AND li.interview_round < 3
                         )
                             
@@ -665,69 +665,70 @@ const InterviewModel = {
     }
   },
 
-  async submitInterviewDetails(applicantId, interviewData, uploadedFile) {
+
+async submitInterviewDetails(applicantId, interviewData, uploadedFile) {
     const {
-      interviewDate,
-      interviewTime,
-      interviewMode,
-      interviewStatus,
-      lifeGoalsAndZeal,
-      commitmentToLearning,
-      integrity,
-      communicationSkills,
-      homeVerificationRequired,
-      interviewResult,
-      remarks,
-      nmmsYear,
+        interviewDate,
+        interviewTime,
+        interviewMode,
+        interviewStatus,
+        lifeGoalsAndZeal,
+        commitmentToLearning,
+        integrity,
+        communicationSkills,
+        homeVerificationRequired,
+        interviewResult,
+        remarks,
+        nmmsYear,
     } = interviewData;
 
     const client = await pool.connect();
     let targetPath = null;
 
     try {
-      await client.query("BEGIN");
+        await client.query("BEGIN");
 
-      if (!uploadedFile) {
-        throw new Error("No file was uploaded. File upload is mandatory.");
-      }
-      if (!remarks || remarks.trim() === "") {
-        throw new Error("Remarks field is mandatory.");
-      }
+        if (!uploadedFile) {
+            throw new Error("No file was uploaded. File upload is mandatory.");
+        }
+        if (!remarks || remarks.trim() === "") {
+            throw new Error("Remarks field is mandatory.");
+        }
 
-      // Get the file extension and the mimetype
-      const fileExtension = path.extname(uploadedFile.name);
-      const docType = uploadedFile.mimetype;
+        // Get the file extension and the mimetype
+        const fileExtension = path.extname(uploadedFile.name);
+        const docType = uploadedFile.mimetype;
 
-      // Construct the new unique and identifiable filename
-      const newFileName = `interview-${applicantId}-${nmmsYear}${fileExtension}`;
+        // Construct the new unique and identifiable filename
+        const newFileName = `interview-${applicantId}-${nmmsYear}${fileExtension}`;
 
-      // 🌟 CRITICAL FIX: Use cohort-year for folder structure 🌟
-      const cohortFolder = `cohort-${nmmsYear}`;
-      const baseDirectory = path.join(
-        __dirname,
-        "..",
-        "..",
-        "Data",
-        "Interview-data"
-      );
-      const targetDirectory = path.join(baseDirectory, cohortFolder);
-      targetPath = path.join(targetDirectory, newFileName);
+        // Use cohort-year for folder structure
+        const cohortFolder = `cohort-${nmmsYear}`;
+        const baseDirectory = path.join(
+            __dirname,
+            "..",
+            "..",
+            "Data",
+            "Interview-data"
+        );
+        const targetDirectory = path.join(baseDirectory, cohortFolder);
+        targetPath = path.join(targetDirectory, newFileName);
 
-      // Ensure the target directory exists (creates Data/Interview-data/cohort-YYYY if not present)
-      await fs.mkdir(targetDirectory, { recursive: true });
+        // Ensure the target directory exists (uses Promises API)
+        await fs.mkdir(targetDirectory, { recursive: true });
 
-      // Move the file to the target path
-      await uploadedFile.mv(targetPath);
+        // Move the file to the target path (File upload middleware handles this as a Promise)
+        await uploadedFile.mv(targetPath);
 
-      // 🌟 HOME VERIFICATION LOGIC (Combined logic for Completed and Rescheduled Results) 🌟
-      const isHomeVerificationRequired =
-        homeVerificationRequired === "Required" ||
-        interviewResult === "Home Verification Required";
-      const homeVerificationYN = isHomeVerificationRequired ? "Y" : "N";
+        // HOME VERIFICATION LOGIC
+        const isHomeVerificationRequired =
+            homeVerificationRequired === "Required" ||
+            interviewResult === "Home Verification Required";
+        const homeVerificationYN = isHomeVerificationRequired ? "Y" : "N";
 
-      // Update the database with the unique file name and type
-      const result = await client.query(
-        `
+        // Update the database
+        const result = await client.query(
+            `
                 UPDATE pp.student_interview
                 SET
                     interview_date = $1, interview_time = $2, interview_mode = $3, status = $4, 
@@ -737,53 +738,57 @@ const InterviewModel = {
                 WHERE applicant_id = $14 AND status = 'Scheduled' AND interview_result IS NULL
                 RETURNING *;
                 `,
-        [
-          interviewDate,
-          interviewTime,
-          interviewMode,
-          interviewStatus,
-          lifeGoalsAndZeal,
-          commitmentToLearning,
-          integrity,
-          communicationSkills,
-          homeVerificationYN,
-          interviewResult,
-          newFileName,
-          docType,
-          remarks,
-          applicantId,
-        ]
-      );
+            [
+                interviewDate,
+                interviewTime,
+                interviewMode,
+                interviewStatus,
+                lifeGoalsAndZeal,
+                commitmentToLearning,
+                integrity,
+                communicationSkills,
+                homeVerificationYN,
+                interviewResult,
+                newFileName,
+                docType,
+                remarks,
+                applicantId,
+            ]
+        );
 
-      if (result.rowCount === 0) {
-        // This is the error point! If rowCount is 0, nothing was updated.
-        // The reason is likely the WHERE clause being too strict.
-        await client.query("ROLLBACK");
-        if (fsSync.existsSync(targetPath)) {
-          await fs.unlink(targetPath);
+        if (result.rowCount === 0) {
+            await client.query("ROLLBACK");
+            
+            // ✅ FIX 1: Use fsExistsSync for synchronous check
+            if (fsExistsSync(targetPath)) { 
+                await fs.unlink(targetPath); // Uses Promises API (fs)
+            }
+            
+            console.error(
+                `UPDATE FAILED for applicant ${applicantId}. Check current DB status to see why status/interview_result condition failed.`
+            );
+            throw new Error(
+                "Update failed. No matching scheduled interview found, or record was already updated/finalized."
+            );
         }
-        // 🌟 SUGGESTION: Log out the WHERE clause parameters here to debug 🌟
-        console.error(
-          `UPDATE FAILED for applicant ${applicantId}. Check current DB status to see why status/interview_result condition failed.`
-        );
-        throw new Error(
-          "Update failed. No matching scheduled interview found, or record was already updated/finalized."
-        );
-      }
 
-      await client.query("COMMIT");
-      return result.rows[0];
+        await client.query("COMMIT");
+        return result.rows[0];
     } catch (error) {
-      await client.query("ROLLBACK");
-      if (targetPath && fsSync.existsSync(targetPath)) {
-        await fs.unlink(targetPath);
-      }
-      console.error("Error submitting interview details:", error);
-      throw error;
+        await client.query("ROLLBACK");
+        
+        // ✅ FIX 2: Use fsExistsSync for synchronous check
+        if (targetPath && fsExistsSync(targetPath)) {
+            await fs.unlink(targetPath); // Uses Promises API (fs)
+        }
+        
+        console.error("Error submitting interview details:", error);
+        throw error;
     } finally {
-      client.release();
+        client.release();
     }
-  },
+},
+
 
   /**
    * Fetches students who require home verification for the current NMMS year,
@@ -935,9 +940,7 @@ const InterviewModel = {
     const applicantIdsFormatted = applicantIds.map(String);
     const nmmsYearNum = parseInt(nmmsYear, 10);
 
-    // ---------------------------------------------------------------------
-    // QUERY 1: Fetch all Profile Data (Including all listed secondary fields)
-    // ---------------------------------------------------------------------
+  
     const profileSql = format(
       `
         SELECT
