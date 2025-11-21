@@ -87,6 +87,7 @@ app.use("/api/institutes", institutesRoutes);
 app.use("/api/districts", districtRoutes);
 app.use("/api", studentSearchRoutes);
 
+
 // Shortlisting
 app.use("/api/shortlist/generate", generateShortlistRoutes);
 app.use("/api/shortlist-info", shortlistInfoRoutes);
