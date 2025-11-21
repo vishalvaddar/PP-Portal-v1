@@ -1,4 +1,5 @@
 const express = require("express");
+const fileUpload = require('express-fileupload');
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const path = require("path");
@@ -9,24 +10,44 @@ const pool = require("./config/db"); // Ensure DB connection is working
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ───── Ensure Uploads Directory ─────
+// ───── Directory Definitions and Creation ─────
 const uploadsDir = path.join(__dirname, "uploads");
+const dataDir = path.join(__dirname, "Data");
+const interviewDataDir = path.join(dataDir, "Interview-data"); 
+const homeVerificationDataDir = path.join(dataDir, "Home-verification-data");
+
+// Create directories
 if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+    fs.mkdirSync(uploadsDir, { recursive: true });
 }
+if (!fs.existsSync(interviewDataDir)) {
+    fs.mkdirSync(interviewDataDir, { recursive: true });
+}
+if (!fs.existsSync(homeVerificationDataDir)) {
+    fs.mkdirSync(homeVerificationDataDir, { recursive: true });
+}
+
 
 // ───── Middleware ─────
 app.use(cors({ origin: "*" }));
-app.use(bodyParser.json());
+app.use(bodyParser.json()); 
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(fileUpload());
+
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
 
 // ───── Logging Middleware ─────
 const actionLogger = require("./middleware/loggingMiddleware");
 app.use(actionLogger({ logBody: true, logQuery: true }));
 
-// ───── Static Files ─────
+// ───── Static File Serving (CRITICAL FIX: Consolidate and Simplify) ─────
+// 🔥 FIX: This single line replaces all the redundant and conflicting specific static mappings.
+app.use('/Data', express.static(path.join(__dirname, '..', 'Data')));
+
 app.use(
-  "/uploads/profile_photos",
-  express.static(path.join(__dirname, "uploads", "profile_photos"))
+    "/uploads/profile_photos",
+    express.static(path.join(__dirname, "uploads", "profile_photos"))
 );
 app.use("/logs", express.static(path.join(__dirname, "logs")));
 app.use("/halltickets", express.static(path.join(__dirname, "public", "halltickets")));
@@ -58,6 +79,7 @@ const userRoleRoutes = require("./routes/userRoleRoutes");
 const examRoutes = require("./routes/examRoutes");
 const evaluationRoutes = require("./routes/evaluationRoutes");
 const evaluationDashboardRoutes = require("./routes/evaluationDashboardRoutes");
+const trackingRoutes = require('./routes/trackingRoutes'); 
 
 const studentSearchRoutes = require("./routes/studentSearchRoutes");
 const timetableRoutes = require("./routes/timeTableRoutes");
@@ -68,14 +90,10 @@ const systemConfigRoutes = require("./routes/systemConfigRoutes");
 // ───── Use Routes ─────
 app.use("/auth", authRoutes);
 app.use("/api/system-config", systemConfigRoutes);
-
-// Applicant Management
 app.use("/api/applicants", applicantCreateRoutes);
 app.use("/api/applicants", applicantViewRoutes);
 app.use("/api/applicants/update", applicantUpdateRoutes);
 app.use("/api/applicants/delete", applicantDeleteRoutes);
-
-// Data & Utilities
 app.use("/api/batches", batchRoutes);
 app.use("/api", userRoleRoutes);
 app.use("/api/upload", bulkUploadRoutes);
@@ -86,35 +104,31 @@ app.use("/api/juris-names", jurisNamesRoutes);
 app.use("/api/institutes", institutesRoutes);
 app.use("/api/districts", districtRoutes);
 app.use("/api", studentSearchRoutes);
+<<<<<<< HEAD
 
 
 // Shortlisting
+=======
+>>>>>>> 273668740518b1e941a594d57bcea7557e1c6c13
 app.use("/api/shortlist/generate", generateShortlistRoutes);
 app.use("/api/shortlist-info", shortlistInfoRoutes);
-
-// Dashboards & Roles
 app.use("/api/admin-dashboard", adminDashboardRoutes);
 app.use("/api/coordinator", coordinatorRoutes);
 app.use("/api/student", studentRoutes);
-
-// Exams & Evaluation
 app.use("/api/exams", examRoutes);
 app.use("/api/evaluation", evaluationRoutes);
 app.use("/api/evaluation-dashboard", evaluationDashboardRoutes);
-
-// Interviews & Results
+app.use('/api/tracking', trackingRoutes);
 app.use("/api/interview", interviewRoutes);
 app.use("/api/resultandrank", resultandrankinkRoutes);
-
-// Timetable
 app.use("/api/timetable", timetableRoutes);
 
 // ───── 404 Handler ─────
 app.use((req, res) => {
-  res.status(404).json({ error: "Route not found" });
+    res.status(404).json({ error: "Route not found" });
 });
 
 // ───── Start Server ─────
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
