@@ -1,72 +1,62 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-require("dotenv").config();
 const fs = require("fs");
+require("dotenv").config();
 
+const fileUpload = require("express-fileupload");
 const pool = require("./config/db");
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ───── Directory Definitions and Creation ─────
+// ─────────────────────────────────────────────
+// DIRECTORY CREATION
+// ─────────────────────────────────────────────
 const uploadsDir = path.join(__dirname, "uploads");
 const dataDir = path.join(__dirname, "Data");
 const interviewDataDir = path.join(dataDir, "Interview-data"); 
 const homeVerificationDataDir = path.join(dataDir, "Home-verification-data");
 
-// Create directories
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-}
-if (!fs.existsSync(interviewDataDir)) {
-    fs.mkdirSync(interviewDataDir, { recursive: true });
-}
-if (!fs.existsSync(homeVerificationDataDir)) {
-    fs.mkdirSync(homeVerificationDataDir, { recursive: true });
-}
+[uploadsDir, interviewDataDir, homeVerificationDataDir].forEach(dir => {
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+});
 
-
-// ───── Middleware ─────
+// ─────────────────────────────────────────────
+// MIDDLEWARE
+// ─────────────────────────────────────────────
 app.use(cors({ origin: "*" }));
-app.use(bodyParser.json()); 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(fileUpload());
 
-app.use(express.json()); 
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ───── Logging Middleware ─────
+app.use(fileUpload());
+
+// Logging
 const actionLogger = require("./middleware/loggingMiddleware");
 app.use(actionLogger({ logBody: true, logQuery: true }));
 
-// ───── Static File Serving (CRITICAL FIX: Consolidate and Simplify) ─────
-// 🔥 FIX: This single line replaces all the redundant and conflicting specific static mappings.
-app.use('/Data', express.static(path.join(__dirname, '..', 'Data')));
+// ─────────────────────────────────────────────
+// STATIC FILE SERVING
+// ─────────────────────────────────────────────
 
-app.use(
-  "/Data/Interview-data",
-  express.static(path.join(__dirname, "Data", "Interview-data"))
-);
-app.use(
-  "/Data/Home-verification-data",
-  express.static(path.join(__dirname, "Data", "Home-verification-data"))
-);
-app.use(
-  "/uploads/profile_photos",
-  express.static(path.join(__dirname, "uploads", "profile_photos"))
-);
+// Main Data folder
+app.use("/Data", express.static(path.join(__dirname, "Data")));
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/logs", express.static(path.join(__dirname, "logs")));
-app.use(
-  "/halltickets",
-  express.static(path.join(__dirname, "public", "halltickets"))
-);
+app.use("/halltickets", express.static(path.join(__dirname, "public", "halltickets")));
 
-// ───── Routes ─────
+// ─────────────────────────────────────────────
+// ROUTES IMPORTS
+// ─────────────────────────────────────────────
 const authRoutes = require("./routes/authRoutes");
 const adminDashboardRoutes = require("./routes/adminDashboardRoutes");
 const coordinatorRoutes = require("./routes/coordinatorRoutes");
 const studentRoutes = require("./routes/studentRoutes");
+
 const applicantRoutes = require("./routes/applicantRoutes");
+
 const bulkUploadRoutes = require("./routes/bulkUploadRoutes");
 const searchRoutes = require("./routes/searchRoutes");
 const jurisdictionRoutes = require("./routes/jurisdictionRoutes");
@@ -88,21 +78,18 @@ const interviewRoutes = require("./routes/interviewRoutes");
 const resultandrankinkRoutes = require("./routes/resultandrankinkRoutes");
 const systemConfigRoutes = require("./routes/systemConfigRoutes");
 
-// ───── Use Routes ─────
+// ─────────────────────────────────────────────
+// ROUTES (ALL CLEANED)
+// ─────────────────────────────────────────────
 
+// File Uploads
 app.use("/api/bulk-upload", bulkUploadRoutes);
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 app.use("/auth", authRoutes);
 app.use("/api/system-config", systemConfigRoutes);
 
 // Applicant Management
-app.use("/api/applicants", applicantCreateRoutes);
-app.use("/api/applicants", applicantViewRoutes);
-app.use("/api/applicants/update", applicantUpdateRoutes);
-app.use("/api/applicants/delete", applicantDeleteRoutes);
+app.use("/api/applicants", applicantRoutes);
 
 // Data & Utilities
 app.use("/api/batches", batchRoutes);
@@ -122,17 +109,22 @@ app.use("/api/exams", examRoutes);
 app.use("/api/evaluation", evaluationRoutes);
 app.use("/api/evaluation-dashboard", evaluationDashboardRoutes);
 app.use("/api/tracking", trackingRoutes);
+
 // Interviews & Results
 app.use("/api/interview", interviewRoutes);
 app.use("/api/resultandrank", resultandrankinkRoutes);
 app.use("/api/timetable", timetableRoutes);
 
-// ───── 404 Handler ─────
+// ─────────────────────────────────────────────
+// 404 HANDLER
+// ─────────────────────────────────────────────
 app.use((req, res) => {
     res.status(404).json({ error: "Route not found" });
 });
 
-// ───── Start Server ─────
+// ─────────────────────────────────────────────
+// START SERVER
+// ─────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
