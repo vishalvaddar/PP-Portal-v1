@@ -50,8 +50,8 @@ const BulkUploadApplications = ({ refreshData }) => {
       setError("Please upload only CSV or Excel files (.csv, .xlsx, .xls).");
       return false;
     }
-    if (file.size > 10 * 1024 * 1024) {
-      setError("File too large! Upload files smaller than 10MB.");
+    if (file.size > 20 * 1024 * 1024) {
+      setError("File too large! Upload files smaller than 20MB.");
       return false;
     }
     return true;
@@ -60,29 +60,14 @@ const BulkUploadApplications = ({ refreshData }) => {
   // Handle file upload
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file) {
-      setError("Please select a file to upload.");
-      return;
-    }
-    if (!validateFile()) return;
-
-    setIsLoading(true);
-    resetMessages(); // Reset messages on new submission
-    const formData = new FormData();
-    formData.append("file", file);
-
+    if (!file) return;
+    const form = new FormData();
+    form.append("file", file); // key must be "file"
     try {
-      const response = await axios.post(
-        // Ensure this URL is correct (e.g., http://localhost:5000/api/upload)
-        `${process.env.REACT_APP_BACKEND_API_URL}/api/upload`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/api/bulk-upload/upload`, form); // no headers override
       handleResponse(response);
-    } catch (error) {
-      handleError(error);
-    } finally {
-      setIsLoading(false);
+    } catch (err) {
+      handleError(err);
     }
   };
 

@@ -32,7 +32,10 @@ import EvaluationDashboard from "./pages/Admin/Evaluation/EvaluationDashboard";
 import EvaluationMarksEntry from "./pages/Admin/Evaluation/EvaluationMarksEntry";
 import EvaluationInterview from "./pages/Admin/Evaluation/EvaluationInterview";
 import EvaluationTracking from "./pages/Admin/Evaluation/EvaluationTracking";
-import Resultandrank from "./pages/Admin/Result/Resultandranking"
+import Resultandrank from "./pages/Admin/Result/Resultandranking";
+import Events from "./pages/Admin/Events/EventsDashboardPage";
+import ClassroomManager from "./pages/Admin/ClassroomManager";
+import EventDetailsPage from "./pages/Admin/Events/EventDetailsPage";
 
 // --- Coordinator pages ---
 import CoordinatorDashboard from "./pages/Coordinator/CoordinatorDashboard";
@@ -111,6 +114,10 @@ export const appRouter = createBrowserRouter([
               { path: "batches/view-student-info/:nmms_reg_number", element: <ViewStudentInfo /> },
               { path: "time-table-dashboard", element: <TimeTableDashboard /> },
               { path: "reports", element: <Reports /> },
+              { path: "classrooms", element: <ClassroomManager /> },
+              // --- 👇 UPDATED SECTION ---
+              { path: "events", element: <Events /> }, // Dashboard/List page
+              { path: "events/:eventId", element: <EventDetailsPage /> } // Details page
             ],
           },
           {

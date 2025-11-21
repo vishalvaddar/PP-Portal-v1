@@ -47,14 +47,25 @@ async function getBlocksByDistrict(districtId) {
   return result.rows;
 }
 
-// Fetch Institutes by Block
-async function getInstitutesByBlock(blockId) {
+//Fetch Clusters by block
+async function getClustersByBlock(blockId) {
+  const query = `
+    SELECT JURIS_CODE AS id, JURIS_NAME AS name
+    FROM PP.JURISDICTION
+    WHERE JURIS_TYPE = 'CLUSTER'
+    AND PARENT_JURIS = $1
+  `;
+  const result = await pool.query(query, [blockId]);
+  return result.rows;
+}
+// Fetch Institutes by Cluster
+async function getInstitutesByCluster(clusterId) {
   const query = `
     SELECT institute_id, institute_name, dise_code
     FROM PP.INSTITUTE
     WHERE juris_code = $1
   `;
-  const result = await pool.query(query, [blockId]);
+  const result = await pool.query(query, [clusterId]);
   return result.rows;
 }
 
@@ -63,5 +74,6 @@ module.exports = {
   getDivisionsByState,
   getDistrictsByDivision,
   getBlocksByDistrict,
-  getInstitutesByBlock,
+  getClustersByBlock,
+  getInstitutesByCluster,
 };

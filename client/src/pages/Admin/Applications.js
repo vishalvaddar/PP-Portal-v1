@@ -42,14 +42,14 @@ const Applications = () => {
   const features = useMemo(
     () => [
       {
-        title: "Submit New Application",
+        title: "New Application",
         icon: <FilePlus size={32} className={styles.featureIcon} />,
         link: "/admin/admissions/new-application",
         badge: "Standard",
         requiresAdmissionsPhase: true,
       },
       {
-        title: "Bulk Upload Applications",
+        title: "Bulk Upload",
         icon: <Upload size={32} className={styles.featureIcon} />,
         link: "/admin/admissions/bulk-upload-applications",
         badge: "Recommended",

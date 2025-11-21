@@ -17,13 +17,13 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Define logout BEFORE useEffect to prevent “Cannot access before initialization”
+  // Define logout BEFORE useEffect to prevent “Cannot access before initialization”
   const logout = useCallback(() => {
     localStorage.removeItem("user");
     setUser(null);
   }, []);
 
-  // ✅ Load user from storage on mount
+  // Load user from storage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, [logout]);
 
-  // ✅ Auto logout when token expires
+  // Auto logout when token expires
   useEffect(() => {
     if (!user?.token) return;
 

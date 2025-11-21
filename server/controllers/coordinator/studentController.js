@@ -12,10 +12,8 @@ const getStudentsController = async (req, res) => {
     let students;
 
     if (cohortNumber && batchId) {
-      // ✅ If both filters are provided
       students = await getStudentsByCohortAndBatch(cohortNumber, batchId);
     } else {
-      // ✅ Otherwise fetch all students
       students = await getAllStudents();
     }
 

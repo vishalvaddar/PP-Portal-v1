@@ -4,6 +4,56 @@ const Papa = require("papaparse");
 const xlsx = require("xlsx");
 const moment = require("moment");
 const pool = require("../config/db");
+const multer = require("multer");
+
+const uploadDir = path.join(__dirname, "..", "uploads", "temp");
+fs.mkdirSync(uploadDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const safeName = file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    cb(null, `${Date.now()}-${safeName}`);
+  },
+});
+
+const allowedMimes = [
+  "text/csv",
+  "application/csv",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+];
+
+const fileFilter = (req, file, cb) => {
+  try {
+    if (!file || !file.mimetype) return cb(new Error("Invalid file upload."), false);
+    const mime = file.mimetype.toLowerCase();
+    const ok = allowedMimes.some(m => mime === m || mime.includes(m.split('/')[1]));
+    if (ok) return cb(null, true);
+    cb(new Error("Invalid file type. Only CSV and Excel allowed."), false);
+  } catch (err) {
+    cb(err, false);
+  }
+};
+
+const limits = {
+  fileSize: 25 * 1024 * 1024, // 25 MB
+  files: 1,
+  fields: 50,
+  fieldSize: 1 * 1024 * 1024,
+};
+
+const upload = multer({ storage, fileFilter, limits });
+const multerSingle = upload.single("file"); // MUST match client FormData key
+
+const handleUploadErrors = (err, req, res, next) => {
+  if (!err) return next();
+  console.error("Upload middleware error:", err);
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ success: false, message: err.message });
+  }
+  return res.status(400).json({ success: false, message: err.message || "Invalid file upload." });
+};
 
 const validateField = (field, value, rowIndex) => {
   const currentYear = new Date().getFullYear();
@@ -270,4 +320,6 @@ module.exports = {
   parseExcel,
   validateAndSanitizeRow,
   insertApplicants,
+  multerSingle,
+  handleUploadErrors,
 };
