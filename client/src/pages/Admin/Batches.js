@@ -100,14 +100,43 @@ const Batches = () => {
     }, []);
 
     const fetchBatches = useCallback(async () => {
-        try {
-            const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/batches`);
-            setBatches(res.data);
-        } catch (err) {
-            console.error("Error fetching Batches", err);
-            showNotification('Could not fetch batches.', 'error');
+    try {
+        const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/batches`);
+        const allBatches = res.data || [];
+
+        // If no system config available, show all batches (fallback)
+        if (!appliedConfig) {
+            setBatches(allBatches);
+            return;
         }
-    }, []);
+
+        // Normalize appliedConfig to an array of active cohort_numbers
+        let activeCohorts = [];
+
+        if (Array.isArray(appliedConfig)) {
+            activeCohorts = appliedConfig
+                .filter(cfg => cfg.system_status === "Active" && (cfg.cohort_number || cfg.cohort_number === 0))
+                .map(cfg => cfg.cohort_number);
+        } else if (appliedConfig && appliedConfig.system_status === "Active") {
+            activeCohorts = [appliedConfig.cohort_number];
+        }
+
+        // If we couldn't find any active cohorts, fall back to showing all batches.
+        // If you intentionally want to hide when there are no active cohorts, change this behavior.
+        if (!activeCohorts || activeCohorts.length === 0) {
+            setBatches(allBatches);
+            return;
+        }
+
+        // Filter batches by active cohorts
+        const filtered = allBatches.filter(b => activeCohorts.includes(b.cohort_number));
+        setBatches(filtered);
+    } catch (err) {
+        console.error("Error fetching Batches", err);
+        showNotification("Could not fetch batches.", "error");
+    }
+}, [appliedConfig]);
+
 
     const fetchBatchNames = useCallback(async () => {
         try {
@@ -120,10 +149,11 @@ const Batches = () => {
 
     useEffect(() => {
         fetchCoordinators();
-        fetchBatches();
         fetchBatchNames();
         fetchCohorts();
-    }, [fetchCoordinators, fetchBatches, fetchBatchNames, fetchCohorts]);
+        fetchBatches();
+    }, [fetchCoordinators, fetchBatchNames, fetchCohorts, fetchBatches, appliedConfig]);
+
 
     const validateBatch = (data) => {
         const validationErrors = {};

@@ -1,13 +1,16 @@
 const pool = require("../config/db");
 
-// --- Cohort Model ---
+// ==========================
+// COHORT MODEL
+// ==========================
 const Cohort = {
-
     findAllActive: async () => {
         try {
             const query = `
-                SELECT * FROM pp.cohort
-                WHERE end_date IS NULL ORDER BY start_date DESC;
+                SELECT *
+                FROM pp.cohort
+                WHERE end_date IS NULL
+                ORDER BY start_date DESC;
             `;
             const { rows } = await pool.query(query);
             return rows;
@@ -15,121 +18,190 @@ const Cohort = {
             console.error("Error fetching active cohorts:", error.message);
             throw new Error("Failed to fetch active cohorts.");
         }
-    },
+    }
 };
 
-// --- TimetableSlot Model ---
-const TimetableSlot = {
-    
+// ==========================
+// TIMETABLE MODEL (NEW STRUCTURE)
+// ==========================
+
+const Timetable = {
+
+    // --------------------------
+    // 1. FIND TIMETABLE BY BATCH
+    // --------------------------
     findByBatchId: async (batchId) => {
         try {
             const query = `
                 SELECT 
-                    ts.slot_id AS id,
-                    ts.day_of_week,
-                    TO_CHAR(ts.start_time, 'HH12:MI AM') || ' - ' || TO_CHAR(ts.end_time, 'HH12:MI AM') AS time,
+                    tt.timetable_id AS id,
+                    tt.day_of_week,
+                    TO_CHAR(tt.start_time, 'HH12:MI AM') || ' - ' || TO_CHAR(tt.end_time, 'HH12:MI AM') AS time,
+
+                    -- classroom level
+                    c.classroom_id,
+                    c.classroom_name,
+
+                    -- subject
                     s.subject_name AS subject,
-                    u.user_name AS teacher,
+
+                    -- teacher
+                    t.teacher_name AS teacher,
+
+                    -- platform
                     p.platform_name AS platform
-                FROM pp.timetable_slot ts
-                LEFT JOIN pp.subject s ON ts.subject_id = s.subject_id
-                LEFT JOIN pp.user u ON ts.teacher_id = u.user_id
-                LEFT JOIN pp.platform p ON ts.platform_id = p.platform_id
-                WHERE ts.batch_id = $1
+
+                FROM pp.timetable tt
+                JOIN pp.classroom c ON tt.classroom_id = c.classroom_id
+                JOIN pp.classroom_batch cb ON cb.classroom_id = c.classroom_id
+                LEFT JOIN pp.subject s ON c.subject_id = s.subject_id
+                LEFT JOIN pp.teacher t ON c.teacher_id = t.teacher_id
+                LEFT JOIN pp.teaching_platform p ON c.platform_id = p.platform_id
+
+                WHERE cb.batch_id = $1
+
                 ORDER BY
-                    CASE ts.day_of_week
-                        WHEN 'Monday' THEN 1 WHEN 'Tuesday' THEN 2 WHEN 'Wednesday' THEN 3
-                        WHEN 'Thursday' THEN 4 WHEN 'Friday' THEN 5 WHEN 'Saturday' THEN 6
-                        WHEN 'Sunday' THEN 7
-                    END,
-                    ts.start_time;
+                    CASE tt.day_of_week
+                        WHEN 'MONDAY' THEN 1 WHEN 'TUESDAY' THEN 2 WHEN 'WEDNESDAY' THEN 3
+                        WHEN 'THURSDAY' THEN 4 WHEN 'FRIDAY' THEN 5 WHEN 'SATURDAY' THEN 6
+                        WHEN 'SUNDAY' THEN 7 END,
+                    tt.start_time;
             `;
+
             const { rows } = await pool.query(query, [batchId]);
 
             const timetable = rows.reduce((acc, slot) => {
                 const day = slot.day_of_week;
-                if (!acc[day]) {
-                    acc[day] = [];
-                }
+                if (!acc[day]) acc[day] = [];
                 acc[day].push(slot);
                 return acc;
             }, {});
 
             return timetable;
+
         } catch (error) {
-            console.error("Error fetching timetable by batch ID:", error.message);
+            console.error("Error fetching timetable:", error.message);
             throw new Error("Failed to fetch timetable.");
         }
     },
 
-    create: async (slotData) => {
-        const { batchId, teacherId, subjectId, platformId, dayOfWeek, startTime, endTime } = slotData;
-        if (!batchId || !dayOfWeek || !startTime) {
-            throw new Error("Batch ID, day of the week, and start time are required fields.");
-        }
+    // --------------------------
+    // 2. CREATE NEW TIMETABLE SLOT
+    // --------------------------
+    create: async (data) => {
+        const { batchId, subjectId, teacherId, platformId, dayOfWeek, startTime, endTime } = data;
+
         try {
-            const query = `
-                INSERT INTO pp.timetable_slot (batch_id, teacher_id, subject_id, platform_id, day_of_week, start_time, end_time)
-                VALUES ($1, $2, $3, $4, $5, $6, $7)
+            // 1. Create / reuse classroom
+            const classroomQuery = `
+                INSERT INTO pp.classroom (classroom_name, subject_id, teacher_id, platform_id, created_at)
+                VALUES ($1, $2, $3, $4, NOW())
+                RETURNING classroom_id;
+            `;
+            const className = `AUTO-${subjectId}-${teacherId}-${platformId}`;
+            const classroomRes = await pool.query(classroomQuery, [className, subjectId, teacherId, platformId]);
+
+            const classroomId = classroomRes.rows[0].classroom_id;
+
+            // 2. Link classroom to batch
+            await pool.query(
+                `INSERT INTO pp.classroom_batch (classroom_id, batch_id)
+                 VALUES ($1, $2)
+                 ON CONFLICT DO NOTHING`,
+                [classroomId, batchId]
+            );
+
+            // 3. Insert timetable entry
+            const ttQuery = `
+                INSERT INTO pp.timetable (classroom_id, day_of_week, start_time, end_time)
+                VALUES ($1, $2, $3, $4)
                 RETURNING *;
             `;
-            const values = [batchId, teacherId, subjectId, platformId, dayOfWeek, startTime, endTime];
-            const { rows } = await pool.query(query, values);
+            const { rows } = await pool.query(ttQuery, [classroomId, dayOfWeek, startTime, endTime]);
+
             return rows[0];
+
         } catch (error) {
             console.error("Error creating timetable slot:", error.message);
-            if (error.code === '23505') {
-                throw new Error("This teacher is already scheduled at this time.");
-            }
             throw new Error("Failed to create timetable slot.");
         }
     },
 
+    // --------------------------
+    // 3. UPDATE TIMETABLE SLOT
+    // --------------------------
+    update: async (timetableId, data) => {
+        const { subjectId, teacherId, platformId, dayOfWeek, startTime, endTime } = data;
 
-    update: async (slotId, slotData) => {
-        const { teacherId, subjectId, platformId, dayOfWeek, startTime, endTime } = slotData;
         try {
-            const query = `
-                UPDATE pp.timetable_slot
-                SET teacher_id = $1, subject_id = $2, platform_id = $3, day_of_week = $4, start_time = $5, end_time = $6
-                WHERE slot_id = $7
+            // Get existing classroom
+            const ttRes = await pool.query(
+                `SELECT classroom_id FROM pp.timetable WHERE timetable_id = $1`,
+                [timetableId]
+            );
+            if (ttRes.rows.length === 0) throw new Error("Timetable slot not found.");
+
+            const classroomId = ttRes.rows[0].classroom_id;
+
+            // Update classroom
+            await pool.query(
+                `UPDATE pp.classroom
+                 SET subject_id = $1, teacher_id = $2, platform_id = $3
+                 WHERE classroom_id = $4`,
+                [subjectId, teacherId, platformId, classroomId]
+            );
+
+            // Update timetable
+            const updateQuery = `
+                UPDATE pp.timetable
+                SET day_of_week = $1, start_time = $2, end_time = $3
+                WHERE timetable_id = $4
                 RETURNING *;
             `;
-            const values = [teacherId, subjectId, platformId, dayOfWeek, startTime, endTime, slotId];
-            const { rows } = await pool.query(query, values);
-            if (rows.length === 0) {
-                throw new Error("Timetable slot not found.");
-            }
+            const { rows } = await pool.query(updateQuery, [
+                dayOfWeek, startTime, endTime, timetableId
+            ]);
+
             return rows[0];
+
         } catch (error) {
-            console.error("Error updating timetable slot:", error.message);
-            if (error.code === '23505') {
-                throw new Error("This teacher is already scheduled at this time.");
-            }
-            throw new Error("Failed to update timetable slot.");
+            console.error("Error updating timetable:", error.message);
+            throw new Error("Failed to update timetable.");
         }
     },
 
-
-    delete: async (slotId) => {
+    // --------------------------
+    // 4. DELETE TIMETABLE SLOT
+    // --------------------------
+    delete: async (timetableId) => {
         try {
-            const result = await pool.query("DELETE FROM pp.timetable_slot WHERE slot_id = $1", [slotId]);
-            if (result.rowCount === 0) {
-                throw new Error("Timetable slot not found.");
-            }
+            const result = await pool.query(
+                "DELETE FROM pp.timetable WHERE timetable_id = $1",
+                [timetableId]
+            );
+
+            if (result.rowCount === 0) throw new Error("Timetable slot not found.");
+
             return true;
+
         } catch (error) {
-            console.error("Error deleting timetable slot:", error.message);
+            console.error("Error deleting timetable:", error.message);
             throw new Error("Failed to delete timetable slot.");
         }
-    },
+    }
 };
 
-// --- Other Models ---
+// ==========================
+// SUBJECT MODEL
+// ==========================
 const Subject = {
     findAll: async () => {
         try {
-            const { rows } = await pool.query('SELECT subject_id, subject_name FROM pp.subject ORDER BY subject_name');
+            const { rows } = await pool.query(`
+                SELECT subject_id, subject_name
+                FROM pp.subject
+                ORDER BY subject_name
+            `);
             return rows;
         } catch (error) {
             console.error("Error fetching subjects:", error.message);
@@ -138,18 +210,17 @@ const Subject = {
     }
 };
 
+// ==========================
+// TEACHER MODEL
+// ==========================
 const Teacher = {
     findAll: async () => {
         try {
-            const query = `
-                SELECT u.user_id, u.user_name
-                FROM pp.user u
-                JOIN pp.user_role ur ON u.user_id = ur.user_id
-                JOIN pp.role r ON ur.role_id = r.role_id
-                WHERE r.role_name = 'Teacher'
-                ORDER BY u.user_name;
-            `;
-            const { rows } = await pool.query(query);
+            const { rows } = await pool.query(`
+                SELECT teacher_id, teacher_name
+                FROM pp.teacher
+                ORDER BY teacher_name;
+            `);
             return rows;
         } catch (error) {
             console.error("Error fetching teachers:", error.message);
@@ -158,10 +229,17 @@ const Teacher = {
     }
 };
 
+// ==========================
+// PLATFORM MODEL
+// ==========================
 const Platform = {
     findAll: async () => {
         try {
-            const { rows } = await pool.query('SELECT platform_id, platform_name FROM pp.platform ORDER BY platform_name');
+            const { rows } = await pool.query(`
+                SELECT platform_id, platform_name
+                FROM pp.teaching_platform
+                ORDER BY platform_name;
+            `);
             return rows;
         } catch (error) {
             console.error("Error fetching platforms:", error.message);
@@ -170,10 +248,12 @@ const Platform = {
     }
 };
 
-// Correctly export all defined models
+// ==========================
+// EXPORT MODULES
+// ==========================
 module.exports = {
-    TimetableSlot,
     Cohort,
+    Timetable,
     Subject,
     Teacher,
     Platform,

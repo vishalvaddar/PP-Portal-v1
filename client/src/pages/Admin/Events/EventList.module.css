@@ -1,0 +1,38 @@
+.listContainer {
+  padding: 20px;
+}
+
+.eventTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.eventTable th,
+.eventTable td {
+  border-bottom: 1px solid #ddd;
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.eventTable th {
+  background-color: #f8f9fa;
+  color: #555;
+  font-weight: 600;
+}
+
+.eventTable tbody tr:hover {
+  background-color: #f1f3f5;
+}
+
+.actionButton {
+  padding: 6px 12px;
+  background-color: #f1f3f5;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.actionButton:hover {
+  background-color: #e9ecef;
+}

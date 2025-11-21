@@ -3,88 +3,136 @@ import axios from "axios";
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_API_URL;
 
+// ------------------------- //
+// Fetch States
+// ------------------------- //
 export function useFetchStates(setStates) {
   useEffect(() => {
     const fetchStates = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/api/states`);
-        setStates(response.data);
+        const data = Array.isArray(response.data)
+          ? response.data
+          : response.data.data || [];
+        setStates(data);
       } catch (error) {
         console.error("Error fetching states:", error);
+        setStates([]);
       }
     };
     fetchStates();
   }, [setStates]);
 }
 
-export function useFetchDivisions(stateId, setDivisions) {
-  useEffect(() => {
-    const fetchDivisions = async () => {
-      if (stateId) {
-        try {
-          const response = await axios.get(`${API_BASE_URL}/api/divisions-by-state/${stateId}`);
-          setDivisions(response.data);
-        } catch (error) {
-          console.error("Error fetching divisions:", error);
-        }
-      } else {
-        setDivisions([]);
-      }
-    };
-    fetchDivisions();
-  }, [stateId, setDivisions]);
-}
-
-export function useFetchEducationDistricts(divisionId, setDistricts) {
+// ------------------------- //
+// Fetch Districts (via State → Division → District)
+// ------------------------- //
+export function useFetchEducationDistricts(stateId, setDistricts) {
   useEffect(() => {
     const fetchDistricts = async () => {
-      if (divisionId) {
-        try {
-          const response = await axios.get(`${API_BASE_URL}/api/districts-by-division/${divisionId}`);
-          setDistricts(response.data);
-        } catch (error) {
-          console.error("Error fetching districts:", error);
+      if (!stateId) {
+        setDistricts([]);
+        return;
+      }
+
+      try {
+        const divisionsRes = await axios.get(
+          `${API_BASE_URL}/api/divisions-by-state/${stateId}`
+        );
+        const divisions = Array.isArray(divisionsRes.data)
+          ? divisionsRes.data
+          : divisionsRes.data.data || [];
+
+        let allDistricts = [];
+
+        for (const division of divisions) {
+          const distRes = await axios.get(
+            `${API_BASE_URL}/api/districts-by-division/${division.id}`
+          );
+          const dists = Array.isArray(distRes.data)
+            ? distRes.data
+            : distRes.data.data || [];
+          allDistricts = [...allDistricts, ...dists];
         }
-      } else {
+
+        setDistricts(allDistricts);
+      } catch (error) {
+        console.error("Error fetching districts:", error);
         setDistricts([]);
       }
     };
+
     fetchDistricts();
-  }, [divisionId, setDistricts]);
+  }, [stateId, setDistricts]);
 }
 
+// ------------------------- //
+// Fetch Blocks (via District → Block)
+// ------------------------- //
 export function useFetchBlocks(districtId, setBlocks) {
   useEffect(() => {
     const fetchBlocks = async () => {
-      if (districtId) {
-        try {
-          const response = await axios.get(`${API_BASE_URL}/api/blocks-by-district/${districtId}`);
-          setBlocks(response.data);
-        } catch (error) {
-          console.error("Error fetching blocks:", error);
-        }
-      } else {
+      if (!districtId) {
+        setBlocks([]);
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          `${API_BASE_URL}/api/blocks-by-district/${districtId}`
+        );
+        const data = Array.isArray(response.data)
+          ? response.data
+          : response.data.data || [];
+        setBlocks(data);
+      } catch (error) {
+        console.error("Error fetching blocks:", error);
         setBlocks([]);
       }
     };
+
     fetchBlocks();
   }, [districtId, setBlocks]);
 }
 
+// ------------------------- //
+// Fetch Institutes (via Block → Cluster → Institute)
+// ------------------------- //
 export function useFetchInstitutes(blockId, setInstitutes) {
   useEffect(() => {
     const fetchInstitutes = async () => {
-      if (blockId) {
-        try {
-          const response = await axios.get(`${API_BASE_URL}/api/institutes-by-block/${blockId}`);
-          setInstitutes(response.data);
-        } catch (error) {
-          console.error("Error fetching institutes:", error);
+      if (!blockId) {
+        setInstitutes([]);
+        return;
+      }
+
+      try {
+        const clustersRes = await axios.get(
+          `${API_BASE_URL}/api/clusters-by-block/${blockId}`
+        );
+        const clusters = Array.isArray(clustersRes.data)
+          ? clustersRes.data
+          : clustersRes.data.data || [];
+
+        let allInstitutes = [];
+
+        for (const cluster of clusters) {
+          const instRes = await axios.get(
+            `${API_BASE_URL}/api/institutes-by-cluster/${cluster.id}`
+          );
+          const institutes = Array.isArray(instRes.data)
+            ? instRes.data
+            : instRes.data.data || [];
+          allInstitutes = [...allInstitutes, ...institutes];
         }
-      } else {
+
+        setInstitutes(allInstitutes);
+      } catch (error) {
+        console.error("Error fetching institutes:", error);
         setInstitutes([]);
       }
     };
+
     fetchInstitutes();
   }, [blockId, setInstitutes]);
 }

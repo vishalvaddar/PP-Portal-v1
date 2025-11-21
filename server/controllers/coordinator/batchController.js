@@ -2,7 +2,6 @@ const { getBatchesByCohort } = require("../../models/coordinator/batchModel");
 
 const fetchBatches = async (req, res) => {
   try {
-    // Ensure req.user exists
     if (!req.user || !req.user.user_id) {
       return res.status(401).json({ error: "Unauthorized: User not found in request" });
     }

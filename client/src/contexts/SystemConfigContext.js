@@ -37,7 +37,7 @@ export const SystemConfigProvider = ({ children }) => {
 
       let applied = null;
 
-      // ✅ Use localStorage value if valid
+      // Use localStorage value if valid
       const stored = localStorage.getItem("appliedConfig");
       if (stored) {
         const parsed = JSON.parse(stored);
@@ -49,7 +49,7 @@ export const SystemConfigProvider = ({ children }) => {
         }
       }
 
-      // ✅ Fallback: pick latest active if nothing valid
+      // Fallback: pick latest active if nothing valid
       if (!applied && activeConfigs.length > 0) {
         applied = activeConfigs[0];
       }
@@ -65,13 +65,13 @@ export const SystemConfigProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []); // ❌ removed appliedConfig from dependencies
+  }, []);
 
   useEffect(() => {
     fetchActiveConfigs();
   }, [fetchActiveConfigs]);
 
-  // ✅ Keep localStorage in sync when user applies a new config
+  //Keep localStorage in sync when user applies a new config
   useEffect(() => {
     if (appliedConfig)
       localStorage.setItem("appliedConfig", JSON.stringify(appliedConfig));

@@ -1,15 +1,25 @@
-const express = require('express');
-const multer = require('multer');
-const bulkUploadController = require('../controllers/bulkUploadController');
-
+const express = require("express");
 const router = express.Router();
+const bulkUploadController = require("../controllers/bulkUploadController");
+const { multerSingle, handleUploadErrors } = require("../middleware/uploadMiddleware");
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
-  filename: (req, file, cb) => cb(null, file.originalname),
-});
+// Optional: Pre-check for multipart (safe to keep)
+const ensureMultipart = (req, res, next) => {
+  const ct = req.headers["content-type"] || "";
+  if (!ct.startsWith("multipart/") || !ct.includes("boundary=")) {
+    return res.status(400).json({
+      message: "Invalid Content-Type: expected multipart/form-data with boundary",
+    });
+  }
+  next();
+};
 
-const upload = multer({ storage });
-router.post('/', upload.single('file'), bulkUploadController.uploadFile);
+router.post(
+  "/upload",
+  ensureMultipart,
+  multerSingle,        
+  handleUploadErrors,  
+  bulkUploadController.uploadFile 
+);
 
 module.exports = router;

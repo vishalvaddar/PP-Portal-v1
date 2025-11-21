@@ -1,6 +1,6 @@
 // server/controllers/coordinator/subjectController.js
 
-// ✅ Correct relative path: from controllers/coordinator -> models/coordinator
+// Correct relative path: from controllers/coordinator -> models/coordinator
 const Subject = require("../../models/coordinator/subjectModel");
 
 // Controller function to fetch all subjects
@@ -14,5 +14,5 @@ const getSubjects = async (req, res) => {
   }
 };
 
-// ✅ Proper export
+// Proper export
 module.exports = { getSubjects };

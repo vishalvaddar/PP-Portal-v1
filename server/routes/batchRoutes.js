@@ -1,32 +1,41 @@
 const express = require("express");
 const router = express.Router();
-const batchCreateController = require("../controllers/batchCreateController");
+const batchController = require("../controllers/batchController");
 
-// 🔹 Specific GET routes (keep first)
-router.get("/coordinators", batchCreateController.getCoordinators);
-router.get("/names", batchCreateController.getBatchNames);
-router.post("/names", batchCreateController.addBatchName);
+// Coordinators
+router.get("/coordinators", batchController.getCoordinators);
 
-// 🔹 Cohort Routes
-router.get("/cohorts", batchCreateController.getAllCohorts);
-router.post("/cohorts", batchCreateController.createCohort);
-router.get("/cohorts/active", batchCreateController.getActiveCohorts);
-router.get("/:cohort_number/batches", batchCreateController.getBatchesByCohort);
+// Batch Names
+router.get("/names", batchController.getBatchNames);
+router.post("/names", batchController.addBatchName);
 
-// 🔹 Batch CRUD routes
-// --- (FIXED) Standardized on /:batchId to match the controller ---
-router.get("/", batchCreateController.getAllBatches);
-router.get("/:batchId", batchCreateController.getBatchById); 
-router.post("/", batchCreateController.createBatch);
-router.put("/:batchId", batchCreateController.updateBatch);
-router.delete("/:batchId", batchCreateController.deleteBatch);
+// Cohorts
+router.get("/cohorts", batchController.getAllCohorts);
+router.post("/cohorts", batchController.createCohort);
+router.get("/cohorts/active", batchController.getActiveCohorts);
 
-// 🔹 Students in batch (dynamic - keep last)
-// --- (FIXED) Standardized on /:batchId to match the controller ---
-// router.get("/:batchId/students", batchCreateController.getStudentsInBatch);
-router.get("/:id/students", batchCreateController.getStudentsInBatch);
-router.get("/students/:enr_id", batchCreateController.getStudentsInfoFromBatch);
+router.get("/students/unassigned", batchController.getStudentsNotInAnyBatch);
 
+router.post("/:batchId/add-students", batchController.addStudentsToBatch);
+
+router.post("/students/remove", batchController.removeStudentsFromBatch);
+
+// Student Info 
+router.get("/students/:enr_id", batchController.getStudentsInfoFromBatch);
+
+// Batches by Cohort
+router.get("/:cohort_number/batches", batchController.getBatchesByCohort);
+
+// All Batches
+router.get("/", batchController.getAllBatches);
+router.post("/", batchController.createBatch);
+
+// Single Batch CRUD
+router.get("/:batchId", batchController.getBatchById);
+router.put("/:batchId", batchController.updateBatch);
+router.delete("/:batchId", batchController.deleteBatch);
+
+// Students in batch
+router.get("/:batchId/students", batchController.getStudentsInBatch);
 
 module.exports = router;
-
