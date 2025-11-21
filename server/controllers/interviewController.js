@@ -1,3 +1,5 @@
+const path = require('path');
+const fs = require('fs');
 const PDFDocument = require('pdfkit'); 
 const InterviewModel = require("../models/interviewModel");
 
@@ -8,21 +10,105 @@ const cleanText = (text) => {
     return String(text).replace(/[^\x20-\x7E\xA0-\xFF\u0100-\uFFFF]/g, '').trim();
 };
 
-// 🔥 CORRECTED UTILITY: Now returns only the clean date part.
 const formatDateForPdf = (dateString) => {
-    let output = { date: 'N/A', datetime: 'N/A' }; // Keeping datetime field name for structural consistency
-
+    let output = { date: 'N/A', datetime: 'N/A' };
     if (dateString) {
         try {
             const date = new Date(dateString);
             output.date = date.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
-            output.datetime = output.date; // Use date for the combined field
+            output.datetime = output.date;
         } catch (e) {
             output.date = cleanText(dateString); 
             output.datetime = output.date;
         }
     } 
     return output;
+};
+
+
+// --- CONFIGURATION: DEFINE LOGO PATHS ---
+// Project root assumed relative to this file's location.
+const PROJECT_ROOT = path.join(__dirname, '..', '..');
+const PATH_TO_RCF_LOGO = path.join(PROJECT_ROOT, 'server', 'public', 'assets', 'rcf_logo-removebg-preview.png');
+const PATH_TO_PP_LOGO = path.join(PROJECT_ROOT, 'server', 'public', 'assets', 'logo.png');
+
+
+// --- PDF HEADER UTILITY FUNCTION ---
+const drawReportHeader = (doc, isFirstPage, nmmsYear) => {
+    // Save current state (fonts, colors, positions)
+    doc.save(); 
+
+    const MARGIN_LEFT = 30;
+    const PAGE_WIDTH = doc.page.width;
+    const RIGHT_EDGE = PAGE_WIDTH - MARGIN_LEFT;
+    const START_Y = MARGIN_LEFT;
+    const LOGO_SIZE = 50;
+    
+    // Determine the main title font size based on the page
+    const MAIN_TITLE_FONT_SIZE = isFirstPage ? 18 : 12;
+
+    // --- 1. Draw Logos ---
+    // Left Logo: RCF
+    if (fs.existsSync(PATH_TO_RCF_LOGO)) {
+         doc.image(PATH_TO_RCF_LOGO, MARGIN_LEFT, START_Y, {
+             fit: [LOGO_SIZE, LOGO_SIZE],
+         });
+    }
+
+    // Right Logo: Pratibha Poshak
+    if (fs.existsSync(PATH_TO_PP_LOGO)) {
+         doc.image(PATH_TO_PP_LOGO, RIGHT_EDGE - LOGO_SIZE, START_Y, {
+             fit: [LOGO_SIZE, LOGO_SIZE],
+         });
+    }
+    
+    // --- 2. Title and Details (Centered) ---
+    const currentY = START_Y;
+
+    // RAJALAKSHMI CHILDREN FOUNDATION (Largest on page 1)
+    doc.fillColor('#000000')
+        .font('Times-Bold')
+        .fontSize(MAIN_TITLE_FONT_SIZE)
+        .text('RAJALAKSHMI CHILDREN FOUNDATION', MARGIN_LEFT, currentY + 10, {
+            align: 'center',
+            width: PAGE_WIDTH - 2 * MARGIN_LEFT,
+            lineBreak: false
+        });
+
+    // PRATIBHA POSHAK EXAMINATION - YEAR
+    doc.moveDown(0.3)
+        .fontSize(isFirstPage ? 16 : 10)
+        .text(`PRATIBHA POSHAK EXAMINATION - ${nmmsYear}`, MARGIN_LEFT, doc.y, {
+            align: 'center',
+            width: PAGE_WIDTH - 2 * MARGIN_LEFT
+        });
+        
+    // Address (Smaller Font)
+    doc.moveDown(0.3)
+        .font('Times-Roman')
+        .fontSize(isFirstPage ? 8 : 7)
+        .text('Kayaka Kranti Towers, CTS No. 4824C/23+24, Ayodhya Nagar, Near Kolhapur Circle, Belagavi 590016', {
+            align: 'center',
+            width: PAGE_WIDTH - 2 * MARGIN_LEFT
+        });
+
+    // Contact (Smallest Font)
+    doc.moveDown(0.1)
+        .text('Contact No. +91 9444900755, +91 9606930208', {
+            align: 'center',
+            width: PAGE_WIDTH - 2 * MARGIN_LEFT
+        });
+    
+    // --- 3. Separator Line ---
+    doc.moveDown(0.5);
+    const lineY = doc.y;
+    doc.moveTo(MARGIN_LEFT, lineY)
+       .lineTo(RIGHT_EDGE, lineY)
+       .stroke();
+
+    // Restore state and set cursor Y position below the header
+    doc.restore();
+    doc.y = lineY + 15; 
 };
 
 
@@ -40,7 +126,7 @@ const InterviewController = {
         const applicantIdsArray = applicantIds || [];
         
         if (!interviewerId || !nmmsYear || applicantIdsArray.length === 0) {
-            console.log(`400 Error: Missing/Empty Data. IntervID: ${interviewerId}, Year: ${nmmsYear}, IDs Length: ${applicantIdsArray.length}`);
+            // ... (error handling)
             return res.status(400).json({ error: 'Missing required parameters: interviewerId, nmmsYear, or applicantIds list is empty/invalid.' });
         }
 
@@ -59,8 +145,9 @@ const InterviewController = {
             }
 
             // --- PDF Generation Setup ---
+            const TOP_MARGIN_FOR_HEADER = 100; // Increased margin to fit the header block
             const doc = new PDFDocument({ 
-                margins: { top: 30, bottom: 30, left: 30, right: 30 },
+                margins: { top: TOP_MARGIN_FOR_HEADER, bottom: 30, left: 30, right: 30 },
                 size: 'A4'
             });
             
@@ -77,10 +164,19 @@ const InterviewController = {
             res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
             doc.pipe(res);
             
-            doc.font('Times-Roman').fontSize(18).text(`Assignment Report`, 30, 20);
-            doc.moveTo(30, 45).lineTo(560, 45).stroke();
-            doc.moveDown(2);
-
+            // 🔥 1. Draw header on the first page
+            drawReportHeader(doc, true, nmmsYear);
+            
+            // 🔥 2. Draw header on every subsequent page
+            doc.on('pageAdded', () => {
+                drawReportHeader(doc, false, nmmsYear);
+            });
+            
+            // --- New Report Title ---
+            doc.font('Times-Roman').fontSize(14).text(`Interview Assignment`, 30, doc.y);
+            doc.moveDown(0.5);
+            doc.font('Times-Bold').fontSize(12).text(`Assigned Student Details:`, 30, doc.y);
+            doc.moveDown(1.5);
 
             // --- Content Generation ---
             students.forEach((student, index) => {
@@ -88,6 +184,7 @@ const InterviewController = {
                 doc.save(); 
 
                 try { 
+                    // Move every student to a new page
                     if (index > 0) {
                         doc.addPage();
                     }
@@ -95,11 +192,13 @@ const InterviewController = {
                     // --- SAFE DATA ACCESS HELPER ---
                     const safeGet = (field) => cleanText(student[field] ?? 'N/A');
                     
+                    // Define font sizes based on your new requirement (bigger on page 1, smaller on others)
+                    // The Header is now handled by drawReportHeader. We set the content sizes here.
                     const FONT_SIZE_TITLE = 16;
                     const FONT_SIZE_HEADER = 12;
                     const FONT_SIZE_NORMAL = 10;
                     
-                    // --- Student Title ---
+                    // --- Student Title (NO NUMBERING) ---
                     doc.font('Times-Bold'); 
                     doc.fontSize(FONT_SIZE_TITLE)
                         .text(`Student Interview Report: ${safeGet("Student Name")}`, 30, doc.y);
@@ -108,14 +207,12 @@ const InterviewController = {
                     doc.moveTo(30, doc.y).lineTo(560, doc.y).stroke();
                     doc.moveDown(0.5);
 
-                    // --- 1. Primary Applicant Details ---
-                    doc.fontSize(FONT_SIZE_HEADER).text('1. Primary Applicant & Profile Details');
+                    // --- Primary Applicant Details (NO NUMBERING) ---
+                    doc.fontSize(FONT_SIZE_HEADER).text('Primary Applicant & Profile Details');
                     doc.moveDown(0.5);
 
-                    // 🔥 Comprehensive list of all profile fields
+                    // 🔥 UPDATED Profile Fields: removed Applicant ID and NMMS Reg. No, split GMAT/SAT
                     const infoFields = [
-                        ["Applicant ID:", safeGet("applicant_id")],
-                        ["NMMS Reg. No:", safeGet("nmms_reg_number")],
                         ["Current School:", safeGet("Current School Name")],
                         ["Previous School:", safeGet("Previous School Name")],
                         ["State:", safeGet("State Name")],
@@ -123,7 +220,8 @@ const InterviewController = {
                         ["Block:", safeGet("Block Name")],
                         ["Village:", safeGet("village")],
                         ["PP Exam Score:", safeGet("pp_exam_score")],
-                        ["GMAT/SAT Score:", `${safeGet("gmat_score")} / ${safeGet("sat_score")}`],
+                        ["GMAT Score:", safeGet("gmat_score")],
+                        ["SAT Score:", safeGet("sat_score")],
                         ["Contact No 1:", safeGet("Contact No 1")],
                         ["Contact No 2:", safeGet("Contact No 2")],
                         ["Father's Occupation:", safeGet("father_occupation")],
@@ -149,7 +247,6 @@ const InterviewController = {
                     doc.fontSize(FONT_SIZE_NORMAL).font('Times-Roman'); 
                     
                     infoFields.forEach((field) => {
-                        // Ensure space after colon
                         doc.text(`${String(field[0])} `, 30, doc.y + 5, { continued: true })
                             .font('Times-Bold').text(`${String(field[1])}`, { continued: false })
                             .font('Times-Roman');
@@ -157,19 +254,17 @@ const InterviewController = {
 
                     doc.moveDown(1.5); 
 
-                    // --- INTERVIEW DATA STRUCTURES ---
+                    // --- INTERVIEW DATA STRUCTURES (Sections 2 and 3: removed numbering) ---
                     const pendingAssignment = student["Pending Assignment"];
                     const completedRounds = student["Completed Rounds"] || [];
-                    
                     const isFinalResultAvailable = completedRounds.length > 0;
 
-                    
                     // =================================================================================
-                    // SECTION 2: CURRENT ASSIGNMENT (Pending)
+                    // SECTION: CURRENT ASSIGNMENT (Pending)
                     // =================================================================================
                     if (pendingAssignment) {
                         
-                        doc.fontSize(FONT_SIZE_HEADER).font('Times-Bold').text('2. Current Assignment Details');
+                        doc.fontSize(FONT_SIZE_HEADER).font('Times-Bold').text('Current Assignment Details');
                         doc.moveDown(0.5);
 
                         const safeGetPending = (field) => cleanText(pendingAssignment[field] ?? 'N/A');
@@ -190,23 +285,20 @@ const InterviewController = {
                     }
                     
                     // =================================================================================
-                    // SECTION 3: COMPLETED ROUNDS
+                    // SECTION: COMPLETED ROUNDS
                     // =================================================================================
                     
                     if (isFinalResultAvailable) {
-                        doc.fontSize(FONT_SIZE_HEADER).font('Times-Bold').text(`3. Completed Interview Results (${completedRounds.length} Round${completedRounds.length > 1 ? 's' : ''})`, 30, doc.y);
+                        doc.fontSize(FONT_SIZE_HEADER).font('Times-Bold').text(`Completed Interview Results (${completedRounds.length} Round${completedRounds.length > 1 ? 's' : ''})`, 30, doc.y);
                         doc.moveDown(0.5);
                         
                         completedRounds.forEach((completedRecord, i) => {
                             const safeGetCompleted = (field) => cleanText(completedRecord[field] ?? 'N/A');
-                            // 🔥 Use ONLY the date field from the utility
-                            const { date } = formatDateForPdf(completedRecord["Interview Date"], completedRecord["Interview Time"]);
+                            const { date } = formatDateForPdf(completedRecord["Interview Date"]);
                             
-                            // Remove Round number from the result line
                             doc.fontSize(FONT_SIZE_NORMAL + 1).font('Times-Bold').text(`Result - ${safeGetCompleted("Interview Result")}`, 30, doc.y);
                             doc.moveDown(0.2);
 
-                            // 🔥 FIXED: Use only DATE field
                             const roundFields = [
                                 ["Interviewer:", safeGetCompleted("Assigned Interviewer Name")], 
                                 ["Date:", date], // ONLY DATE
@@ -217,8 +309,8 @@ const InterviewController = {
                             doc.fontSize(FONT_SIZE_NORMAL).font('Times-Roman');
                             roundFields.forEach(field => {
                                 doc.text(`${String(field[0])} `, 30, doc.y + 3, { continued: true })
-                                   .font('Times-Bold').text(`${String(field[1])}`, { continued: false })
-                                   .font('Times-Roman'); 
+                                    .font('Times-Bold').text(`${String(field[1])}`, { continued: false })
+                                    .font('Times-Roman'); 
                             });
                             
                             doc.moveDown(0.5); // Separator before scores
@@ -237,8 +329,8 @@ const InterviewController = {
                             doc.fontSize(FONT_SIZE_NORMAL).font('Times-Roman');
                             scoreFields.forEach(field => {
                                 doc.text(`${String(field[0])} `, 30, doc.y + 3, { continued: true })
-                                   .font('Times-Bold').text(`${String(field[1])}`, { continued: false })
-                                   .font('Times-Roman'); 
+                                    .font('Times-Bold').text(`${String(field[1])}`, { continued: false })
+                                    .font('Times-Roman'); 
                             });
                             doc.moveDown(1.0); // Space between rounds
                         });
