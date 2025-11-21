@@ -14,7 +14,6 @@ const ClassroomManager = () => {
   const [cohorts, setCohorts] = useState([]);
 
   const [selectedCohort, setSelectedCohort] = useState("");
-
   const [selectedBatch, setSelectedBatch] = useState("");
 
   const [formData, setFormData] = useState({
@@ -38,13 +37,11 @@ const ClassroomManager = () => {
 
   const loadTeachers = async () => {
     const res = await axios.get(`${BASE}/teachers`);
-    console.log("TEACHERS API RESPONSE:", res.data);
     setTeachers(res.data);
   };
 
   const loadPlatforms = async () => {
     const res = await axios.get(`${BASE}/platforms`);
-    console.log("PLATFORMS API RESPONSE:", res.data);
     setPlatforms(res.data);
   };
 
@@ -63,11 +60,13 @@ const ClassroomManager = () => {
     setClassrooms(res.data);
   };
 
+  // Load all data on mount
   useEffect(() => {
     loadSubjects();
     loadTeachers();
     loadPlatforms();
     loadBatches();
+    loadCohorts();          // ✔ FIX ADDED
     loadClassrooms();
   }, []);
 
@@ -80,12 +79,12 @@ const ClassroomManager = () => {
 
     if (!subject || !teacher) return;
 
-    // subject.short_code → PHY09
-    // teacher.short_code → DEEKSHA
+    // Handle both short_code and shortname safely
+    const subjectCode = subject.short_code || subject.shortname || "SUB";
+    const teacherCode = teacher.short_code || teacher.shortname || "TCH";
 
-    const baseName = `${subject.short_code}-${teacher.short_code}`;
+    const baseName = `${subjectCode}-${teacherCode}`;
 
-    // Find existing numbers
     const matching = classrooms.filter((c) =>
       c.classroom_name?.startsWith(baseName)
     );
@@ -129,14 +128,23 @@ const ClassroomManager = () => {
     <div style={{ padding: "20px" }}>
       <h1>Classroom Manager</h1>
 
-      <div style={{ border: "1px solid #ccc", padding: "20px", marginBottom: "20px" }}>
+      <div
+        style={{
+          border: "1px solid #ccc",
+          padding: "20px",
+          marginBottom: "20px",
+        }}
+      >
         <h2>Create New Classroom</h2>
 
         <form onSubmit={handleSubmit}>
+          {/* Subject */}
           <label>Subject</label>
           <select
             value={formData.subject_id}
-            onChange={(e) => setFormData({ ...formData, subject_id: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, subject_id: e.target.value })
+            }
             required
           >
             <option value="">Select Subject</option>
@@ -147,24 +155,30 @@ const ClassroomManager = () => {
             ))}
           </select>
 
+          {/* Teacher */}
           <label>Teacher</label>
           <select
             value={formData.teacher_id}
-            onChange={(e) => setFormData({ ...formData, teacher_id: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, teacher_id: e.target.value })
+            }
             required
           >
             <option value="">Select Teacher</option>
             {teachers.map((t) => (
-              <option key={t.user_id} value={t.user_id}>
-                {t.user_name}
+              <option key={t.teacher_id} value={t.teacher_id}>
+                {t.teacher_name}
               </option>
             ))}
           </select>
 
+          {/* Platform */}
           <label>Teaching Platform</label>
           <select
             value={formData.platform_id}
-            onChange={(e) => setFormData({ ...formData, platform_id: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, platform_id: e.target.value })
+            }
           >
             <option value="">Select Platform</option>
             {platforms.map((p) => (
@@ -174,6 +188,7 @@ const ClassroomManager = () => {
             ))}
           </select>
 
+          {/* Cohort */}
           <label>Select Cohort</label>
           <select
             value={selectedCohort}
@@ -187,6 +202,7 @@ const ClassroomManager = () => {
             ))}
           </select>
 
+          {/* Batch */}
           <label>Assign to Batch</label>
           <select
             value={selectedBatch}
@@ -201,24 +217,35 @@ const ClassroomManager = () => {
             ))}
           </select>
 
-          <div style={{ marginTop: "10px", marginBottom: "10px", fontWeight: "bold" }}>
+          {/* Auto Name */}
+          <div
+            style={{
+              marginTop: "10px",
+              marginBottom: "10px",
+              fontWeight: "bold",
+            }}
+          >
             Classroom Name: {autoName || "—"}
           </div>
 
+          {/* Description */}
           <label>Description</label>
           <input
             type="text"
             value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
           />
 
-          {/* Save */}
+          {/* Submit */}
           <button type="submit" style={{ marginTop: "10px" }}>
             Save Classroom
           </button>
         </form>
       </div>
 
+      {/* All Classrooms */}
       <h2>All Classrooms</h2>
 
       <table border="1" cellPadding="10" style={{ width: "100%" }}>

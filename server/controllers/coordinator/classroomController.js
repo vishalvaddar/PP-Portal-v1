@@ -77,5 +77,22 @@ const fetchPlatforms = async (req, res) => {
   }
 };
 
+const fetchClassrooms = async (req, res) => {
+  try {
+    const { batchId } = req.params;
 
-module.exports = { getClassroomsByBatchId, getAllClassrooms, createClassroom, fetchTeachers, fetchPlatforms, };
+    if (!batchId) {
+      return res.status(400).json({ error: "Batch ID is required" });
+    }
+
+    const classrooms = await getClassroomsByBatch(batchId);
+
+    res.json(classrooms);
+  } catch (err) {
+    console.error("Error fetching classrooms:", err);
+    res.status(500).json({ error: "Failed to fetch classrooms" });
+  }
+};
+
+
+module.exports = { getClassroomsByBatchId, getAllClassrooms, createClassroom, fetchTeachers, fetchPlatforms, fetchClassrooms };
