@@ -1,62 +1,55 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const fs = require("fs");
 require("dotenv").config();
+const fs = require("fs");
 
-const fileUpload = require("express-fileupload");
 const pool = require("./config/db");
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ─────────────────────────────────────────────
-// DIRECTORY CREATION
-// ─────────────────────────────────────────────
+// ───── Ensure Uploads Directory ─────
 const uploadsDir = path.join(__dirname, "uploads");
-const dataDir = path.join(__dirname, "Data");
-const interviewDataDir = path.join(dataDir, "Interview-data"); 
-const homeVerificationDataDir = path.join(dataDir, "Home-verification-data");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+const interviewDataDir = path.join(__dirname, "Data", "Interview-data");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
-[uploadsDir, interviewDataDir, homeVerificationDataDir].forEach(dir => {
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-});
-
-// ─────────────────────────────────────────────
-// MIDDLEWARE
-// ─────────────────────────────────────────────
+// ───── Middleware ─────
 app.use(cors({ origin: "*" }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.use(fileUpload());
-
-// Logging
+// ───── Logging Middleware ─────
 const actionLogger = require("./middleware/loggingMiddleware");
 app.use(actionLogger({ logBody: true, logQuery: true }));
 
-// ─────────────────────────────────────────────
-// STATIC FILE SERVING
-// ─────────────────────────────────────────────
-
-// Main Data folder
-app.use("/Data", express.static(path.join(__dirname, "Data")));
-
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// ───── Static Files ─────
+app.use(
+  "/Data/Interview-data",
+  express.static(path.join(__dirname, "Data", "Interview-data"))
+);
+app.use(
+  "/Data/Home-verification-data",
+  express.static(path.join(__dirname, "Data", "Home-verification-data"))
+);
+app.use(
+  "/uploads/profile_photos",
+  express.static(path.join(__dirname, "uploads", "profile_photos"))
+);
 app.use("/logs", express.static(path.join(__dirname, "logs")));
-app.use("/halltickets", express.static(path.join(__dirname, "public", "halltickets")));
+app.use(
+  "/halltickets",
+  express.static(path.join(__dirname, "public", "halltickets"))
+);
 
-// ─────────────────────────────────────────────
-// ROUTES IMPORTS
-// ─────────────────────────────────────────────
+// ───── Routes ─────
 const authRoutes = require("./routes/authRoutes");
 const adminDashboardRoutes = require("./routes/adminDashboardRoutes");
 const coordinatorRoutes = require("./routes/coordinatorRoutes");
 const studentRoutes = require("./routes/studentRoutes");
-
 const applicantRoutes = require("./routes/applicantRoutes");
-
 const bulkUploadRoutes = require("./routes/bulkUploadRoutes");
 const searchRoutes = require("./routes/searchRoutes");
 const jurisdictionRoutes = require("./routes/jurisdictionRoutes");
@@ -71,19 +64,18 @@ const examRoutes = require("./routes/examRoutes");
 const evaluationRoutes = require("./routes/evaluationRoutes");
 const evaluationDashboardRoutes = require("./routes/evaluationDashboardRoutes");
 const trackingRoutes = require("./routes/trackingRoutes");
-
 const studentSearchRoutes = require("./routes/studentSearchRoutes");
 const timetableRoutes = require("./routes/timeTableRoutes");
 const interviewRoutes = require("./routes/interviewRoutes");
 const resultandrankinkRoutes = require("./routes/resultandrankinkRoutes");
 const systemConfigRoutes = require("./routes/systemConfigRoutes");
 
-// ─────────────────────────────────────────────
-// ROUTES (ALL CLEANED)
-// ─────────────────────────────────────────────
+// ───── Use Routes ─────
 
-// File Uploads
 app.use("/api/bulk-upload", bulkUploadRoutes);
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use("/auth", authRoutes);
 app.use("/api/system-config", systemConfigRoutes);
@@ -100,11 +92,17 @@ app.use("/api/juris-names", jurisNamesRoutes);
 app.use("/api/institutes", institutesRoutes);
 app.use("/api/districts", districtRoutes);
 app.use("/api", studentSearchRoutes);
+
+// Shortlisting
 app.use("/api/shortlist/generate", generateShortlistRoutes);
 app.use("/api/shortlist-info", shortlistInfoRoutes);
+
+// Dashboards & Roles
 app.use("/api/admin-dashboard", adminDashboardRoutes);
 app.use("/api/coordinator", coordinatorRoutes);
 app.use("/api/student", studentRoutes);
+
+// Exams & Evaluation
 app.use("/api/exams", examRoutes);
 app.use("/api/evaluation", evaluationRoutes);
 app.use("/api/evaluation-dashboard", evaluationDashboardRoutes);
@@ -113,18 +111,16 @@ app.use("/api/tracking", trackingRoutes);
 // Interviews & Results
 app.use("/api/interview", interviewRoutes);
 app.use("/api/resultandrank", resultandrankinkRoutes);
+
+// Timetable
 app.use("/api/timetable", timetableRoutes);
 
-// ─────────────────────────────────────────────
-// 404 HANDLER
-// ─────────────────────────────────────────────
+// ───── 404 Handler ─────
 app.use((req, res) => {
-    res.status(404).json({ error: "Route not found" });
+  res.status(404).json({ error: "Route not found" });
 });
 
-// ─────────────────────────────────────────────
-// START SERVER
-// ─────────────────────────────────────────────
+// ───── Start Server ─────
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
