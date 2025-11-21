@@ -100,6 +100,12 @@ app.use("/api/juris-names", jurisNamesRoutes);
 app.use("/api/institutes", institutesRoutes);
 app.use("/api/districts", districtRoutes);
 app.use("/api", studentSearchRoutes);
+<<<<<<< HEAD
+
+
+// Shortlisting
+=======
+>>>>>>> 273668740518b1e941a594d57bcea7557e1c6c13
 app.use("/api/shortlist/generate", generateShortlistRoutes);
 app.use("/api/shortlist-info", shortlistInfoRoutes);
 app.use("/api/admin-dashboard", adminDashboardRoutes);

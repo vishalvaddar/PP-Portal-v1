@@ -95,19 +95,6 @@ const validateField = (field, value, rowIndex) => {
         errors.push('Must be M, F, or O.');
       break;
 
-    case 'DOB':
-      if (strValue) {
-        const dob = moment(strValue, ["DD-MM-YYYY", "YYYY-MM-DD"], true);
-        if (!dob.isValid()) errors.push('Invalid date format (use DD-MM-YYYY or YYYY-MM-DD).');
-        else if (dob.isAfter(moment().subtract(13, 'years')))
-          errors.push('Student must be at least 13 years old.');
-      }
-      break;
-
-    case 'aadhaar':
-      if (strValue && !/^\d{12}$/.test(strValue))
-        errors.push('Must be a 12-digit Aadhaar number.');
-      break;
   }
 
   return errors.length > 0
