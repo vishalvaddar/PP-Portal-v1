@@ -1,2 +1,0 @@
-1. cohort and batch creation -- Batches should be shown 
-2. create classrooms 
