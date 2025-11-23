@@ -97,9 +97,13 @@ app.use("/api/exams", examRoutes);
 app.use("/api/evaluation", evaluationRoutes);
 app.use("/api/evaluation-dashboard", evaluationDashboardRoutes);
 
-// Interviews & Results
+// Interviews 
 app.use("/api/interview", interviewRoutes);
-app.use("/api/resultandrank", resultandrankinkRoutes);
+
+
+//result and ranking
+
+app.use("/api/results",resultandrankinkRoutes)
 
 // Timetable
 app.use("/api/timetable", timetableRoutes);

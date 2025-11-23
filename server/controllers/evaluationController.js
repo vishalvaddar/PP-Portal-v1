@@ -155,7 +155,7 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
-
+    
 
 
 const uploadBulkData = asyncHandler(async (req, res) => {

@@ -1,11 +1,16 @@
 const express = require("express");
 const router = express.Router();
 
-const {fetchStates,fetchDistrictsByState,fetchBlocksByDistrict} =require('../controllers/resultandrankingController')
+const {fetchDivisionsByState,fetchEducationDistrictsByDivision,fetchBlocksByDistrict,searchResults,downloadtheresult } =require('../controllers/resultandrankingController')
 
-
-router.get("/states", fetchStates);
-router.get("/districts-by-state/:stateId", fetchDistrictsByState);
+router.get("/divisions-by-state/:stateId", fetchDivisionsByState);
+router.get("/education-districts-by-division/:divisionId", fetchEducationDistrictsByDivision);
 router.get("/blocks-by-district/:districtId", fetchBlocksByDistrict);
+router.post("/search", searchResults);
+router.post("/download-results", downloadtheresult);
+
+
+
+
 
 module.exports = router;

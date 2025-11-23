@@ -11,14 +11,19 @@ const CreateExam = () => {
   const [assignExamId, setAssignExamId] = useState(null);
   const [notAssignedExams, setNotAssignedExams] = useState([]);
   const [message, setMessage] = useState("");
-  const [isCreatingCentre, setIsCreatingCentre] = useState(false);
   const {
     entries,
     isLoading,
     error,
     deleteExam,
     toggleFreezeExam,
+    newCentre,
+  handleCentreChange,
+   districts,
+     setDistricts,
     usedBlocks,
+    isCreatingCentre,
+  setIsCreatingCentre,
     newCentreName,
     createCentre,
     setNewCentreName
@@ -89,50 +94,132 @@ const CreateExam = () => {
 
       {assignExamId && <AssignStudentsModal examId={assignExamId} onClose={() => setAssignExamId(null)} />}
 
-      {isCreatingCentre && (
-        <div className={classes.popupBox}>
-          <h4>Create New Centre</h4>
-          <input
-            type="text"
-            placeholder="Enter New Centre Name"
-            value={newCentreName}
-            onChange={e => setNewCentreName(e.target.value)}
-            required
-          />
-          <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
-            <button
-              className={classes.btnGreen}
-              type="button"
-              onClick={async () => {
-                if (!newCentreName.trim()) {
-                  alert("Please enter a centre name.");
-                  return;
-                }
-                try {
-                  await createCentre();
-                  alert("Centre created successfully!");
-                  setNewCentreName("");
-                  setIsCreatingCentre(false);
-                } catch (err) {
-                  alert("Failed to create centre");
-                }
-              }}
-            >
-              Create
-            </button>
-            <button 
-              className={classes.btnRed} 
-              onClick={() => {
-                setIsCreatingCentre(false);
-                setNewCentreName("");
-              }} 
-              type="button"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
+         {/* creaing the centre */}
+
+         {isCreatingCentre && (
+  <div className={classes.popupBox}>
+    <h4>Create New Exam Centre</h4>
+
+    <input
+      type="text"
+      placeholder="Centre Code (optional)"
+      value={newCentre.pp_exam_centre_code}
+      onChange={(e) =>
+        handleCentreChange("pp_exam_centre_code", e.target.value)
+      }
+      maxLength={20}
+    />
+
+    <input
+      type="text"
+      placeholder="Center Name* (Example: Smt Ushatai Gogte Girls High School, Belagavi)"
+      value={newCentre.pp_exam_centre_name}
+      onChange={(e) =>
+        handleCentreChange("pp_exam_centre_name", e.target.value)
+      }
+      required
+      maxLength={100}
+    />
+
+    <input
+      type="text"
+      placeholder="Address"
+      value={newCentre.address}
+      onChange={(e) => handleCentreChange("address", e.target.value)}
+      maxLength={200}
+    />
+
+    <input
+      type="text"
+      placeholder="Village"
+      value={newCentre.village}
+      onChange={(e) => handleCentreChange("village", e.target.value)}
+      maxLength={100}
+    />
+
+    <input
+      type="text"
+      placeholder="Pincode (5–12 digits)"
+      value={newCentre.pincode}
+      onChange={(e) => handleCentreChange("pincode", e.target.value)}
+      maxLength={12}
+    />
+
+    <input
+      type="text"
+      placeholder="Contact Person"
+      value={newCentre.contact_person}
+      onChange={(e) => handleCentreChange("contact_person", e.target.value)}
+      maxLength={100}
+    />
+
+    <input
+      type="text"
+      placeholder="Contact Phone (7–12 digits)"
+      value={newCentre.contact_phone}
+      onChange={(e) => handleCentreChange("contact_phone", e.target.value)}
+      maxLength={12}
+    />
+
+    <input
+      type="email"
+      placeholder="Contact Email"
+      value={newCentre.contact_email}
+      onChange={(e) => handleCentreChange("contact_email", e.target.value)}
+      maxLength={200}
+    />
+
+    <input
+      type="number"
+      placeholder="Sitting Capacity"
+      value={newCentre.sitting_capacity}
+      onChange={(e) => handleCentreChange("sitting_capacity", e.target.value)}
+      min="0"
+    />
+
+    <input
+      type="text"
+      placeholder="Latitude (e.g. 28.7041)"
+      value={newCentre.latitude}
+      onChange={(e) => handleCentreChange("latitude", e.target.value)}
+    />
+
+    <input
+      type="text"
+      placeholder="Longitude (e.g. 77.1025)"
+      value={newCentre.longitude}
+      onChange={(e) => handleCentreChange("longitude", e.target.value)}
+    />
+
+    {message && (
+      <div
+        style={{
+          marginTop: "10px",
+          padding: "8px",
+          borderRadius: "4px",
+          backgroundColor: message.startsWith("✅") ? "#d4edda" : "#f8d7da",
+          color: message.startsWith("✅") ? "#155724" : "#721c24",
+        }}
+      >
+        {message}
+      </div>
+    )}
+
+    <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
+      <button className={classes.btnGreen} onClick={createCentre}>
+        Create
+      </button>
+      <button
+        className={classes.btnRed}
+        onClick={() => setIsCreatingCentre(false)}
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+)}
+
+
 
       {/* List of exams created but NOT assigned any students */}
       <div className={classes.notAssignedExamsContainer}>
@@ -147,6 +234,8 @@ const CreateExam = () => {
                   <h3>{exam.exam_name}</h3>
                   <p>Date: {new Date(exam.exam_date).toLocaleDateString()}</p>
                   <p>Centre: {exam.pp_exam_centre_name}</p>
+                  <p>Exam start time :{exam.exam_start_time}</p>
+                  <p>Exam End time :{exam.exam_end_time}</p>
                 </span>
                 <button
                   className={classes.assignButton}
@@ -179,12 +268,16 @@ const CreateExam = () => {
               <div key={entry.exam_id} className={classes.examCard}>
   <h3>{entry.exam_name}</h3>
   <p>Date: {new Date(entry.exam_date).toLocaleDateString()}</p>
+  <p>Exam Start TIme :{entry.exam_start_time}</p>
+  <p>Exam End TIme :{entry.exam_end_time}</p>
   <p>Centre: {entry.pp_exam_centre_name}</p>
   {entry.blocks && entry.blocks.length > 0 ? (
     <p>Blocks: {entry.blocks.map((b) => b.name).join(", ")}</p>
   ) : (
     <p style={{ color: "orange" }}>Applicants not assigned</p>
   )}
+
+  {/* assigned student exams */}
   {entry.district_name && (
     <div className={classes.actionRow}>
 

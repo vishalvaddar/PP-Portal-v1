@@ -8,9 +8,10 @@ const {
     removeExamCentre,
     
     // Location routes
-    fetchStates,
-    fetchDistrictsByState,
-    fetchBlocksByDistrict,
+    fetchDivisionsByState,
+  fetchEducationDistrictsByDivision,
+  fetchBlocksByDistrict,
+  fetchClustersByBlock,
     fetchUsedBlocks,
     
     // Exam routes
@@ -32,9 +33,11 @@ router.post("/exam-centres", createExamCentre);
 router.delete("/exam-centres/:id", removeExamCentre);
 
 // Location Routes
-router.get("/states", fetchStates);
-router.get("/districts-by-state/:stateId", fetchDistrictsByState);
+
+router.get("/divisions-by-state/:stateId", fetchDivisionsByState);
+router.get("/education-districts-by-division/:divisionId", fetchEducationDistrictsByDivision);
 router.get("/blocks-by-district/:districtId", fetchBlocksByDistrict);
+router.get("/clusters-by-block/:blockId", fetchClustersByBlock);
 router.get("/used-blocks", fetchUsedBlocks);
 
 // Exam Routes
@@ -73,3 +76,5 @@ router.get("/count", async (req, res) => {
 
 
 module.exports = router;
+
+

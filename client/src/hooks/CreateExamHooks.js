@@ -5,26 +5,49 @@ const API_BASE_URL = process.env.REACT_APP_BACKEND_API_URL;
 const useCreateExamHooks = () => {
   const [entries, setEntries] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [districts, setDistricts] = useState([]);
-  const [blocks, setBlocks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [assignedApplicants] = useState([]);
   const [centres, setCentres] = useState([]);
   const [newCentreName, setNewCentreName] = useState("");
   const [examBlocks, setExamBlocks] = useState({});
+   const [isCreatingCentre, setIsCreatingCentre] = useState(false);
   
+
+     const [newCentre, setNewCentre] = useState({
+    pp_exam_centre_code: "",
+    pp_exam_centre_name: "",
+    address: "",
+    village: "",
+    pincode: "",
+    contact_person: "",
+    contact_phone: "",
+    contact_email: "",
+    sitting_capacity: "",
+    active_yn: "Y",    
+    district: "",      // numeric (string here, convert before sending)
+    latitude: "",     // numeric (string here)
+    longitude: "", 
+  });
+
   const [formData, setFormData] = useState({
-    centreId: "",
-    examName: "",
-    examDate: "",
+   division: "",
+    education_district: "",
+    block: "",
+    cluster: "",
     app_state: 1,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+   const [divisions, setDivisions] = useState([]);
+  const [educationDistricts, setEducationDistricts] = useState([]);
+  const [blocks, setBlocks] = useState([]);
+  const [clusters, setClusters] = useState([]);
+    const [usedBlocks, setUsedBlocks] = useState([]);
+
 
   // Fetch all exams student assigned when component mounts
-  useEffect(() => {
+  useEffect(() => { 
     const fetchExams = async () => {
       setIsLoading(true);
       setError(null);
@@ -36,6 +59,8 @@ const useCreateExamHooks = () => {
               exam_id: exam.exam_id || exam.examId,
               exam_name: exam.exam_name || exam.examName,
               exam_date: exam.exam_date || exam.examDate,
+              exam_start_time: exam.exam_start_time,
+              exam_end_time: exam.exam_end_time,
               pp_exam_centre_id: exam.pp_exam_centre_id || exam.centreId,
               pp_exam_centre_name: exam.pp_exam_centre_name,
               district: exam.district_ids ? exam.district_ids[0] : null,
@@ -97,29 +122,50 @@ const useCreateExamHooks = () => {
     fetchCentres();
   }, []);
 
-  // get the districts
-  useEffect(() => {
-    if (!formData.app_state) return;
-    const fetchDistricts = async () => {
-      try {
-        const response = await axios.get(
-          `${API_BASE_URL}/api/exams/districts-by-state/${formData.app_state}`
-        );
-        setDistricts(response.data);
-      } catch (error) {
-        console.error("Error fetching districts:", error);
-      }
-    };
-    fetchDistricts();
-  }, [formData.app_state]);
+ useEffect(() => {
+  if (!formData.app_state) return;
 
-  // fetch the blocks
+  const fetchDivisions = async () => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/api/exams/divisions-by-state/${formData.app_state}`
+      );
+      setDivisions(response.data);
+    } catch (error) {
+      console.error("Error fetching divisions:", error);
+    }
+  };
+
+  fetchDivisions();
+}, [formData.app_state]);
+
+useEffect(() => {
+  if (!formData.division) return;
+
+  const fetchEducationDistricts = async () => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/api/exams/education-districts-by-division/${formData.division}`
+      );
+      setEducationDistricts(response.data);
+    } catch (error) {
+      console.error("Error fetching education districts:", error);
+    }
+  };
+
+  fetchEducationDistricts();
+}, [formData.division]);
+
+  // ✅ Fetch Blocks when Education District changes
   useEffect(() => {
+    if (!formData.education_district) {
+      setBlocks([]);
+      return;
+    }
     const fetchBlocks = async () => {
-      if (!formData.district) return;
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/exams/blocks-by-district/${formData.district}`
+          `${API_BASE_URL}/api/exams/blocks-by-district/${formData.education_district}`
         );
         setBlocks(response.data);
       } catch (error) {
@@ -127,21 +173,23 @@ const useCreateExamHooks = () => {
       }
     };
     fetchBlocks();
-  }, [formData.district]);
+  }, [formData.education_district, setBlocks]);
 
-  const [usedBlocks, setUsedBlocks] = useState([]);
-  // used-blocks
+  // ✅ Fetch already used blocks
   useEffect(() => {
     const fetchUsedBlocks = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/api/exams/used-blocks`);
-        setUsedBlocks(response.data);
+        setUsedBlocks(response.data || []);
       } catch (error) {
         console.error("Error fetching used blocks:", error);
       }
     };
     fetchUsedBlocks();
   }, []);
+
+
+  
 
   const handleBlockCheckboxChange = blockId => {
     setFormData(prev => {
@@ -163,6 +211,8 @@ const useCreateExamHooks = () => {
         centreId: formData.centreId,
         examName: formData.examName,
         date: formData.examDate,
+        startTime: formData.examstarttime,   // ✅ Added
+        endTime: formData.examendtime 
       };
       console.log("Payload being sent to backend:", payload);
 
@@ -177,6 +227,8 @@ const useCreateExamHooks = () => {
         examName: "",
         examDate: "",
         app_state: formData.app_state,
+        examstarttime:"",
+        examendtime:""
       });
       setShowForm(false);
       setMessage("✅ Exam Created Successfully");
@@ -207,20 +259,85 @@ const useCreateExamHooks = () => {
     }
   };
 
-  // create centre
-  const createCentre = async () => {
-    try {
-      const res = await axios.post(`${API_BASE_URL}/api/exams/exam-centres`, {
-        pp_exam_centre_name: newCentreName,
-      });
-      setCentres([...centres, res.data]);
-      setNewCentreName("");
-      setMessage("✅ Centre created successfully");
-    } catch (err) {
-      console.error("Create centre error:", err);
-      setMessage("❌ Failed to create centre");
-    }
+
+    // ✅ Update any field easily
+  const handleCentreChange = (key, value) => {
+    setNewCentre(prev => ({ ...prev, [key]: value }));
   };
+
+  // create centre
+const createCentre = async () => {
+  if (!newCentre.pp_exam_centre_name.trim()) {
+    window.alert("❌ Centre name is required.");
+    return;
+  }
+
+  // Optional client-side validation
+  if (newCentre.pincode && !/^\d{5,12}$/.test(newCentre.pincode)) {
+    window.alert("❌ Invalid pincode format (must be 5–12 digits).");
+    return;
+  }
+
+  if (newCentre.contact_phone && !/^\d{7,12}$/.test(newCentre.contact_phone)) {
+    window.alert("❌ Invalid phone number format (must be 7–12 digits).");
+    return;
+  }
+
+  if (newCentre.contact_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCentre.contact_email)) {
+    window.alert("❌ Invalid email address.");
+    return;
+  }
+
+  // Format data properly for backend
+  const formattedCentre = {
+    ...newCentre,
+    sitting_capacity: newCentre.sitting_capacity
+      ? parseInt(newCentre.sitting_capacity)
+      : null,
+    latitude: newCentre.latitude ? parseFloat(newCentre.latitude) : null,
+    longitude: newCentre.longitude ? parseFloat(newCentre.longitude) : null,
+  };
+
+  try {
+    const res = await axios.post(
+      `${API_BASE_URL}/api/exams/exam-centres`,
+      formattedCentre
+    );
+
+    setCentres([...centres, res.data]);
+    setMessage("✅ Centre created successfully");
+    window.alert("✅ Centre created successfully!");
+
+    // Reset form
+    setNewCentre({
+      pp_exam_centre_code: "",
+      pp_exam_centre_name: "",
+      address: "",
+      village: "",
+      pincode: "",
+      contact_person: "",
+      contact_phone: "",
+      contact_email: "",
+      sitting_capacity: "",
+      latitude: "",
+      longitude: "",
+    });
+
+    setIsCreatingCentre(false);
+  } catch (err) {
+    console.error("Create centre error:", err);
+
+    if (err.response && err.response.data?.message) {
+      setMessage(`❌ ${err.response.data.message}`);
+      window.alert(`❌ ${err.response.data.message}`);
+    } else {
+      setMessage("❌ Failed to create centre. Please try again.");
+      window.alert("❌ Failed to create centre. Please try again.");
+    }
+  }
+};
+
+
 
   // delete centre
   const deleteCentre = async id => {
@@ -268,15 +385,32 @@ const useCreateExamHooks = () => {
 
   return {
     entries,
-    setEntries,
     showForm,
     setShowForm,
-    districts,
+     setBlocks,
     blocks,
     loading,
+    setLoading,
     message,
+    setMessage,
     assignedApplicants,
     centres,
+    setCentres,
+     isCreatingCentre,
+    setIsCreatingCentre,
+     newCentre,
+    handleCentreChange,
+
+    divisions, 
+    setDivisions,
+    educationDistricts, 
+    setEducationDistricts,
+    blocks,
+     setBlocks,
+     clusters, 
+     setClusters,
+
+    //old things
     newCentreName,
     setNewCentreName,
     formData,
@@ -291,7 +425,8 @@ const useCreateExamHooks = () => {
     usedBlocks,
     isLoading,
     error,
-    toggleFreezeExam,
+    setUsedBlocks,
+    toggleFreezeExam
   };
 };
 

@@ -1,0 +1,89 @@
+.modal {
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 12px;
+  width: 600px;
+  max-width: 90%;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.formGroup {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroup label {
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.formGroup select,
+.formGroup input {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 15px;
+}
+
+.checkboxGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  padding-top: 10px;
+}
+
+.checkboxItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+}
+
+.checkboxItem.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.checkboxItem label span {
+  color: red;
+  font-size: 13px;
+}
+
+.btnGreen {
+  background: #28a745;
+  padding: 8px 15px;
+  color: white;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.btnGreen:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btnRed {
+  background: #dc3545;
+  padding: 8px 15px;
+  color: white;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}

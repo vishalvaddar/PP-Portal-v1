@@ -10,12 +10,62 @@ async function getExamCentres() {
     return result.rows;
 }
 
-async function addExamCentre(pp_exam_centre_name) {
-    const result = await pool.query(
-        "INSERT INTO pp.pp_exam_centre (pp_exam_centre_name) VALUES ($1) RETURNING *",
-        [pp_exam_centre_name]
-    );
-    return result.rows[0];
+async function addExamCentre(data) {
+  const {
+    pp_exam_centre_code,
+    pp_exam_centre_name,
+    address,
+    village,
+    pincode,
+    contact_person,
+    contact_phone,
+    contact_email,
+    sitting_capacity,
+    latitude,
+    longitude,
+    created_by,
+  } = data;
+
+  const created_at = new Date();
+
+  const query = `
+    INSERT INTO pp.pp_exam_centre (
+      pp_exam_centre_code,
+      pp_exam_centre_name,
+      address,
+      village,
+      pincode,
+      contact_person,
+      contact_phone,
+      contact_email,
+      sitting_capacity,
+      latitude,
+      longitude,
+      created_at,
+      created_by
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+    RETURNING *;
+  `;
+
+  const values = [
+    pp_exam_centre_code || null,
+    pp_exam_centre_name,
+    address || null,
+    village || null,
+    pincode || null,
+    contact_person || null,
+    contact_phone || null,
+    contact_email || null,
+    sitting_capacity ? parseInt(sitting_capacity) : null,
+    latitude ? parseFloat(latitude) : null,
+    longitude ? parseFloat(longitude) : null,
+    created_at,
+    created_by || null,
+  ];
+
+  const result = await pool.query(query, values);
+  return result.rows[0];
 }
 
 async function deleteExamCentre(id) {
@@ -23,34 +73,53 @@ async function deleteExamCentre(id) {
 }
 
 // Location Models
-async function getStates() {
-    const result = await pool.query(`
-        SELECT JURIS_CODE AS id, JURIS_NAME AS name
-        FROM PP.JURISDICTION 
-        WHERE JURIS_TYPE = 'STATE' AND PARENT_JURIS IS NULL
-    `);
-    return result.rows;
+async function getDivisionsByState(stateId) {
+  const result = await pool.query(`
+    SELECT JURIS_CODE AS id, JURIS_NAME AS name
+    FROM PP.JURISDICTION
+    WHERE JURIS_TYPE = 'DIVISION'
+      AND PARENT_JURIS = $1
+    ORDER BY JURIS_NAME
+  `, [stateId]);
+  return result.rows;
 }
 
-async function getDistrictsByState(stateId) {
-    const result = await pool.query(`
-        SELECT JURIS_CODE AS id, JURIS_NAME AS name 
-        FROM PP.JURISDICTION 
-        WHERE JURIS_TYPE = 'EDUCATION DISTRICT' 
-        AND PARENT_JURIS = $1
-    `, [stateId]);
-    return result.rows;
+// 2️⃣ Education Districts by Division
+async function getEducationDistrictsByDivision(divisionId) {
+  const result = await pool.query(`
+    SELECT JURIS_CODE AS id, JURIS_NAME AS name
+    FROM PP.JURISDICTION
+    WHERE JURIS_TYPE = 'EDUCATION DISTRICT'
+      AND PARENT_JURIS = $1
+    ORDER BY JURIS_NAME
+  `, [divisionId]);
+  return result.rows;
 }
 
+// 3️⃣ Blocks by Education District
 async function getBlocksByDistrict(districtId) {
-    const result = await pool.query(`
-        SELECT JURIS_CODE AS id, JURIS_NAME AS name 
-        FROM PP.JURISDICTION 
-        WHERE JURIS_TYPE = 'BLOCK' 
-        AND PARENT_JURIS = $1
-    `, [districtId]);
-    return result.rows;
+  const result = await pool.query(`
+    SELECT JURIS_CODE AS id, JURIS_NAME AS name
+    FROM PP.JURISDICTION
+    WHERE JURIS_TYPE = 'BLOCK'
+      AND PARENT_JURIS = $1
+    ORDER BY JURIS_NAME
+  `, [districtId]);
+  return result.rows;
 }
+
+// 4️⃣ Clusters by Block
+async function getClustersByBlock(blockId) {
+  const result = await pool.query(`
+    SELECT JURIS_CODE AS id, JURIS_NAME AS name
+    FROM PP.JURISDICTION
+    WHERE JURIS_TYPE = 'CLUSTER'
+      AND PARENT_JURIS = $1
+    ORDER BY JURIS_NAME
+  `, [blockId]);
+  return result.rows;
+}
+
 
 async function getUsedBlocks(blockId) {
     let result;
@@ -81,6 +150,8 @@ async function getAllExams() {
             e.frozen_yn,
             e.pp_exam_centre_id,
             c.pp_exam_centre_name,
+            e.exam_start_time,
+            e.exam_end_time,
             ARRAY_AGG(DISTINCT jd.juris_code) AS district_ids,
             ARRAY_AGG(DISTINCT jd.juris_name) AS district_names,
             ARRAY_AGG(DISTINCT jb.juris_code) AS block_ids,
@@ -112,7 +183,9 @@ async function getAllExamsnotassigned() {
       e.exam_date,
       e.frozen_yn,
       e.pp_exam_centre_id,
-      c.pp_exam_centre_name
+      c.pp_exam_centre_name,
+      e.exam_start_time,
+      e.exam_end_time
     FROM pp.examination e
     LEFT JOIN pp.pp_exam_centre c ON e.pp_exam_centre_id = c.pp_exam_centre_id
     WHERE NOT EXISTS (
@@ -138,9 +211,10 @@ module.exports = {
     getExamCentres,
     addExamCentre,
     deleteExamCentre,
-    getStates,
-    getDistrictsByState,
-    getBlocksByDistrict,
+    getDivisionsByState,
+  getEducationDistrictsByDivision,
+  getBlocksByDistrict,
+  getClustersByBlock,
     getUsedBlocks,
     getAllExams,
     getAllExamsnotassigned,
