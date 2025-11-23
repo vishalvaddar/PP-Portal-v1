@@ -1,126 +1,137 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import styles from './EventDetailsPage.module.css';
-
-// --- MOCK DATA ---
-// In a real app, you would fetch this event by its ID
-const MOCK_EVENTS = [
-  {
-    id: 1,
-    eventTitle: 'Sammelan251025-Cohort-3-Ankola',
-    eventType: 'Pratibha Sammelan',
-    startDate: '2025-10-25',
-    endDate: '2025-10-27',
-    district: 'Uttara Kannada',
-    taluka: 'Ankola',
-    location: 'Nature Bound Sahyadris, Sunksal',
-    cohort: '3',
-    boysCount: 50,
-    girlsCount: 55,
-    parentsCount: 10,
-    photos: [
-      'https://via.placeholder.com/300x200/EEE/CCC?text=Event+Photo+1',
-      'https://via.placeholder.com/300x200/EEE/CCC?text=Event+Photo+2',
-    ]
-  },
-  { id: 2, eventTitle: 'Ignite200925-Cohort-2-Hubballi', /* ...other data */ },
-];
-// -----------------
+import React, { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import axios from "axios";
+import styles from "./EventDetailsPage.module.css";
 
 const EventDetailsPage = () => {
-  const { eventId } = useParams(); // Get the ID from the URL
+  const { eventId } = useParams();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // --- API Call Simulation ---
-    // In a real app:
-    // const fetchEvent = async () => {
-    //   const response = await axios.get(`/api/events/${eventId}`);
-    //   setEvent(response.data);
-    //   setLoading(false);
-    // }
-    // fetchEvent();
+  const API_BASE_URL = process.env.REACT_APP_BACKEND_API_URL;
 
-    // Mock implementation:
-    const foundEvent = MOCK_EVENTS.find(e => e.id.toString() === eventId);
-    setEvent(foundEvent);
-    setLoading(false);
-    // -------------------------
+  useEffect(() => {
+    const fetchEvent = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/events/${eventId}`);
+
+        // Convert photos CSV → array
+        if (res.data.event_photos) {
+          res.data.event_photos = res.data.event_photos.split(",").map((p) => p.trim());
+        } else {
+          res.data.event_photos = [];
+        }
+
+        setEvent(res.data);
+        console.log("Fetched event data:", res.data);
+      } catch (err) {
+        console.error("Error fetching event:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvent();
   }, [eventId]);
 
-  if (loading) {
-    return <div>Loading event details...</div>;
-  }
+  if (loading) return <p>Loading event details...</p>;
+  if (!event) return <p>Event not found.</p>;
 
-  if (!event) {
-    return <div>Event not found.</div>;
-  }
+  const totalAttendees =
+    (Number(event.boysCount) || 0) +
+    (Number(event.girlsCount) || 0) +
+    (Number(event.parentsCount) || 0);
 
-  const totalAttendees = (event.boysCount || 0) + (event.girlsCount || 0) + (event.parentsCount || 0);
+  const formatDate = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    return isNaN(d.getTime()) ? "" : d.toLocaleDateString("en-IN");
+  };
 
   return (
     <div className={styles.detailsContainer}>
       <Link to="/admin/academics/events" className={styles.backLink}>
-        &larr; Back to Events List
+        ← Back to Events List
       </Link>
-      
+
       <header className={styles.header}>
-        <h1>{event.eventTitle}</h1>
+        <h1>{event.event_title}</h1>
         <span className={styles.eventType}>{event.eventType}</span>
       </header>
 
       <div className={styles.contentGrid}>
-        {/* --- Main Details --- */}
         <div className={styles.mainContent}>
           <div className={styles.card}>
             <h3>Event Details</h3>
             <div className={styles.detailItem}>
-              <strong>Dates:</strong>
-              <span>{event.startDate} to {event.endDate}</span>
+              <strong>Event Title:</strong>
+              <span>{event.eventTitle}</span>
             </div>
+
+            <div className={styles.detailItem}>
+              <strong>Dates:</strong>
+              <span>
+                {formatDate(event.startDate)} to{" "}
+                {formatDate(event.endDate)}
+              </span>
+            </div>
+
             <div className={styles.detailItem}>
               <strong>Location:</strong>
-              <span>{event.location} ({event.taluka}, {event.district})</span>
+              <span>
+                {event.location} ({event.taluka}, {event.district})
+              </span>
             </div>
+
             <div className={styles.detailItem}>
               <strong>Cohort:</strong>
               <span>{event.cohort}</span>
             </div>
           </div>
-          
+
+          {/* PHOTOS */}
           <div className={styles.card}>
             <h3>Photos</h3>
             <div className={styles.photoGrid}>
-              {event.photos && event.photos.length > 0 ? (
-                event.photos.map((photo, index) => (
-                  <img key={index} src={photo} alt={`Event photo ${index + 1}`} />
+              {event.event_photos && event.event_photos.length > 0 ? (
+                event.event_photos.map((photo, idx) => (
+                  <img
+                    key={idx}
+                    src={`${API_BASE_URL}/${photo}`}
+                    alt={"Event " + idx}
+                    className={styles.photo}
+                  />
                 ))
               ) : (
-                <p>No photos were uploaded for this event.</p>
+                <p>No photos uploaded for this event.</p>
               )}
             </div>
           </div>
         </div>
 
-        {/* --- Sidebar --- */}
+        {/* SIDEBAR */}
         <aside className={styles.sidebar}>
           <div className={styles.card}>
             <h3>Attendance</h3>
+
             <div className={styles.detailItem}>
               <strong>Boys:</strong>
               <span>{event.boysCount}</span>
             </div>
+
             <div className={styles.detailItem}>
               <strong>Girls:</strong>
               <span>{event.girlsCount}</span>
             </div>
+
             <div className={styles.detailItem}>
               <strong>Parents:</strong>
               <span>{event.parentsCount}</span>
             </div>
-            <hr className={styles.divider} />
-            <div className={`${styles.detailItem} ${styles.total}`}>
+
+            <hr />
+
+            <div className={styles.detailItem}>
               <strong>Total:</strong>
               <span>{totalAttendees}</span>
             </div>

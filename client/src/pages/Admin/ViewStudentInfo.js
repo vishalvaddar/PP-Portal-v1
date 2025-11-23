@@ -16,7 +16,7 @@ const ViewStudentInfo = () => {
   const [error, setError] = useState("");
   const [photoPreview, setPhotoPreview] = useState("");
   const [institutes, setInstitutes] = useState([]);
-  const [expandedSections, setExpandedSections] = useState({});
+  const [expandedSections, setExpandedSections] = useState({ "personal": true });
 
   const isFromBatches = location.pathname.includes("/batches/view-student-info/");
   const pageTitle = isFromBatches ? "Student Profile" : "Applicant Profile";

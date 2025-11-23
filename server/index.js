@@ -69,6 +69,7 @@ const timetableRoutes = require("./routes/timeTableRoutes");
 const interviewRoutes = require("./routes/interviewRoutes");
 const resultandrankinkRoutes = require("./routes/resultandrankinkRoutes");
 const systemConfigRoutes = require("./routes/systemConfigRoutes");
+const eventRoutes = require("./routes/eventRoutes");
 
 // ───── Use Routes ─────
 
@@ -92,6 +93,7 @@ app.use("/api/juris-names", jurisNamesRoutes);
 app.use("/api/institutes", institutesRoutes);
 app.use("/api/districts", districtRoutes);
 app.use("/api", studentSearchRoutes);
+app.use("/api", eventRoutes);
 
 // Shortlisting
 app.use("/api/shortlist/generate", generateShortlistRoutes);
