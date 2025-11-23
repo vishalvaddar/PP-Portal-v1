@@ -2,11 +2,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 const ClassroomManager = () => {
-  const BASE = `${process.env.REACT_APP_BACKEND_API_URL}/api/coordinator`;
+  const BASE = `${process.env.REACT_APP_BACKEND_API_URL}/api`;
 
   const [classrooms, setClassrooms] = useState([]);
-
-  // Dropdown data
   const [subjects, setSubjects] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [platforms, setPlatforms] = useState([]);
@@ -29,48 +27,77 @@ const ClassroomManager = () => {
 
   const [autoName, setAutoName] = useState("");
 
-  // Load master data
+  // -------------------------------
+  // Load master data safely
+  // -------------------------------
   const loadSubjects = async () => {
-    const res = await axios.get(`${BASE}/subjects`);
-    setSubjects(res.data);
+    try {
+      const res = await axios.get(`${BASE}/coordinator/subjects`);
+      setSubjects(res.data);
+    } catch (err) {
+      console.error("Error loading subjects:", err);
+    }
   };
 
   const loadTeachers = async () => {
-    const res = await axios.get(`${BASE}/teachers`);
-    setTeachers(res.data);
+    try {
+      const res = await axios.get(`${BASE}/coordinator/teachers`);
+      setTeachers(res.data);
+    } catch (err) {
+      console.error("Error loading teachers:", err);
+    }
   };
 
   const loadPlatforms = async () => {
-    const res = await axios.get(`${BASE}/platforms`);
-    setPlatforms(res.data);
+    try {
+      const res = await axios.get(`${BASE}/coordinator/platforms`);
+      setPlatforms(res.data);
+    } catch (err) {
+      console.error("Error loading platforms:", err);
+    }
   };
 
   const loadCohorts = async () => {
-    const res = await axios.get(`${BASE}/cohorts`);
-    setCohorts(res.data);
+    try {
+      const res = await axios.get(`${BASE}/batches/cohorts`);
+      setCohorts(res.data);
+    } catch (err) {
+      console.error("Error loading cohorts:", err);
+    }
   };
 
   const loadBatches = async () => {
-    const res = await axios.get(`${BASE}/batches`);
-    setBatches(res.data);
+    try {
+      const res = await axios.get(`${BASE}/batches`);
+      setBatches(res.data);
+    } catch (err) {
+      console.error("Error loading batches:", err);
+    }
   };
+
+  
 
   const loadClassrooms = async () => {
-    const res = await axios.get(`${BASE}/classrooms`);
-    setClassrooms(res.data);
+    try {
+      const res = await axios.get(`${BASE}/coordinator/classrooms`);
+      setClassrooms(res.data);
+    } catch (err) {
+      console.error("Error loading classrooms:", err);
+    }
   };
 
-  // Load all data on mount
   useEffect(() => {
     loadSubjects();
     loadTeachers();
     loadPlatforms();
+    loadCohorts();
     loadBatches();
-    loadCohorts();          // ✔ FIX ADDED
     loadClassrooms();
   }, []);
 
+  // -------------------------------
   // Auto-generate classroom name
+  // -------------------------------
   useEffect(() => {
     if (!formData.subject_id || !formData.teacher_id) return;
 
@@ -79,7 +106,6 @@ const ClassroomManager = () => {
 
     if (!subject || !teacher) return;
 
-    // Handle both short_code and shortname safely
     const subjectCode = subject.short_code || subject.shortname || "SUB";
     const teacherCode = teacher.short_code || teacher.shortname || "TCH";
 
@@ -92,13 +118,16 @@ const ClassroomManager = () => {
     const nextNumber = String(matching.length + 1).padStart(2, "0");
 
     setAutoName(`${baseName}-${nextNumber}`);
-  }, [formData.subject_id, formData.teacher_id, classrooms]);
+  }, [formData.subject_id, formData.teacher_id, classrooms, subjects, teachers]);
 
+  // -------------------------------
   // Save classroom
+  // -------------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!autoName) return alert("Classroom name not generated!");
+    if (!selectedBatch) return alert("Please select a batch.");
 
     const payload = {
       ...formData,
@@ -106,24 +135,33 @@ const ClassroomManager = () => {
       batch_id: selectedBatch,
     };
 
-    await axios.post(`${BASE}/classrooms`, payload);
+    try {
+      await axios.post(`${BASE}/coordinator/classrooms`, payload);
+      await loadClassrooms();
 
-    loadClassrooms();
+      setFormData({
+        subject_id: "",
+        teacher_id: "",
+        platform_id: "",
+        class_link: "",
+        description: "",
+        active_yn: "Y",
+        created_by: 1,
+        updated_by: 1,
+      });
 
-    setFormData({
-      subject_id: "",
-      teacher_id: "",
-      platform_id: "",
-      class_link: "",
-      description: "",
-      active_yn: "Y",
-      created_by: 1,
-      updated_by: 1,
-    });
-
-    setAutoName("");
+      setAutoName("");
+      setSelectedCohort("");
+      setSelectedBatch("");
+    } catch (err) {
+      console.error("Error saving classroom:", err);
+      alert("Failed to save classroom.");
+    }
   };
 
+  // -------------------------------
+  // Render UI
+  // -------------------------------
   return (
     <div style={{ padding: "20px" }}>
       <h1>Classroom Manager</h1>
@@ -149,7 +187,7 @@ const ClassroomManager = () => {
           >
             <option value="">Select Subject</option>
             {subjects.map((s) => (
-              <option key={s.subject_id} value={s.subject_id}>
+              <option key={`subject-${s.subject_id}`} value={s.subject_id}>
                 {s.subject_name}
               </option>
             ))}
@@ -166,7 +204,7 @@ const ClassroomManager = () => {
           >
             <option value="">Select Teacher</option>
             {teachers.map((t) => (
-              <option key={t.teacher_id} value={t.teacher_id}>
+              <option key={`teacher-${t.teacher_id}`} value={t.teacher_id}>
                 {t.teacher_name}
               </option>
             ))}
@@ -182,7 +220,7 @@ const ClassroomManager = () => {
           >
             <option value="">Select Platform</option>
             {platforms.map((p) => (
-              <option key={p.platform_id} value={p.platform_id}>
+              <option key={`platform-${p.platform_id}`} value={p.platform_id}>
                 {p.platform_name}
               </option>
             ))}
@@ -196,7 +234,7 @@ const ClassroomManager = () => {
           >
             <option value="">Select Cohort</option>
             {cohorts.map((c) => (
-              <option key={c.cohort_number} value={c.cohort_number}>
+              <option key={`cohort-${c.cohort_number}`} value={c.cohort_number}>
                 {c.cohort_name}
               </option>
             ))}
@@ -211,7 +249,7 @@ const ClassroomManager = () => {
           >
             <option value="">Select Batch</option>
             {batches.map((b) => (
-              <option key={b.batch_id} value={b.batch_id}>
+              <option key={`batch-${b.batch_id}`} value={b.batch_id}>
                 {b.batch_name}
               </option>
             ))}
@@ -262,7 +300,7 @@ const ClassroomManager = () => {
 
         <tbody>
           {classrooms.map((c) => (
-            <tr key={c.classroom_id}>
+            <tr key={`classroom-${c.classroom_id}`}>
               <td>{c.classroom_id}</td>
               <td>{c.classroom_name}</td>
               <td>{c.subject_name}</td>

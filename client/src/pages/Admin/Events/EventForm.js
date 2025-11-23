@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import styles from "./EventForm.module.css";
 
@@ -8,11 +8,42 @@ import {
     useFetchBlocks
 } from "../../../hooks/useJurisData";
 
+// 1. Custom Hook for Event Types
+const useFetchEventTypes = (API_BASE_URL) => {
+    const [eventTypes, setEventTypes] = useState([]);
+
+    useEffect(() => {
+        const fetchEventTypes = async () => {
+            try {
+                const res = await axios.get(`${API_BASE_URL}/api/event-types`);
+                let list = [];
+
+                // Standardizing response data access
+                if (Array.isArray(res.data)) list = res.data;
+                else if (Array.isArray(res.data.data)) list = res.data.data;
+
+                setEventTypes(list);
+            } catch (err) {
+                console.error("Error fetching event types:", err);
+                // Informative error to show to user if possible
+                setEventTypes([]);
+            }
+        };
+
+        fetchEventTypes();
+    }, [API_BASE_URL]);
+
+    return eventTypes;
+};
+
+
 const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
     const API_BASE_URL = process.env.REACT_APP_BACKEND_API_URL;
 
-    const [eventTypes, setEventTypes] = useState([]);
+    // Use custom hook for event types
+    const eventTypes = useFetchEventTypes(API_BASE_URL);
 
+    // Initial form state now includes 'description' for consistency
     const [formData, setFormData] = useState({
         eventType: "",
         startDate: "",
@@ -26,6 +57,7 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
         boysCount: 0,
         girlsCount: 0,
         parentsCount: 0,
+        description: "", // Added
     });
 
     const [selectedFiles, setSelectedFiles] = useState(null);
@@ -35,35 +67,15 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
     const [districtsList, setDistrictsList] = useState([]);
     const [talukaOptions, setTalukaOptions] = useState([]);
     const [cohortsList, setCohortsList] = useState([]);
-
-    /* ------------------------ FETCH EVENT TYPES ------------------------ */
-    useEffect(() => {
-        const fetchEventTypes = async () => {
-            try {
-                const res = await axios.get(`${API_BASE_URL}/api/event-types`);
-                let list = [];
-
-                if (Array.isArray(res.data)) list = res.data;
-                else if (Array.isArray(res.data.data)) list = res.data.data;
-
-                setEventTypes(list);
-            } catch (err) {
-                console.error("Error fetching event types:", err);
-                setEventTypes([]);
-            }
-        };
-
-        fetchEventTypes();
-    }, [API_BASE_URL]);
-
-    /* ------------------------ FETCH STATE / DISTRICT / BLOCK ------------------------ */
+    
+    // --- FETCH JURISDICTION DATA (using custom hooks) ---
+    // The lists are now directly the result of the custom hooks
     useFetchStates(setStatesList);
-
     useFetchEducationDistricts(formData.state, setDistrictsList);
-
     useFetchBlocks(formData.district, setTalukaOptions);
 
-    /* ------------------------ FETCH COHORTS ------------------------ */
+
+    // --- FETCH COHORTS ---
     useEffect(() => {
         const fetchCohorts = async () => {
             try {
@@ -76,90 +88,86 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
         fetchCohorts();
     }, [API_BASE_URL]);
 
-    /* ------------------------ AUTO GENERATE EVENT TITLE ------------------------ */useEffect(() => {
-    const { eventType, startDate, cohort, taluka } = formData;
 
-    if (!eventType || !startDate || !cohort || !taluka) {
-        setFormData(prev => ({ ...prev, eventTitle: "" }));
-        return;
-    }
+    // --- AUTO GENERATE EVENT TITLE ---
+    useEffect(() => {
+        const { eventType, startDate, cohort, taluka } = formData;
 
-    // ---- Fetch event type name (because eventType is ID) ----
-    const fetchTypeName = async () => {
-        try {
-            const res = await axios.get(`${API_BASE_URL}/api/event-types`);
-            const allTypes = res.data;
-
-            const selectedType = allTypes.find(t => t.event_type_id === Number(eventType));
-
-            if (!selectedType) return;
-
-            const typeName = selectedType.event_type_name; // <-- Name
-
-            // ---- Format date ----
-            const dateObj = new Date(startDate);
-            const dd = String(dateObj.getDate()).padStart(2, "0");
-            const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
-            const yy = String(dateObj.getFullYear()).slice(-2);
-
-            // ---- Generate title ----
-            const title = `${typeName}-${dd}${mm}${yy}-Cohort-${cohort}-${taluka}`
-                .replace(/\s+/g, "_"); // replace spaces with underscores
-
-            setFormData(prev => ({ ...prev, eventTitle: title }));
-        } catch (err) {
-            console.error("Error fetching event types:", err);
+        if (!eventType || !startDate || !cohort || !taluka || eventTypes.length === 0) {
+            setFormData(prev => ({ ...prev, eventTitle: "" }));
+            return;
         }
-    };
 
-    fetchTypeName();
+        // Find selected event type name from the already fetched list
+        const selectedType = eventTypes.find(t => t.event_type_id === Number(eventType));
 
-}, [formData.eventType, formData.startDate, formData.cohort, formData.taluka]);
+        if (!selectedType) {
+            setFormData(prev => ({ ...prev, eventTitle: "Error-EventType-NotFound" }));
+            return;
+        }
+
+        const typeName = selectedType.event_type_name;
+
+        // ---- Format date (YYYY-MM-DD to DDMMYY) ----
+        const dateObj = new Date(startDate);
+        const dd = String(dateObj.getDate()).padStart(2, "0");
+        const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const yy = String(dateObj.getFullYear()).slice(-2);
+
+        // ---- Generate title ----
+        const title = `${typeName}-${dd}${mm}${yy}-Cohort-${cohort}-${taluka}`
+            .replace(/\s+/g, "_") // replace spaces with underscores
+            .toUpperCase(); // Ensure title consistency
+
+        setFormData(prev => ({ ...prev, eventTitle: title }));
+
+    }, [formData.eventType, formData.startDate, formData.cohort, formData.taluka, eventTypes]); // eventTypes is a necessary dependency
 
 
-    /* ------------------------ FORM FIELD CHANGE ------------------------ */
-    const handleChange = (e) => {
+    // --- FORM FIELD CHANGE HANDLER ---
+    const handleChange = useCallback((e) => {
         const { name, value } = e.target;
 
-        if (name === "state") {
-            setFormData(prev => ({
-                ...prev,
-                state: value,
-                district: "",
-                taluka: ""
-            }));
-            return;
-        }
+        setFormData(prev => {
+            let newState = { ...prev, [name]: value };
 
-        if (name === "district") {
-            setFormData(prev => ({
-                ...prev,
-                district: value,
-                taluka: ""
-            }));
-            return;
-        }
+            // Conditional resetting of dependent fields
+            if (name === "state") {
+                newState.district = "";
+                newState.taluka = "";
+            } else if (name === "district") {
+                newState.taluka = "";
+            } else if (name === "boysCount" || name === "girlsCount" || name === "parentsCount") {
+                 // Ensure number fields are stored as numbers if possible, defaulting to 0
+                 newState[name] = Math.max(0, Number(value));
+            }
 
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+            return newState;
+        });
+    }, []);
 
-    /* ------------------------ PHOTO UPLOAD ------------------------ */
+    // --- PHOTO UPLOAD HANDLER ---
     const handleFileChange = (e) => {
-        if (e.target.files.length > 4) {
-            setFileError("You can upload max 4 photos.");
+        const files = e.target.files;
+        if (files.length > 4) {
+            setFileError("You can upload a maximum of 4 photos.");
             setSelectedFiles(null);
+            e.target.value = null; // Clear the file input
             return;
         }
-        setSelectedFiles(e.target.files);
+        setSelectedFiles(files);
         setFileError("");
     };
 
-    /* ------------------------ SUBMIT ------------------------ */
+    // --- SUBMIT HANDLER ---
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Simple validation check for number fields
+        if (formData.boysCount < 0 || formData.girlsCount < 0 || formData.parentsCount < 0) {
+            alert("Attendance counts cannot be negative.");
+            return;
+        }
 
         const data = new FormData();
         Object.keys(formData).forEach(key => data.append(key, formData[key]));
@@ -173,7 +181,7 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
         onSave(data);
     };
 
-    /* ------------------------ UI ------------------------ */
+    // --- UI ---
     return (
         <div className={styles.formContainer}>
             <form onSubmit={handleSubmit} className={styles.form}>
@@ -181,21 +189,22 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
                 {/* EVENT TYPE */}
                 <div className={styles.formGroup}>
                     <div className={styles.labelWithButton}>
-                        <label>Event Type</label>
+                        <label htmlFor="eventTypeSelect">Event Type</label>
                         <button type="button" onClick={onOpenAddTypeModal} className={styles.addTypeButton}>
-                            + Add New
+                            + Add New Type
                         </button>
                     </div>
 
                     <select
+                        id="eventTypeSelect"
                         name="eventType"
                         value={formData.eventType}
                         onChange={handleChange}
                         required
+                        disabled={eventTypes.length === 0}
                     >
-                        <option value="">Select Event Type...</option>
-
-                        {eventTypes?.map((t) => (
+                        <option value="">{eventTypes.length === 0 ? "Loading Event Types..." : "Select Event Type..."}</option>
+                        {eventTypes.map((t) => (
                             <option key={t.event_type_id} value={t.event_type_id}>
                                 {t.event_type_name}
                             </option>
@@ -206,8 +215,9 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
                 {/* DATE ROW */}
                 <div className={styles.gridTwoCol}>
                     <div className={styles.formGroup}>
-                        <label>Start Date</label>
+                        <label htmlFor="startDateInput">Start Date</label>
                         <input
+                            id="startDateInput"
                             type="date"
                             name="startDate"
                             value={formData.startDate}
@@ -217,8 +227,9 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
                     </div>
 
                     <div className={styles.formGroup}>
-                        <label>End Date</label>
+                        <label htmlFor="endDateInput">End Date</label>
                         <input
+                            id="endDateInput"
                             type="date"
                             name="endDate"
                             value={formData.endDate}
@@ -232,14 +243,16 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
                 <div className={styles.gridThreeCol}>
                     {/* STATE */}
                     <div className={styles.formGroup}>
-                        <label>State</label>
+                        <label htmlFor="stateSelect">State</label>
                         <select
+                            id="stateSelect"
                             name="state"
                             value={formData.state}
                             onChange={handleChange}
                             required
+                            disabled={statesList.length === 0}
                         >
-                            <option value="">Select State…</option>
+                            <option value="">{statesList.length === 0 ? "Loading States..." : "Select State…"}</option>
                             {statesList?.map((s) => (
                                 <option key={s.state_id || s.id} value={s.state_id || s.id}>
                                     {s.state_name || s.name}
@@ -250,15 +263,16 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
 
                     {/* DISTRICT */}
                     <div className={styles.formGroup}>
-                        <label>District</label>
+                        <label htmlFor="districtSelect">District</label>
                         <select
+                            id="districtSelect"
                             name="district"
                             value={formData.district}
                             onChange={handleChange}
-                            disabled={!formData.state}
+                            disabled={!formData.state || districtsList.length === 0}
                             required
                         >
-                            <option value="">Select District…</option>
+                            <option value="">{districtsList.length === 0 ? "Loading Districts..." : "Select District…"}</option>
                             {districtsList?.map((d) => (
                                 <option key={d.district_id || d.id} value={d.district_id || d.id}>
                                     {d.district_name || d.name}
@@ -269,15 +283,16 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
 
                     {/* TALUKA */}
                     <div className={styles.formGroup}>
-                        <label>Taluka</label>
+                        <label htmlFor="talukaSelect">Taluka</label>
                         <select
+                            id="talukaSelect"
                             name="taluka"
                             value={formData.taluka}
                             onChange={handleChange}
-                            disabled={!formData.district}
+                            disabled={!formData.district || talukaOptions.length === 0}
                             required
                         >
-                            <option value="">Select Taluka…</option>
+                            <option value="">{talukaOptions.length === 0 ? "Loading Talukas..." : "Select Taluka…"}</option>
                             {talukaOptions?.map((blk) => (
                                 <option key={blk.block_id || blk.id} value={blk.block_id || blk.id}>
                                     {blk.block_name || blk.name}
@@ -289,26 +304,30 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
 
                 {/* LOCATION */}
                 <div className={styles.formGroup}>
-                    <label>Event Location</label>
+                    <label htmlFor="locationInput">Event Location</label>
                     <input
+                        id="locationInput"
                         type="text"
                         name="location"
                         value={formData.location}
                         onChange={handleChange}
                         placeholder="Venue / Landmark"
+                        required
                     />
                 </div>
 
                 {/* COHORT */}
                 <div className={styles.formGroup}>
-                    <label>Cohort</label>
+                    <label htmlFor="cohortSelect">Cohort</label>
                     <select
+                        id="cohortSelect"
                         name="cohort"
                         value={formData.cohort}
                         onChange={handleChange}
                         required
+                        disabled={cohortsList.length === 0}
                     >
-                        <option value="">Select Cohort…</option>
+                        <option value="">{cohortsList.length === 0 ? "Loading Cohorts..." : "Select Cohort…"}</option>
                         {cohortsList.map((c) => (
                             <option key={c.cohort_number} value={c.cohort_number}>
                                 {c.cohort_name || `Cohort ${c.cohort_number}`}
@@ -319,70 +338,91 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
 
                 {/* AUTO TITLE */}
                 <div className={styles.formGroup}>
-                    <label>Event Title (Auto Generated)</label>
+                    <label htmlFor="eventTitleInput">Event Title</label>
                     <input
+                        id="eventTitleInput"
                         type="text"
                         name="eventTitle"
                         value={formData.eventTitle}
                         readOnly
                         className={styles.readOnlyInput}
+                        placeholder="Title auto-generates when required fields are selected..."
                     />
                 </div>
 
                 {/* ATTENDANCE */}
                 <fieldset className={styles.attendanceFieldset}>
-                    <legend>Attendance</legend>
+                    <legend>Attendance Count</legend>
 
                     <div className={styles.gridThreeCol}>
                         <div className={styles.formGroup}>
-                            <label>Boys</label>
+                            <label htmlFor="boysCountInput">Boys</label>
                             <input
+                                id="boysCountInput"
                                 type="number"
                                 name="boysCount"
                                 min="0"
                                 value={formData.boysCount}
                                 onChange={handleChange}
+                                required
                             />
                         </div>
 
                         <div className={styles.formGroup}>
-                            <label>Girls</label>
+                            <label htmlFor="girlsCountInput">Girls</label>
                             <input
+                                id="girlsCountInput"
                                 type="number"
                                 name="girlsCount"
                                 min="0"
                                 value={formData.girlsCount}
                                 onChange={handleChange}
+                                required
                             />
                         </div>
 
                         <div className={styles.formGroup}>
-                            <label>Parents</label>
+                            <label htmlFor="parentsCountInput">Parents / Guardians</label>
                             <input
+                                id="parentsCountInput"
                                 type="number"
                                 name="parentsCount"
                                 min="0"
                                 value={formData.parentsCount}
                                 onChange={handleChange}
+                                required
                             />
                         </div>
                     </div>
                 </fieldset>
 
+                {/* DESCRIPTION */}
+                <div className={styles.formGroup}>
+                    <label htmlFor="descriptionTextarea">Event Description / Notes (Optional)</label>
+                    <textarea
+                        id="descriptionTextarea"
+                        name="description"
+                        value={formData.description}
+                        onChange={handleChange}
+                        rows="3" // Added a row attribute for better visual cue
+                    />
+                </div>
+
                 {/* PHOTOS */}
                 <div className={styles.formGroup}>
-                    <label>Upload Photos (max 4)</label>
-                    <input type="file" multiple accept="image/*" onChange={handleFileChange} />
+                    <label htmlFor="photosInput">Upload Photos (max 4)</label>
+                    <input id="photosInput" type="file" multiple accept="image/*" onChange={handleFileChange} />
                     {fileError && <div className={styles.fileError}>{fileError}</div>}
+                    <p className={styles.fileHint}>Selected: {selectedFiles ? selectedFiles.length : 0} file(s)</p>
                 </div>
 
                 {/* BUTTONS */}
                 <div className={styles.buttonContainer}>
-                    <button type="button" onClick={onCancel} className={styles.secondaryButton}>
+                    <button type="button" onClick={onCancel} className={`${styles.button} ${styles.secondaryButton}`}>
                         Cancel
                     </button>
 
-                    <button type="submit" className={styles.submitButton}>
+                    <button type="submit" className={`${styles.button} ${styles.submitButton}`}>
                         Save Event
                     </button>
                 </div>
