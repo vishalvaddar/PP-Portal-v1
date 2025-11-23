@@ -1,4 +1,4 @@
-/* Container */
+Container
 .container {
   padding: 6rem 2rem 2rem; /* top padding to avoid overlap with fixed header */
   max-width: 1400px;
@@ -328,4 +328,452 @@
   .students-table td {
     padding: 0.75rem;
   }
+}
+
+
+
+/* BatchManagement.css - A "Beatified" Style */
+
+/* --- GENERAL RESET AND TYPOGRAPHY --- */
+:root {
+  --color-primary: #3b82f6; /* Blue-500 */
+  --color-primary-dark: #2563eb; /* Blue-600 */
+  --color-success: #10b981; /* Green-500 */
+  --color-danger: #ef4444; /* Red-500 */
+  --color-warning: #f59e0b; /* Amber-500 */
+  --color-text-dark: #1f2937;
+  --color-text-light: #6b7280;
+  --color-border: #e5e7eb; /* Gray-200 */
+  --color-background-light: #f9fafb; /* Gray-50 */
+  --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+  background-color: white;
+}
+
+/* --- PAGE HEADER --- */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+.page-header .title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  margin: 0;
+}
+.page-header .subtitle {
+  font-size: 1rem;
+  color: var(--color-text-light);
+  margin-top: 4px;
+}
+
+/* --- FILTERS & ACTIONS BAR --- */
+.filter-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.filter-item .input-icon {
+  position: absolute;
+  left: 10px;
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-light);
+}
+
+.filter-item select,
+.filter-item input {
+  padding: 8px 12px;
+  padding-left: 36px; /* Space for icon */
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background-color: white;
+  min-height: 40px;
+  font-size: 14px;
+  color: var(--color-text-dark);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  appearance: none; /* Remove default dropdown arrow */
+}
+
+.filter-item select:focus,
+.filter-item input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  outline: none;
+}
+.search-box input {
+  min-width: 250px;
+}
+.filter-item select {
+    padding-right: 30px; /* Space for custom arrow */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%236b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 14px;
+}
+.filter-item select:disabled {
+    background-color: var(--color-background-light);
+    cursor: not-allowed;
+}
+
+
+/* --- EXPORT BUTTON & DROPDOWN --- */
+.export-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: white;
+  border: 1px solid var(--color-border);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-dark);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.export-button:hover {
+  background-color: var(--color-background-light);
+  border-color: #d1d5db;
+}
+.export-menu-wrapper {
+  position: relative;
+  margin-left: auto; /* Push to the right */
+}
+.export-dropdown {
+  position: absolute;
+  top: 110%;
+  right: 0;
+  background: white;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+  border-radius: 6px;
+  padding: 4px 0;
+  z-index: 999;
+  min-width: 160px;
+}
+.export-dropdown button {
+  width: 100%;
+  text-align: left;
+  padding: 8px 14px;
+  background: white;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-text-dark);
+}
+.export-dropdown button:hover {
+  background: var(--color-background-light);
+  color: var(--color-primary-dark);
+}
+
+
+/* --- TABLE STYLES --- */
+.table-wrapper {
+    box-shadow: var(--shadow-md);
+    border-radius: 8px;
+    overflow-x: auto;
+    border: 1px solid var(--color-border);
+}
+.students-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.students-table thead tr {
+  background-color: var(--color-background-light);
+  color: var(--color-text-dark);
+  text-align: left;
+  font-weight: 600;
+}
+
+.students-table th,
+.students-table td {
+  padding: 12px 18px;
+}
+
+.students-table tbody tr {
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color 0.15s;
+}
+
+.students-table tbody tr:hover {
+  background-color: #f5f5f5; /* Subtle hover effect */
+}
+
+.students-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+/* --- TABLE CONTENT STYLES --- */
+.student-info {
+  display: flex;
+  align-items: center;
+}
+.student-info .icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: var(--color-primary);
+  margin-right: 10px;
+}
+.student-info .name {
+  font-weight: 600;
+  color: var(--color-text-dark);
+}
+.student-info .id {
+  font-size: 12px;
+  color: var(--color-text-light);
+  margin-top: 2px;
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1;
+  background-color: #e0f2fe; /* Light Blue */
+  color: var(--color-primary-dark);
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 9999px; /* Pill shape */
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+.status-badge.active {
+  background-color: #d1fae5; /* Light Green */
+  color: var(--color-success);
+}
+.status-badge.inactive {
+  background-color: #fee2e2; /* Light Red */
+  color: var(--color-danger);
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 8px;
+}
+.actions button {
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--color-text-light);
+  transition: color 0.15s, background-color 0.15s;
+}
+.actions button:hover {
+  background-color: #f5f5f5;
+  color: var(--color-primary-dark);
+}
+.actions .icon {
+  width: 18px;
+  height: 18px;
+}
+.actions button[title="Set Inactive"] .icon {
+    color: var(--color-danger);
+}
+.actions button[title="Set Inactive"]:hover {
+    color: var(--color-danger);
+    background-color: #fef2f2;
+}
+
+/* No Data/Loading */
+.no-data {
+  text-align: center;
+  font-style: italic;
+  color: var(--color-text-light);
+  padding: 24px;
+}
+
+/* --- MODAL STYLES --- */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.1s ease-out;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  position: relative;
+  box-shadow: var(--shadow-md);
+  max-height: 90vh;
+  overflow-y: auto;
+  width: 95%;
+}
+.modal-content.small { max-width: 400px; }
+.modal-content.large { max-width: 700px; }
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-light);
+  padding: 8px;
+  border-radius: 50%;
+  transition: background-color 0.15s;
+}
+.close-btn:hover {
+  background-color: var(--color-background-light);
+}
+
+/* Profile View */
+.profile-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+}
+.profile-section h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-primary-dark);
+    margin-bottom: 10px;
+    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 5px;
+}
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
+    font-size: 14px;
+}
+.profile-grid strong {
+    font-weight: 600;
+    color: var(--color-text-dark);
+}
+
+
+/* Edit Form */
+.edit-form.grid-2-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 15px;
+}
+.form-group label {
+    display: block;
+    font-weight: 500;
+    color: var(--color-text-dark);
+    margin-bottom: 5px;
+    text-transform: capitalize;
+}
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Generic Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+.btn.primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+.btn.primary:hover {
+  background-color: var(--color-primary-dark);
+}
+.btn.secondary {
+  background-color: white;
+  color: var(--color-text-dark);
+  border: 1px solid var(--color-border);
+}
+.btn.secondary:hover {
+  background-color: var(--color-background-light);
+  border-color: #d1d5db;
+}
+.btn.danger {
+  background-color: var(--color-danger);
+  color: white;
+}
+.btn.danger:hover {
+  background-color: #b91c1c; /* Red-700 */
+}
+
+/* Inactive Modal Specifics */
+.modal-content.small textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.export-menu-wrapper {
+    /* Styles are already defined above, but here's the original cleanup */
+    position: relative;
 }
