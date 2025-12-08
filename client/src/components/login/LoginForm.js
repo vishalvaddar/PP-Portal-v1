@@ -104,7 +104,7 @@ const LoginForm = () => {
         case 'admin':
           navigate('/admin/admin-dashboard');
           break;
-        case 'coordinator':
+        case 'BATCH COORDINATOR':
           navigate('/coordinator/coordinator-dashboard');
           break;
         case 'student':

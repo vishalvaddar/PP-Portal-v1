@@ -61,7 +61,8 @@ const SystemConfig = () => {
       const res = await axios.get(
         `${process.env.REACT_APP_BACKEND_API_URL}/api/system-config/all`
       );
-      const sorted = (Array.isArray(res.data) ? res.data : []).sort((a, b) =>
+      const data = Array.isArray(res.data) ? res.data : [];
+      const sorted = data.sort((a, b) =>
         b.academic_year.localeCompare(a.academic_year)
       );
       setConfigs(sorted);
@@ -77,7 +78,6 @@ const SystemConfig = () => {
     fetchConfigs();
   }, []);
 
-  // Handle form value changes
   const handleValueChange = (name, value) => {
     setForm((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
@@ -88,7 +88,7 @@ const SystemConfig = () => {
   };
 
   const handleEdit = (config) => {
-    setEditRowId(config.id);
+    setEditRowId(config.system_config_id);
     setEditRowValues({
       academic_year: config.academic_year,
       phase: config.phase,
@@ -96,7 +96,6 @@ const SystemConfig = () => {
     });
   };
 
-  // Save row (ensuring uniqueness of academic_year)
   const handleSave = async (id) => {
     if (!id) {
       toast.error("Invalid configuration ID.");
@@ -105,12 +104,14 @@ const SystemConfig = () => {
 
     const yearRegex = /^\d{4}-\d{2}$/;
     if (!yearRegex.test(editRowValues.academic_year)) {
-      toast.error("Please use YYYY-YY format (e.g., 2025-26)");
+      toast.error("Use YYYY-YY format (e.g., 2025-26)");
       return;
     }
 
     const isDuplicate = configs.some(
-      (c) => c.academic_year === editRowValues.academic_year && c.id !== id
+      (c) =>
+        c.academic_year === editRowValues.academic_year &&
+        c.system_config_id !== id
     );
     if (isDuplicate) {
       toast.error("This academic year already exists.");
@@ -131,6 +132,7 @@ const SystemConfig = () => {
       await fetchConfigs();
       await refetchConfig();
     } catch (err) {
+      console.error(err);
       toast.error(err.response?.data?.message || "Update failed");
     }
   };
@@ -289,25 +291,26 @@ const SystemConfig = () => {
             </CardContent>
           </Card>
 
-          {/* Apply Academic Year */}
           <Card className={styles.card}>
             <CardHeader>
               <CardTitle>Apply Academic Year</CardTitle>
             </CardHeader>
             <CardContent>
               <div className={styles.formGroup}>
-                <Label>Select Academic Year</Label>
+                <Label>Select Active Academic Year</Label>
                 <select
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(e.target.value)}
                   className={styles.nativeSelect}
                 >
-                  <option value="">-- Select Academic Year --</option>
-                  {configs.map((c) => (
-                    <option key={c.id} value={c.academic_year}>
-                      {c.academic_year}
-                    </option>
-                  ))}
+                  <option value="">-- Select Active Academic Year --</option>
+                  {configs
+                    .filter((c) => c.is_active)
+                    .map((c) => (
+                      <option key={c.system_config_id} value={c.academic_year}>
+                        {c.academic_year}
+                      </option>
+                    ))}
                 </select>
               </div>
               <Button
@@ -331,6 +334,7 @@ const SystemConfig = () => {
               )}
             </CardContent>
           </Card>
+
         </div>
 
         {/* Existing Configurations Table */}
@@ -345,7 +349,9 @@ const SystemConfig = () => {
                   <Loader2 className={styles.spinner} />
                 </div>
               ) : configs.length === 0 ? (
-                <div className={styles.emptyState}>No configurations found.</div>
+                <div className={styles.emptyState}>
+                  No configurations found.
+                </div>
               ) : (
                 <div className={styles.tableWrapper}>
                   <table className={styles.table}>
@@ -360,7 +366,7 @@ const SystemConfig = () => {
                     <tbody>
                       {configs.map((c) => (
                         <tr
-                          key={c.id}
+                          key={c.system_config_id}
                           className={
                             selectedYear === c.academic_year
                               ? styles.highlightRow
@@ -368,7 +374,7 @@ const SystemConfig = () => {
                           }
                         >
                           <td>
-                            {editRowId === c.id ? (
+                            {editRowId === c.system_config_id ? (
                               <Input
                                 value={editRowValues.academic_year}
                                 onChange={(e) =>
@@ -383,11 +389,14 @@ const SystemConfig = () => {
                             )}
                           </td>
                           <td>
-                            {editRowId === c.id ? (
+                            {editRowId === c.system_config_id ? (
                               <select
                                 value={editRowValues.phase}
                                 onChange={(e) =>
-                                  handleRowEditValueChange("phase", e.target.value)
+                                  handleRowEditValueChange(
+                                    "phase",
+                                    e.target.value
+                                  )
                                 }
                                 className={styles.phaseSelect}
                               >
@@ -402,7 +411,7 @@ const SystemConfig = () => {
                             )}
                           </td>
                           <td>
-                            {editRowId === c.id ? (
+                            {editRowId === c.system_config_id ? (
                               <select
                                 value={editRowValues.is_active}
                                 onChange={(e) =>
@@ -414,7 +423,10 @@ const SystemConfig = () => {
                                 className={styles.statusSelect}
                               >
                                 {statusOptions.map((option) => (
-                                  <option key={option.label} value={option.value}>
+                                  <option
+                                    key={option.label}
+                                    value={option.value}
+                                  >
                                     {option.label}
                                   </option>
                                 ))}
@@ -422,14 +434,18 @@ const SystemConfig = () => {
                             ) : c.is_active ? (
                               <span className={styles.activeBadge}>Active</span>
                             ) : (
-                              <span className={styles.inactiveBadge}>Inactive</span>
+                              <span className={styles.inactiveBadge}>
+                                Inactive
+                              </span>
                             )}
                           </td>
                           <td>
-                            {editRowId === c.id ? (
+                            {editRowId === c.system_config_id ? (
                               <>
                                 <Button
-                                  onClick={() => handleSave(c.id)}
+                                  onClick={() =>
+                                    handleSave(c.system_config_id)
+                                  }
                                   className={styles.saveButton}
                                 >
                                   Save
@@ -452,7 +468,9 @@ const SystemConfig = () => {
                                 </Button>
                                 <Button
                                   variant="ghost"
-                                  onClick={() => handleDelete(c.id)}
+                                  onClick={() =>
+                                    handleDelete(c.system_config_id)
+                                  }
                                   className={styles.deleteButton}
                                 >
                                   <Trash2 size={16} />

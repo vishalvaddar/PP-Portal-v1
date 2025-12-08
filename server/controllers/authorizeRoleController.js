@@ -1,8 +1,10 @@
 const pool = require('../config/db');
 const jwt = require('jsonwebtoken');
+const logger = require('../utils/logger');
 
 const authorizeRoleController = async (req, res) => {
   const { user_name, role_name } = req.body;
+  const clientIp = logger.constructor.getClientIp(req);
 
   console.log('Authorization attempt:', { user_name, role_name });
 
@@ -36,6 +38,14 @@ const authorizeRoleController = async (req, res) => {
 
     if (result.rows.length === 0) {
       console.warn(`❌ Unauthorized access: No matching user-role found for ${user_name} as ${role_name}`);
+      // Log failed role authorization
+      logger.logAction({
+        user_name,
+        action: 'role_authorization',
+        status: 'failed',
+        details: { requested_role: role_name },
+        ip: clientIp
+      });
       return res.status(401).json({ error: 'Unauthorized: Invalid role for user' });
     }
 
@@ -47,6 +57,16 @@ const authorizeRoleController = async (req, res) => {
     };
 
     const token = jwt.sign(payload, jwtSecret, { expiresIn: jwtExpiry });
+
+    // Log successful role authorization
+    logger.logAction({
+      user_id: user.user_id,
+      user_name: user.user_name,
+      role_name: user.role_name,
+      action: 'role_authorization',
+      status: 'success',
+      ip: clientIp
+    });
 
     return res.status(200).json({
       message: 'Authorization successful',

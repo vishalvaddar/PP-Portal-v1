@@ -1,12 +1,13 @@
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import {UserCircle, Phone, Home, GraduationCap, Calculator} from "lucide-react";
+import { UserCircle, Phone, Home, GraduationCap, Calculator } from "lucide-react";
 import classes from "./NewApplication.module.css";
-import { useFetchStates, useFetchDistricts, useFetchBlocks, useFetchInstitutes } from "../../hooks/useJurisData";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
+import { useFetchStates, useFetchEducationDistricts, useFetchBlocks, useFetchInstitutes } from "../../hooks/useJurisData";
+
 
 const NewApplication = () => {
-  const currentPath = ['Admin','Admissions', 'Applications', 'NewApplication'];
+  const currentPath = ["Admin", "Admissions", "Applications", "NewApplication"];
   const currentYear = new Date().getFullYear();
   const yearOptions = [currentYear];
   const submitButtonRef = useRef(null);
@@ -25,8 +26,10 @@ const NewApplication = () => {
     contact_no1: "",
     contact_no2: "",
     app_state: "",
+    division: "",
     district: "",
     nmms_block: "",
+    cluster: "",
     current_institute_dise_code: "",
     previous_institute_dise_code: "",
     medium: "",
@@ -34,7 +37,6 @@ const NewApplication = () => {
     sat_score: "",
   };
 
-  // Add initial secondary data
   const initialSecondaryData = {
     village: "",
     father_occupation: "",
@@ -60,17 +62,42 @@ const NewApplication = () => {
 
   const [formData, setFormData] = useState(initialFormData);
   const [secondaryData, setSecondaryData] = useState(initialSecondaryData);
-  const [institutes, setInstitutes] = useState([]);
   const [states, setStates] = useState([]);
+  const [divisions, setDivisions] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [blocks, setBlocks] = useState([]);
+  const [clusters, setClusters] = useState([]);
+  const [institutes, setInstitutes] = useState([]);
   const [errors, setErrors] = useState({});
-  
-  useFetchStates(setStates);
-  useFetchDistricts(formData.app_state, setDistricts);
-  useFetchBlocks(formData.district, setBlocks);
-  useFetchInstitutes(formData.nmms_block, setInstitutes);
 
+  // Data fetching hooks
+useFetchStates(setStates);
+useFetchEducationDistricts(formData.app_state, setDistricts);
+useFetchBlocks(formData.district, setBlocks);
+useFetchInstitutes(formData.nmms_block, setInstitutes);
+
+
+  // Fetch clusters internally (not shown in UI)
+  useEffect(() => {
+    const fetchClusters = async () => {
+      if (formData.nmms_block) {
+        try {
+          const response = await axios.get(
+            `${process.env.REACT_APP_BACKEND_API_URL}/api/clusters-by-block/${formData.nmms_block}`
+          );
+          setClusters(response.data || []);
+        } catch (error) {
+          console.error("Error fetching clusters:", error);
+          setClusters([]);
+        }
+      } else {
+        setClusters([]);
+      }
+    };
+    fetchClusters();
+  }, [formData.nmms_block]);
+
+  // Handle form field changes
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -79,179 +106,127 @@ const NewApplication = () => {
       newValue = value.toUpperCase();
     }
 
-    // Allow only numbers for specific fields
     if (["aadhaar", "contact_no1", "contact_no2", "gmat_score", "sat_score", "family_income_total"].includes(name)) {
-      if (!/^\d*$/.test(value)) return; // Prevent non-numeric characters
+      if (!/^\d*$/.test(value)) return;
     }
 
-    // Restrict GMAT and SAT scores to 2-digit numbers (0-90)
-    if (["gmat_score", "sat_score"].includes(name)) {
-      if (!/^(?:[0-9]|[1-8][0-9]|90)?$/.test(value)) return;
-    }
+    if (["gmat_score", "sat_score"].includes(name) && !/^(?:[0-9]|[1-8][0-9]|90)?$/.test(value)) return;
 
-    if(name === 'app_state') {
+    // Handle hierarchical resets
+    if (name === "app_state") {
       setFormData((prev) => ({
         ...prev,
+        app_state: newValue,
+        division: "",
         district: "",
         nmms_block: "",
+        cluster: "",
         current_institute_dise_code: "",
-        previous_institute_dise_code: ""
+        previous_institute_dise_code: "",
+      }));
+      setDivisions([]);
+      setDistricts([]);
+      setBlocks([]);
+      setClusters([]);
+      setInstitutes([]);
+      return;
+    }
+
+    if (name === "division") {
+      setFormData((prev) => ({
+        ...prev,
+        division: newValue,
+        district: "",
+        nmms_block: "",
+        cluster: "",
+        current_institute_dise_code: "",
+        previous_institute_dise_code: "",
       }));
       setDistricts([]);
       setBlocks([]);
+      setClusters([]);
       setInstitutes([]);
-    } else if (name === 'district') {
+      return;
+    }
+
+    if (name === "district") {
       setFormData((prev) => ({
         ...prev,
+        district: newValue,
         nmms_block: "",
+        cluster: "",
         current_institute_dise_code: "",
-        previous_institute_dise_code: ""
+        previous_institute_dise_code: "",
       }));
       setBlocks([]);
+      setClusters([]);
       setInstitutes([]);
-    } else if (name === 'nmms_block') {
-      setFormData((prev) => ({
-       ...prev,
-        current_institute_dise_code: "",
-        previous_institute_dise_code: ""
-      }));
-      setInstitutes([]);
-    } else {
+      return;
+    }
+
+    if (name === "nmms_block") {
       setFormData((prev) => ({
         ...prev,
-        [name]: newValue,
-      }))
+        nmms_block: newValue,
+        cluster: "",
+        current_institute_dise_code: "",
+        previous_institute_dise_code: "",
+      }));
+      setClusters([]);
+      setInstitutes([]);
+      return;
     }
 
     setFormData((prev) => ({ ...prev, [name]: newValue }));
   };
 
-  // Add handler for secondary data changes
   const handleSecondaryChange = (e) => {
     const { name, value } = e.target;
     let newValue = value;
-  
-    // Numeric validation for specific fields
-    if (["household_size", "distance_to_school", "num_two_wheelers", 
-         "num_four_wheelers", "irrigation_land"].includes(name)) {
+
+    if (["household_size", "distance_to_school", "num_two_wheelers", "num_four_wheelers", "irrigation_land"].includes(name)) {
       if (!/^\d*\.?\d*$/.test(newValue)) return;
     }
-  
-    // Phone number validation
-    if (["neighbor_phone", "favorite_teacher_phone"].includes(name) && 
-        newValue.length > 10) return;
-  
-    // Yes/No fields validation
+
+    if (["neighbor_phone", "favorite_teacher_phone"].includes(name) && newValue.length > 10) return;
+
     if (["own_house", "smart_phone_home", "internet_facility_home"].includes(name)) {
       newValue = newValue.toUpperCase();
-      if (newValue !== "YES" && newValue !== "NO" && newValue !== "") {
-        return;
-      }
+      if (newValue !== "YES" && newValue !== "NO" && newValue !== "") return;
     }
-  
-    setSecondaryData((prev) => ({
-      ...prev,
-      [name]: newValue
-    }));
+
+    setSecondaryData((prev) => ({ ...prev, [name]: newValue }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Basic validation
     const namePattern = /^[a-zA-Z\s]+$/;
     const aadhaarPattern = /^\d{12}$/;
-    const incomePattern = /^\d+$/;
     const phonePattern = /^\d{10}$/;
-    const scorePattern = /^(?:[0-8]?\d|90)$/; //0 to 90 max
+    const scorePattern = /^(?:[0-8]?\d|90)$/;
 
-    let validationErrors = {};
-
-    //validating the form
-    //validating the nmms year
-    if (!formData.nmms_year) {
-      validationErrors.nmms_year = "Please select a NMMS Year.";
-    }
-    //Validating the names
-    if (!formData.student_name.match(namePattern)) {
-      alert("The student name should contain only letters and spaces");
-      return;
-    }
-    if (!formData.father_name.match(namePattern)) {
-      alert("Father name should contain only letters and spaces.");
-      return;
-    }
-    if (formData.mother_name && !formData.mother_name.match(namePattern)) {
-      alert("Mother name should contain only letters and spaces.");
-      return;
-    }
-
-    //Validate the Aadhar
-    if (formData.aadhaar && !formData.aadhaar.match(aadhaarPattern)) {
-      alert("Aadhaar number must be exactly 12 digits.");
-      return;
-    }
-
-    //validate the family income
-    if (
-      formData.family_income_total &&
-      !formData.family_income_total.match(incomePattern)
-    ) {
-      alert("Family income must be a valid number.");
-      return;
-    }
-
-    //validate Date of birth
-    const today = new Date().toISOString().split("T")[0];
-    if (formData.DOB && new Date(formData.DOB) > new Date(today)) {
-      alert("Date of birth cannot be in the future");
-      return;
-    }
-
-    //validate contact numbers
-    if (!formData.contact_no1.match(phonePattern)) {
-      alert("Primary contact number should be exactly 10 digits");
-      return;
-    }
-    if (formData.contact_no2 && !formData.contact_no2.match(phonePattern)) {
-      alert("Secondary contact number should be exactly 10 digits");
-      return;
-    }
-
-    //Validate scores
-    if (!formData.sat_score.match(scorePattern)) {
-      alert("The SAT score must be a number between 0 to 90");
-      return;
-    }
-    if (!formData.gmat_score.match(scorePattern)) {
-      alert("The GMAT score must be a number between 0 to 90");
-      return;
-    }
-
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
+    if (!formData.student_name.match(namePattern)) return alert("Invalid student name");
+    if (!formData.father_name.match(namePattern)) return alert("Invalid father name");
+    if (formData.mother_name && !formData.mother_name.match(namePattern)) return alert("Invalid mother name");
+    if (formData.aadhaar && !formData.aadhaar.match(aadhaarPattern)) return alert("Invalid Aadhaar number");
+    if (!formData.contact_no1.match(phonePattern)) return alert("Primary contact must be 10 digits");
+    if (formData.contact_no2 && !formData.contact_no2.match(phonePattern)) return alert("Secondary contact must be 10 digits");
+    if (!formData.gmat_score.match(scorePattern) || !formData.sat_score.match(scorePattern))
+      return alert("Scores must be between 0–90");
 
     try {
-      // Submit primary data
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/applicants/create`, formData);
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_API_URL}/api/applicants/create`,
+        { ...formData, ...secondaryData }
+      );
 
       if (response.status === 201) {
-        if (response.data && response.data.applicant_id) {
-          try {
-            await axios.post(
-              `${process.env.REACT_APP_API_URL}/api/secondaryApplicants/create`,
-              { applicant_id: response.data.applicant_id }
-            );
-          } catch (error) {
-            console.error("Error creating secondary data record:", error);
-          }
-        }
-        
         animateSubmitButton();
         alert("Application submitted successfully!");
         setFormData(initialFormData);
-        setErrors({});
+        setSecondaryData(initialSecondaryData);
       }
     } catch (error) {
       console.error("Error submitting application:", error);
@@ -262,12 +237,9 @@ const NewApplication = () => {
   const animateSubmitButton = () => {
     const button = submitButtonRef.current;
     if (!button) return;
-  
     button.classList.add("state-1", "animated");
-  
     setTimeout(() => {
       button.classList.add("state-2");
-  
       setTimeout(() => {
         button.classList.remove("state-1", "state-2", "animated");
       }, 2000);
@@ -524,6 +496,7 @@ const NewApplication = () => {
                 <option value="ENGLISH">ENGLISH</option>
                 <option value="URDU">URDU</option>
                 <option value="MARATHI">MARATHI</option>
+                <option value="HINDI">HINDI</option>
               </select>
             </div>
           </div>

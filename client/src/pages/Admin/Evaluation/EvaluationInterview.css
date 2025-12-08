@@ -160,6 +160,7 @@ select {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
+  /* Custom arrow for select box */
   background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007bff%22%20d%3D%22M287%2C197.378L146.2%2C56.639L5.4%2C197.378h281.6z%22%2F%3E%3C%2Fsvg%3E');
   background-repeat: no-repeat;
   background-position: right 10px center;
@@ -245,7 +246,6 @@ button {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-top: 15px;
 }
 
 button:hover:not(:disabled) {
@@ -350,7 +350,7 @@ p strong {
 
 /* Form Styling */
 .interview-fill-form {
-  background-color: #ffffff;
+  background-color: #ffffff; 
   padding: 25px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);

@@ -1,28 +1,34 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import Select from "react-select";
 import { FileSearch, Search, RotateCcw, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   useFetchStates,
-  useFetchDistricts,
+  useFetchEducationDistricts, // 👈 Updated hook auto-fetches districts using divisions internally
   useFetchBlocks,
-} from "../../hooks/useJurisData"; // Removed unused useFetchInstitutes
+} from "../../hooks/useJurisData";
 import classes from "./SearchApplications.module.css";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 
 const SearchApplications = () => {
-  const currentPath = ['Admin', 'Admissions', 'Applications', 'Search Application']
+  const currentPath = ["Admin", "Admissions", "Applications", "Search Application"];
   const navigate = useNavigate();
-  const [toastMessage, setToastMessage] = useState('');
+  const [toastMessage, setToastMessage] = useState("");
 
   const currentYear = new Date().getFullYear();
   const startYear = 2022;
-  const yearOptions = Array.from({ length: currentYear - startYear + 1 }, (_, i) => ({
-    value: startYear + i,
-    label: `${startYear + i} - ${startYear + i + 1}`,
-  }));
 
+  // Academic Year Options
+  const yearOptions = Array.from(
+    { length: currentYear - startYear + 1 },
+    (_, i) => ({
+      value: startYear + i,
+      label: `${startYear + i} - ${startYear + i + 1}`,
+    })
+  );
+
+  // Medium Options
   const mediumOptions = [
     { value: "ENGLISH", label: "English" },
     { value: "KANNADA", label: "Kannada" },
@@ -30,6 +36,7 @@ const SearchApplications = () => {
     { value: "MARATHI", label: "Marathi" },
   ];
 
+  // --- Form Data ---
   const initialFormData = {
     nmms_year: currentYear,
     app_state: "",
@@ -46,17 +53,16 @@ const SearchApplications = () => {
   const [blocks, setBlocks] = useState([]);
   const [errors, setErrors] = useState({});
 
-  // Custom hooks for fetching jurisdictional data
+  // --- Fetch Data ---
   useFetchStates(setStates);
-  useFetchDistricts(formData.app_state, setDistricts);
+  useFetchEducationDistricts(formData.app_state, setDistricts); // 👈 Uses hidden division internally
   useFetchBlocks(formData.district, setBlocks);
 
+  // --- Handlers ---
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }));
-    }
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
   const handleSelectChange = (selectedOption, name) => {
@@ -64,6 +70,16 @@ const SearchApplications = () => {
       ...prev,
       [name]: selectedOption ? selectedOption.value : "",
     }));
+
+    // Reset dependent fields
+    if (name === "app_state") {
+      setFormData((prev) => ({ ...prev, district: "", nmms_block: "" }));
+      setDistricts([]);
+      setBlocks([]);
+    } else if (name === "district") {
+      setFormData((prev) => ({ ...prev, nmms_block: "" }));
+      setBlocks([]);
+    }
   };
 
   const handleReset = () => {
@@ -95,10 +111,10 @@ const SearchApplications = () => {
         `${process.env.REACT_APP_BACKEND_API_URL}/api/search`,
         { params: searchParams }
       );
-      
+
       if (!response.data?.data?.length) {
         setToastMessage("No applications found matching your criteria.");
-        setTimeout(() => setToastMessage(''), 3000);
+        setTimeout(() => setToastMessage(""), 3000);
         return;
       }
 
@@ -110,39 +126,51 @@ const SearchApplications = () => {
         },
       });
     } catch (error) {
-      const message = error.response?.status === 404
-        ? "No applications found matching your criteria."
-        : "An error occurred while searching. Please try again.";
+      const message =
+        error.response?.status === 404
+          ? "No applications found matching your criteria."
+          : "An error occurred while searching. Please try again.";
       setToastMessage(message);
-      setTimeout(() => setToastMessage(''), 3000);
+      setTimeout(() => setToastMessage(""), 3000);
     }
   };
-  
-  // Memoize options to prevent re-creation on every render
-  const stateOptions = React.useMemo(() => states.map((s) => ({ value: s.id, label: s.name })), [states]);
-  const districtOptions = React.useMemo(() => districts.map((d) => ({ value: d.id, label: d.name })), [districts]);
-  const blockOptions = React.useMemo(() => blocks.map((b) => ({ value: b.id, label: b.name })), [blocks]);
-  
-  // A single flag to disable the advanced search fields.
+
+  // --- Memoized Options ---
+  const stateOptions = useMemo(
+    () => states.map((s) => ({ value: s.id, label: s.name })),
+    [states]
+  );
+  const districtOptions = useMemo(
+    () => districts.map((d) => ({ value: d.id, label: d.name })),
+    [districts]
+  );
+  const blockOptions = useMemo(
+    () => blocks.map((b) => ({ value: b.id, label: b.name })),
+    [blocks]
+  );
+
   const isAdvancedSearchDisabled = !!formData.nmms_reg_number;
 
   return (
     <div className={classes.pageContainer}>
-      <Breadcrumbs path={currentPath} nonLinkSegments={['Admin', 'Admissions']} />
+      <Breadcrumbs path={currentPath} nonLinkSegments={["Admin", "Admissions"]} />
+
       {toastMessage && (
         <div className={`${classes.toast} ${classes.toastVisible}`}>
           {toastMessage}
         </div>
       )}
+
       <div className={classes.searchGrid}>
-        {/* Left Column: Search Form */}
+        {/* --- Left Column: Search Form --- */}
         <div className={classes.searchCard}>
           <div className={classes.cardHeader}>
             <FileSearch size={28} />
-            <h1>Application Search</h1>
+            <h1>Search Applications</h1>
           </div>
 
           <form onSubmit={handleSubmit} className={classes.form}>
+            {/* --- NMMS Reg Number --- */}
             <div className={classes.formSection}>
               <label htmlFor="nmms_reg_number" className={classes.label}>
                 Search by NMMS Registration Number
@@ -169,13 +197,15 @@ const SearchApplications = () => {
             <div className={classes.divider}>
               <span>OR</span>
             </div>
-            
-            {/* By wrapping the fields in a fieldset, we can disable them all at once. */}
+
+            {/* --- Advanced Filters --- */}
             <fieldset disabled={isAdvancedSearchDisabled} className={classes.fieldset}>
               <div className={classes.filterGrid}>
                 {/* Student Name */}
                 <div className={classes.field}>
-                  <label htmlFor="student_name" className={classes.label}>Student Name</label>
+                  <label htmlFor="student_name" className={classes.label}>
+                    Student Name
+                  </label>
                   <input
                     type="text"
                     id="student_name"
@@ -189,7 +219,9 @@ const SearchApplications = () => {
 
                 {/* Academic Year */}
                 <div className={classes.field}>
-                  <label htmlFor="nmms_year" className={classes.label}>Academic Year</label>
+                  <label htmlFor="nmms_year" className={classes.label}>
+                    Academic Year
+                  </label>
                   <Select
                     id="nmms_year"
                     options={yearOptions}
@@ -201,7 +233,9 @@ const SearchApplications = () => {
 
                 {/* Medium */}
                 <div className={classes.field}>
-                  <label htmlFor="medium" className={classes.label}>Medium</label>
+                  <label htmlFor="medium" className={classes.label}>
+                    Medium
+                  </label>
                   <Select
                     id="medium"
                     options={mediumOptions}
@@ -215,7 +249,9 @@ const SearchApplications = () => {
 
                 {/* State */}
                 <div className={classes.field}>
-                  <label htmlFor="app_state" className={classes.label}>State</label>
+                  <label htmlFor="app_state" className={classes.label}>
+                    State
+                  </label>
                   <Select
                     id="app_state"
                     options={stateOptions}
@@ -227,9 +263,11 @@ const SearchApplications = () => {
                   />
                 </div>
 
-                {/* District */}
+                {/* District (auto-loaded using hidden division logic) */}
                 <div className={classes.field}>
-                  <label htmlFor="district" className={classes.label}>District</label>
+                  <label htmlFor="district" className={classes.label}>
+                    District
+                  </label>
                   <Select
                     id="district"
                     options={districtOptions}
@@ -244,7 +282,9 @@ const SearchApplications = () => {
 
                 {/* Block */}
                 <div className={classes.field}>
-                  <label htmlFor="nmms_block" className={classes.label}>Block</label>
+                  <label htmlFor="nmms_block" className={classes.label}>
+                    Block
+                  </label>
                   <Select
                     id="nmms_block"
                     options={blockOptions}
@@ -260,7 +300,11 @@ const SearchApplications = () => {
             </fieldset>
 
             <div className={classes.formActions}>
-              <button type="button" onClick={handleReset} className={`${classes.btn} ${classes.btnSecondary}`}>
+              <button
+                type="button"
+                onClick={handleReset}
+                className={`${classes.btn} ${classes.btnSecondary}`}
+              >
                 <RotateCcw size={16} /> Reset
               </button>
               <button type="submit" className={`${classes.btn} ${classes.btnPrimary}`}>
@@ -270,24 +314,24 @@ const SearchApplications = () => {
           </form>
         </div>
 
-        {/* Right Column: Info Panel */}
+        {/* --- Info Panel --- */}
         <div className={classes.infoPanel}>
-            <div className={classes.infoIconContainer}>
-              <Info size={24} className={classes.infoIcon}/>
-            </div>
-            <h2>How to Search</h2>
-            <p>Use the fields on the left to find student applications.</p>
-            <ul>
-              <li>
-                <strong>Quick Search:</strong> For the fastest results, enter a student's complete 11-digit NMMS Registration Number.
-              </li>
-              <li>
-                <strong>Advanced Filters:</strong> Combine multiple filters like name, academic year, and location to narrow down your search results.
-              </li>
-              <li>
-                <strong>Reset:</strong> Click the "Reset" button to clear all filters and start a new search.
-              </li>
-            </ul>
+          <div className={classes.infoIconContainer}>
+            <Info size={24} className={classes.infoIcon} />
+          </div>
+          <h2>How to Search</h2>
+          <p>Use the filters on the left to find student applications.</p>
+          <ul>
+            <li>
+              <strong>Quick Search:</strong> Enter the full 11-digit NMMS Registration Number for instant results.
+            </li>
+            <li>
+              <strong>Advanced Filters:</strong> Combine fields like student name, academic year, and location.
+            </li>
+            <li>
+              <strong>Reset:</strong> Click the “Reset” button to clear all filters and start fresh.
+            </li>
+          </ul>
         </div>
       </div>
     </div>

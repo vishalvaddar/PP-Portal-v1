@@ -514,6 +514,30 @@ async function deleteAttendance(attendance_id) {
   return { message: "Attendance deleted" };
 }
 
+// ----------------------------
+// Get previous week's average attendance for a batch
+// ----------------------------
+async function getWeeklyBatchAverage(batch_id, fromDate, toDate) {
+  const query = `
+    SELECT 
+      AVG(
+        CASE 
+          WHEN status = 'PRESENT' THEN 100
+          WHEN status = 'LATE JOINED' THEN 50
+          ELSE 0
+        END
+      ) AS avg_attendance
+    FROM pp.student_attendance sa
+    JOIN pp.student_master sm ON sa.student_id = sm.student_id
+    WHERE sm.batch_id = $1
+      AND sa.date BETWEEN $2 AND $3;
+  `;
+
+  const { rows } = await pool.query(query, [batch_id, fromDate, toDate]);
+  return Number(rows[0].avg_attendance || 0);
+}
+
+
 module.exports = {
   getAttendanceByFilters,
   createAttendance,
@@ -521,5 +545,6 @@ module.exports = {
   updateAttendance,
   deleteAttendance,
   processCSVAttendance,
-  getStudentsByClassroom // 👈 added
+  getStudentsByClassroom,
+  getWeeklyBatchAverage, // 👈 added
 };

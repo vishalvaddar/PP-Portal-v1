@@ -2,43 +2,47 @@ const express = require('express');
 const router = express.Router();
 const InterviewController = require('../controllers/interviewController');
 
-// Route to get all available exam centers
+// =============================================================
+// 1. HOME VERIFICATION ROUTES (NO CHANGE)
+// =============================================================
+router.get('/students-for-verification', InterviewController.getStudentsForVerification);
+router.post('/submit-home-verification', InterviewController.submitHomeVerification); 
+ 
+// =============================================================
+// 2. PDF REPORT ROUTE (NO CHANGE)
+// =============================================================
+router.post('/download-assignment-report', InterviewController.downloadAssignmentReport);
+
+// =============================================================
+// 3. GEOGRAPHIC API ROUTES (Correctly mapped to the 4-level hierarchy: State -> Division -> District -> Block)
+// =============================================================
+
+// Exam Centers (NO CHANGE)
 router.get('/exam-centers', InterviewController.getExamCenters);
+// States (NO CHANGE)
+router.get('/states', InterviewController.getAllStates); 
 
-// Route to get a list of all states
-router.get('/states', InterviewController.getAllStates);
+// Divisions (New: Matches /divisions?stateName=...)
+router.get('/divisions', InterviewController.getDivisionsByState);
 
-// Route to get districts by state name
-router.get('/districts/:stateName', InterviewController.getDistrictsByState);
+// Districts (Modified: Matches /districts?divisionName=...)
+router.get('/districts', InterviewController.getDistrictsByDivision);
 
-// Route to get blocks by district name
-router.get('/blocks/:districtName', InterviewController.getBlocksByDistrict);
+// Blocks (Modified: Matches /blocks?stateName=...&divisionName=...&districtName=...)
+router.get('/blocks', InterviewController.getBlocksByDistrict); 
 
-// Route to get students who are eligible for an interview but have not been assigned yet by exam center.
-router.get('/unassigned-students', InterviewController.getUnassignedStudents);
+// =============================================================
+// 4. INTERVIEWER & ASSIGNMENT ROUTES (NO CHANGE, as your fixes were already applied)
+// =============================================================
 
-// Route to get students who are eligible for an interview but have not been assigned yet by block.
-router.get('/unassignedStudentsByBlock', InterviewController.getUnassignedStudentsByBlock);
-
-// Route to get students who are eligible for re-assignment by block.
-router.get('/reassignableStudentsByBlock', InterviewController.getReassignableStudentsByBlock);
-
-// Route to get a list of all interviewers
 router.get('/interviewers', InterviewController.getInterviewers);
-
-// Route to get students by a specific interviewer
 router.get('/students/:interviewerName', InterviewController.getStudentsByInterviewer);
-
-// Route to assign students to an interviewer
-router.post('/assign-students', InterviewController.assignStudents);
-
-// Route to get students who are eligible for re-assignment by exam center.
+router.get('/unassigned-students', InterviewController.getUnassignedStudents); 
+router.get('/unassigned-students-by-block', InterviewController.getUnassignedStudentsByBlock);
 router.get('/reassignable-students', InterviewController.getReassignableStudents);
-
-// Route to reassign students to a new interviewer
+router.get('/reassignable-students-by-block', InterviewController.getReassignableStudentsByBlock);
+router.post('/assign-students', InterviewController.assignStudents);
 router.post('/reassign-students', InterviewController.reassignStudents);
-
-// Route to submit the results of a student's interview
 router.post('/submit-interview', InterviewController.submitInterviewDetails);
 
 module.exports = router;

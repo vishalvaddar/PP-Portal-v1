@@ -5,7 +5,7 @@ import classes from "./EditForm.module.css";
 
 const EditForm = () => {
   const { nmms_reg_number } = useParams();
-  const navigate = useNavigate(); // Added useNavigate
+  const navigate = useNavigate();
   const [formData, setFormData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -13,7 +13,7 @@ const EditForm = () => {
   const [photoPreview, setPhotoPreview] = useState("");
   const [institutes, setInstitutes] = useState([]);
   const [expandedSections, setExpandedSections] = useState({
-    personal: true, // Defaulting all to true for edit mode
+    personal: true,
     address: true,
     educational: true,
     family: true,
@@ -23,9 +23,9 @@ const EditForm = () => {
     property: true,
   });
   const [secondaryData, setSecondaryData] = useState(null);
-  // Removed isEditing state
 
   const mediumOptions = ["ENGLISH", "KANNADA", "URDU", "MARATHI"];
+  
   const genderOptions = [
     { label: "Male", value: "M" },
     { label: "Female", value: "F" },
@@ -35,6 +35,27 @@ const EditForm = () => {
   const yesNoOptions = [
     { label: "Yes", value: "Y" },
     { label: "No", value: "N" }
+  ];
+
+  // --- NEW: Occupation Options added here ---
+  const occupationOptions = [
+    { value: "Agriculture", label: "Agriculture/Farming" },
+    { value: "Dairy-Poultry", label: "Dairy/Poultry/Fishery" },
+    { value: "Job-SemiGovt", label: "Job in Cooperative/Semi-Govt" },
+    { value: "Job-Govt", label: "Job in Government" },
+    { value: "Job-Pvt", label: "Job in Private Sector" },
+    { value: "Job-Small", label: "Job in Small Shop/Anganwadi" },
+    { value: "Labour-Agri", label: "Labourer in Agricultural" },
+    { value: "Labour-Constr", label: "Labourer in Construction" },
+    { value: "Labour-Other", label: "Labourer in Others" },
+    { value: "Contract", label: "Own Business:Contract Works" },
+    { value: "Business", label: "Own Business:Shop/Loom/Transp/Other" },
+    { value: "Professional", label: "Professional:Advocate/Doctor/Accountant" },
+    { value: "Sales-Agent", label: "Sales/Marketing/LIC Agent" },
+    { value: "Self-Employed", label: "Self Employed:Plumber/Elect/Tailor/Driver/Tutor" },
+    { value: "Other", label: "Other" },
+    { value: "Not-Earning", label: "Not Earning" },
+    { value: "Not Alive", label: "Not Alive" }
   ];
 
   const fieldLabels = {
@@ -103,16 +124,15 @@ const EditForm = () => {
     setExpandedSections(allCollapsed);
   };
 
-  // Removed toggleEditMode function
 
   useEffect(() => {
-    let isMounted = true; // Flag to prevent state updates on unmounted component
+    let isMounted = true; 
 
     const fetchStudentDetails = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/applicants/${nmms_reg_number}`);
-        if (!isMounted) return; // Check if component is still mounted
+        const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/applicants/reg/${nmms_reg_number}`);
+        if (!isMounted) return;
         const data = res.data;
 
         if (data) {
@@ -122,54 +142,54 @@ const EditForm = () => {
             : '';
 
           const primaryData = {
-            applicant_id: data.applicant_id,
-            nmms_year: data.nmms_year,
-            nmms_reg_number: data.nmms_reg_number,
-            app_state: data.app_state,
-            state_name: data.state_name,
-            district_name: data.district_name,
-            block_name: data.block_name,
-            district: data.district,
-            nmms_block: data.nmms_block,
-            student_name: data.student_name,
-            father_name: data.father_name,
-            mother_name: data.mother_name,
-            gmat_score: data.gmat_score,
-            sat_score: data.sat_score,
-            gender: data.gender,
-            aadhaar: data.aadhaar,
+            applicant_id: data.data.applicant_id,
+            nmms_year: data.data.nmms_year,
+            nmms_reg_number: data.data.nmms_reg_number,
+            app_state: data.data.app_state,
+            state_name: data.data.state_name,
+            district_name: data.data.district_name,
+            block_name: data.data.block_name,
+            district: data.data.district,
+            nmms_block: data.data.nmms_block,
+            student_name: data.data.student_name,
+            father_name: data.data.father_name,
+            mother_name: data.data.mother_name,
+            gmat_score: data.data.gmat_score,
+            sat_score: data.data.sat_score,
+            gender: data.data.gender,
+            aadhaar: data.data.aadhaar,
             DOB: formattedDOB, // Use formatted date for input
-            home_address: data.home_address,
-            family_income_total: data.family_income_total,
-            contact_no1: data.contact_no1,
-            contact_no2: data.contact_no2,
-            current_institute_dise_code: data.current_institute_dise_code,
-            previous_institute_dise_code: data.previous_institute_dise_code,
-            medium: data.medium
+            home_address: data.data.home_address,
+            family_income_total: data.data.family_income_total,
+            contact_no1: data.data.contact_no1,
+            contact_no2: data.data.contact_no2,
+            current_institute_dise_code: data.data.current_institute_dise_code,
+            previous_institute_dise_code: data.data.previous_institute_dise_code,
+            medium: data.data.medium
           };
 
           const secondaryData = {
-            applicant_id: data.applicant_id,
-            village: data.village || '',
-            father_occupation: data.father_occupation || '',
-            mother_occupation: data.mother_occupation || '',
-            father_education: data.father_education || '',
-            mother_education: data.mother_education || '',
-            household_size: data.household_size || '',
-            own_house: data.own_house || '',
-            smart_phone_home: data.smart_phone_home || '',
-            internet_facility_home: data.internet_facility_home || '',
-            career_goals: data.career_goals || '',
-            subjects_of_interest: data.subjects_of_interest || '',
-            transportation_mode: data.transportation_mode || '',
-            distance_to_school: data.distance_to_school || '',
-            num_two_wheelers: data.num_two_wheelers || '',
-            num_four_wheelers: data.num_four_wheelers || '',
-            irrigation_land: data.irrigation_land || '',
-            neighbor_name: data.neighbor_name || '',
-            neighbor_phone: data.neighbor_phone || '',
-            favorite_teacher_name: data.favorite_teacher_name || '',
-            favorite_teacher_phone: data.favorite_teacher_phone || ''
+            applicant_id: data.data.applicant_id,
+            village: data.data.village || '',
+            father_occupation: data.data.father_occupation || '',
+            mother_occupation: data.data.mother_occupation || '',
+            father_education: data.data.father_education || '',
+            mother_education: data.data.mother_education || '',
+            household_size: data.data.household_size || '',
+            own_house: data.data.own_house || '',
+            smart_phone_home: data.data.smart_phone_home || '',
+            internet_facility_home: data.data.internet_facility_home || '',
+            career_goals: data.data.career_goals || '',
+            subjects_of_interest: data.data.subjects_of_interest || '',
+            transportation_mode: data.data.transportation_mode || '',
+            distance_to_school: data.data.distance_to_school || '',
+            num_two_wheelers: data.data.num_two_wheelers || '',
+            num_four_wheelers: data.data.num_four_wheelers || '',
+            irrigation_land: data.data.irrigation_land || '',
+            neighbor_name: data.data.neighbor_name || '',
+            neighbor_phone: data.data.neighbor_phone || '',
+            favorite_teacher_name: data.data.favorite_teacher_name || '',
+            favorite_teacher_phone: data.data.favorite_teacher_phone || ''
           };
 
           setFormData(primaryData);
@@ -179,7 +199,6 @@ const EditForm = () => {
             : data.gender === "M" ? "/default-boy.png" : "/default-girl.png"
           );
 
-          // Fetch institutes only after primary data (with nmms_block) is set
           if (primaryData.nmms_block) {
             fetchInstitutes(primaryData.nmms_block);
           }
@@ -204,7 +223,7 @@ const EditForm = () => {
     };
 
     const fetchInstitutes = async (blockCode) => {
-      if (!blockCode) return; // Don't fetch if blockCode is missing
+      if (!blockCode) return;
       try {
         const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/institutes-by-block/${blockCode}`);
         if (isMounted) {
@@ -220,7 +239,6 @@ const EditForm = () => {
 
     fetchStudentDetails();
 
-    // Cleanup function to set isMounted to false when component unmounts
     return () => {
       isMounted = false;
     };
@@ -446,6 +464,16 @@ const EditForm = () => {
             {institutes.map(institute => (
               <option key={institute.institute_id} value={institute.dise_code}>
                 {institute.institute_name || `School ${institute.dise_code}`}
+              </option>
+            ))}
+          </select>
+        ) : ["father_occupation", "mother_occupation"].includes(key) ? (
+          // --- NEW: Logic for Occupation Dropdown ---
+          <select {...commonProps}>
+            <option value="">Select Occupation</option>
+            {occupationOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>

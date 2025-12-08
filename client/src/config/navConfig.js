@@ -8,20 +8,14 @@ import {
   EmojiEvents,
   MenuBook,
   Group,
-  SupervisorAccount,
   Badge,
   Settings,
   AccountCircle,
   ManageAccounts,
   Tune,
-  Logout,
-  Plagiarism,
   GroupWork,
   Assessment,
-  CoPresent,
-  BugReport,
   NoteAlt,
-  Quiz,
   AssignmentInd,
   Schedule,
   CalendarMonth,
@@ -50,6 +44,8 @@ export const navConfig = {
         { path: "/admin/academics/batches", icon: <Badge />, label: "Batches" },
         { path: "/admin/academics/time-table-dashboard", icon: <CalendarMonth />, label: "Time Table" },
         { path: "/admin/academics/reports", icon: <Assessment />, label: "Reports" },
+        { path: "/admin/academics/classrooms", icon: <School />, label: "Classrooms" },
+        { path: "/admin/academics/events", icon: <Event />, label: "Events" },
       ],
     },
     {
@@ -68,7 +64,7 @@ export const navConfig = {
     { path: "/coordinator/batch-management", icon: <GroupWork />, label: "Batch Management" },
     { path: "/coordinator/batch-reports", icon: <Assessment />, label: "Batch Reports" },
     { path: "/coordinator/attendance-tracker", icon: <Assessment />, label: "Student Attendance" },
-    { path: "/", icon: <Logout />, label: "Logout" },
+    { path: "/coordinator/time-table", icon: <Schedule />, label: "Time Table" }
   ],
 
   student: [

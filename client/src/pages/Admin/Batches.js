@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import axios from "axios";
 import CreatableSelect from "react-select/creatable";
-import { PlusCircle, Pencil, Trash2, X, Users } from "lucide-react";
+import { PlusCircle, Pencil, Trash2, X, Users, Filter } from "lucide-react"; // Added Filter icon
 import classes from "./Batches.module.css";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 import { useSystemConfig } from "../../contexts/SystemConfigContext";
@@ -39,25 +39,43 @@ const ConfirmationModal = ({ show, onClose, onConfirm, title, message }) => {
 const Batches = () => {
     const navigate = useNavigate();
     const currentPath = ['Admin', 'Academics', 'Batches'];
+    
+    // Form State
     const [batch, setBatch] = useState({
         batch_name: "",
         cohort_number: "",
         coordinator_id: "",
         batch_status: "Active",
     });
+
+    // Data State
     const [availableBatchNames, setAvailableBatchNames] = useState([]);
     const [coordinators, setCoordinators] = useState([]);
     const [batches, setBatches] = useState([]);
     const [cohorts, setCohorts] = useState([]);
+    
+    // UI/View State
+    const [filterCohort, setFilterCohort] = useState(null); // <--- NEW: Filter State
+    const [sortBy, setSortBy] = useState("batch_name");
     const [errors, setErrors] = useState({});
     const [notification, setNotification] = useState({ message: '', type: '' });
+    
+    // Modal States
     const [editBatch, setEditBatch] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [sortBy, setSortBy] = useState("cohort_name");
-    const { appliedConfig, loading: configLoading } = useSystemConfig();
-    
     const [showCohortModal, setShowCohortModal] = useState(false);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [showStatusConfirmModal, setShowStatusConfirmModal] = useState(false);
+    
+    // Action States
+    const [batchToDelete, setBatchToDelete] = useState(null);
+    const [batchToToggleStatus, setBatchToToggleStatus] = useState(null);
+    const [newStatus, setNewStatus] = useState('');
+    
+    const { appliedConfig } = useSystemConfig();
+    
+    // New Cohort Form State
     const [newCohort, setNewCohort] = useState({
         cohort_name: "",
         start_date: "",
@@ -65,14 +83,6 @@ const Batches = () => {
         description: "",
     });
     const [cohortErrors, setCohortErrors] = useState({});
-    
-    const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const [batchToDelete, setBatchToDelete] = useState(null);
-    
-    const [showStatusConfirmModal, setShowStatusConfirmModal] = useState(false);
-    const [batchToToggleStatus, setBatchToToggleStatus] = useState(null);
-    const [newStatus, setNewStatus] = useState('');
-
 
     const showNotification = (message, type = 'success') => {
         setNotification({ message, type });
@@ -102,12 +112,35 @@ const Batches = () => {
     const fetchBatches = useCallback(async () => {
         try {
             const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/batches`);
-            setBatches(res.data);
+            const allBatches = res.data || [];
+
+            // System Config Filtering Logic (Existing)
+            if (!appliedConfig) {
+                setBatches(allBatches);
+                return;
+            }
+
+            let activeCohorts = [];
+            if (Array.isArray(appliedConfig)) {
+                activeCohorts = appliedConfig
+                    .filter(cfg => cfg.system_status === "Active" && (cfg.cohort_number || cfg.cohort_number === 0))
+                    .map(cfg => cfg.cohort_number);
+            } else if (appliedConfig && appliedConfig.system_status === "Active") {
+                activeCohorts = [appliedConfig.cohort_number];
+            }
+
+            if (!activeCohorts || activeCohorts.length === 0) {
+                setBatches(allBatches);
+                return;
+            }
+
+            const filtered = allBatches.filter(b => activeCohorts.includes(b.cohort_number));
+            setBatches(filtered);
         } catch (err) {
             console.error("Error fetching Batches", err);
-            showNotification('Could not fetch batches.', 'error');
+            showNotification("Could not fetch batches.", "error");
         }
-    }, []);
+    }, [appliedConfig]);
 
     const fetchBatchNames = useCallback(async () => {
         try {
@@ -120,11 +153,12 @@ const Batches = () => {
 
     useEffect(() => {
         fetchCoordinators();
-        fetchBatches();
         fetchBatchNames();
         fetchCohorts();
-    }, [fetchCoordinators, fetchBatches, fetchBatchNames, fetchCohorts]);
+        fetchBatches();
+    }, [fetchCoordinators, fetchBatchNames, fetchCohorts, fetchBatches]);
 
+    // Validation & Handlers
     const validateBatch = (data) => {
         const validationErrors = {};
         if (!data.batch_name || !data.batch_name.trim()) validationErrors.batch_name = "House name is required";
@@ -156,7 +190,13 @@ const Batches = () => {
                 batch_name: batch.batch_name.trim(),
                 coordinator_id: batch.coordinator_id || null,
             });
-            setBatch({ batch_name: "", cohort_number: "", coordinator_id: "", batch_status: "Active" });
+            // Reset form but keep cohort if filtered
+            setBatch({ 
+                batch_name: "", 
+                cohort_number: filterCohort ? filterCohort.value : "", 
+                coordinator_id: "", 
+                batch_status: "Active" 
+            });
             fetchBatches();
             setShowCreateModal(false);
             showNotification("Batch created successfully!");
@@ -169,6 +209,7 @@ const Batches = () => {
         }
     };
 
+    // Edit, Delete, Status Handlers
     const handleEdit = (batchToEdit) => {
         setEditBatch({
             id: batchToEdit.id,
@@ -256,15 +297,7 @@ const Batches = () => {
         navigate(`/admin/academics/batches/${batchId}/students`);
     };
 
-    const getOption = (options, value, key = 'value') => options.find(opt => opt[key] === value) || null;
-
-    const sortedBatches = [...batches].sort((a, b) => {
-        const key = sortBy;
-        const valA = a[key] || "";
-        const valB = b[key] || "";
-        return valA.toString().localeCompare(valB.toString());
-    });
-
+    // Cohort Modal Handlers
     const handleCohortInputChange = (e) => {
         const { name, value } = e.target;
         setNewCohort((prev) => ({ ...prev, [name]: value }));
@@ -290,6 +323,23 @@ const Batches = () => {
         }
     };
 
+    // --- Helpers & Sorting/Filtering ---
+
+    const getOption = (options, value, key = 'value') => options.find(opt => opt[key] === value) || null;
+
+    // 1. Sort
+    const sortedBatches = [...batches].sort((a, b) => {
+        const key = sortBy;
+        const valA = a[key] || "";
+        const valB = b[key] || "";
+        return valA.toString().localeCompare(valB.toString());
+    });
+
+    // 2. Filter based on selected Cohort
+    const displayedBatches = sortedBatches.filter(b => 
+        filterCohort ? b.cohort_number === filterCohort.value : true
+    );
+
     const coordinatorOptions = coordinators.map((c) => ({ value: c.id, label: c.name }));
 
     return (
@@ -300,6 +350,7 @@ const Batches = () => {
                 type={notification.type}
                 onDismiss={() => setNotification({ message: '', type: '' })}
             />
+            {/* Confirm Modals */}
             <ConfirmationModal
                 show={showConfirmModal}
                 onClose={() => setShowConfirmModal(false)}
@@ -314,51 +365,90 @@ const Batches = () => {
                 title={`Confirm ${newStatus === 'Active' ? 'Activation' : 'Deactivation'}`}
                 message={`Are you sure you want to ${newStatus === 'Active' ? 'activate' : 'deactivate'} the House "${batchToToggleStatus?.batch_name}"?`}
             />
-            
 
+            {/* Header */}
             <div className={classes.header}>
-                <h1 className={classes.title}>Batches</h1>
+                <h1 className={classes.title}>Batches (Houses)</h1>
                 <div className={classes.headerActions}>
                     <button onClick={() => setShowCohortModal(true)} className={classes.secondaryBtn}>
                         + Add Cohort
                     </button>
-                    <button onClick={() => { setErrors({}); setShowCreateModal(true); }} className={classes.addbtn}>
+                    <button 
+                        onClick={() => { 
+                            setErrors({}); 
+                            // Auto-select the filtered cohort in the modal if active
+                            setBatch(prev => ({
+                                ...prev,
+                                cohort_number: filterCohort ? filterCohort.value : ""
+                            }));
+                            setShowCreateModal(true); 
+                        }} 
+                        className={classes.addbtn}
+                    >
                         <PlusCircle size={20} /> Add House
                     </button>
                 </div>
             </div>
-            <div className={classes.controls}>
-                <label htmlFor="sortBy">Sort By:</label>
-                <select id="sortBy" value={sortBy} onChange={(e) => setSortBy(e.target.value)} className={classes.sortSelect}>
-                    <option value="cohort_name">Cohort</option>
-                    <option value="batch_name">House Name</option>
-                    <option value="coordinator_name">Coordinator</option>
-                </select>
+
+            {/* Controls Bar: Cohort Filter + Sort */}
+            <div className={classes.controls} style={{ display: 'flex', gap: '20px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                <div style={{ flex: '1', minWidth: '250px' }}>
+                    <label style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', fontWeight: '500', color: '#555'}}>
+                        <Filter size={16}/> Select Cohort to View
+                    </label>
+                    <Select
+                        options={cohorts}
+                        value={filterCohort}
+                        onChange={setFilterCohort}
+                        placeholder="All Cohorts"
+                        isClearable
+                        classNamePrefix="react-select"
+                    />
+                </div>
+                
+                <div style={{ minWidth: '200px' }}>
+                    <label htmlFor="sortBy" style={{display: 'block', marginBottom: '4px', fontWeight: '500', color: '#555'}}>Sort By</label>
+                    <select id="sortBy" value={sortBy} onChange={(e) => setSortBy(e.target.value)} className={classes.sortSelect} style={{width: '100%', height: '38px'}}>
+                        <option value="batch_name">House Name</option>
+                        <option value="cohort_name">Cohort Name</option>
+                        <option value="coordinator_name">Coordinator</option>
+                    </select>
+                </div>
             </div>
-            <div className={classes.cardGrid}>
-                {sortedBatches.map((b) => (
-                    <div key={b.id} className={classes.card}>
-                        <div className={classes.cardHeader}>
-                            <h2 className={classes.cardTitle}>{b.batch_name}</h2>
-                            <span className={`${classes.statusBadge} ${classes.withIcon} ${b.batch_status === 'Active' ? classes.active : classes.inactive}`}> {b.batch_status}</span>
+
+            {/* Batches Grid */}
+            {displayedBatches.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
+                    <p>No Houses found. {filterCohort ? `Try adding a house to ${filterCohort.label}.` : "Select a cohort or add a new house."}</p>
+                </div>
+            ) : (
+                <div className={classes.cardGrid}>
+                    {displayedBatches.map((b) => (
+                        <div key={b.id} className={classes.card}>
+                            <div className={classes.cardHeader}>
+                                <h2 className={classes.cardTitle}>{b.batch_name}</h2>
+                                <span className={`${classes.statusBadge} ${classes.withIcon} ${b.batch_status === 'Active' ? classes.active : classes.inactive}`}> {b.batch_status}</span>
+                            </div>
+                            <div className={classes.cardBody}>
+                                <p><strong>Cohort:</strong> {b.cohort_name || "—"}</p>
+                                <p><strong>Coordinator:</strong> {b.coordinator_name || <span style={{color: '#999'}}>Unassigned</span>}</p>
+                            </div>
+                            <div className={classes.cardActions}>
+                                <button 
+                                    className={classes.actionBtn} 
+                                    onClick={() => handleViewBatchDetails(b.id)}
+                                >
+                                    <Users size={16} /> View Students
+                                </button>
+                                <button className={classes.actionBtn} onClick={() => handleEdit(b)}><Pencil size={16} /></button>
+                                <button className={`${classes.actionBtn} ${classes.dangerBtnIcon}`} onClick={() => handleDeleteClick(b.id)}><Trash2 size={16} /></button>
+                            </div>
                         </div>
-                        <div className={classes.cardBody}>
-                            <p><strong>Cohort:</strong> {b.cohort_name || "—"}</p>
-                            <p><strong>Coordinator:</strong> {b.coordinator_name || ""}</p>
-                        </div>
-                        <div className={classes.cardActions}>
-                            <button 
-                                className={classes.actionBtn} 
-                                onClick={() => handleViewBatchDetails(b.id)}
-                            >
-                                <Users size={16} /> View Students
-                            </button>
-                            <button className={classes.actionBtn} onClick={() => handleEdit(b)}><Pencil size={16} /></button>
-                            <button className={`${classes.actionBtn} ${classes.dangerBtnIcon}`} onClick={() => handleDeleteClick(b.id)}><Trash2 size={16} /></button>
-                        </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Create House Modal */}
             {showCreateModal && (
                 <div className={classes.modalOverlay}>
                     <div className={classes.modal}>
@@ -414,6 +504,7 @@ const Batches = () => {
                                     onChange={(opt) => handleSelectChange('coordinator_id', opt)}
                                     isClearable
                                     classNamePrefix="react-select"
+                                    placeholder="Select Coordinator"
                                 />
                             </div>
                             <div className={classes.modalActions}>
@@ -424,6 +515,8 @@ const Batches = () => {
                     </div>
                 </div>
             )}
+
+            {/* Create Cohort Modal */}
             {showCohortModal && (
                 <div className={classes.modalOverlay}>
                     <div className={classes.modal}>
@@ -435,11 +528,12 @@ const Batches = () => {
                                     name="cohort_name"
                                     value={newCohort.cohort_name}
                                     onChange={(e) =>
-                                    handleCohortInputChange({
-                                        target: { name: "cohort_name", value: e.target.value.toUpperCase() },
-                                    })
+                                        handleCohortInputChange({
+                                            target: { name: "cohort_name", value: e.target.value.toUpperCase() },
+                                        })
                                     }
                                     className={cohortErrors.cohort_name ? classes.errorInput : ''}
+                                    placeholder="e.g. COHORT 2024"
                                 />
                                 {cohortErrors.cohort_name && (
                                     <span className={classes.errorText}>{cohortErrors.cohort_name}</span>
@@ -462,6 +556,8 @@ const Batches = () => {
                     </div>
                 </div>
             )}
+
+            {/* Edit Batch Modal */}
             {showEditModal && editBatch && (
                 <div className={classes.modalOverlay}>
                     <div className={classes.modal}>
@@ -480,7 +576,7 @@ const Batches = () => {
                                     onChange={(opt) => handleEditSelectChange('cohort_number', opt)}
                                     classNamePrefix="react-select"
                                     className={errors.cohort_number ? 'react-select-error' : ''}
-                                    isDisabled={true}
+                                    isDisabled={true} // Usually good practice to lock cohort on edit
                                 />
                                 {errors.cohort_number && <span className={classes.errorText}>{errors.cohort_number}</span>}
                             </div>

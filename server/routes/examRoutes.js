@@ -46,7 +46,7 @@ router.get("/assigned", fetchAllExams);
 // router.post("/create", createExamAndAssignApplicants);
 router.get("/:examId/student-list", generateStudentList);
 router.delete("/:examId", deleteExam);
-router.get("/:examId/download-all-hall-tickets", downloadAllHallTickets);
+router.get("/:examId/:exam_name/download-all-hall-tickets", downloadAllHallTickets);
 router.put("/:examId/freeze", freezeExam);
 
 //changed data

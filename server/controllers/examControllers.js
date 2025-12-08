@@ -325,8 +325,7 @@ function generateHallTicket(applicantId, nmmsYear) {
 async function generateStudentList(req, res) {
   try {
     const examId = req.params.examId;
-    const logoPath = path.join(__dirname, '../../client/src/assets/logo.png');
-
+    
     // ✅ Fetch exam + student + institute data
     const result = await pool.query(`
       SELECT 
@@ -355,53 +354,93 @@ async function generateStudentList(req, res) {
     const doc = new PDFDocument({ margin: 50 });
     const filePath = path.join(__dirname, `../public/halltickets/Exam_callingList_${examId}.pdf`);
     const stream = fs.createWriteStream(filePath);
+    
+    // Variables for page numbering
+    let pageNumber = 1;
+    
+    // Event handler for page addition
+    doc.on('pageAdded', () => {
+      pageNumber++;
+    });
+    
     doc.pipe(stream);
 
-    // ✅ Add logo
-    doc.image(logoPath, 50, 45, { width: 70 });
+    // ✅ Add page number function
+    const addPageNumber = () => {
+      const pages = doc.bufferedPageRange();
+      for (let i = 0; i < pages.count; i++) {
+        doc.switchToPage(i);
+        
+        // Add page number at top right corner
+        doc.fontSize(10)
+           .fillColor('#000000')
+           .text(`Page ${i + 1}`, doc.page.width - 100, 40, { align: 'right' });
+      }
+    };
 
-    // ✅ Title
-    doc.fontSize(20)
+    // ✅ Title - BOLD and centered
+    doc.fontSize(22)
+      .font('Helvetica-Bold')
+      .fillColor('#000000')
       .text("STUDENT CALLING LIST", 0, 50, { align: 'center' });
+    
     doc.moveDown(2);
 
     // ✅ Extract exam info (all rows have same exam info)
     const examInfo = result.rows[0];
 
+    // ✅ Format date properly
+    const formatDate = (dateString) => {
+      const date = new Date(dateString);
+      // Format as DD/MM/YYYY
+      return date.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    };
+
     // ✅ Display exam details with left padding
-const leftPadding = 80;
+    const leftPadding = 80;
 
-doc.fontSize(12);
+    doc.fontSize(12);
 
-doc.font("Helvetica-Bold")
-   .text(`Exam Name: `, leftPadding, doc.y, { continued: true })
-   .font("Helvetica")
-   .text(`${examInfo.exam_name}`);
+    doc.font("Helvetica-Bold")
+       .fillColor('#000000')
+       .text(`Exam Name: `, leftPadding, doc.y, { continued: true })
+       .font("Helvetica")
+       .text(`${examInfo.exam_name}`);
 
-doc.font("Helvetica-Bold")
-   .text(`Exam Date: `, leftPadding, doc.y, { continued: true })
-   .font("Helvetica")
-   .text(`${examInfo.exam_date}`);
+    doc.font("Helvetica-Bold")
+       .text(`Exam Date: `, leftPadding, doc.y, { continued: true })
+       .font("Helvetica")
+       .text(`${formatDate(examInfo.exam_date)}`);
 
-doc.font("Helvetica-Bold")
-   .text(`Exam Time: `, leftPadding, doc.y, { continued: true })
-   .font("Helvetica")
-   .text(`${examInfo.exam_start_time} - ${examInfo.exam_end_time}`);
+    doc.font("Helvetica-Bold")
+       .text(`Exam Time: `, leftPadding, doc.y, { continued: true })
+       .font("Helvetica")
+       .text(`${examInfo.exam_start_time} - ${examInfo.exam_end_time}`);
 
-doc.font("Helvetica-Bold")
-   .text(`Exam Centre: `, leftPadding, doc.y, { continued: true })
-   .font("Helvetica")
-   .text(`${examInfo.pp_exam_centre_name}`);
+    doc.font("Helvetica-Bold")
+       .text(`Exam Centre: `, leftPadding, doc.y, { continued: true })
+       .font("Helvetica")
+       .text(`${examInfo.pp_exam_centre_name}`);
 
-// ✅ Add generated timestamp slightly indented too
-doc.moveDown(1.5);
-doc.fontSize(10)
-   .text(`Generated on: ${new Date().toLocaleString()}`, leftPadding, doc.y);
-doc.moveDown(1);
-
+    // ✅ Add generated timestamp slightly indented too
+    doc.moveDown(1.5);
+    doc.fontSize(10)
+       .fillColor('#666666')
+       .text(`Generated on: ${new Date().toLocaleString('en-IN', {
+         day: '2-digit',
+         month: '2-digit',
+         year: 'numeric',
+         hour: '2-digit',
+         minute: '2-digit'
+       })}`, leftPadding, doc.y);
     
+    doc.moveDown(1);
 
-    // ✅ Draw table header
+    // ✅ Draw table header with light green background
     const tableTop = 230;
     const rowHeight = 40;
     const colWidths = [100, 130, 120, 80, 80];
@@ -410,17 +449,29 @@ doc.moveDown(1);
     let currentX = 50;
 
     const headers = ['Hall Ticket No', 'Student Name', 'School Name', 'Contact NO.1', 'Contact NO.2'];
+    
+    // Draw header background
+    doc.rect(50, tableTop, colWidths.reduce((a, b) => a + b, 0), rowHeight)
+       .fillAndStroke('#d4f1d4', '#000000'); // Light green background, black border
+    
+    // Add header text
+    currentX = 50;
     headers.forEach((header, i) => {
-      doc.rect(currentX, tableTop, colWidths[i], rowHeight).stroke();
-      doc.text(header, currentX + 5, tableTop + 10, {
-        width: colWidths[i] - 10,
-        align: 'left'
-      });
+      doc.fillColor('#000000') // Black font color
+         .font('Helvetica-Bold')
+         .text(header, currentX + 5, tableTop + 10, {
+           width: colWidths[i] - 10,
+           align: 'left'
+         });
       currentX += colWidths[i];
     });
 
     // ✅ Table rows
     let currentY = tableTop + rowHeight;
+    
+    // Track rows for alternating colors
+    let rowIndex = 0;
+    
     result.rows.forEach((row) => {
       const rowData = [
         row.pp_hall_ticket_no || '',
@@ -439,31 +490,62 @@ doc.moveDown(1);
 
       const actualRowHeight = Math.max(rowHeight, textHeight + 15);
 
-      // Draw row cells
+      // Alternate row colors (white and light gray)
+      const rowColor = rowIndex % 2 === 0 ? '#ffffff' : '#f5f5f5';
+      
+      // Draw row background
+      doc.rect(50, currentY, colWidths.reduce((a, b) => a + b, 0), actualRowHeight)
+         .fillAndStroke(rowColor, '#000000');
+
+      // Draw cell borders and text
       currentX = 50;
       rowData.forEach((text, i) => {
-        doc.rect(currentX, currentY, colWidths[i], actualRowHeight).stroke();
-        doc.text(String(text), currentX + 5, currentY + 5, {
-          width: colWidths[i] - 10,
-          align: 'left'
-        });
+        // Draw cell border
+        doc.rect(currentX, currentY, colWidths[i], actualRowHeight)
+           .stroke('#000000');
+        
+        // Add text
+        doc.fillColor('#000000') // Black font color for data
+           .font('Helvetica')
+           .text(String(text), currentX + 5, currentY + 5, {
+             width: colWidths[i] - 10,
+             align: 'left'
+           });
+        
         currentX += colWidths[i];
       });
 
       currentY += actualRowHeight;
+      rowIndex++;
 
       // Add new page if needed
       if (currentY > doc.page.height - 100) {
         doc.addPage();
+        
+        // Add page number on new page
+        doc.fontSize(10)
+           .fillColor('#000000')
+           .text(`Page ${pageNumber}`, doc.page.width - 100, 40, { align: 'right' });
+        
         currentY = 50;
       }
     });
 
+    // Add total count at the bottom
+    doc.moveDown(2);
+    doc.fontSize(11)
+       .font('Helvetica-Bold')
+       .fillColor('#000000')
+       .text(`Total Students: ${result.rows.length}`, 50, doc.y);
+
     doc.end();
+
+    // Add page numbers to all pages
+    doc.on('end', addPageNumber);
 
     const examName = result.rows[0].exam_name.replace(/\s+/g, '_');
     stream.on('finish', () => {
-      return res.download(filePath, `${examName}.pdf`);
+      return res.download(filePath, `${examName}_Calling_List.pdf`);
     });
 
   } catch (err) {
@@ -475,7 +557,7 @@ doc.moveDown(1);
 
 // async function generateStudentList(req, res)
 async function downloadAllHallTickets(req, res) {
-  const examId = req.params.examId;
+const { examId, exam_name } = req.params;
   const dirPath = path.join(__dirname, `../public/halltickets`);
   
   // Ensure directory exists
@@ -555,7 +637,7 @@ async function downloadAllHallTickets(req, res) {
     });
 
     // Set response headers
-    res.setHeader('Content-Disposition', `attachment; filename=All_Hall_Tickets_${examId}.zip`);
+    res.setHeader('Content-Disposition', `attachment; filename=All_Hall_Tickets_${examId}_${exam_name}.zip`);
     res.setHeader('Content-Type', 'application/zip');
 
     // Pipe archive to the response
@@ -577,6 +659,9 @@ async function downloadAllHallTickets(req, res) {
         e.exam_start_time,
         e.exam_end_time,
         ec.latitude,
+        ec.address,
+        ec.village,
+        ec.pincode,
         ec.longitude
       FROM pp.applicant_exam ae
       JOIN pp.applicant_primary_info api ON ae.applicant_id = api.applicant_id
@@ -647,10 +732,12 @@ function generateStudentPDF(student, ticketPath, assets) {
       // B&W Color Scheme
       const primaryColor = '#000000';
       const secondaryColor = '#333333';
-      const lightGray = '#f0f0f0';
 
-      // Add border
-      doc.rect(30, 30, 540, 760).stroke(primaryColor).lineWidth(0.5);
+      // Add outer border with uniform padding
+      const outerPadding = 20; // Uniform padding for all sides
+      doc.rect(outerPadding, outerPadding, 595.28 - (2 * outerPadding), 841.89 - (2 * outerPadding))
+         .stroke(primaryColor)
+         .lineWidth(1.5);
 
       // Header with white background
       doc.rect(50, 50, 500, 80)
@@ -658,35 +745,40 @@ function generateStudentPDF(student, ticketPath, assets) {
          .stroke(primaryColor).lineWidth(0.5);
       
       const headerY = 60;
-      const logoWidth = 60;
+      const logoWidth = 80; // Increased from 60 to 70
+      const logoHeight = 80; // Added height for better control
       
-      // Left logo
+      // Left logo - increased size
       if (fs.existsSync(assets.logoLeftPath)) {
-        doc.image(assets.logoLeftPath, 60, headerY - 5, { 
+        doc.image(assets.logoLeftPath, 50, headerY - 10, { 
           width: logoWidth,
+          height: logoHeight,
+          fit: [logoWidth, logoHeight],
           colorspace: 'gray'
         });
       }
 
-      // Right logo
+      // Right logo - increased size
       if (fs.existsSync(assets.logoRightPath)) {
-        doc.image(assets.logoRightPath, 500 - logoWidth + 40, headerY - 5, { 
+        doc.image(assets.logoRightPath, 500 - logoWidth + 55, headerY - 10, { 
           width: logoWidth,
+          height: logoHeight,
+          fit: [logoWidth, logoHeight],
           colorspace: 'gray'
         });
       }
 
-      // Header text
+      // Header text - adjusted position due to larger logos
       doc.fontSize(18)
          .fillColor(primaryColor)
          .font('Helvetica-Bold')
-         .text("RAJALAKSHMI CHILDREN FOUNDATION", 50, headerY, { 
+         .text("RAJALAKSHMI CHILDREN FOUNDATION", 50, headerY + 5, { 
            width: 500,
            align: 'center'
          });
 
       doc.fontSize(16)
-         .text("PRATIBHA POSHAK EXAMINATION - 2025", 50, headerY + 30, {
+         .text("PRATIBHA POSHAK EXAMINATION - 2025", 50, headerY + 35, {
            width: 500,
            align: 'center'
          });
@@ -696,24 +788,26 @@ function generateStudentPDF(student, ticketPath, assets) {
          .fillColor(primaryColor)
          .font('Helvetica')
          .text("Kayaka Kranti Towers, CTS No. 4824C/23+24, Ayodhya Nagar, Near Kolhapur Circle, Belagavi 590016", 
-               50, headerY + 50, {
+               50, headerY + 55, {
                  width: 500,
                  align: 'center',
                  lineGap: 2
                })
          .text("Contact No. +91 9444900755, +91 9606930208", 
-               50, headerY + 65, {
+               50, headerY + 70, {
                  width: 500,
                  align: 'center'
                });
 
-      // Hall Ticket title
+      // Hall Ticket title box - with border only, no background
       doc.rect(150, 150, 300, 40)
-         .fill(lightGray)
-         .stroke(primaryColor).lineWidth(0.5);
+         .stroke(primaryColor)
+         .lineWidth(2);
+      
       doc.fontSize(24)
          .fillColor(primaryColor)
-         .text("HALL TICKET", 140, 160, {
+         .font('Helvetica-Bold')
+         .text("HALL TICKET", 150, 160, {
            width: 300,
            align: 'center'
          });
@@ -721,10 +815,15 @@ function generateStudentPDF(student, ticketPath, assets) {
       // Student details section
       const studentDetailsY = 210;
       
-      // Main rectangle for student details
+      // Main rectangle for student details - with border only
       doc.rect(50, studentDetailsY, 360, 120)
-         .fill(lightGray)
-         .stroke(primaryColor).lineWidth(0.5);
+         .stroke(primaryColor)
+         .lineWidth(2);
+
+      // Add "STUDENT DETAILS" label inside the box
+      doc.fontSize(14)
+         .font('Helvetica-Bold')
+         .text("STUDENT DETAILS", 60, studentDetailsY + 10);
 
       // Photo placeholder
       const photoWidth = 3.5 * 28.35;
@@ -732,10 +831,10 @@ function generateStudentPDF(student, ticketPath, assets) {
       const photoX = 50 + 510 - photoWidth - 20;
       const photoY = studentDetailsY + 1;
 
-      // Highlighted gray background for photo area
+      // Highlighted border for photo area
       doc.rect(photoX - 5, photoY - 5, photoWidth + 10, photoHeight + 10)
          .stroke(primaryColor)
-         .lineWidth(0.5);
+         .lineWidth(2);
 
       // Photo placeholder with red border
       doc.rect(photoX, photoY, photoWidth, photoHeight)
@@ -752,37 +851,49 @@ function generateStudentPDF(student, ticketPath, assets) {
            lineGap: 3
          });
 
-      // Student details text
-      doc.fontSize(14)
-         .font('Helvetica-Bold')
-         .text("STUDENT DETAILS", 60, studentDetailsY + 10);
-
+      // Student details text - Made labels bold
       doc.fontSize(12)
-         .font('Helvetica')
+         .font('Helvetica-Bold') // Changed to Bold for labels
          .text("Name:", 60, studentDetailsY + 40)
-         .font('Helvetica-Bold')
          .text(student.student_name || 'N/A', 120, studentDetailsY + 40);
 
-      doc.font('Helvetica')
+      doc.font('Helvetica-Bold') // Changed to Bold for labels
          .text("Hall Ticket No:", 60, studentDetailsY + 65)
-         .font('Helvetica-Bold')
          .text(student.pp_hall_ticket_no || 'N/A', 160, studentDetailsY + 65);
 
-      // Exam Center with Google Maps link
-      const googleMapsUrl = `https://www.google.com/maps?q=${student.latitude},${student.longitude}`;
+      // Exam Center with address details and Google Maps link
       const examCenterX = 150;
       const examCenterY = studentDetailsY + 90;
-      const maxTextWidth1 = 220;
+      const maxTextWidth = 220;
 
-      doc.font('Helvetica').fontSize(10).fillColor(primaryColor).text('Exam Center:', 60, examCenterY);
-      doc.font('Helvetica-Bold').fillColor('blue').text(student.pp_exam_centre_name || 'N/A', examCenterX, examCenterY, {
-        width: maxTextWidth1,
-        underline: true
-      });
+      doc.font('Helvetica-Bold').fontSize(10).fillColor(primaryColor).text('Exam Center:', 60, examCenterY); // Changed to Bold
 
-      const textWidth = doc.widthOfString(student.pp_exam_centre_name || 'N/A');
-      const textHeight = doc.currentLineHeight();
-      doc.link(examCenterX, examCenterY, textWidth, textHeight, googleMapsUrl);
+      // Create address string from components
+      const addressComponents = [];
+      if (student.pp_exam_centre_name) addressComponents.push(student.pp_exam_centre_name);
+      if (student.address) addressComponents.push(student.address);
+      if (student.village) addressComponents.push(student.village);
+      if (student.pincode) addressComponents.push(`${student.pincode}`);
+
+      const fullAddress = addressComponents.length > 0 ? addressComponents.join(', ') : 'Address not available';
+
+      // Display full address on one line with Google Maps link (if coordinates exist)
+      if (student.latitude && student.longitude) {
+          const googleMapsUrl = `https://www.google.com/maps?q=${student.latitude},${student.longitude}`;
+          
+          doc.font('Helvetica-Bold').fontSize(10).fillColor('blue').text(fullAddress, examCenterX, examCenterY, {
+              width: maxTextWidth,
+              underline: true
+          });
+
+          const textWidth = doc.widthOfString(fullAddress);
+          const textHeight = doc.currentLineHeight();
+          doc.link(examCenterX, examCenterY, textWidth, textHeight, googleMapsUrl);
+      } else {
+          doc.font('Helvetica-Bold').fontSize(10).fillColor(primaryColor).text(fullAddress, examCenterX, examCenterY, {
+              width: maxTextWidth
+          });
+      }
 
       // Exam info section
       const examInfoY = studentDetailsY + 140;
@@ -790,24 +901,34 @@ function generateStudentPDF(student, ticketPath, assets) {
       // Format exam date and time
       const formattedExamDate = `${formatDate(student.exam_date)}, ${formatTimeManual(student.exam_start_time)} to ${formatTimeManual(student.exam_end_time)}`;
 
-      // Exam Date box
+      // Exam Date box - with thicker border
       doc.rect(50, examInfoY, 240, 60)
-         .fill(lightGray)
-         .stroke(primaryColor).lineWidth(0.5);
+         .stroke(primaryColor)
+         .lineWidth(2); // Increased from 0.5 to 2
+      
       doc.fontSize(14)
          .fillColor(primaryColor)
+         .font('Helvetica-Bold') // Added Bold
          .text("Exam Date & Time", 60, examInfoY + 10);
+      
       doc.fontSize(12)
-         .text(formattedExamDate, 60, examInfoY + 35);
+         .font('Helvetica') // Regular font for the date/time
+         .text(formattedExamDate, 60, examInfoY + 35, {
+           width: 220
+         });
 
-      // Reporting Time box
+      // Reporting Time box - with thicker border
       doc.rect(310, examInfoY, 240, 60)
-         .fill(lightGray)
-         .stroke(primaryColor).lineWidth(0.5);
+         .stroke(primaryColor)
+         .lineWidth(2); // Increased from 0.5 to 2
+      
       doc.fontSize(14)
          .fillColor(primaryColor)
+         .font('Helvetica-Bold') // Added Bold
          .text("Reporting Time", 320, examInfoY + 10);
+      
       doc.fontSize(12)
+         .font('Helvetica') // Regular font for the time
          .text(formatTimeManual(student.exam_start_time), 320, examInfoY + 35);
 
       // Register Kannada font
@@ -850,12 +971,6 @@ function generateStudentPDF(student, ticketPath, assets) {
            paragraphGap: 5
          });
 
-      doc.lineWidth(1)
-         .strokeColor(primaryColor)
-         .moveTo(50, instructionsY + 20)
-         .lineTo(550, instructionsY + 20)
-         .stroke();
-
       // Signature boxes section
       const signatureY = instructionsY + 220;
       const boxWidth = 100;
@@ -869,7 +984,8 @@ function generateStudentPDF(student, ticketPath, assets) {
          .stroke(primaryColor).lineWidth(0.5);
       doc.fontSize(10)
          .fillColor(primaryColor)
-         .text("Authorized", 50, signatureY + boxPadding, {
+         .font('Helvetica-Bold') // Added Bold
+         .text("Authority Signature", 50, signatureY + boxPadding, {
            width: boxWidth,
            align: 'center'
          });
@@ -888,6 +1004,7 @@ function generateStudentPDF(student, ticketPath, assets) {
          .stroke(primaryColor).lineWidth(0.5);
       doc.fontSize(10)
          .fillColor(primaryColor)
+         .font('Helvetica-Bold') // Added Bold
          .text("Invigilator", 50 + boxWidth + gap, signatureY + boxPadding, {
            width: boxWidth,
            align: 'center'
@@ -903,6 +1020,7 @@ function generateStudentPDF(student, ticketPath, assets) {
          .stroke(primaryColor).lineWidth(0.5);
       doc.fontSize(10)
          .fillColor(primaryColor)
+         .font('Helvetica-Bold') // Added Bold
          .text("Student", 50 + (boxWidth + gap) * 2, signatureY + boxPadding, {
            width: boxWidth,
            align: 'center'
@@ -919,6 +1037,7 @@ function generateStudentPDF(student, ticketPath, assets) {
 
       doc.fontSize(10)
          .fillColor(primaryColor)
+         .font('Helvetica-Bold') // Added Bold
          .text("Official Seal", 50 + (boxWidth + gap) * 3, signatureY + boxPadding, {
            width: boxWidth,
            align: 'center'
@@ -945,7 +1064,7 @@ function generateStudentPDF(student, ticketPath, assets) {
       doc.fontSize(14)
          .fillColor(primaryColor)
          .font('Helvetica-Bold')
-         .text("ALL THE BEST", 50, footerY + 10, {
+         .text("***** ALL THE BEST FOR YOUR EXAMINATION *****", 50, footerY + 10, {
            width: 500,
            align: 'center'
          });
@@ -959,6 +1078,19 @@ function generateStudentPDF(student, ticketPath, assets) {
 
     } catch (error) {
       reject(error);
+    }
+  });
+}
+
+// Helper function to clean up temporary files
+function cleanupTempFiles(files) {
+  files.forEach(file => {
+    if (fs.existsSync(file)) {
+      try {
+        fs.unlinkSync(file);
+      } catch (err) {
+        console.error(`Error deleting temp file ${file}:`, err);
+      }
     }
   });
 }

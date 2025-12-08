@@ -1,0 +1,218 @@
+.detailsContainer {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* --- Status Messages --- */
+.statusMessage {
+    text-align: center;
+    padding: 20px;
+    font-size: 1.1rem;
+    color: #495057;
+}
+
+.errorMessage {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+/* --- Back Link --- */
+.backLink {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 25px;
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.backLink:hover {
+    color: #0056b3;
+}
+
+/* --- Header --- */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.title {
+    font-size: 2rem;
+    color: #343a40;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.eventTypeTag {
+    background-color: #e9ecef;
+    color: #6c757d;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.separator {
+    border: 0;
+    height: 1px;
+    background: #e9ecef;
+    margin: 20px 0 30px 0;
+}
+
+/* --- Grid Layout --- */
+.contentGrid {
+    display: grid;
+    grid-template-columns: 3fr 1fr; /* Main content wider than sidebar */
+    gap: 30px;
+}
+
+.mainContent {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* --- Cards --- */
+.card {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.cardHeader {
+    font-size: 1.25rem;
+    color: #007bff;
+    margin-top: 0;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #f8f9fa;
+    padding-bottom: 10px;
+}
+
+/* --- Detail Items --- */
+.detailItem,
+.attendanceItem {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px dashed #e9ecef;
+}
+
+.detailItem:last-of-type,
+.attendanceItem:last-of-type {
+    border-bottom: none;
+}
+
+.detailLabel {
+    color: #495057;
+    font-weight: 600;
+    min-width: 100px; /* Aligns the data vertically */
+}
+
+.detailValue {
+    color: #212529;
+    text-align: right;
+}
+
+.locationJurisdiction {
+    display: block;
+    font-size: 0.85em;
+    color: #6c757d;
+    font-weight: normal;
+}
+
+/* --- Description --- */
+.descriptionText {
+    color: #495057;
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-wrap; /* Preserve formatting if any */
+}
+
+/* --- Photo Grid --- */
+.photoGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.photoWrapper {
+    display: block;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.photoWrapper:hover {
+    transform: scale(1.02);
+}
+
+.photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    aspect-ratio: 16 / 9; /* Standard aspect ratio for photos */
+}
+
+/* --- Attendance Sidebar --- */
+.attendanceCard {
+    /* Special styling for the sidebar card */
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.attendanceCount {
+    font-weight: 700;
+    color: #28a745; /* Green for positive count */
+    font-size: 1.1rem;
+}
+
+.totalRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 0 5px 0;
+    margin-top: 15px;
+    border-top: 2px solid #dee2e6;
+}
+
+.totalCount {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #007bff;
+}
+
+/* --- Responsive Layout --- */
+@media (max-width: 900px) {
+    .contentGrid {
+        grid-template-columns: 1fr; /* Stack main content and sidebar */
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .title {
+        font-size: 1.75rem;
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 500px) {
+    .detailsContainer {
+        margin: 15px auto;
+        padding: 0 10px;
+    }
+
+    .photoGrid {
+        grid-template-columns: 1fr;
+    }
+}

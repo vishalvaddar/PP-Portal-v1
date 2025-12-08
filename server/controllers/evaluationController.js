@@ -156,8 +156,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
     
-
-
 const uploadBulkData = asyncHandler(async (req, res) => {
   if (!req.file) {
     throw new ApiError(400, 'No file uploaded');
@@ -171,6 +169,7 @@ const uploadBulkData = asyncHandler(async (req, res) => {
     const secondaryInfoData = [];
     const examResultsData = [];
     const examAttendance = [];
+    const eligibleStudents = []; // New array for students eligible for student_master
     const errors = [];
 
     // Updated column mapping with 1-based indexing
@@ -199,9 +198,8 @@ const uploadBulkData = asyncHandler(async (req, res) => {
       NEIGHBOR_PHONE: 22,    // V
       FAV_TEACHER_NAME: 23,  // W
       FAV_TEACHER_PHONE: 24,
-      PP_EXAM_CLEARED:25 , // X
-      INTERVIEW_REQUIRED:26
-      
+      PP_EXAM_CLEARED: 25,   // X
+      INTERVIEW_REQUIRED: 26  // Y
     };
 
     worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
@@ -218,6 +216,10 @@ const uploadBulkData = asyncHandler(async (req, res) => {
             throw new Error(`Missing Student Name at row ${rowNumber}`);
           }
 
+          // Get exam clearance and interview status
+          const ppExamCleared = safeYN(row, COLUMNS.PP_EXAM_CLEARED);
+          const interviewRequired = safeYN(row, COLUMNS.INTERVIEW_REQUIRED);
+          
           // Prepare secondary info data with proper null handling
           const secondaryInfo = {
             applicant_id: applicantId,
@@ -241,7 +243,6 @@ const uploadBulkData = asyncHandler(async (req, res) => {
             neighbor_phone: safeString(row, COLUMNS.NEIGHBOR_PHONE),
             favorite_teacher_name: safeString(row, COLUMNS.FAV_TEACHER_NAME),
             favorite_teacher_phone: safeString(row, COLUMNS.FAV_TEACHER_PHONE)
-            
           };
 
           secondaryInfoData.push(secondaryInfo);
@@ -250,8 +251,8 @@ const uploadBulkData = asyncHandler(async (req, res) => {
           examResultsData.push({
             applicant_id: applicantId,
             pp_exam_score: safeFloat(row, COLUMNS.EXAM_SCORE, 0),
-            pp_exam_cleared:safeYN(row,COLUMNS.PP_EXAM_CLEARED),
-            interview_required_yn:safeYN(row,COLUMNS.INTERVIEW_REQUIRED)
+            pp_exam_cleared: ppExamCleared,
+            interview_required_yn: interviewRequired
           });
 
           // Prepare exam attendance data
@@ -259,6 +260,21 @@ const uploadBulkData = asyncHandler(async (req, res) => {
             applicant_id: applicantId,
             pp_exam_appeared_yn: safeYN(row, COLUMNS.ATTENDANCE)
           });
+
+          // Check if student is eligible for student_master insertion
+          if (ppExamCleared === 'Y' && interviewRequired === 'N') {
+            // Get additional parent info if needed
+            // For now, we'll store basic info. You may need to adjust based on available data
+            const eligibleStudent = {
+              applicant_id: applicantId,
+              student_name: studentName,
+              father_occupation: safeString(row, COLUMNS.FATHER_OCCUPATION),
+              mother_occupation: safeString(row, COLUMNS.MOTHER_OCCUPATION),
+              // Note: Other fields like father_name, mother_name, etc. might not be in the Excel
+              // You may need to get them from other tables or modify your Excel structure
+            };
+            eligibleStudents.push(eligibleStudent);
+          }
 
         } catch (error) {
           errors.push({
@@ -288,12 +304,13 @@ const uploadBulkData = asyncHandler(async (req, res) => {
     }
 
     // Insert data into database
-    await insertBulkData(secondaryInfoData, examResultsData, examAttendance);
+    await insertBulkData(secondaryInfoData, examResultsData, examAttendance, eligibleStudents);
 
     res.status(200).json(new ApiResponse(200, {
       totalRecords: secondaryInfoData.length,
       failedRecords: errors.length,
-      successRecords: secondaryInfoData.length - errors.length
+      successRecords: secondaryInfoData.length - errors.length,
+      eligibleStudents: eligibleStudents.length
     }, 'Data uploaded successfully'));
 
   } catch (error) {

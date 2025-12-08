@@ -25,13 +25,18 @@ import SystemConfig from "./pages/Admin/SystemConfig";
 import MyProfile from "./pages/Admin/MyProfile";
 import CreateExam from "./pages/Admin/Exam/CreateExam";
 import TimeTableDashboard from "./pages/Admin/TimeTableDashboard";
+import ClassroomManager from "./pages/Admin/ClassroomManager";
 
-// Admin-Evaluation pages
+// Admin Evaluation
 import EvaluationDashboard from "./pages/Admin/Evaluation/EvaluationDashboard";
 import EvaluationMarksEntry from "./pages/Admin/Evaluation/EvaluationMarksEntry";
 import EvaluationInterview from "./pages/Admin/Evaluation/EvaluationInterview";
 import EvaluationTracking from "./pages/Admin/Evaluation/EvaluationTracking";
-import Resultandrank from "./pages/Admin/Result/Resultandranking"
+import Resultandrank from "./pages/Admin/Result/Resultandranking";
+
+// Events
+import Events from "./pages/Admin/Events/EventsDashboardPage";
+import EventDetailsPage from "./pages/Admin/Events/EventDetailsPage";
 
 // --- Coordinator pages ---
 import CoordinatorDashboard from "./pages/Coordinator/CoordinatorDashboard";
@@ -39,12 +44,13 @@ import ViewApplication from "./pages/Coordinator/ViewApplication";
 import BatchManagement from "./pages/Coordinator/BatchManagement";
 import BatchReports from "./pages/Coordinator/BatchReports";
 import AttendanceTracker from "./pages/Coordinator/AttendanceTracker";
+import CoordinatorTimeTable from "./pages/Coordinator/TimeTableManagement";
 
 // --- Teacher pages ---
 import TeacherDashboard from "./pages/Teacher/TeacherDashboard";
 import StudentsList from "./pages/Teacher/StudentsList";
 import AssignedBatches from "./pages/Teacher/AssignedBatches";
-import TimeTable from "./pages/Teacher/TimeTable";
+import TeacherTimeTable from "./pages/Teacher/TimeTable";
 
 // --- Student pages ---
 import StudentDashboard from "./pages/Student/StudentDashboard";
@@ -58,6 +64,7 @@ import InterviewFeedback from "./pages/Interviewer/InterviewFeedback";
 
 import LogoutHandler from "./components/LogoutHandler";
 
+
 export const appRouter = createBrowserRouter([
   {
     path: "/login",
@@ -69,12 +76,13 @@ export const appRouter = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/admin/admin-dashboard" replace /> },
 
-      // --- Admin Routes ---
+      // ---------------- Admin Routes ----------------
       {
         path: "admin",
         element: <Layout />,
         children: [
           { path: "admin-dashboard", element: <AdminDashboard /> },
+
           {
             path: "admissions",
             children: [
@@ -90,17 +98,20 @@ export const appRouter = createBrowserRouter([
               { path: "view-applications", element: <ViewApplications /> },
               { path: "edit-form/:nmms_reg_number", element: <EditForm /> },
               { path: "results", element: <Resultandrank /> },
+
+              // Evaluation Sub-Routes
               {
                 path: "evaluation",
                 children: [
                   { path: "", element: <EvaluationDashboard /> },
                   { path: "marks-entry", element: <EvaluationMarksEntry /> },
                   { path: "interview", element: <EvaluationInterview /> },
-                  { path: "tracking", element: <EvaluationTracking /> },
-                ],
-              },
-            ],
+                  { path: "tracking", element: <EvaluationTracking /> }
+                ]
+              }
+            ]
           },
+
           {
             path: "academics",
             children: [
@@ -110,8 +121,14 @@ export const appRouter = createBrowserRouter([
               { path: "batches/view-student-info/:nmms_reg_number", element: <ViewStudentInfo /> },
               { path: "time-table-dashboard", element: <TimeTableDashboard /> },
               { path: "reports", element: <Reports /> },
+              { path: "classrooms", element: <ClassroomManager /> },
+
+              // EVENTS
+              { path: "events", element: <Events /> },
+              { path: "events/:eventId", element: <EventDetailsPage /> },
             ],
           },
+
           {
             path: "settings",
             children: [
@@ -123,7 +140,7 @@ export const appRouter = createBrowserRouter([
         ],
       },
 
-      // --- Coordinator Routes ---
+      // ---------------- Coordinator Routes ----------------
       {
         path: "coordinator",
         element: <Layout />,
@@ -133,21 +150,22 @@ export const appRouter = createBrowserRouter([
           { path: "batch-management", element: <BatchManagement /> },
           { path: "batch-reports", element: <BatchReports /> },
           { path: "attendance-tracker", element: <AttendanceTracker /> },
-        ],
+          { path: "time-table", element: <CoordinatorTimeTable /> },
+        ]
       },
 
-      // --- Student Routes ---
+      // ---------------- Student Routes ----------------
       {
         path: "student",
         element: <Layout />,
         children: [
           { path: "student-dashboard", element: <StudentDashboard /> },
           { path: "student-profile", element: <StudentProfile /> },
-          { path: "student-corner", element: <StudentCorner /> },
-        ],
+          { path: "student-corner", element: <StudentCorner /> }
+        ]
       },
 
-      // --- Teacher Routes ---
+      // ---------------- Teacher Routes ----------------
       {
         path: "teacher",
         element: <Layout />,
@@ -155,26 +173,26 @@ export const appRouter = createBrowserRouter([
           { path: "teacher-dashboard", element: <TeacherDashboard /> },
           { path: "students-list", element: <StudentsList /> },
           { path: "assigned-batches", element: <AssignedBatches /> },
-          { path: "time-table", element: <TimeTable /> },
-        ],
+          { path: "time-table", element: <TeacherTimeTable /> }
+        ]
       },
 
-      // --- Interviewer Routes ---
+      // ---------------- Interviewer Routes ----------------
       {
         path: "interviewer",
         element: <Layout />,
         children: [
           { path: "interviewer-dashboard", element: <InterviewerDashboard /> },
           { path: "interview-schedule", element: <InterviewSchedule /> },
-          { path: "interview-feedback", element: <InterviewFeedback /> },
-        ],
+          { path: "interview-feedback", element: <InterviewFeedback /> }
+        ]
       },
 
-      // --- Logout ---
+      // Logout
       { path: "logout", element: <LogoutHandler /> },
 
-      // --- Catch-all 404 ---
-      { path: "*", element: <div>404 - Page Not Found</div> },
-    ],
-  },
+      // 404
+      { path: "*", element: <div>404 - Page Not Found</div> }
+    ]
+  }
 ]);

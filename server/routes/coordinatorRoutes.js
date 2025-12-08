@@ -1,57 +1,196 @@
-// server/routes/coordinatorRoutes.js
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const upload = multer({ dest: "uploads/" }); // for CSV file uploads
-// Controllers (✅ fixed paths to go up two levels from routes → controllers)
-const { getSubjects } = require("../controllers/coordinator/subjectController");
-const { getStudentsController } = require("../controllers/coordinator/studentController");
-const { fetchBatches, createBatchController } = require("../controllers/coordinator/batchController");
-const { fetchCohorts } = require("../controllers/coordinator/cohortController");
+const path = require("path");
+const fs = require("fs");
+
+/* ===========================================================
+   FILE UPLOAD STORAGE (CSV)
+   =========================================================== */
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, "../uploads");
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const safeName = `${Date.now()}-${file.originalname.replace(/\s+/g, "_")}`;
+    cb(null, safeName);
+  },
+});
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (ext !== ".csv") return cb(new Error("Only CSV files allowed!"));
+    cb(null, true);
+  },
+});
+
+/* ===========================================================
+   IMPORT CONTROLLERS
+   =========================================================== */
 const authenticate = require("../middleware/authMiddleware");
 
+// Students
 const {
+  getStudentsController,
+  updateStudentController,
+  markInactiveController,
+  getInactiveHistoryController,
+} = require("../controllers/coordinator/studentController");
+
+// Cohorts & Batches
+const { fetchCohorts } = require("../controllers/coordinator/cohortController");
+const { fetchBatches } = require("../controllers/coordinator/batchController");
+
+// Subjects
+const { getSubjects } = require("../controllers/coordinator/subjectController");
+
+// Classrooms
+const {
+  fetchClassrooms,
+  getAllClassrooms,
+  createClassroom,
+  fetchTeachers,
+  fetchPlatforms,
+} = require("../controllers/coordinator/classroomController");
+
+// Teacher report
+const { getCoordinatorTeachers } = require("../controllers/coordinator/teacherController");
+
+// Attendance (SESSION-BASED)
+const {
+  previewCSVAttendance,
+  commitCSVAttendance,
+  undoLastAttendanceCommit,
   fetchAttendance,
   submitBulkAttendance,
-  uploadCSVAttendance,
   downloadSampleCSV,
+  checkOverlap,
+  getOrFindSession,        // ✅ ADDED PROPER IMPORT
 } = require("../controllers/coordinator/attendanceController");
 
-const { fetchClassrooms } = require("../controllers/coordinator/classroomController");
+// Reports
+const {
+  requireAuth,
+  getAttendanceReport,
+  getAbsenteesReport,
+  getTeacherLoad,
+  getTeacherPerformance,
+} = require("../controllers/coordinator/reportsController");
 
-// Base Route
+// Timetable
+const {
+  getTimetable,
+  checkConflict,
+  createSlot,
+  updateSlot,
+  deleteSlot,
+} = require("../controllers/coordinator/timetableController");
+
+/* ===========================================================
+   ROUTES START
+   =========================================================== */
+
+// ------------------------------
+// HOME
+// ------------------------------
 router.get("/", (req, res) => {
   res.send("Coordinator Home");
 });
 
-// 🔹 Students (use query params instead of duplicate params)
-// Example: /students?cohortNumber=1&batchId=2
-router.get("/students", getStudentsController);
+// ------------------------------
+// STUDENT ROUTES
+// ------------------------------
+router.get("/students", authenticate, getStudentsController);
+router.put("/students/:id", authenticate, updateStudentController);
+router.put("/students/:id/inactive", authenticate, markInactiveController);
+router.get("/students/:id/inactive-history", authenticate, getInactiveHistoryController);
 
-// Cohorts
+// ------------------------------
+// COHORTS & BATCHES
+// ------------------------------
 router.get("/cohorts", authenticate, fetchCohorts);
+router.get("/batches", authenticate, fetchBatches);
 
-// Batches
-router.get("/batches", authenticate , fetchBatches);
+// ------------------------------
+// CLASSROOMS
+// ------------------------------
+router.get("/classrooms/:batchId", authenticate, fetchClassrooms);
+router.get("/classrooms", authenticate, getAllClassrooms);
+router.post("/classrooms", authenticate, createClassroom);
+router.get("/teachers", authenticate, fetchTeachers);
+router.get("/platforms", authenticate, fetchPlatforms);
 
-// Subjects
-router.get("/subjects", getSubjects);
+// ------------------------------
+// SUBJECTS
+// ------------------------------
+router.get("/subjects", authenticate, getSubjects);
 
-// Classrooms
-router.get("/classrooms/:batchId", fetchClassrooms);
+/* ===========================================================
+   ATTENDANCE (SESSION-BASED)
+   =========================================================== */
 
-// Attendance
-// Example URL: /attendance?cohort=1&batch=2&classroom=3&date=2025-09-07&startTime=10:00&endTime=11:00&subject=5
-router.get("/attendance", fetchAttendance);
+// 1️⃣ GET OR FIND SESSION ID
+router.get("/attendance/session", authenticate, getOrFindSession);
 
-router.post("/attendance/bulk", submitBulkAttendance); // bulk upload JSON
+// 2️⃣ PREVIEW CSV (NO DB WRITE)
 router.post(
-  "/attendance/csv",
-  upload.single("file"), // multer middleware
-  uploadCSVAttendance    // bulk upload CSV
+  "/attendance/csv/preview",
+  authenticate,
+  upload.single("file"),
+  previewCSVAttendance
 );
 
-// Sample CSV download
-//router.get("/attendance/sample-csv", downloadSampleCSV);
+// 3️⃣ COMMIT CSV (CREATES SESSION IF NEEDED)
+router.post("/attendance/csv/commit", authenticate, commitCSVAttendance);
 
+// 4️⃣ UNDO LAST COMMIT
+router.post("/attendance/undo", authenticate, undoLastAttendanceCommit);
+
+// 5️⃣ CHECK TIME OVERLAP BEFORE CREATING SESSION
+router.get("/attendance/check-overlap", authenticate, checkOverlap);
+
+// 6️⃣ BULK JSON UPLOAD (MANUAL ENTRY)
+router.post("/attendance/bulk", authenticate, submitBulkAttendance);
+
+// 7️⃣ FETCH ATTENDANCE (SUPPORTS session_id)
+router.get("/attendance", authenticate, fetchAttendance);
+
+// 8️⃣ DOWNLOAD SAMPLE CSV
+router.get("/attendance/csv/reference", authenticate, downloadSampleCSV);
+
+/* ===========================================================
+   REPORTS
+   =========================================================== */
+router.get("/reports/attendance", requireAuth, getAttendanceReport);
+router.get("/reports/absentees", requireAuth, getAbsenteesReport);
+router.get("/reports/teacher-load", requireAuth, getTeacherLoad);
+router.get("/reports/teacher-performance", requireAuth, getTeacherPerformance);
+router.get("/reports/coordinator-teachers", requireAuth, getCoordinatorTeachers);
+
+/* ===========================================================
+   TIMETABLE
+   =========================================================== */
+router.get("/timetable", authenticate, getTimetable);
+router.get("/timetable/check-conflict", authenticate, checkConflict);
+router.post("/timetable", authenticate, createSlot);
+router.put("/timetable/:id", authenticate, updateSlot);
+router.delete("/timetable/:id", authenticate, deleteSlot);
+
+const { getBatchWeeklyAverage } = require("../controllers/coordinator/attendanceAnalyticsController");
+
+router.get(
+  "/attendance/batch-weekly-avg",
+  authenticate,
+  getBatchWeeklyAverage
+);
+
+/* ===========================================================
+   EXPORT ROUTER
+   =========================================================== */
 module.exports = router;
