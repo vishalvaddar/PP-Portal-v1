@@ -57,7 +57,7 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
         boysCount: 0,
         girlsCount: 0,
         parentsCount: 0,
-        description: "", // Added
+        description: "",
     });
 
     const [selectedFiles, setSelectedFiles] = useState(null);
@@ -68,8 +68,6 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
     const [talukaOptions, setTalukaOptions] = useState([]);
     const [cohortsList, setCohortsList] = useState([]);
     
-    // --- FETCH JURISDICTION DATA (using custom hooks) ---
-    // The lists are now directly the result of the custom hooks
     useFetchStates(setStatesList);
     useFetchEducationDistricts(formData.state, setDistrictsList);
     useFetchBlocks(formData.district, setTalukaOptions);
@@ -117,11 +115,11 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
         // ---- Generate title ----
         const title = `${typeName}-${dd}${mm}${yy}-Cohort-${cohort}-${taluka}`
             .replace(/\s+/g, "_") // replace spaces with underscores
-            .toUpperCase(); // Ensure title consistency
+            .toUpperCase();
 
         setFormData(prev => ({ ...prev, eventTitle: title }));
 
-    }, [formData.eventType, formData.startDate, formData.cohort, formData.taluka, eventTypes]); // eventTypes is a necessary dependency
+    }, [formData.eventType, formData.startDate, formData.cohort, formData.taluka, eventTypes]); 
 
 
     // --- FORM FIELD CHANGE HANDLER ---
@@ -212,6 +210,26 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
                     </select>
                 </div>
 
+                                {/* COHORT */}
+                <div className={styles.formGroup}>
+                    <label htmlFor="cohortSelect">For Cohort</label>
+                    <select
+                        id="cohortSelect"
+                        name="cohort"
+                        value={formData.cohort}
+                        onChange={handleChange}
+                        required
+                        disabled={cohortsList.length === 0}
+                    >
+                        <option value="">{cohortsList.length === 0 ? "Loading Cohorts..." : "Select Cohort…"}</option>
+                        {cohortsList.map((c) => (
+                            <option key={c.cohort_number} value={c.cohort_number}>
+                                {c.cohort_name || `Cohort ${c.cohort_number}`}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
                 {/* DATE ROW */}
                 <div className={styles.gridTwoCol}>
                     <div className={styles.formGroup}>
@@ -239,8 +257,9 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
                     </div>
                 </div>
 
-                {/* STATE → DISTRICT → TALUKA */}
-                <div className={styles.gridThreeCol}>
+                <fieldset className={styles.attendanceFieldset}>
+                    <legend>Event Location</legend>
+                    <div className={styles.gridThreeCol}>
                     {/* STATE */}
                     <div className={styles.formGroup}>
                         <label htmlFor="stateSelect">State</label>
@@ -304,7 +323,7 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
 
                 {/* LOCATION */}
                 <div className={styles.formGroup}>
-                    <label htmlFor="locationInput">Event Location</label>
+                    <label htmlFor="locationInput">Venue</label>
                     <input
                         id="locationInput"
                         type="text"
@@ -316,26 +335,10 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
                     />
                 </div>
 
-                {/* COHORT */}
-                <div className={styles.formGroup}>
-                    <label htmlFor="cohortSelect">Cohort</label>
-                    <select
-                        id="cohortSelect"
-                        name="cohort"
-                        value={formData.cohort}
-                        onChange={handleChange}
-                        required
-                        disabled={cohortsList.length === 0}
-                    >
-                        <option value="">{cohortsList.length === 0 ? "Loading Cohorts..." : "Select Cohort…"}</option>
-                        {cohortsList.map((c) => (
-                            <option key={c.cohort_number} value={c.cohort_number}>
-                                {c.cohort_name || `Cohort ${c.cohort_number}`}
-                            </option>
-                        ))}
-                    </select>
-                </div>
 
+                </fieldset>
+
+                
                 {/* AUTO TITLE */}
                 <div className={styles.formGroup}>
                     <label htmlFor="eventTitleInput">Event Title</label>
