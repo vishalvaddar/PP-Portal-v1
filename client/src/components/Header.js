@@ -33,7 +33,7 @@ const Header = () => {
 
       <div className={styles.systemStatus}>
         {loading && <span className={styles.statusText}>Loading Config...</span>}
-        {error && <span className={styles.errorText}>Config Unavailable</span>}
+        {/* {error && <span className={styles.errorText}>Config Unavailable</span>} */}
         {!loading && !error && appliedConfig && (
           <span className={styles.statusText}>
             <strong>Phase:</strong> {appliedConfig.phase} (AY: {appliedConfig.academic_year})

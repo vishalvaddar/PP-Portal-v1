@@ -3,7 +3,7 @@ const EventModel = require("../models/eventModel");
 const EventController = {
   async createEvent(req, res) {
     try {
-      const eventId = await EventModel.createEvent(req.body, req.files);
+      const eventId = await EventModel.insertEvent(req.body, req.files);
 
       res.status(201).json({
         message: "Event created successfully",

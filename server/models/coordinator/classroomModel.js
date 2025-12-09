@@ -55,11 +55,8 @@ const createClassroom = async (data) => {
 }
 const getTeachers = async () => {
   const result = await pool.query(
-    `SELECT u.*, r.role_name
-     FROM pp.user u
-     JOIN pp.user_role ur ON u.user_id = ur.user_id
-     JOIN pp.role r ON r.role_id = ur.role_id
-     WHERE r.role_name = 'TEACHER'`
+    `SELECT teacher_name
+     FROM pp.teacher`
   );
   return result.rows || [];
 };

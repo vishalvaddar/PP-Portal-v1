@@ -1,63 +1,77 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import useCreateExamHooks from "../../../hooks/CreateExamHooks";
-import classes from "./CreateExam.module.css";
+import classes from "./AssignStudents.module.css";
+
+const API_BASE_URL = "http://localhost:5000";
 
 const AssignStudentsModal = ({ examId, onClose, onAssigned }) => {
   const {
-    districts,
+    divisions,
+    setDivisions,
+    educationDistricts,
+    setEducationDistricts,
     blocks,
+    setBlocks,
     formData,
     setFormData,
-    handleBlockCheckboxChange,
     usedBlocks,
+    setUsedBlocks
   } = useCreateExamHooks();
+
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  // Load the examId into formData on modal open
+  // ✅ On modal open — reset form
   useEffect(() => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       examId,
-      district: "",
-      blocks: [],
+      division: "",
+      education_district: "",
+      blocks: [], // multiple
+      cluster: "",
     }));
     setMessage("");
   }, [examId, setFormData]);
 
-  // When district changes clear selected blocks
-  useEffect(() => {
-    setFormData(prev => ({
-      ...prev,
-      blocks: [],
-    }));
-  }, [formData.district, setFormData]);
 
+
+
+
+  // ✅ Handle multi-select blocks
+  const handleBlockChange = (e) => {
+    const selectedOptions = Array.from(e.target.selectedOptions, (opt) => opt.value);
+    setFormData((prev) => ({ ...prev, blocks: selectedOptions }));
+  };
+
+  // ✅ Submit Assignment
   const handleAssignSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
-    if (!formData.district) {
-      setMessage("❌ Please select a district.");
-      setLoading(false);
-      return;
-    }
-    if (formData.blocks.length === 0) {
-      setMessage("❌ Please select at least one block.");
+    const { division, education_district, blocks } = formData;
+
+    if (!division || !education_district || !blocks.length) {
+      setMessage("❌ Please select all required fields.");
       setLoading(false);
       return;
     }
 
     try {
       const payload = {
-        district: formData.district,
-        blocks: formData.blocks,
-      };
+  division: formData.division,
+  educationDistrict: formData.education_district,
+  blocks: Array.isArray(formData.blocks)
+    ? formData.blocks
+    : [formData.block], // ensures it’s an array
+};
+
 
       const response = await fetch(
-        `http://localhost:5000/api/exams/${examId}/assign-students`,
+        `${API_BASE_URL}/api/exams/${examId}/assign-students`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -73,15 +87,12 @@ const AssignStudentsModal = ({ examId, onClose, onAssigned }) => {
       const result = await response.json();
       setMessage(result.message || "✅ Students assigned successfully");
 
-      if (onAssigned) {
-        onAssigned();
-      }
+      if (onAssigned) onAssigned();
 
       setTimeout(() => {
         setLoading(false);
         onClose();
       }, 1200);
-
     } catch (err) {
       setMessage(`❌ ${err.message}`);
       setLoading(false);
@@ -92,57 +103,126 @@ const AssignStudentsModal = ({ examId, onClose, onAssigned }) => {
     <div className={classes.modal}>
       <h2>Assign Students to Exam</h2>
       <form onSubmit={handleAssignSubmit}>
+        {/* Division Dropdown */}
         <div className={classes.formGroup}>
-          <label>District</label>
+          <label>Division</label>
           <select
-            name="district"
-            value={formData.district}
-            onChange={e => setFormData(prev => ({ ...prev, district: e.target.value }))}
-            required
+            value={formData.division}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                division: e.target.value,
+                education_district: "",
+                blocks: [],
+              }))
+            }
           >
-            <option value="">-- Select District --</option>
-            {districts?.map(d => (
-              <option key={d.id} value={d.id}>{d.name}</option>
+            <option value="">-- Select Division --</option>
+            {divisions.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
+              </option>
             ))}
           </select>
         </div>
 
-     {formData.district && (
-        <div className={classes.formGroup}>
-          <label>Blocks</label>
-          <div className={classes.checkboxGrid}>
-            {blocks.map(b => {
-              const isUsed = usedBlocks.includes(Number(b.id));
-              return (
-                <div
-                  key={b.id}
-                  className={`${classes.checkboxItem} ${isUsed ? classes.disabled : ""}`}
-                >
-                  <input
-                    type="checkbox"
-                    id={`b-${b.id}`}
-                    checked={formData.blocks.includes(b.id)}
-                    onChange={() => handleBlockCheckboxChange(b.id)}
-                    disabled={isUsed}
-                  />
-                  <label htmlFor={`b-${b.id}`}>
-                    {b.name} {isUsed && <span>(In use)</span>}
-                  </label>
-                </div>
-              );
-            })}
+        {/* Education District Dropdown */}
+        {educationDistricts.length > 0 && (
+          <div className={classes.formGroup}>
+            <label>Education District</label>
+            <select
+              value={formData.education_district}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  education_district: e.target.value,
+                  blocks: [],
+                }))
+              }
+            >
+              <option value="">-- Select Education District --</option>
+              {educationDistricts.map((ed) => (
+                <option key={ed.id} value={ed.id}>
+                  {ed.name}
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
         )}
 
+        {/* Blocks Multi-Select */}
+      {/* Blocks Checkbox Grid */}
+      {blocks.length > 0 && (
+  <div className={classes.formGroup}>
+    <label>Select Blocks</label>
+    <div className={classes.checkboxGrid}>
+      {blocks.map((b) => {
+        const blockId = Number(b.id);
+
+        // ✓ Check if this block is in usedBlocks
+        const isUsed = usedBlocks.includes(blockId);
+
+        // ✓ Check if selected
+        const isChecked = formData.blocks.includes(String(b.id));
+
+        return (
+          <div
+            key={b.id}
+            className={`${classes.checkboxItem} ${
+              isUsed ? classes.disabled : ""
+            }`}
+          >
+            <input
+              type="checkbox"
+              id={`block-${b.id}`}
+              value={b.id}
+              checked={isChecked}
+              disabled={isUsed}   // <-- main part
+              onChange={(e) => {
+                const { checked, value } = e.target;
+
+                setFormData((prev) => {
+                  let updated = [...prev.blocks];
+                  if (checked) {
+                    updated.push(value);
+                  } else {
+                    updated = updated.filter((id) => id !== value);
+                  }
+                  return { ...prev, blocks: updated };
+                });
+              }}
+            />
+
+            <label htmlFor={`block-${b.id}`}>
+              {b.name} {isUsed && <span>(Already Assigned)</span>}
+            </label>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+)}
+
+
+        {/* Buttons */}
         <div style={{ marginTop: "15px", display: "flex", gap: "10px" }}>
-          <button type="submit" disabled={loading} className={classes.btnGreen}>
+          <button
+            type="submit"
+            disabled={loading}
+            className={classes.btnGreen}
+          >
             {loading ? "Assigning..." : "Assign"}
           </button>
-          <button type="button" onClick={onClose} className={classes.btnRed} style={{ marginLeft: "10px" }}>
+          <button
+            type="button"
+            onClick={onClose}
+            className={classes.btnRed}
+            style={{ marginLeft: "10px" }}
+          >
             Cancel
           </button>
         </div>
+
         {message && <p style={{ marginTop: "10px" }}>{message}</p>}
       </form>
     </div>

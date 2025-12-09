@@ -46,15 +46,14 @@ router.post('/events', (req, res) => {
     const client = await pool.connect();
 
     try {
-      // Extract fields matching the frontend FormData keys
       const { 
-        eventType, // This should be event_type_id
+        eventType, 
         startDate, 
         endDate, 
-        district,  // This should be juris_code for district
-        taluka,    // This should be juris_code for block
+        district,
+        taluka,    
         location, 
-        cohort,    // This should be cohort_number
+        cohort,   
         eventTitle, 
         boysCount, 
         girlsCount, 
