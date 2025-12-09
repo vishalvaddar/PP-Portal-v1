@@ -69,6 +69,9 @@ const timetableRoutes = require("./routes/timeTableRoutes");
 const interviewRoutes = require("./routes/interviewRoutes");
 const resultandrankinkRoutes = require("./routes/resultandrankinkRoutes");
 const systemConfigRoutes = require("./routes/systemConfigRoutes");
+const eventRoutes = require("./routes/eventRoutes");
+const customListRoutes = require("./routes/customListRoutes");
+
 
 // ───── Use Routes ─────
 
@@ -92,6 +95,8 @@ app.use("/api/juris-names", jurisNamesRoutes);
 app.use("/api/institutes", institutesRoutes);
 app.use("/api/districts", districtRoutes);
 app.use("/api", studentSearchRoutes);
+app.use("/api", eventRoutes);
+app.use('/api/custom-list', customListRoutes);
 
 // Shortlisting
 app.use("/api/shortlist/generate", generateShortlistRoutes);
@@ -108,9 +113,13 @@ app.use("/api/evaluation", evaluationRoutes);
 app.use("/api/evaluation-dashboard", evaluationDashboardRoutes);
 app.use("/api/tracking", trackingRoutes);
 
-// Interviews & Results
+// Interviews 
 app.use("/api/interview", interviewRoutes);
-app.use("/api/resultandrank", resultandrankinkRoutes);
+
+
+//result and ranking
+
+app.use("/api/results",resultandrankinkRoutes)
 
 // Timetable
 app.use("/api/timetable", timetableRoutes);

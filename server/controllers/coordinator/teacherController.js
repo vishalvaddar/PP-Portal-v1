@@ -1,7 +1,6 @@
-import pool from "../../config/db.js";
+const pool = require("../../config/db.js");
 
-// ✅ Get teachers for coordinator (based on assigned batches)
-export const getCoordinatorTeachers = async (req, res) => {
+const getCoordinatorTeachers = async (req, res) => {
   const coordinatorId = req.params.coordinatorId || req.query.user_id;
   console.log("🎓 Fetching teachers for coordinator:", coordinatorId);
 
@@ -36,3 +35,5 @@ export const getCoordinatorTeachers = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+module.exports = { getCoordinatorTeachers };

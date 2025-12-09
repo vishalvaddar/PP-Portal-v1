@@ -1,0 +1,492 @@
+/* =========================================
+   CONTAINER & GLOBAL LAYOUT
+   ========================================= */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #333;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.title {
+  font-size: 1.8rem;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.mainGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+/* =========================================
+   BUTTONS & UTILITIES
+   ========================================= */
+.buttonPrimary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.buttonPrimary:hover:not(:disabled) {
+  background-color: #2980b9;
+}
+
+.buttonPrimary:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.buttonSecondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  background-color: white;
+  color: #555;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.buttonSecondary:hover {
+  background-color: #f1f2f6;
+}
+
+.errorBanner {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  border: 1px solid #fecaca;
+}
+
+.centerState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #888;
+  min-height: 200px;
+}
+
+.animateSpin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* =========================================
+   CREATE FORM
+   ========================================= */
+.creationCard {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e1e4e8;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.cardTitle {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #34495e;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.input, .select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.input:focus, .select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Selected Summary Chips (Mini) */
+.selectedSummary {
+  margin-top: 10px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.chipContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.miniChip {
+  background-color: #e0f2f1;
+  color: #00695c;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.selectionCount {
+  font-size: 0.9rem;
+  color: #666;
+  font-style: italic;
+}
+
+/* =========================================
+   LIST GRID VIEW
+   ========================================= */
+.listsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.listCardItem {
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #e1e4e8;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.listCardItem:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+}
+
+.activeCard {
+  border: 2px solid #3498db;
+  background-color: #f0f9ff;
+}
+
+.cardHeader {
+  padding: 1.25rem;
+  cursor: pointer;
+  flex-grow: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.listNameTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.badge {
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  margin-left: 10px;
+}
+
+.cardActions {
+  background-color: #fafafa;
+  padding: 10px 1.25rem;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.actionGroupLeft, .actionGroupRight {
+  display: flex;
+  gap: 8px;
+}
+
+.iconBtn {
+  background: white;
+  border: 1px solid #dcdcdc;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconBtn:hover {
+  background-color: #f1f1f1;
+  color: #333;
+}
+
+.exportBtn {
+  font-size: 0.75rem;
+  padding: 5px 10px;
+  border: 1px solid #dcdcdc;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: white;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #555;
+}
+
+.exportBtn:hover {
+  background-color: #e2e6ea;
+}
+
+/* Inline Edit */
+.inputSmall {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #3498db;
+  border-radius: 4px;
+}
+
+.saveBtn, .cancelBtn {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: white;
+}
+
+.saveBtn { background-color: #2ecc71; }
+.cancelBtn { background-color: #e74c3c; }
+
+/* =========================================
+   PREVIEW SECTION
+   ========================================= */
+.previewSection {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e1e4e8;
+  margin-top: 2rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.previewSection h3 {
+  margin-top: 0;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f0f0f0;
+  color: #555;
+}
+
+.tableWrapper {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.previewTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.previewTable th {
+  background-color: #f8f9fa;
+  text-align: left;
+  padding: 10px;
+  position: sticky;
+  top: 0;
+  border-bottom: 2px solid #eee;
+}
+
+.previewTable td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  color: #444;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* =========================================
+   MODAL STYLES (New)
+   ========================================= */
+.modalOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.modalContentWide {
+  background: white;
+  width: 90%;
+  max-width: 600px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modalHeader {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalHeader h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #333;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+}
+
+.closeBtn:hover {
+  background-color: #f3f4f6;
+  color: #333;
+}
+
+.modalSearch {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #888;
+}
+
+.modalSearch input {
+  border: none;
+  font-size: 1rem;
+  flex-grow: 1;
+  outline: none;
+  padding: 8px;
+}
+
+.modalListContainer {
+  flex-grow: 1;
+  overflow-y: auto;
+  background-color: #fafafa;
+  min-height: 300px;
+}
+
+.modalList {
+  display: flex;
+  flex-direction: column;
+}
+
+.modalListItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 1.5rem;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  background: white;
+  transition: background 0.2s;
+}
+
+.modalListItem:hover {
+  background-color: #f8f9fa;
+}
+
+.selectedItem {
+  background-color: #e3f2fd; /* Light Blue selection */
+}
+
+.studentInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.studentName {
+  font-weight: 600;
+  color: #333;
+}
+
+.studentId {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.modalActions {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border-radius: 0 0 12px 12px;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 10px;
+}

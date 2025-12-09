@@ -313,26 +313,25 @@ exports.fetchStudentsNotInAnyBatch = async () => {
   );
 };
 
-// ======================================================
-// 17. Add Students to Batch
-// ======================================================
 exports.updateStudentBatchId = async (batchId, student_ids) => {
+  const cleanBatchId = Number(batchId);
+  const cleanStudentIds = student_ids.map(id => Number(id));
+
   return await pool.query(
     `UPDATE pp.student_master
      SET batch_id = $1
-     WHERE student_id = ANY($2::int[])`,
-    [batchId, student_ids]
+     WHERE student_id = ANY($2::bigint[])`,
+    [cleanBatchId, cleanStudentIds]
   );
 };
 
-// ======================================================
-// 18. Remove Students from Batch
-// ======================================================
 exports.removeStudentBatchId = async (student_ids) => {
+  const cleanStudentIds = student_ids.map(id => Number(id));
+
   return await pool.query(
     `UPDATE pp.student_master
      SET batch_id = NULL
-     WHERE student_id = ANY($1::int[])`,
-    [student_ids]
+     WHERE student_id = ANY($1::bigint[])`,
+    [cleanStudentIds]
   );
 };

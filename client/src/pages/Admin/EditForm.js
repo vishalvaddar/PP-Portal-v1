@@ -25,6 +25,7 @@ const EditForm = () => {
   const [secondaryData, setSecondaryData] = useState(null);
 
   const mediumOptions = ["ENGLISH", "KANNADA", "URDU", "MARATHI"];
+  
   const genderOptions = [
     { label: "Male", value: "M" },
     { label: "Female", value: "F" },
@@ -34,6 +35,27 @@ const EditForm = () => {
   const yesNoOptions = [
     { label: "Yes", value: "Y" },
     { label: "No", value: "N" }
+  ];
+
+  // --- NEW: Occupation Options added here ---
+  const occupationOptions = [
+    { value: "Agriculture", label: "Agriculture/Farming" },
+    { value: "Dairy-Poultry", label: "Dairy/Poultry/Fishery" },
+    { value: "Job-SemiGovt", label: "Job in Cooperative/Semi-Govt" },
+    { value: "Job-Govt", label: "Job in Government" },
+    { value: "Job-Pvt", label: "Job in Private Sector" },
+    { value: "Job-Small", label: "Job in Small Shop/Anganwadi" },
+    { value: "Labour-Agri", label: "Labourer in Agricultural" },
+    { value: "Labour-Constr", label: "Labourer in Construction" },
+    { value: "Labour-Other", label: "Labourer in Others" },
+    { value: "Contract", label: "Own Business:Contract Works" },
+    { value: "Business", label: "Own Business:Shop/Loom/Transp/Other" },
+    { value: "Professional", label: "Professional:Advocate/Doctor/Accountant" },
+    { value: "Sales-Agent", label: "Sales/Marketing/LIC Agent" },
+    { value: "Self-Employed", label: "Self Employed:Plumber/Elect/Tailor/Driver/Tutor" },
+    { value: "Other", label: "Other" },
+    { value: "Not-Earning", label: "Not Earning" },
+    { value: "Not Alive", label: "Not Alive" }
   ];
 
   const fieldLabels = {
@@ -442,6 +464,16 @@ const EditForm = () => {
             {institutes.map(institute => (
               <option key={institute.institute_id} value={institute.dise_code}>
                 {institute.institute_name || `School ${institute.dise_code}`}
+              </option>
+            ))}
+          </select>
+        ) : ["father_occupation", "mother_occupation"].includes(key) ? (
+          // --- NEW: Logic for Occupation Dropdown ---
+          <select {...commonProps}>
+            <option value="">Select Occupation</option>
+            {occupationOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>

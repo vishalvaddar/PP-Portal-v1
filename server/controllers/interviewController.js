@@ -1,4 +1,4 @@
-const path = require('path');
+const path = require('path'); 
 const fs = require('fs');
 const PDFDocument = require('pdfkit'); 
 const InterviewModel = require("../models/interviewModel");
@@ -366,7 +366,6 @@ const InterviewController = {
 
 
 
-  // Controller to get all available exam centers
   async getExamCenters(req, res) {
     try {
       const examCenters = await InterviewModel.getExamCenters();
@@ -377,48 +376,68 @@ const InterviewController = {
     }
   },
 
-  // Controller to get all states
   async getAllStates(req, res) {
-    try {
-      const states = await InterviewModel.getAllStates();
-      res.status(200).json(states);
-    } catch (error) {
-      console.error('Controller Error - getAllStates:', error);
-      res.status(500).json({ message: 'Internal server error while fetching states.' });
-    }
-  },
+        try {
+            const states = await InterviewModel.getAllStates();
+            res.status(200).json(states);
+        } catch (error) {
+            console.error('Controller Error - getAllStates:', error);
+            res.status(500).json({ message: 'Internal server error while fetching states.' });
+        }
+    },
 
-  // Controller to get districts by state name
-  async getDistrictsByState(req, res) {
-    const { stateName } = req.params;
+
+
+async getDivisionsByState(req, res) {
+    const { stateName } = req.query; 
+    
     if (!stateName) {
-      return res.status(400).json({ message: 'Missing stateName parameter.' });
+        return res.status(400).json({ message: 'Missing stateName query parameter.' });
     }
+    
     try {
-      const districts = await InterviewModel.getDistrictsByState(stateName);
-      res.status(200).json(districts);
+        const divisions = await InterviewModel.getDivisionsByState(stateName);
+        res.status(200).json(divisions);
     } catch (error) {
-      console.error('Controller Error - getDistrictsByState:', error);
-      res.status(500).json({ message: 'Internal server error while fetching districts.' });
+        console.error('Controller Error - getDivisionsByState:', error); 
+        res.status(500).json({ message: 'Internal server error while fetching divisions.' });
     }
-  },
+}, 
 
-  // Controller to get blocks by district name
-  async getBlocksByDistrict(req, res) {
-    const { districtName } = req.params;
-    if (!districtName) {
-      return res.status(400).json({ message: 'Missing districtName parameter.' });
-    }
-    try {
-      const blocks = await InterviewModel.getBlocksByDistrict(districtName);
-      res.status(200).json(blocks);
-    } catch (error) {
-      console.error('Controller Error - getBlocksByDistrict:', error);
-      res.status(500).json({ message: 'Internal server error while fetching blocks.' });
-    }
-  },
+  
+    async getDistrictsByDivision(req, res) {
+        // Assume the route parameter is 'divisionName' now, not 'stateName'
+        const { divisionName } = req.query; // FIX: Should use req.query as per front-end/router
+        if (!divisionName) {
+            return res.status(400).json({ message: 'Missing divisionName parameter.' });
+        }
+        try {
+            // Note: The model function is called getDistrictsByDivision(divisionName)
+            const districts = await InterviewModel.getDistrictsByDivision(divisionName);
+            res.status(200).json(districts);
+        } catch (error) {
+            console.error('Controller Error - getDistrictsByDivision:', error);
+            res.status(500).json({ message: 'Internal server error while fetching districts.' });
+        }
+    }, 
 
-  // Controller to get students eligible for interview by exam center
+  
+    async getBlocksByDistrict(req, res) {
+        // FIX: Should use req.query as per front-end/router
+        const { stateName, divisionName, districtName } = req.query; 
+        
+        if (!stateName || !divisionName || !districtName) {
+            return res.status(400).json({ message: 'Missing one or more required parameters: stateName, divisionName, or districtName.' });
+        }
+        try {
+            const blocks = await InterviewModel.getBlocksByDistrict(stateName, divisionName, districtName);
+            res.status(200).json(blocks);
+        } catch (error) {
+            console.error('Controller Error - getBlocksByDistrict:', error);
+            res.status(500).json({ message: 'Internal server error while fetching blocks.' });
+        }
+    }, 
+
   async getUnassignedStudents(req, res) {
     const { centerName, nmmsYear } = req.query;
     if (!centerName || !nmmsYear) {
@@ -433,7 +452,6 @@ const InterviewController = {
     }
   },
 
-  // Controller to get students eligible for interview by block
   async getUnassignedStudentsByBlock(req, res) {
     const { stateName, districtName, blockName, nmmsYear } = req.query;
     if (!stateName || !districtName || !blockName || !nmmsYear) {
@@ -448,7 +466,6 @@ const InterviewController = {
     }
   },
 
-  // Controller to get students eligible for reassignment by block
   async getReassignableStudentsByBlock(req, res) {
     const { stateName, districtName, blockName, nmmsYear } = req.query;
     if (!stateName || !districtName || !blockName || !nmmsYear) {
@@ -463,7 +480,6 @@ const InterviewController = {
     }
   },
 
-  // Controller to get all available interviewers
   async getInterviewers(req, res) {
     try {
       const interviewers = await InterviewModel.getInterviewers();
@@ -474,7 +490,6 @@ const InterviewController = {
     }
   },
 
-  // Controller to assign students to an interviewer
 async assignStudents(req, res) {
     const { applicantIds, interviewerId, nmmsYear } = req.body;
     if (!applicantIds || !interviewerId || !nmmsYear) {
@@ -495,7 +510,6 @@ async assignStudents(req, res) {
     }
 },
 
-  // Controller to get students who can be reassigned
   async getReassignableStudents(req, res) {
     const { centerName, nmmsYear } = req.query;
     if (!centerName || !nmmsYear) {
@@ -510,7 +524,6 @@ async assignStudents(req, res) {
     }
   },
 
-  // Controller to reassign students to a new interviewer
   async reassignStudents(req, res) {
     const { applicantIds, newInterviewerId, nmmsYear } = req.body;
     if (!applicantIds || !newInterviewerId || !nmmsYear) {
@@ -578,7 +591,7 @@ async assignStudents(req, res) {
       // Ensure the error message is passed to the frontend
       res.status(500).json({ message: error.message || 'Internal server error while submitting interview details.' });
     }
-  },
+  }, 
 
   // --- NEW: Controller to get students for home verification dropdown ---
   async getStudentsForVerification(req, res) {
@@ -669,7 +682,7 @@ async assignStudents(req, res) {
     }
   },
 
-  
+
 };
 
 module.exports = InterviewController;

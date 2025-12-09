@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import './EvaluationInterview.css';
+import './EvaluationInterview.css'; 
 
-// --- API Calls ---
-// Make sure REACT_APP_BACKEND_API_URL is correctly set in your environment variables.
 const API_BASE_URL = `${process.env.REACT_APP_BACKEND_API_URL}/api/interview`;
 
 const api = {
@@ -15,31 +13,41 @@ const api = {
     reassignStudents: (applicantIds, newInterviewerId, nmmsYear) => axios.post(`${API_BASE_URL}/reassign-students`, { applicantIds, newInterviewerId, nmmsYear }),
     downloadAssignmentReport: (applicantIds, nmmsYear, interviewerId) => {
         return axios.post(
-            `${API_BASE_URL}/download-assignment-report`, // Matches your backend router
+            `${API_BASE_URL}/download-assignment-report`, 
             { applicantIds, nmmsYear, interviewerId }, 
             {
-                responseType: 'blob', // Critical for handling PDF/CSV file stream
+                responseType: 'blob', 
             }
         );
     },
     
-};
-api.getStates = () => axios.get(`${API_BASE_URL}/states`);
-api.getDistricts = (stateName) => axios.get(`${API_BASE_URL}/districts/${encodeURIComponent(stateName)}`);
-api.getBlocks = (districtName) => axios.get(`${API_BASE_URL}/blocks/${encodeURIComponent(districtName)}`);
-api.getUnassignedBlockStudents = (stateName, districtName, blockName, nmmsYear) =>
-  axios.get(`${API_BASE_URL}/unassignedStudentsByBlock`, { params: { stateName, districtName, blockName, nmmsYear } });
+    getStates: () => axios.get(`${API_BASE_URL}/states`),
+    
+    getDivisions: (stateName) => axios.get(`${API_BASE_URL}/divisions`, { params: { stateName } }),
+    
+    getDistricts: (divisionName) => axios.get(`${API_BASE_URL}/districts`, { params: { divisionName } }),
+    
+    getBlocks: (stateName, divisionName, districtName) => axios.get(`${API_BASE_URL}/blocks`, { params: { stateName, divisionName, districtName } }),
 
-api.getReassignableBlockStudents = (stateName, districtName, blockName, nmmsYear) =>
-  axios.get(`${API_BASE_URL}/reassignableStudentsByBlock`, { params: { stateName, districtName, blockName, nmmsYear } });
+    getUnassignedBlockStudents: (stateName, districtName, blockName, nmmsYear) =>
+      axios.get(`${API_BASE_URL}/unassigned-students-by-block`, { params: { stateName, districtName, blockName, nmmsYear } }),
+
+    getReassignableBlockStudents: (stateName, districtName, blockName, nmmsYear) =>
+      axios.get(`${API_BASE_URL}/reassignable-students-by-block`, { params: { stateName, districtName, blockName, nmmsYear } }),
+};
+
 
 function BlockAssignmentView() {
     const [states, setStates] = useState([]);
+    const [divisions, setDivisions] = useState([]); 
     const [districts, setDistricts] = useState([]);
     const [blocks, setBlocks] = useState([]);
+    
     const [selectedState, setSelectedState] = useState('');
+    const [selectedDivision, setSelectedDivision] = useState(''); 
     const [selectedDistrict, setSelectedDistrict] = useState('');
     const [selectedBlock, setSelectedBlock] = useState('');
+    
     const [assignmentType, setAssignmentType] = useState('');
     const [students, setStudents] = useState([]);
     const [selectedStudents, setSelectedStudents] = useState([]);
@@ -48,47 +56,87 @@ function BlockAssignmentView() {
     const [messages, setMessages] = useState([]);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
-    // Assuming NO_INTERVIEWER_ID is available in this file scope (from your previous code)
+    
+    // Ensure NO_INTERVIEWER_ID is defined here for use in logic/JSX
+    const NO_INTERVIEWER_ID = 'NO_ONE'; 
     const nmmsYear = new Date().getFullYear();
+
 
     useEffect(() => {
         api.getStates().then(res => setStates(res.data)).catch(() => setStates([]));
     }, []);
 
+
+    // HOOK 1: Fetch Divisions when State changes
     useEffect(() => {
+        setDivisions([]);
+        setSelectedDivision('');
+        setDistricts([]);
+        setSelectedDistrict('');
+        setBlocks([]);
+        setSelectedBlock('');
+        setStudents([]);
+
         if (selectedState) {
-            api.getDistricts(selectedState).then(res => setDistricts(res.data)).catch(() => setDistricts([]));
-        } else {
-            setDistricts([]);
-            setSelectedDistrict('');
+            api.getDivisions(selectedState)
+               .then(res => setDivisions(res.data))
+               .catch(() => setDivisions([]));
         }
     }, [selectedState]);
 
-    useEffect(() => {
-        if (selectedDistrict) {
-            api.getBlocks(selectedDistrict).then(res => setBlocks(res.data)).catch(() => setBlocks([]));
-        } else {
-            setBlocks([]);
-            setSelectedBlock('');
-        }
-    }, [selectedDistrict]);
 
+    // HOOK 2: Fetch Districts when Division changes
     useEffect(() => {
-        if (selectedState && selectedDistrict && selectedBlock && assignmentType) {
+        setDistricts([]);
+        setSelectedDistrict('');
+        setBlocks([]);
+        setSelectedBlock('');
+        setStudents([]);
+
+        if (selectedDivision) {
+            api.getDistricts(selectedDivision)
+               .then(res => setDistricts(res.data))
+               .catch(() => setDistricts([]));
+        }
+    }, [selectedDivision]); 
+
+
+    // HOOK 3: Fetch Blocks when District changes 
+    useEffect(() => {
+        setBlocks([]);
+        setSelectedBlock('');
+        setStudents([]);
+
+        if (selectedDistrict && selectedDivision && selectedState) {
+            api.getBlocks(selectedState, selectedDivision, selectedDistrict)
+               .then(res => setBlocks(res.data))
+               .catch(() => setBlocks([]));
+        }
+    }, [selectedDistrict, selectedDivision, selectedState]); 
+
+
+    // HOOK 4: Fetch Students when Block selection changes 
+    useEffect(() => {
+        if (selectedState && selectedDivision && selectedDistrict && selectedBlock && assignmentType) {
             setLoading(true);
             setStudents([]);
             setSelectedStudents([]);
             setMessages([]);
             setSelectedInterviewer(null);
+
             const fetchFn = assignmentType === 'unassigned'
                 ? api.getUnassignedBlockStudents
                 : api.getReassignableBlockStudents;
+
             fetchFn(selectedState, selectedDistrict, selectedBlock, nmmsYear)
                 .then(res => setStudents(res.data))
                 .catch(() => setStudents([]))
                 .finally(() => setLoading(false));
+        } else {
+            setStudents([]);
         }
-    }, [selectedState, selectedDistrict, selectedBlock, assignmentType, nmmsYear]);
+    }, [selectedState, selectedDivision, selectedDistrict, selectedBlock, assignmentType, nmmsYear]);
+
 
     const handleStudentSelect = (applicantId, isChecked) => {
         if (isChecked) {
@@ -97,6 +145,27 @@ function BlockAssignmentView() {
             setSelectedStudents(prev => prev.filter(id => id !== applicantId));
         }
     };
+
+    const handleDownloadFile = useCallback(async ({ applicantIds, nmmsYear, interviewerId, interviewerName }) => {
+        console.log(`[DOWNLOAD LOGIC] Initiated download for ${applicantIds.length} students assigned to ${interviewerName}.`);
+        try {
+            const res = await api.downloadAssignmentReport(applicantIds, nmmsYear, interviewerId);
+            const url = window.URL.createObjectURL(new Blob(
+                [res.data], 
+                { type: 'application/pdf' }
+            ));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Assignment_Report_${interviewerId}_${Date.now()}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            console.error("Download failed:", error);
+            setMessages(prev => [...prev, "❌ Failed to automatically download assignment report."]);
+        }
+    }, [setMessages]);
+
 
     const handleAssignOrReassign = () => {
         if (selectedStudents.length === 0) {
@@ -107,7 +176,7 @@ function BlockAssignmentView() {
             setMessages(['Please select an interviewer.']);
             return;
         }
-        // Handle Cancel Assignment case for reassignment view (optional based on your InterviewerDropdown behavior)
+        
         const actionText = selectedInterviewer.id === NO_INTERVIEWER_ID 
             ? `CANCEL the assignment for ${selectedStudents.length} student(s)`
             : `${assignmentType === 'unassigned' ? 'assign' : 'reassign'} ${selectedStudents.length} student(s) to ${selectedInterviewer.name}`;
@@ -125,7 +194,6 @@ function BlockAssignmentView() {
         
         try {
             let response;
-            // The assignment/reassignment API handles cancellation if NO_INTERVIEWER_ID is passed
             if (assignmentType === 'unassigned') {
                 response = await api.assignStudents(selectedStudents, selectedInterviewer.id, nmmsYear);
             } else {
@@ -133,33 +201,26 @@ function BlockAssignmentView() {
             }
             
             const results = response.data?.results || [];
-            const studentNameMap = new Map();
-            students.forEach(s => studentNameMap.set(s.applicant_id, s.student_name));
+            const studentNameMap = new Map(students.map(s => [s.applicant_id, s.student_name]));
             
             const feedback = results.map(result => {
                 const name = studentNameMap.get(result.applicantId) || `Applicant ID ${result.applicantId}`;
                 switch (result.status) {
-                    case 'Skipped': return `⚠️ Skipped: ${name} - Same interviewer assigend for previous interview`;
+                    case 'Skipped': return `⚠️ Skipped: ${name} - Same interviewer assigned for previous interview`;
                     case 'Assigned': return `✅ Assigned: ${name} has been successfully assigned for Interview Round ${result.interviewRound}.`;
                     case 'Reassigned': return `✅ Reassigned: ${name} was successfully reassigned for Interview Round ${result.interviewRound}.`;
-                    case 'Cancelled': return `🗑️ Unassigned: ${name} was successfully unassigned.`; // Add Cancelled status if needed
+                    case 'Cancelled': return `🗑️ Unassigned: ${name} was successfully unassigned.`;
                     case 'Failed': return `❌ Failed: ${name} - ${result.reason || 'An unexpected error occurred.'}`;
                     default: return `ℹ️ Status: ${name} ${result.status}`;
                 }
             });
             setMessages(feedback);
 
-            // 🚀 AUTOMATIC REPORT DOWNLOAD LOGIC (Required Fix) 🚀
-            
-            // 1. Filter for students successfully assigned/reassigned (do NOT download for cancellation)
             const successfullyAssignedIds = results
                 .filter(r => (r.status === 'Assigned' || r.status === 'Reassigned') && !isCancellation)
                 .map(r => r.applicantId);
 
-            // 2. Trigger the download if any students were successfully processed
             if (successfullyAssignedIds.length > 0) {
-                console.log(`Triggering auto-download for ${successfullyAssignedIds.length} students via Block View.`);
-                // handleDownloadFile must be defined outside this component but within the file scope
                 await handleDownloadFile({
                     applicantIds: successfullyAssignedIds,
                     nmmsYear: nmmsYear,
@@ -167,9 +228,7 @@ function BlockAssignmentView() {
                     interviewerName: selectedInterviewer.name
                 });
             }
-            // 🚀 END DOWNLOAD LOGIC 🚀
 
-            // Refresh students
             const fetchFn = assignmentType === 'unassigned'
                 ? api.getUnassignedBlockStudents
                 : api.getReassignableBlockStudents;
@@ -185,10 +244,15 @@ function BlockAssignmentView() {
         }
     };
 
+
+    // --- JSX RENDER ---
     return (
         <div className="p-6 bg-gray-50 rounded-xl shadow-lg">
             <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Assign/Reassign by Block</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                
+                {/* State Dropdown */}
                 <div>
                     <label>State</label>
                     <select value={selectedState} onChange={e => setSelectedState(e.target.value)}>
@@ -198,15 +262,30 @@ function BlockAssignmentView() {
                         ))}
                     </select>
                 </div>
+
+                {/* Division Dropdown */}
+                <div>
+                    <label>Division</label>
+                    <select value={selectedDivision} onChange={e => setSelectedDivision(e.target.value)} disabled={!selectedState}>
+                        <option value="">Select Division</option>
+                        {divisions.map(d => (
+                            <option key={d.juris_code} value={d.juris_name}>{d.juris_name}</option>
+                        ))}
+                    </select>
+                </div>
+                
+                {/* District Dropdown (Depends on Division) */}
                 <div>
                     <label>District</label>
-                    <select value={selectedDistrict} onChange={e => setSelectedDistrict(e.target.value)} disabled={!selectedState}>
+                    <select value={selectedDistrict} onChange={e => setSelectedDistrict(e.target.value)} disabled={!selectedDivision}>
                         <option value="">Select District</option>
                         {districts.map(d => (
                             <option key={d.juris_code} value={d.juris_name}>{d.juris_name}</option>
                         ))}
                     </select>
                 </div>
+                
+                {/* Block Dropdown (Depends on District) */}
                 <div>
                     <label>Block</label>
                     <select value={selectedBlock} onChange={e => setSelectedBlock(e.target.value)} disabled={!selectedDistrict}>
@@ -217,7 +296,9 @@ function BlockAssignmentView() {
                     </select>
                 </div>
             </div>
+            
             <AssignmentTypeSelector onSelectType={setAssignmentType} selectedType={assignmentType} />
+            
             {selectedBlock && assignmentType && (
                 <>
                     {loading ? (
@@ -226,7 +307,7 @@ function BlockAssignmentView() {
                         <div>No students found for this block and type.</div>
                     ) : (
                         <>
-                            {/* Select All Checkbox on the right side */}
+                            {/* Select All Checkbox */}
                             <div className="mb-2 flex justify-end items-center">
                                 <label htmlFor="select-all-block" className="mr-2 text-gray-700 font-medium cursor-pointer">
                                     Select All
@@ -254,20 +335,36 @@ function BlockAssignmentView() {
                                             onChange={e => handleStudentSelect(student.applicant_id, e.target.checked)}
                                         />
                                         <span>{student.student_name} - Score: {student.pp_exam_score}</span>
+                                        {student.current_interviewer && (
+                                            <span className="text-sm text-gray-500 ml-auto">
+                                                (R{student.interview_round} to {student.current_interviewer})
+                                            </span>
+                                        )}
                                     </li>
                                 ))}
                             </ul>
                             <div className="mt-6 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
-                                <InterviewerDropdown
-                                    onSelectInterviewer={setSelectedInterviewer}
-                                    selectedInterviewerId={selectedInterviewer?.id}
-                                />
+                                {/* 🔥 CRITICAL FIX: Conditionally render the correct dropdown */}
+                                {assignmentType === 'unassigned' ? (
+                                    <InterviewerDropdown // Assumes this version D-O-E-S NOT have the 'No one' option
+                                        onSelectInterviewer={setSelectedInterviewer}
+                                        selectedInterviewerId={selectedInterviewer?.id}
+                                    />
+                                ) : (
+                                    <InterviewerDropdown2 // Assumes this version D-O-E-S have the 'No one' option
+                                        onSelectInterviewer={setSelectedInterviewer}
+                                        selectedInterviewerId={selectedInterviewer?.id}
+                                    />
+                                )}
                                 <button
                                     onClick={handleAssignOrReassign}
                                     disabled={loading || selectedStudents.length === 0 || !selectedInterviewer || !selectedInterviewer.id}
                                     className="w-full md:w-auto px-8 py-3 bg-blue-600 text-white rounded-full font-bold shadow-lg hover:bg-blue-700 disabled:bg-gray-400 transition-all duration-300 transform hover:scale-105"
                                 >
-                                    {assignmentType === 'unassigned' ? 'Assign Selected Students' : 'Reassign Selected Students'}
+                                    {selectedInterviewer?.id === NO_INTERVIEWER_ID 
+                                        ? `Cancel ${selectedStudents.length} Assignment(s)` 
+                                        : (assignmentType === 'unassigned' ? 'Assign Selected Students' : 'Reassign Selected Students')
+                                    }
                                 </button>
                             </div>
                             {messages.length > 0 && (
@@ -295,7 +392,6 @@ function BlockAssignmentView() {
     );
 }
 
-// --- Component: ExamCenterDropdown ---
 function ExamCenterDropdown({ onSelectCenter }) {
     const [centers, setCenters] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -334,12 +430,9 @@ function ExamCenterDropdown({ onSelectCenter }) {
     );
 }
 const sanitizeFilename = (filename) => {
-    // Remove characters often illegal in Windows/Linux file paths: < > : " / \ | ? *
     let sanitized = filename.replace(/[<>:"/\\|?*]/g, '_');
-    // Replace spaces with underscores and limit length for general safety.
     return sanitized.replace(/[\s]+/g, '_').substring(0, 100); 
 };
-// --- Component: AssignmentTypeSelector ---
 function AssignmentTypeSelector({ onSelectType, selectedType }) {
     return (
         <div className="radio-group">
@@ -396,7 +489,6 @@ const ConfirmationModal = ({ message, onConfirm, onCancel }) => {
         </div>
     );
 };
-const NO_INTERVIEWER_ID = 'NO_ONE';
 
 function AssignmentReportDownloader({ interviewerId, interviewerName, nmmsYear, applicantIds, isDisabled, buttonLabel }) {
     const [isDownloading, setIsDownloading] = useState(false);
@@ -456,32 +548,23 @@ function AssignmentReportDownloader({ interviewerId, interviewerName, nmmsYear, 
 }
 
 
-// Assuming axios, api, ConfirmationModal, and sanitizeFilename are available globally or imported here
-// const api = {...};
-// const sanitizeFilename = (filename) => {...};
-// const ConfirmationModal = ({ message, onConfirm, onCancel }) => <div>...</div>;
-
 
 const handleDownloadFile = async ({ applicantIds, nmmsYear, interviewerId, interviewerName }) => {
     if (!interviewerId || interviewerId === NO_INTERVIEWER_ID || applicantIds.length === 0) {
-        // Requirement: Do not download if no interviewer is selected (or if cancelled/no one selected)
         console.warn("Download skipped: No valid interviewer or no students selected for report.");
         return;
     }
     
-    // Simulate a brief delay if needed, but since this is automatic, we skip isDownloading state management.
     
     try {
         const response = await api.downloadAssignmentReport(applicantIds, nmmsYear, interviewerId);
         
-        // Use the content type from the response, default to PDF
         const contentType = response.headers['content-type'] || 'application/pdf';
         const fileExtension = contentType.includes('json') ? 'txt' : (contentType.includes('pdf') ? 'pdf' : 'txt');
         
         const fileName = sanitizeFilename(`Assignment_Report_${interviewerName || interviewerId}_${nmmsYear}.${fileExtension}`);
         const blob = new Blob([response.data], { type: contentType });
         
-        // Trigger download
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -495,7 +578,6 @@ const handleDownloadFile = async ({ applicantIds, nmmsYear, interviewerId, inter
 
     } catch (error) {
         console.error('Error during automated report download:', error);
-        // Display user-friendly error message if necessary
         if (error.response && error.response.data instanceof Blob) {
             const text = await error.response.data.text();
             console.error('Backend Error Response:', text);
@@ -504,90 +586,6 @@ const handleDownloadFile = async ({ applicantIds, nmmsYear, interviewerId, inter
     }
 };
 
-
-function InterviewerDropdown2({ onSelectInterviewer, selectedInterviewerId }) {
-    const [interviewers, setInterviewers] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
-        const fetchInterviewers = async () => {
-            try {
-                // Assuming api.getInterviewers() returns { data: [{ interviewer_id, interviewer_name }, ...] }
-                const response = await api.getInterviewers();
-                setInterviewers(response.data);
-            } catch (err) {
-                setError('Failed to load interviewers.');
-                console.error('Error fetching interviewers:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchInterviewers();
-    }, []);
-
-    const handleInterviewerChange = (e) => {
-        const selectedId = e.target.value;
-
-        if (selectedId === NO_INTERVIEWER_ID) {
-            // Cancellation action: pass the NO_INTERVIEWER_ID string
-            onSelectInterviewer({ id: NO_INTERVIEWER_ID, name: 'No one' });
-        } else if (selectedId) {
-            // Standard assignment/reassignment: pass the numeric ID
-            const selectedInterviewer = interviewers.find(
-                (interviewer) => String(interviewer.interviewer_id) === String(selectedId)
-            );
-            
-            onSelectInterviewer({ 
-                id: parseInt(selectedId), 
-                name: selectedInterviewer?.interviewer_name || '' 
-            });
-        } else {
-            // Placeholder/no selection
-            onSelectInterviewer(null);
-        }
-    };
-
-    if (loading) return <div className="p-2 text-center text-gray-500 w-full md:w-1/2">Loading interviewers...</div>;
-    if (error) return <div className="p-2 text-center text-red-500 w-full md:w-1/2">Error: {error}</div>;
-
-    return (
-        <div className="w-full md:w-1/2">
-            <label htmlFor="interviewer-select-2" className="block text-sm font-medium text-gray-700 mb-1">
-                Select Interviewer:
-            </label>
-            <select
-                id="interviewer-select-2"
-                onChange={handleInterviewerChange}
-                value={selectedInterviewerId || ""} 
-                className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white cursor-pointer"
-            >
-                <option key="select-interviewer-placeholder" value="">
-                    --Please select an interviewer
-                </option>
-                
-                {/* CANCELLATION OPTION (Only for Reassignment) */}
-                <option key={NO_INTERVIEWER_ID} value={NO_INTERVIEWER_ID}>
-                    No one (Cancel Assignment)
-                </option>
-                
-                {/* Render the actual interviewers */}
-                {interviewers.map((interviewer) => (
-                    <option
-                        key={interviewer.interviewer_id}
-                        value={interviewer.interviewer_id}
-                    >
-                        {interviewer.interviewer_name}
-                    </option>
-                ))}
-            </select>
-        </div>
-    );
-}
-
-// ==============================================================================
-// 3. INTERVIEWER DROPDOWN (Placeholder for Initial Assignment) - No functional change
-// ==============================================================================
 
 function InterviewerDropdown({ onSelectInterviewer, selectedInterviewerId }) {
     const [interviewers, setInterviewers] = useState([]);
@@ -612,19 +610,23 @@ function InterviewerDropdown({ onSelectInterviewer, selectedInterviewerId }) {
     const handleInterviewerChange = (e) => {
         const selectedId = e.target.value;
 
-        if (selectedId) {
+        // 🔥 FIX: This dropdown is for ASSIGNMENT ONLY. We only check for a valid interviewer ID.
+        if (selectedId) { 
             const selectedInterviewer = interviewers.find(
                 (interviewer) => String(interviewer.interviewer_id) === String(selectedId)
             );
             
             onSelectInterviewer({ 
+                // Convert to int
                 id: parseInt(selectedId), 
                 name: selectedInterviewer?.interviewer_name || '' 
             });
         } else {
+            // Placeholder selected
             onSelectInterviewer(null);
         }
     };
+
 
     if (loading) return <div className="p-2 text-center text-gray-500 w-full md:w-1/2">Loading interviewers...</div>;
     if (error) return <div className="p-2 text-center text-red-500 w-full md:w-1/2">Error: {error}</div>;
@@ -643,7 +645,9 @@ function InterviewerDropdown({ onSelectInterviewer, selectedInterviewerId }) {
                 <option key="select-interviewer-placeholder" value="">
                     --Please select an interviewer
                 </option>
-                {/* No 'No one' option for initial assignment */}
+                
+                {/* NO 'NO ONE' OPTION HERE */}
+                
                 {interviewers.map((interviewer) => (
                     <option
                         key={interviewer.interviewer_id}
@@ -656,11 +660,6 @@ function InterviewerDropdown({ onSelectInterviewer, selectedInterviewerId }) {
         </div>
     );
 }
-
-
-// ==============================================================================
-// 4. UNASSIGNED STUDENTS LIST (Initial Assignment View) - Updated for auto-download
-// ==============================================================================
 
 function UnassignedStudentsList({ selectedCenter }) {
     const [students, setStudents] = useState([]);
@@ -912,14 +911,101 @@ function UnassignedStudentsList({ selectedCenter }) {
     );
 };
 
-// ==============================================================================
-// 5. REASSIGN STUDENTS LIST (Reassignment View) - Updated for auto-download
-// ==============================================================================
 
-function ReassignStudentsList({ selectedCenter = "Center A" }) { 
+// Assuming 'api', 'ConfirmationModal', 'handleDownloadFile', and 'NO_INTERVIEWER_ID' are defined/imported
+// For a standalone file, you would define NO_INTERVIEWER_ID here:
+const NO_INTERVIEWER_ID = 'NO_ONE'; 
+
+function InterviewerDropdown2({ onSelectInterviewer, selectedInterviewerId }) {
+    const [interviewers, setInterviewers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchInterviewers = async () => {
+            try {
+                // Fetch the list of interviewers from the API
+                const response = await api.getInterviewers();
+                setInterviewers(response.data);
+            } catch (err) {
+                setError('Failed to load interviewers.');
+                console.error('Error fetching interviewers:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchInterviewers();
+    }, []);
+
+    const handleInterviewerChange = (e) => {
+        const selectedId = e.target.value;
+
+        if (selectedId === NO_INTERVIEWER_ID) {
+            // Cancellation: Pass the special string ID and 'No one' name
+            onSelectInterviewer({ id: selectedId, name: 'No one' });
+        } else if (selectedId) {
+            // Reassignment: Find the name of the selected interviewer
+            const selectedInterviewer = interviewers.find(
+                (interviewer) => String(interviewer.interviewer_id) === String(selectedId)
+            );
+            
+            onSelectInterviewer({ 
+                id: selectedId, 
+                name: selectedInterviewer?.interviewer_name || '' 
+            });
+        } else {
+            // Placeholder selected
+            onSelectInterviewer(null);
+        }
+    };
+
+    if (loading) return <div className="p-2 text-center text-gray-500 w-full md:w-1/2">Loading interviewers...</div>;
+    if (error) return <div className="p-2 text-center text-red-500 w-full md:w-1/2">Error: {error}</div>;
+
+    return (
+        <div className="w-full md:w-1/2">
+            <label htmlFor="interviewer-select-2" className="block text-sm font-medium text-gray-700 mb-1">
+                Select Interviewer:
+            </label>
+            <select
+                id="interviewer-select-2"
+                onChange={handleInterviewerChange}
+                value={selectedInterviewerId || ""} 
+                className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white cursor-pointer"
+            >
+                <option key="select-interviewer-placeholder" value="">
+                    --Please select an interviewer
+                </option>
+                
+                {/* RENDER CANCELLATION OPTION EXPLICITLY */}
+                <option 
+                    key={NO_INTERVIEWER_ID} 
+                    value={NO_INTERVIEWER_ID}
+                >
+                    No one (Cancel Assignment)
+                </option>
+                
+                {/* Render the actual interviewers from the fetched state */}
+                {interviewers.map((interviewer) => (
+                    <option
+                        key={interviewer.interviewer_id}
+                        value={interviewer.interviewer_id}
+                    >
+                        {interviewer.interviewer_name}
+                    </option>
+                ))}
+            </select>
+        </div>
+    );
+}
+
+// --- ReassignStudentsList Component ---
+
+function ReassignStudentsList({ selectedCenter }) { 
     const [students, setStudents] = useState([]);
     const [selectedStudents, setSelectedStudents] = useState([]);
-    const [newInterviewer, setNewInterviewer] = useState(null);
+    // State for the selected interviewer/action. Initialized to null to show placeholder.
+    const [newInterviewer, setNewInterviewer] = useState(null); 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [reassignmentMessages, setReassignmentMessages] = useState([]);
@@ -935,7 +1021,12 @@ function ReassignStudentsList({ selectedCenter = "Center A" }) {
         setError(null);
         setStudents([]);
         setSelectedStudents([]);
-        setNewInterviewer(null);
+        
+        // 🔥 FIX APPLIED: REMOVE setNewInterviewer(null) from here!
+        // The selection should be persistent across re-fetches unless an action
+        // is explicitly confirmed or the selectedCenter changes.
+        // setNewInterviewer(null); // <-- DELETED
+
         try {
             const response = await api.getReassignableStudents(selectedCenter, nmmsYear);
             setStudents(response.data);
@@ -999,25 +1090,26 @@ function ReassignStudentsList({ selectedCenter = "Center A" }) {
             const feedbackMessages = formatReassignmentMessages(reassignmentResults, students);
             setReassignmentMessages(feedbackMessages);
 
-            // 🔥 NEW LOGIC: Filter for SUCCESSFULLY REASSIGNED students only
+            // Filter for SUCCESSFULLY REASSIGNED students only
             const successfullyReassignedIds = reassignmentResults
                 .filter(r => r.status === 'Reassigned')
                 .map(r => r.applicantId);
             
-            // 🔥 NEW LOGIC: AUTOMATIC DOWNLOAD FOR SUCCESSFUL REASSIGNMENTS
-            // Requirement: Only download if an interviewer (not 'No one') was selected
+            // AUTOMATIC DOWNLOAD FOR SUCCESSFUL REASSIGNMENTS
             if (successfullyReassignedIds.length > 0 && newInterviewer.id !== NO_INTERVIEWER_ID) {
                  handleDownloadFile({
-                    applicantIds: successfullyReassignedIds,
-                    nmmsYear: nmmsYear,
-                    interviewerId: newInterviewer.id,
-                    interviewerName: newInterviewer.name
-                });
+                     applicantIds: successfullyReassignedIds,
+                     nmmsYear: nmmsYear,
+                     interviewerId: newInterviewer.id,
+                     interviewerName: newInterviewer.name
+                 });
             }
 
             await fetchStudents(); 
             
             setSelectedStudents([]);
+            // This reset is correct: it clears the action after completion, forcing
+            // the user to select a new one for the next batch.
             setNewInterviewer(null);
 
             setTimeout(() => {
@@ -1061,11 +1153,14 @@ function ReassignStudentsList({ selectedCenter = "Center A" }) {
 
             switch (status) {
                 case 'Skipped':
-                    message = `⚠️ Skipped: ${studentName} - Same interviewer assigend for previous interview'`;
+                    message = `⚠️ Skipped: ${studentName} - ${result.reason || 'Reason unknown.'}`;
                     break;
                 case 'Reassigned':
+                    // Note: Front-end uses 'Reassigned', back-end uses 'RESCHEDULED' for reassign,
+                    // but the name change indicates success. Using Reassigned for consistency here.
                     message = `✅ Reassigned: ${studentName} was successfully reassigned for Interview Round ${result.interviewRound}.`;
                     break;
+                case 'CANCELLED': // Using the constant value for consistency is better
                 case 'Cancelled': 
                     message = `🗑️ Unassigned: ${studentName} was successfully unassigned.`;
                     break;
@@ -1080,8 +1175,6 @@ function ReassignStudentsList({ selectedCenter = "Center A" }) {
         });
         return messages;
     };
-
-    // Old Download button logic is now irrelevant
     
     if (!selectedCenter) return <div className="p-6 text-center text-gray-600 bg-gray-100 rounded-lg">Please select an exam center first.</div>;
     if (loading && students.length === 0) return <div className="p-6 text-center text-gray-600 bg-gray-100 rounded-lg">Loading reassignable students...</div>;
@@ -1157,8 +1250,6 @@ function ReassignStudentsList({ selectedCenter = "Center A" }) {
                         </button>
                     </div>
 
-                    {/* Download Button REMOVED HERE, now automatic */}
-                    
                     {/* Reassignment Messages */}
                     {reassignmentMessages.length > 0 && (
                         <div className="mt-4 space-y-2 max-h-40 overflow-y-auto p-2 bg-white rounded-lg shadow-inner">
@@ -1168,7 +1259,7 @@ function ReassignStudentsList({ selectedCenter = "Center A" }) {
                                     className={`p-3 rounded-lg text-sm ${
                                         msg.includes('Error') ? 'bg-red-100 text-red-700 font-medium' :
                                         (msg.includes('Skipped') ? 'bg-yellow-100 text-yellow-700' : 
-                                        (msg.includes('Cancelled') ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'))
+                                        (msg.includes('Cancelled') || msg.includes('Unassigned') ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'))
                                     }`}
                                 >
                                     {msg}

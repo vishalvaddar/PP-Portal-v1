@@ -226,7 +226,7 @@ const Students = () => {
 
   const clearAll = useCallback(() => {
     setFilters(initialFilters);
-    fetchStudents(); // Re-fetch all students
+    fetchStudents();
   }, [initialFilters, fetchStudents]);
 
   const handleKeyPress = useCallback(

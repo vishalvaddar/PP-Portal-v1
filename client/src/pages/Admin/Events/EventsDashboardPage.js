@@ -1,86 +1,85 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // Import axios
+import axios from 'axios';
 import styles from './EventsDashboardPage.module.css';
 
 import EventList from './EventList';
-import EventForm from './EventForm';
+import EventForm from './EventForm'; // Ensure path is correct
 import AddEventTypeModal from './AddEventTypeModal';
-
-// --- REMOVE MOCK DATA ---
-// const MOCK_EVENTS = [...];
-// const INITIAL_EVENT_TYPES = [...];
-// ----------------------------
 
 const EventsDashboardPage = () => {
   const [view, setView] = useState('list');
-  const [allEvents, setAllEvents] = useState([]); // Default to empty array
-  const [eventTypes, setEventTypes] = useState([]); // Default to empty array
+  const [allEvents, setAllEvents] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // Add loading state
-  const [error, setError] = useState(null); // Add error state
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Used to force re-render/re-fetch in EventForm when a new type is added
+  const [typesUpdateTrigger, setTypesUpdateTrigger] = useState(0);
+
   const navigate = useNavigate();
+  const API_BASE_URL = process.env.REACT_APP_BACKEND_API_URL;
 
-  // --- ✨ FETCH DATA ON LOAD ---
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        // Fetch both sets of data in parallel
-        const [eventsRes, typesRes] = await Promise.all([
-          axios.get('/api/events'), // Make sure your axios baseURL is set
-          axios.get('/api/event-types')
-        ]);
-        
-        setAllEvents(eventsRes.data);
-        setEventTypes(typesRes.data);
-        
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setError("Failed to load data. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    // Only fetch data when in 'list' view
-    if (view === 'list') {
-      fetchData();
+  // --- Fetch Events List ---
+  const fetchEvents = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/events`);
+      setAllEvents(response.data);
+    } catch (err) {
+      console.error("Error fetching events:", err);
+      setError("Failed to load events. Please ensure the server is running.");
+    } finally {
+      setIsLoading(false);
     }
-  }, [view]); // Re-fetch when view changes back to 'list'
+  };
 
-  // --- ✨ UPDATED HANDLERS ---
+  // Initial Fetch
+  useEffect(() => {
+    if (view === 'list') {
+      fetchEvents();
+    }
+  }, [view, API_BASE_URL]);
+
+  // --- Handlers ---
 
   const handleSaveEvent = async (formData) => {
-    // formData is already a FormData object from EventForm
+    // formData is a FormData object containing fields and files passed from EventForm
     try {
-      // The backend (multer) will parse the FormData
-      const response = await axios.post('/api/events', formData, {
+      setIsLoading(true); 
+      
+      await axios.post(`${API_BASE_URL}/api/events`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      // Add new event to the list and switch view
-      setAllEvents(prev => [response.data, ...prev]);
+      // On success, refresh the list and switch view
+      await fetchEvents();
       setView('list');
 
     } catch (err) {
       console.error("Error saving event:", err);
-      alert(`Error: ${err.response?.data?.msg || 'Failed to save event.'}`);
+      const msg = err.response?.data?.msg || 'Failed to save event.';
+      alert(`Error: ${msg}`);
+      setIsLoading(false); // Stop loading if error occurs
     }
   };
 
   const handleAddNewEventType = async (newType) => {
     try {
-      const response = await axios.post('/api/event-types', { name: newType });
-      // Add the new type (response.data.name) to the state
-      setEventTypes(prev => [...prev, response.data.name]);
+      await axios.post(`${API_BASE_URL}/api/event-types`, { name: newType });
       
+      setIsModalOpen(false);
+      
+      setTypesUpdateTrigger(prev => prev + 1);
+      
+      alert('Event type added successfully!');
     } catch (err) {
       console.error("Error saving event type:", err);
-      alert(`Error: ${err.response?.data?.msg || 'Failed to save event type.'}`);
+      const msg = err.response?.data?.msg || 'Failed to save event type.';
+      alert(`Error: ${msg}`);
     }
   };
 
@@ -88,13 +87,14 @@ const EventsDashboardPage = () => {
     navigate(`/admin/academics/events/${eventId}`);
   };
 
-  // --- RENDER LOGIC ---
+  // --- Render Logic ---
 
   const renderContent = () => {
     if (view === 'form') {
       return (
         <EventForm
-          eventTypes={eventTypes} // Pass fetched types
+          // key forces re-mount (and re-fetch of dropdowns) when a new type is added
+          key={typesUpdateTrigger} 
           onSave={handleSaveEvent}
           onCancel={() => setView('list')}
           onOpenAddTypeModal={() => setIsModalOpen(true)}
@@ -102,13 +102,12 @@ const EventsDashboardPage = () => {
       );
     }
     
-    // Handle loading and error states for the list
     if (isLoading) return <div className={styles.message}>Loading events...</div>;
     if (error) return <div className={styles.messageError}>{error}</div>;
 
     return (
       <EventList
-        events={allEvents} // Pass fetched events
+        events={allEvents}
         onViewDetails={handleViewDetails}
       />
     );
