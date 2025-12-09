@@ -55,13 +55,17 @@ async function getStudents(exam_name) {
     return result.rows;
 }
 
-
-
-async function insertBulkData(secondaryInfoData, examResultsData, examAttendance) {
+async function insertBulkData(secondaryInfoData, examResultsData, examAttendance, eligibleStudents) {
   const client = await pool.connect();
   
   try {
     await client.query('BEGIN');
+
+    // Function to generate random enrollment ID
+    const generateEnrId = () => {
+      // Generate 10-digit random number
+      return Math.floor(1000000000 + Math.random() * 9000000000);
+    };
 
     // Insert/update secondary info
     for (const data of secondaryInfoData) {
@@ -107,24 +111,23 @@ async function insertBulkData(secondaryInfoData, examResultsData, examAttendance
       ]);
     }
 
-    // Insert/update exam results (removed student_name)
+    // Insert/update exam results
     for (const data of examResultsData) {
-  await client.query(`
-    INSERT INTO pp.exam_results (
-      applicant_id, pp_exam_score, pp_exam_cleared, interview_required_yn
-    ) VALUES ($1, $2, $3, $4)
-    ON CONFLICT (applicant_id) DO UPDATE SET
-      pp_exam_score = EXCLUDED.pp_exam_score,
-      pp_exam_cleared = EXCLUDED.pp_exam_cleared,
-      interview_required_yn = EXCLUDED.interview_required_yn
-  `, [
-    data.applicant_id,
-    data.pp_exam_score,
-    data.pp_exam_cleared,
-    data.interview_required_yn
-  ]);
-}
-
+      await client.query(`
+        INSERT INTO pp.exam_results (
+          applicant_id, pp_exam_score, pp_exam_cleared, interview_required_yn
+        ) VALUES ($1, $2, $3, $4)
+        ON CONFLICT (applicant_id) DO UPDATE SET
+          pp_exam_score = EXCLUDED.pp_exam_score,
+          pp_exam_cleared = EXCLUDED.pp_exam_cleared,
+          interview_required_yn = EXCLUDED.interview_required_yn
+      `, [
+        data.applicant_id,
+        data.pp_exam_score,
+        data.pp_exam_cleared,
+        data.interview_required_yn
+      ]);
+    }
 
     // Insert/update exam attendance
     for (const data of examAttendance) {
@@ -137,7 +140,75 @@ async function insertBulkData(secondaryInfoData, examResultsData, examAttendance
       `, [data.applicant_id, data.pp_exam_appeared_yn]);
     }
 
+    // Insert eligible students into student_master
+    for (const student of eligibleStudents) {
+      // Check if student already exists in student_master
+      const checkQuery = await client.query(
+        `SELECT COUNT(*) FROM pp.student_master WHERE applicant_id = $1`,
+        [student.applicant_id]
+      );
+
+      if (parseInt(checkQuery.rows[0].count) === 0) {
+        // Generate unique enrollment ID
+        let enrId;
+        let isUnique = false;
+        let attempts = 0;
+        
+        while (!isUnique && attempts < 10) {
+          enrId = generateEnrId();
+          const checkEnrId = await client.query(
+            `SELECT COUNT(*) FROM pp.student_master WHERE enr_id = $1`,
+            [enrId]
+          );
+          
+          if (parseInt(checkEnrId.rows[0].count) === 0) {
+            isUnique = true;
+          }
+          attempts++;
+        }
+
+        if (!isUnique) {
+          throw new Error(`Failed to generate unique enrollment ID for applicant ${student.applicant_id}`);
+        }
+
+        // Get additional applicant info if needed
+        const applicantInfo = await client.query(`
+          SELECT api.*, asi.village as home_address 
+          FROM pp.applicant_primary_info api
+          LEFT JOIN pp.applicant_secondary_info asi ON api.applicant_id = asi.applicant_id
+          WHERE api.applicant_id = $1
+        `, [student.applicant_id]);
+
+        const applicant = applicantInfo.rows[0];
+
+        // Insert into student_master
+        await client.query(`
+          INSERT INTO pp.student_master (
+            applicant_id, enr_id, student_name, 
+            father_occupation, mother_occupation,
+            home_address, created_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)
+        `, [
+          student.applicant_id,
+          enrId,
+          student.student_name,
+          student.father_occupation,
+          student.mother_occupation,
+          applicant ? applicant.home_address : null
+        ]);
+      }
+    }
+
     await client.query('COMMIT');
+    
+    // Return success message with counts
+    return {
+      secondaryInfoCount: secondaryInfoData.length,
+      examResultsCount: examResultsData.length,
+      examAttendanceCount: examAttendance.length,
+      eligibleStudentsCount: eligibleStudents.length
+    };
+    
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('Database operation failed:', error);

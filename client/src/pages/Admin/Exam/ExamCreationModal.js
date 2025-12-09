@@ -15,16 +15,30 @@ const ExamCreationModal = ({ onClose }) => {
     deleteCentre
   } = useCreateExamHooks();
 
-  useEffect(() => {
-    if (formData.centreId && formData.examDate) {
-      const selectedCentre = centres.find(c => c.pp_exam_centre_id === formData.centreId);
-      const centreName = selectedCentre?.pp_exam_centre_name?.replace(/\s+/g, "_") || "";
-      setFormData(prev => ({
-        ...prev,
-        examName: `${centreName}_${formData.examDate}`
-      }));
-    }
-  }, [formData.centreId, formData.examDate, centres, setFormData]);
+
+  
+  //exam_name createion
+useEffect(() => {
+  if (formData.centreId && formData.examDate && formData.examstarttime) {
+    const selectedCentre = centres.find(
+      c => c.pp_exam_centre_id === formData.centreId
+    );
+
+    const centreName =
+      selectedCentre?.pp_exam_centre_name?.replace(/\s+/g, "_") || "";
+
+    setFormData(prev => ({
+      ...prev,
+      examName: `${centreName}_${prev.examDate}_${prev.examstarttime}`
+    }));
+  }
+}, [
+  formData.centreId,
+  formData.examDate,
+  formData.examstarttime,  // ✅ Required!
+  centres
+]);
+
 
   return (
     <div className={classes.modal}>
@@ -71,6 +85,26 @@ const ExamCreationModal = ({ onClose }) => {
             value={formData.examDate}
             onChange={handleChange}
             required
+          />
+        </div>
+
+        <div className={classes.formGroup}>
+          <label>Exam Start time</label>
+          <input
+          type ="time"
+          name = "examstarttime"
+          value = {formData.examstarttime}
+          onChange={handleChange}
+          />
+        </div>
+
+        <div className={classes.formGroup}>
+          <label>Exam End time</label>
+          <input
+          type ="time"
+          name = "examendtime"
+          value = {formData.examendtime}
+          onChange={handleChange}
           />
         </div>
         

@@ -1,5 +1,8 @@
 {
   "dependencies": {
-    "exceljs": "^4.4.0"
+    "csv-parse": "^6.1.0",
+    "csv-parser": "^3.2.0",
+    "exceljs": "^4.4.0",
+    "json2csv": "^6.0.0-alpha.2"
   }
 }
