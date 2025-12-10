@@ -1,5 +1,5 @@
 const path = require('path'); 
-const fs = require('fs');
+const fs = require('fs'); 
 const PDFDocument = require('pdfkit'); 
 const InterviewModel = require("../models/interviewModel");
 
@@ -114,7 +114,7 @@ const drawReportHeader = (doc, isFirstPage, nmmsYear) => {
 
 const InterviewController = {
     
-    async downloadAssignmentReport(req, res) {
+async downloadAssignmentReport(req, res) {
         console.log('--- HIT: Download Assignment Report Route REACHED ---');
         
         const { 
@@ -548,7 +548,6 @@ async assignStudents(req, res) {
 }
 ,
 
-  // Controller to get a list of students assigned to a specific interviewer
   async getStudentsByInterviewer(req, res) {
     const { interviewerName } = req.params;
     const { nmmsYear } = req.query;
@@ -564,36 +563,6 @@ async assignStudents(req, res) {
     }
   },
 
-  // Controller to submit the results of a student's interview
-  async submitInterviewDetails(req, res) {
-    const interviewData = req.body;
-    const { applicantId, remarks } = interviewData;
-
-    // Server-side check for mandatory fields: applicantId, file, and remarks
-    if (
-        !applicantId ||  
-        !remarks || 
-        remarks.trim() === '' ||
-        !req.files || 
-        Object.keys(req.files).length === 0
-    ) {
-      return res.status(400).json({ message: 'Missing applicantId, mandatory remarks, or file in the request.' });
-    }
-
-    const uploadedFile = req.files.file; // 'file' is the key used in frontend FormData
-
-    try {
-      // Pass all necessary data to the model
-      const updatedInterview = await InterviewModel.submitInterviewDetails(applicantId, interviewData, uploadedFile);
-      res.status(200).json({ message: 'Interview details and file submitted successfully.', data: updatedInterview });
-    } catch (error) {
-      console.error('Controller Error - submitInterviewDetails:', error);
-      // Ensure the error message is passed to the frontend
-      res.status(500).json({ message: error.message || 'Internal server error while submitting interview details.' });
-    }
-  }, 
-
-  // --- NEW: Controller to get students for home verification dropdown ---
   async getStudentsForVerification(req, res) {
     try {
       const students = await InterviewModel.getStudentsForVerification();
@@ -603,42 +572,7 @@ async assignStudents(req, res) {
       res.status(500).json({ message: "Failed to fetch students for verification." });
     }
   },
-
-  // --- NEW: Controller to submit home verification data and file ---
-  async submitHomeVerification(req, res) {
-    const verificationData = req.body;
-    const { applicantId, status, verifiedBy, verificationType, dateOfVerification } = verificationData;
-
-    // The file upload field name from the frontend is 'verificationDocument'
-    const uploadedFile = req.files ? req.files.verificationDocument : null; 
-
-    // Server-side check for mandatory fields
-    if (
-        !applicantId || 
-        !status || 
-        !verifiedBy || 
-        !verificationType ||
-        !dateOfVerification
-    ) {
-      // Note: File is optional based on the prompt's implied logic
-      return res.status(400).json({ message: 'Missing applicantId, status, verifiedBy, verificationType, or dateOfVerification.' });
-    }
-
-    try {
-      // Pass the verification data and the uploaded file object to the model
-      const result = await InterviewModel.submitHomeVerification(verificationData, uploadedFile);
-      res.status(200).json({ 
-          message: "Home verification submitted successfully.", 
-          data: result 
-      });
-    } catch (error) {
-      console.error('Controller Error - submitHomeVerification:', error);
-      res.status(500).json({ message: error.message || 'Internal server error during home verification submission.' });
-    }
-  },
-
-
-  // --- NEW: Controller to get students for home verification dropdown ---
+ 
   async getStudentsForVerification(req, res) {
     try {
       // NOTE: If you receive a TypeError here, verify that 
@@ -651,15 +585,14 @@ async assignStudents(req, res) {
     }
   },
 
-  // --- NEW: Controller to submit home verification data and file ---
-  async submitHomeVerification(req, res) {
+async submitHomeVerification(req, res) {
     const verificationData = req.body;
     const { applicantId, status, verifiedBy, verificationType, dateOfVerification } = verificationData;
 
-    // Assumes file is available at req.files.verificationDocument via express-fileupload middleware
-    const uploadedFile = req.files ? req.files.verificationDocument : null; 
+    // 🔥 CORRECTION: Retrieve file from req.file (Multer standard)
+    const uploadedFile = req.file; 
 
-    // Server-side check for mandatory fields
+    // Server-side check for mandatory fields (File is considered optional here, based on validation logic)
     if (
         !applicantId || 
         !status || 
@@ -667,21 +600,48 @@ async assignStudents(req, res) {
         !verificationType ||
         !dateOfVerification
     ) {
-      return res.status(400).json({ message: 'Missing applicantId, status, verifiedBy, verificationType, or dateOfVerification.' });
+        return res.status(400).json({ message: 'Missing applicantId, status, verifiedBy, verificationType, or dateOfVerification.' });
     }
 
     try {
-      const result = await InterviewModel.submitHomeVerification(verificationData, uploadedFile);
-      res.status(200).json({ 
-          message: "Home verification submitted successfully.", 
-          data: result 
-      });
+        const result = await InterviewModel.submitHomeVerification(verificationData, uploadedFile);
+        res.status(200).json({ 
+            message: "Home verification submitted successfully.", 
+            data: result 
+        });
     } catch (error) {
-      console.error('Controller Error - submitHomeVerification:', error);
-      res.status(500).json({ message: error.message || 'Internal server error during home verification submission.' });
+        console.error('Controller Error - submitHomeVerification:', error);
+        res.status(500).json({ message: error.message || 'Internal server error during home verification submission.' });
     }
-  },
+}
+,
+async submitInterviewDetails(req, res) {
+    const interviewData = req.body;
+    const { applicantId, remarks } = interviewData;
 
+    // 🔥 CHANGE 1: Multer puts the single file object on req.file (Correct)
+    const uploadedFile = req.file; 
+
+    // Server-side check for mandatory fields: applicantId, file, and remarks
+    if (
+        !applicantId || 
+        !remarks || 
+        remarks.trim() === '' ||
+        // 🔥 CHANGE 2: Check for existence of req.file instead of req.files (Correct)
+        !uploadedFile 
+    ) {
+        return res.status(400).json({ message: 'Missing applicantId, mandatory remarks, or interview document file in the request.' });
+    }
+
+    try {
+        // Pass all necessary data to the model
+        const updatedInterview = await InterviewModel.submitInterviewDetails(applicantId, interviewData, uploadedFile);
+        res.status(200).json({ message: 'Interview details and file submitted successfully.', data: updatedInterview });
+    } catch (error) {
+        console.error('Controller Error - submitInterviewDetails:', error);
+        res.status(500).json({ error: true, message: error.message || 'Internal server error while submitting interview details.' });
+    }
+}
 
 };
 

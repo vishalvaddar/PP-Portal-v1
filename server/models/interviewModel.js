@@ -3,7 +3,7 @@ const { v4: uuidv4 } = require("uuid");
 const pool = require("../config/db");
 const fs = require("fs/promises");
 const format = require("pg-format");
-const { existsSync: fsExistsSync } = require('fs');
+const { existsSync: fsExistsSync } = require("fs");
 const NO_INTERVIEWER_ID = "NO_ONE";
 
 const InterviewModel = {
@@ -74,15 +74,11 @@ const InterviewModel = {
       );
       return result.rows;
     } catch (error) {
-      console.error(
-        "InterviewModel.getDistrictsByDivision - Error:",
-        error
-      );
+      console.error("InterviewModel.getDistrictsByDivision - Error:", error);
       throw error;
     }
   },
 
-  
   async getBlocksByDistrict(stateName, divisionName, districtName) {
     try {
       const result = await pool.query(
@@ -127,18 +123,15 @@ const InterviewModel = {
       );
       return result.rows;
     } catch (error) {
-      console.error(
-        "InterviewModel.getBlocksByDistrict - Error:",
-        error
-      );
+      console.error("InterviewModel.getBlocksByDistrict - Error:", error);
       throw error;
     }
   },
 
-async getUnassignedStudents(centerName, nmmsYear) {
+  async getUnassignedStudents(centerName, nmmsYear) {
     try {
-        const { rows } = await pool.query(
-            `WITH LatestInterview AS (
+      const { rows } = await pool.query(
+        `WITH LatestInterview AS (
     SELECT
         si.applicant_id,
         si.interview_round,
@@ -190,25 +183,24 @@ WHERE
         OR li.status = 'CANCELLED'
     )
 ORDER BY api.student_name ASC;`,
-            [centerName, nmmsYear]
-        );
-        return rows;
+        [centerName, nmmsYear]
+      );
+      return rows;
     } catch (error) {
-        console.error("Error fetching unassigned students:", error);
-        throw error;
+      console.error("Error fetching unassigned students:", error);
+      throw error;
     }
-},
+  },
 
-
-async getUnassignedStudentsByBlock(
+  async getUnassignedStudentsByBlock(
     stateName,
     districtName,
     blockName,
     nmmsYear
-) {
+  ) {
     try {
-        const { rows } = await pool.query(
-            `WITH LatestInterview AS (
+      const { rows } = await pool.query(
+        `WITH LatestInterview AS (
     SELECT
         si.applicant_id,
         si.interview_round,
@@ -268,14 +260,14 @@ WHERE
         OR li.status = 'CANCELLED'
     )
 ORDER BY api.student_name ASC;`,
-            [stateName, districtName, blockName, nmmsYear]
-        );
-        return rows;
+        [stateName, districtName, blockName, nmmsYear]
+      );
+      return rows;
     } catch (error) {
-        console.error("Error fetching unassigned students by block:", error);
-        throw error;
+      console.error("Error fetching unassigned students by block:", error);
+      throw error;
     }
-},
+  },
 
   async getInterviewers() {
     try {
@@ -291,53 +283,53 @@ ORDER BY api.student_name ASC;`,
     }
   },
 
-async assignStudents(applicantIds, interviewerId, nmmsYear) {
+  async assignStudents(applicantIds, interviewerId, nmmsYear) {
     const client = await pool.connect();
     const results = { results: [] };
 
     try {
-        await client.query("BEGIN"); // Start transaction
+      await client.query("BEGIN"); // Start transaction
 
-        for (const applicantId of applicantIds) {
-            // 1. Get the student's last interview details
-            const lastInterviewQuery = `
+      for (const applicantId of applicantIds) {
+        // 1. Get the student's last interview details
+        const lastInterviewQuery = `
                 SELECT interview_id, interview_round, status, interview_result
                 FROM pp.student_interview
                 WHERE applicant_id = $1
                 ORDER BY interview_round DESC
                 LIMIT 1;
             `;
-            const lastInterviewRes = await client.query(lastInterviewQuery, [
-                applicantId,
-            ]);
-            const lastInterview = lastInterviewRes.rows[0];
+        const lastInterviewRes = await client.query(lastInterviewQuery, [
+          applicantId,
+        ]);
+        const lastInterview = lastInterviewRes.rows[0];
 
-            let nextRound = 1;
-            let actionTaken = false; // Flag to check if an action (insert/update) was executed
+        let nextRound = 1;
+        let actionTaken = false; // Flag to check if an action (insert/update) was executed
 
-            if (lastInterview) {
-                const status = lastInterview.status;
-                const result = lastInterview.interview_result;
+        if (lastInterview) {
+          const status = lastInterview.status;
+          const result = lastInterview.interview_result;
 
-                // A. Check if max rounds (3) have been reached
-                if (lastInterview.interview_round >= 3) {
-                    results.results.push({
-                        applicantId,
-                        status: "Skipped",
-                        reason: "Max rounds reached (3 rounds completed).",
-                    });
-                    continue; 
-                }
+          // A. Check if max rounds (3) have been reached
+          if (lastInterview.interview_round >= 3) {
+            results.results.push({
+              applicantId,
+              status: "Skipped",
+              reason: "Max rounds reached (3 rounds completed).",
+            });
+            continue;
+          }
 
-                // B. Check eligibility for NEXT ROUND (Round 2 or 3)
-                if (
-                    status === "RESCHEDULED" && 
-                    result === "Another Interview Required"
-                ) {
-                    nextRound = lastInterview.interview_round + 1;
-                } else if (status === "CANCELLED" && result === null) { 
-                    // C. SCENARIO 2: FIX CANCELED INTERVIEW (UPDATE EXISTING RECORD)
-                    const updateCanceledQuery = `
+          // B. Check eligibility for NEXT ROUND (Round 2 or 3)
+          if (
+            status === "RESCHEDULED" &&
+            result === "Another Interview Required"
+          ) {
+            nextRound = lastInterview.interview_round + 1;
+          } else if (status === "CANCELLED" && result === null) {
+            // C. SCENARIO 2: FIX CANCELED INTERVIEW (UPDATE EXISTING RECORD)
+            const updateCanceledQuery = `
                         UPDATE pp.student_interview
                         SET interviewer_id = $1,
                             status = 'SCHEDULED' 
@@ -345,64 +337,64 @@ async assignStudents(applicantIds, interviewerId, nmmsYear) {
                         AND applicant_id = $3
                         RETURNING interview_round;
                     `;
-                    const updateRes = await client.query(updateCanceledQuery, [
-                        interviewerId,
-                        lastInterview.interview_id,
-                        applicantId,
-                    ]);
+            const updateRes = await client.query(updateCanceledQuery, [
+              interviewerId,
+              lastInterview.interview_id,
+              applicantId,
+            ]);
 
-                    if (updateRes.rowCount > 0) {
-                        results.results.push({
-                            applicantId,
-                            status: "Assigned",
-                            interviewRound: lastInterview.interview_round,
-                        });
-                        actionTaken = true;
-                    } else {
-                        results.results.push({
-                            applicantId,
-                            status: "Skipped",
-                            reason: "Could not update cancelled record.",
-                        });
-                    }
-                    continue;
-                } else {
-                    // D. Skip if ineligible
-                    const skipReason = `Last interview status (${status}) does not allow a new assignment (requires 'RESCHEDULED'/'Another Interview Required' OR 'CANCELLED'/NULL).`;
-                    results.results.push({
-                        applicantId,
-                        status: "Skipped",
-                        reason: skipReason,
-                    });
-                    continue;
-                }
+            if (updateRes.rowCount > 0) {
+              results.results.push({
+                applicantId,
+                status: "Assigned",
+                interviewRound: lastInterview.interview_round,
+              });
+              actionTaken = true;
+            } else {
+              results.results.push({
+                applicantId,
+                status: "Skipped",
+                reason: "Could not update cancelled record.",
+              });
             }
+            continue;
+          } else {
+            // D. Skip if ineligible
+            const skipReason = `Last interview status (${status}) does not allow a new assignment (requires 'RESCHEDULED'/'Another Interview Required' OR 'CANCELLED'/NULL).`;
+            results.results.push({
+              applicantId,
+              status: "Skipped",
+              reason: skipReason,
+            });
+            continue;
+          }
+        }
 
-            if (actionTaken) {
-                continue;
-            }
+        if (actionTaken) {
+          continue;
+        }
 
-            // 2. Check if the student is already assigned to this specific interviewer
-            const alreadyAssignedQuery = `
+        // 2. Check if the student is already assigned to this specific interviewer
+        const alreadyAssignedQuery = `
                 SELECT 1
                 FROM pp.student_interview
                 WHERE applicant_id = $1 AND interviewer_id = $2;
             `;
-            const alreadyAssignedRes = await client.query(alreadyAssignedQuery, [
-                applicantId,
-                interviewerId,
-            ]);
-            if (alreadyAssignedRes.rowCount > 0) {
-                results.results.push({
-                    applicantId,
-                    status: "Skipped",
-                    reason: "Already assigned to this interviewer in previous round.",
-                });
-                continue; 
-            }
+        const alreadyAssignedRes = await client.query(alreadyAssignedQuery, [
+          applicantId,
+          interviewerId,
+        ]);
+        if (alreadyAssignedRes.rowCount > 0) {
+          results.results.push({
+            applicantId,
+            status: "Skipped",
+            reason: "Already assigned to this interviewer in previous round.",
+          });
+          continue;
+        }
 
-            // 3. If eligible or Round 1, proceed with the actual insertion
-            const insertQuery = `INSERT INTO pp.student_interview (interviewer_id, applicant_id, interview_round, status)
+        // 3. If eligible or Round 1, proceed with the actual insertion
+        const insertQuery = `INSERT INTO pp.student_interview (interviewer_id, applicant_id, interview_round, status)
 SELECT
     $1,
     $2,
@@ -411,49 +403,49 @@ SELECT
 FROM pp.applicant_primary_info api
 WHERE api.applicant_id = $2 AND api.nmms_year = $4
 RETURNING *;`; // <-- Applied leading whitespace fix here
-            
-            const insertRes = await client.query(insertQuery, [
-                interviewerId,
-                applicantId,
-                nextRound,
-                nmmsYear,
-            ]);
 
-            if (insertRes.rowCount > 0) {
-                results.results.push({
-                    applicantId,
-                    status: "Assigned",
-                    interviewRound: insertRes.rows[0].interview_round,
-                });
-            } else {
-                results.results.push({
-                    applicantId,
-                    status: "Skipped",
-                    reason: "Student not found for the specified NMMS year.",
-                });
-            }
+        const insertRes = await client.query(insertQuery, [
+          interviewerId,
+          applicantId,
+          nextRound,
+          nmmsYear,
+        ]);
+
+        if (insertRes.rowCount > 0) {
+          results.results.push({
+            applicantId,
+            status: "Assigned",
+            interviewRound: insertRes.rows[0].interview_round,
+          });
+        } else {
+          results.results.push({
+            applicantId,
+            status: "Skipped",
+            reason: "Student not found for the specified NMMS year.",
+          });
         }
+      }
 
-        await client.query("COMMIT"); // Commit transaction
-        return results;
+      await client.query("COMMIT"); // Commit transaction
+      return results;
     } catch (error) {
-        await client.query("ROLLBACK"); // Rollback on error
-        console.error("Error assigning students:", error);
-        throw error;
+      await client.query("ROLLBACK"); // Rollback on error
+      console.error("Error assigning students:", error);
+      throw error;
     } finally {
-        client.release(); // Release client back to pool
+      client.release(); // Release client back to pool
     }
-},
+  },
 
-async getReassignableStudentsByBlock(
+  async getReassignableStudentsByBlock(
     stateName,
     districtName,
     blockName,
     nmmsYear
-) {
+  ) {
     try {
-        const { rows } = await pool.query(
-            `SELECT
+      const { rows } = await pool.query(
+        `SELECT
     api.applicant_id,
     api.student_name,
     inst.institute_name,
@@ -494,19 +486,19 @@ WHERE
             AND sub_api.nmms_year = $4
     )
 ORDER BY api.student_name ASC;`,
-            [stateName, districtName, blockName, nmmsYear]
-        );
-        return rows;
+        [stateName, districtName, blockName, nmmsYear]
+      );
+      return rows;
     } catch (error) {
-        console.error("Error fetching reassignable students by block:", error);
-        throw error;
+      console.error("Error fetching reassignable students by block:", error);
+      throw error;
     }
-},
+  },
 
-async getReassignableStudents(centerName, nmmsYear) {
+  async getReassignableStudents(centerName, nmmsYear) {
     try {
-        const { rows } = await pool.query(
-            `SELECT
+      const { rows } = await pool.query(
+        `SELECT
     api.applicant_id,
     api.student_name,
     inst.institute_name,
@@ -547,15 +539,15 @@ WHERE
     )
 ORDER BY api.student_name ASC;
 `,
-            [centerName, nmmsYear]
-        );
-        return rows;
+        [centerName, nmmsYear]
+      );
+      return rows;
     } catch (error) {
-        console.error("Error fetching reassignable students:", error);
-        throw error;
+      console.error("Error fetching reassignable students:", error);
+      throw error;
     }
-},
-async reassignStudents(applicantIds, newInterviewerId, nmmsYear) {
+  },
+  async reassignStudents(applicantIds, newInterviewerId, nmmsYear) {
     const client = await pool.connect();
     const results = { results: [] };
 
@@ -563,25 +555,25 @@ async reassignStudents(applicantIds, newInterviewerId, nmmsYear) {
 
     let numericNewInterviewerId = null;
     if (!isCancellation) {
-        numericNewInterviewerId = Number(newInterviewerId);
-        if (isNaN(numericNewInterviewerId)) {
-            throw new Error(
-                'Invalid newInterviewerId provided. Must be a valid numeric ID or "NO_ONE".'
-            );
-        }
+      numericNewInterviewerId = Number(newInterviewerId);
+      if (isNaN(numericNewInterviewerId)) {
+        throw new Error(
+          'Invalid newInterviewerId provided. Must be a valid numeric ID or "NO_ONE".'
+        );
+      }
     }
 
     try {
-        await client.query("BEGIN"); // Start transaction
+      await client.query("BEGIN"); // Start transaction
 
-        for (const applicantId of applicantIds) {
-            let updateQuery;
-            let updateParams;
-            let statusToReturn;
+      for (const applicantId of applicantIds) {
+        let updateQuery;
+        let updateParams;
+        let statusToReturn;
 
-            if (isCancellation) {
-                // 🔥 CORRECTION APPLIED: Removed all leading whitespace from the SQL string.
-                updateQuery = `
+        if (isCancellation) {
+          // 🔥 CORRECTION APPLIED: Removed all leading whitespace from the SQL string.
+          updateQuery = `
 UPDATE pp.student_interview si
 SET interviewer_id = NULL,
 status = 'CANCELLED'
@@ -598,11 +590,11 @@ WHERE
     )
 RETURNING si.interview_round;
 `;
-                updateParams = [applicantId, nmmsYear];
-                statusToReturn = "CANCELLED";
-            } else {
-                // 🔥 CORRECTION APPLIED: Removed all leading whitespace from the SQL string.
-                updateQuery = `
+          updateParams = [applicantId, nmmsYear];
+          statusToReturn = "CANCELLED";
+        } else {
+          // 🔥 CORRECTION APPLIED: Removed all leading whitespace from the SQL string.
+          updateQuery = `
 UPDATE pp.student_interview si
 SET interviewer_id = $1
 FROM pp.applicant_primary_info api
@@ -624,37 +616,37 @@ WHERE
     )
 RETURNING si.interview_round;
 `;
-                updateParams = [numericNewInterviewerId, applicantId, nmmsYear];
-                statusToReturn = "RESCHEDULED";
-            }
-
-            const updateRes = await client.query(updateQuery, updateParams);
-
-            if (updateRes.rowCount > 0) {
-                results.results.push({
-                    applicantId,
-                    status: statusToReturn,
-                    interviewRound: updateRes.rows[0].interview_round,
-                });
-            } else {
-                let reason = isCancellation
-                    ? "No scheduled/rescheduled interview found to cancel (student not eligible or row already updated)."
-                    : "Reassignment conditions not met (e.g., same interviewer, no pending interview).";
-
-                results.results.push({ applicantId, status: "Skipped", reason });
-            }
+          updateParams = [numericNewInterviewerId, applicantId, nmmsYear];
+          statusToReturn = "RESCHEDULED";
         }
 
-        await client.query("COMMIT");
-        return results;
+        const updateRes = await client.query(updateQuery, updateParams);
+
+        if (updateRes.rowCount > 0) {
+          results.results.push({
+            applicantId,
+            status: statusToReturn,
+            interviewRound: updateRes.rows[0].interview_round,
+          });
+        } else {
+          let reason = isCancellation
+            ? "No scheduled/rescheduled interview found to cancel (student not eligible or row already updated)."
+            : "Reassignment conditions not met (e.g., same interviewer, no pending interview).";
+
+          results.results.push({ applicantId, status: "Skipped", reason });
+        }
+      }
+
+      await client.query("COMMIT");
+      return results;
     } catch (error) {
-        await client.query("ROLLBACK");
-        console.error("Error reassigning/cancelling students:", error);
-        throw error;
+      await client.query("ROLLBACK");
+      console.error("Error reassigning/cancelling students:", error);
+      throw error;
     } finally {
-        client.release();
+      client.release();
     }
-},
+  },
 
   async getStudentsByInterviewer(interviewerName, nmmsYear) {
     try {
@@ -683,136 +675,6 @@ RETURNING si.interview_round;
     }
   },
 
-
-async submitInterviewDetails(applicantId, interviewData, uploadedFile) {
-    const {
-        interviewDate,
-        interviewTime,
-        interviewMode,
-        interviewStatus,
-        lifeGoalsAndZeal,
-        commitmentToLearning,
-        integrity,
-        communicationSkills,
-        homeVerificationRequired,
-        interviewResult,
-        remarks,
-        nmmsYear,
-    } = interviewData;
-
-    const client = await pool.connect();
-    let targetPath = null;
-
-    try {
-        await client.query("BEGIN");
-
-        if (!uploadedFile) {
-            throw new Error("No file was uploaded. File upload is mandatory.");
-        }
-        if (!remarks || remarks.trim() === "") {
-            throw new Error("Remarks field is mandatory.");
-        }
-
-        // Get the file extension and the mimetype
-        const fileExtension = path.extname(uploadedFile.name);
-        
-        // 🔥 CORRECTION 1: Derive a short, clean doc type (e.g., 'PDF') for VARCHAR(40) column.
-        const dbDocType = fileExtension.substring(1).toUpperCase(); 
-
-        // Construct the new unique and identifiable filename
-        const newFileName = `interview-${applicantId}-${nmmsYear}${fileExtension}`;
-
-        // Use cohort-year for folder structure
-        const cohortFolder = `cohort-${nmmsYear}`;
-        const baseDirectory = path.join(
-            __dirname,
-            "..",
-            "..",
-            "Data",
-            "Interview-data"
-        );
-        const targetDirectory = path.join(baseDirectory, cohortFolder);
-        targetPath = path.join(targetDirectory, newFileName);
-
-        // Ensure the target directory exists (uses Promises API)
-        await fs.mkdir(targetDirectory, { recursive: true });
-
-        // Move the file to the target path (File upload middleware handles this as a Promise)
-        await uploadedFile.mv(targetPath);
-
-        // HOME VERIFICATION LOGIC
-        const isHomeVerificationRequired =
-            homeVerificationRequired === "Required" ||
-            interviewResult === "Home Verification Required";
-        const homeVerificationYN = isHomeVerificationRequired ? "Y" : "N";
-
-        // 🔥 CORRECTION 2: Ensure status and mode are UPPERCASE for database CHECK constraint.
-        const dbStatus = interviewStatus.toUpperCase();
-        const dbMode = interviewMode.toUpperCase();
-
-        // Update the database
-        const result = await client.query(
-            `
-                UPDATE pp.student_interview
-                SET
-                    interview_date = $1, interview_time = $2, interview_mode = $3, status = $4, 
-                    life_goals_and_zeal = $5, commitment_to_learning = $6, integrity = $7, 
-                    communication_skills = $8, home_verification_req_yn = $9, interview_result = $10, 
-                    doc_name = $11, doc_type = $12, remarks = $13
-                WHERE applicant_id = $14 AND status = 'SCHEDULED' AND interview_result IS NULL
-                RETURNING *;
-                `,
-            [
-                interviewDate,
-                interviewTime,
-                dbMode,               // $3: Uppercase mode (e.g., 'ONLINE')
-                dbStatus,             // $4: Uppercase status (e.g., 'COMPLETED' or 'RESCHEDULED')
-                lifeGoalsAndZeal,
-                commitmentToLearning,
-                integrity,
-                communicationSkills,
-                homeVerificationYN,
-                interviewResult,
-                newFileName,
-                dbDocType,            // $12: Short, uppercase file extension (e.g., 'PDF')
-                remarks,
-                applicantId,
-            ]
-        );
-
-        if (result.rowCount === 0) {
-            await client.query("ROLLBACK");
-            
-            // Revert file upload
-            if (fsExistsSync(targetPath)) { 
-                await fs.unlink(targetPath);
-            }
-            
-            console.error(
-                `UPDATE FAILED for applicant ${applicantId}. Check current DB status to see why status/interview_result condition failed.`
-            );
-            throw new Error(
-                "Update failed. No matching scheduled interview found, or record was already updated/finalized."
-            );
-        }
-
-        await client.query("COMMIT");
-        return result.rows[0];
-    } catch (error) {
-        await client.query("ROLLBACK");
-        
-        // Revert file upload on error
-        if (targetPath && fsExistsSync(targetPath)) {
-            await fs.unlink(targetPath);
-        }
-        
-        console.error("Error submitting interview details:", error);
-        throw error;
-    } finally {
-        client.release();
-    }
-},
-
   getStudentsForVerification: async () => {
     try {
       // Replaced EXTRACT(YEAR FROM CURRENT_DATE) with native JS
@@ -837,108 +699,321 @@ async submitInterviewDetails(applicantId, interviewData, uploadedFile) {
     }
   },
 
+  async submitInterviewDetails(applicantId, interviewData, uploadedFile) {
+    const {
+      interviewDate,
+      interviewTime,
+      interviewMode,
+      interviewStatus,
+      lifeGoalsAndZeal,
+      commitmentToLearning,
+      integrity,
+      communicationSkills,
+      homeVerificationRequired,
+      interviewResult, // <-- Key variable for the new logic
+      remarks,
+      nmmsYear,
+    } = interviewData;
 
-  submitHomeVerification: async (data, fileData) => {
-    const client = await pool.connect();
-    let targetPath = null;
+    const client = await pool.connect();
+    // Path Multer saved the file to initially
+    let originalFilePath = uploadedFile.path;
+    let finalTargetPath = null;
 
-    try {
-      await client.query("BEGIN");
+    try {
+      await client.query("BEGIN");
 
-      const {
-        applicantId,
-        dateOfVerification,
-        remarks,
-        status,
-        verifiedBy,
-        verificationType,
-      } = data;
+      if (!uploadedFile) {
+        throw new Error("No file was uploaded. File upload is mandatory.");
+      }
+      if (!remarks || remarks.trim() === "") {
+        throw new Error("Remarks field is mandatory.");
+      }
 
-      const nmmsYear = new Date().getFullYear();
+      // 1. DETERMINE NEW PATH AND NAME
+      const fileExtension = path.extname(uploadedFile.filename); // Use filename from Multer object
+      const dbDocType = fileExtension.substring(1).toUpperCase();
 
-      // --- 1. File Handling ---
-      let docName = null;
-      let docType = null;
+      // Define custom name: interview-{applicantId}-{nmmsYear}.ext
+      const newFileName = `interview-${applicantId}-${nmmsYear}${fileExtension}`;
 
-      if (fileData && typeof fileData.mv === "function") {
-        const originalName = fileData.name || fileData.originalFilename;
-        if (!originalName) {
-          throw new Error("Uploaded file object is missing a name property.");
-        }
-        const fileExtension = path.extname(originalName);
+      // Determine the target directory where Multer initially saved the file
+      // (Multer's destination function calculates this based on __dirname, Data, and nmmsYear)
+      const targetDirectory = path.dirname(originalFilePath);
 
-        // Define components of the target path
-        const baseDirectory = path.join(
-          __dirname,
-          "..",
-          "..",
-          "Data",
-          "home-verification-data"
-        );
-        const cohortFolder = `cohort-${nmmsYear}`;
+      // Final destination path for the RENAME operation
+      finalTargetPath = path.join(targetDirectory, newFileName);
 
-        // Construct the full path to the directory where the file will land
-        const finalTargetDirectory = path.join(baseDirectory, cohortFolder);
+      // 2. RENAME FILE (Atomic operation in the same filesystem)
+      // Multer saved it as generic-name.ext, now we rename it to custom-name.ext
+      await fs.rename(originalFilePath, finalTargetPath);
 
-        // Define the final file name only
-        const fileNameOnly = `home-veri-${applicantId}-${nmmsYear}${fileExtension}`;
+      // 3. HOME VERIFICATION LOGIC (Unchanged)
+      const isHomeVerificationRequired =
+        homeVerificationRequired === "Required" ||
+        interviewResult === "Home Verification Required";
+      const homeVerificationYN = isHomeVerificationRequired ? "Y" : "N";
 
-        // Construct the full target path for the file
-        targetPath = path.join(finalTargetDirectory, fileNameOnly);
+      // 4. DB UPDATE (using custom path/name)
+      const dbStatus = interviewStatus.toUpperCase();
+      const dbMode = interviewMode.toUpperCase();
 
-        // Ensure the entire directory path exists recursively
-        await fs.mkdir(finalTargetDirectory, { recursive: true });
+      // Store path relative to the project's root Data folder structure
+      // Example path for DB: Interview-data/cohort-2025/interview-A123-2025.pdf
+      const cohortFolder = `cohort-${nmmsYear}`;
+      const dbDocName = path.join(newFileName);
 
-        // Move the file
-        await fileData.mv(targetPath);
+      const updateResult = await client.query(
+        `UPDATE pp.student_interview
+SET
+    interview_date = $1, interview_time = $2, interview_mode = $3, status = $4, 
+    life_goals_and_zeal = $5, commitment_to_learning = $6, integrity = $7, 
+    communication_skills = $8, home_verification_req_yn = $9, interview_result = $10, 
+    doc_name = $11, doc_type = $12, remarks = $13
+WHERE applicant_id = $14 AND status = 'SCHEDULED' AND interview_result IS NULL
+RETURNING *;`,
+        [
+          interviewDate,
+          interviewTime,
+          dbMode,
+          dbStatus,
+          lifeGoalsAndZeal,
+          commitmentToLearning,
+          integrity,
+          communicationSkills,
+          homeVerificationYN,
+          interviewResult,
+          dbDocName,
+          dbDocType,
+          remarks,
+          applicantId,
+        ]
+      );
 
-        // Store file info for DB (doc_name includes cohort/appli structure)
-        docName = path.join(cohortFolder, fileNameOnly);
-        docType = fileExtension.substring(1).toUpperCase(); // e.g., 'PDF', 'JPEG'
-      }
+      if (updateResult.rowCount === 0) {
+        await client.query("ROLLBACK");
 
-      // --- 2. Database Insertion ---
-      
-      // Convert status and verificationType to uppercase to satisfy DB CHECK constraints
-      const dbStatus = status.toUpperCase();
-      const dbVerificationType = verificationType.toUpperCase();
-      
-      // Determine rejection reason ID (assuming 1 is the ID for "Rejected")
-      const rejectionReasonId = dbStatus === "REJECTED" ? 1 : null; 
+        // 🛑 Revert rename on rollback: Delete the incorrectly named file
+        if (finalTargetPath && fsExistsSync(finalTargetPath)) {
+          await fs.unlink(finalTargetPath);
+        }
 
-      // 🔥 FIX 1: Used single-line SQL to resolve syntax error
-      const insertQuery = `INSERT INTO pp.home_verification (applicant_id, date_of_verification, remarks, status, verified_by, rejection_reason_id, verification_type, doc_name, doc_type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`;
+        console.error(`UPDATE FAILED for applicant ${applicantId}.`);
+        throw new Error(
+          "Update failed. No matching scheduled interview found, or record was already updated/finalized."
+        );
+      }
 
-      const values = [
-        applicantId,
-        dateOfVerification,
-        remarks,
-        dbStatus,             // $4: Must be 'ACCEPTED' or 'REJECTED'
-        verifiedBy,
-        rejectionReasonId,
-        dbVerificationType,   // $7: Must be 'PHYSICAL' or 'VIRTUAL'
-        docName,
-        docType,
-      ];
+      // 5. CONDITIONAL INSERT for 'Accepted' applicants
+      if (interviewResult === "Accepted") {
+        // Note: The original query had a JOIN on pp.exam_results and a WHERE
+        // condition on p.applicant_id = 86, which is now replaced by the
+        // dynamic applicantId from the function argument.
+        // Also, the JOIN on 'i' (pp.student_interview) is not needed
+        // since we've already confirmed the update in the previous step
+        // and the result is known to be 'Accepted'.
 
-      const result = await client.query(insertQuery, values);
+        const insertQuery = `
+INSERT INTO pp.student_master (
+    applicant_id,
+    student_name,
+    father_name,
+    mother_name,
+    father_occupation,
+    mother_occupation,
+    gender,
+    contact_no1,
+    contact_no2,
+    current_institute_dise_code,
+    previous_institute_dise_code,
+    home_address
+)
+SELECT
+    p.applicant_id,
+    p.student_name,
+    p.father_name,
+    p.mother_name,
+    s.father_occupation,
+    s.mother_occupation,
+    p.gender,
+    p.contact_no1,
+    p.contact_no2,
+    p.current_institute_dise_code,
+    p.previous_institute_dise_code,
+    p.home_address
+FROM 
+    pp.applicant_primary_info p
+LEFT JOIN 
+    pp.applicant_secondary_info s 
+ON 
+    p.applicant_id = s.applicant_id
+WHERE 
+    p.applicant_id = $1;
+`;
+        await client.query(insertQuery, [applicantId]);
+      }
 
-      await client.query("COMMIT");
-      return result.rows[0];
-    } catch (error) {
-      await client.query("ROLLBACK");
-      
-      // 🔥 FIX 2: Use the imported synchronous function fsExistsSync to check for file existence
-      if (targetPath && fsExistsSync(targetPath)) { 
-        await fs.unlink(targetPath); // Use promise-based fs.unlink for deletion
-      }
-      
-      console.error("Error in submitHomeVerification:", error);
-      throw new Error(`Home verification failed: ${error.message}`);
-    } finally {
-      client.release();
-    }
-  },
+      await client.query("COMMIT");
+      return updateResult.rows[0];
+    } catch (error) {
+      await client.query("ROLLBACK");
+
+      // 🛑 Cleanup: Delete the file if a transaction or rename error occurred
+      if (finalTargetPath && fsExistsSync(finalTargetPath)) {
+        await fs.unlink(finalTargetPath);
+      } else if (originalFilePath && fsExistsSync(originalFilePath)) {
+        // Unlikely, but checks if file remained in original location
+        await fs.unlink(originalFilePath);
+      }
+
+      console.error("Error submitting interview details:", error);
+      throw error;
+    } finally {
+      client.release();
+    }
+  },
+
+  submitHomeVerification: async (data, fileData) => {
+    const client = await pool.connect();
+    let originalFilePath = null;
+    let finalTargetPath = null;
+
+    try {
+      await client.query("BEGIN");
+
+      const {
+        applicantId,
+        dateOfVerification,
+        remarks,
+        status,
+        verifiedBy,
+        verificationType,
+      } = data;
+
+      const nmmsYear = new Date().getFullYear();
+
+      // --- 1. File Handling (Multer Cleanup and Rename) ---
+      let docName = null;
+      let docType = null;
+      let newFileName = null;
+
+      if (fileData) {
+        // 🔥 Multer has saved the file. We read its path.
+        originalFilePath = fileData.path;
+
+        // Derive file extension
+        const fileExtension = path.extname(fileData.filename);
+        docType = fileExtension.substring(1).toUpperCase();
+
+        // Define custom name: home-veri-{applicantId}-{nmmsYear}.ext
+        newFileName = `home-veri-${applicantId}-${nmmsYear}${fileExtension}`;
+
+        // Determine the target directory where Multer initially saved the file
+        const targetDirectory = path.dirname(originalFilePath);
+
+        // Final destination path for the RENAME operation
+        finalTargetPath = path.join(targetDirectory, newFileName);
+
+        // RENAME FILE
+        await fs.rename(originalFilePath, finalTargetPath);
+
+        // Store DB path relative to the project's root Data folder structure
+        // Example path for DB: Home-verification-data/cohort-2025/home-veri-A123-2025.pdf
+        const cohortFolder = `cohort-${nmmsYear}`;
+        docName = path.join(
+          newFileName
+        );
+      }
+
+      // --- 2. Database Insertion into pp.home_verification ---
+      const dbStatus = status.toUpperCase();
+      const dbVerificationType = verificationType.toUpperCase();
+      const rejectionReasonId = dbStatus === "REJECTED" ? 1 : null;
+
+      const insertQuery = `INSERT INTO pp.home_verification (applicant_id, date_of_verification, remarks, status, verified_by, rejection_reason_id, verification_type, doc_name, doc_type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`;
+
+      const values = [
+        applicantId,
+        dateOfVerification,
+        remarks,
+        dbStatus,
+        verifiedBy,
+        rejectionReasonId,
+        dbVerificationType,
+        docName,
+        docType,
+      ];
+
+      const result = await client.query(insertQuery, values);
+
+      // --- 3. CONDITIONAL INSERT into pp.student_master ---
+      if (dbStatus === "ACCEPTED") {
+        const masterInsertQuery = `
+INSERT INTO pp.student_master (
+    applicant_id,
+    student_name,
+    father_name,
+    mother_name,
+    father_occupation,
+    mother_occupation,
+    gender,
+    contact_no1,
+    contact_no2,
+    current_institute_dise_code,
+    previous_institute_dise_code,
+    home_address
+)
+SELECT
+    p.applicant_id,
+    p.student_name,
+    p.father_name,
+    p.mother_name,
+    s.father_occupation,
+    s.mother_occupation,
+    p.gender,
+    p.contact_no1,
+    p.contact_no2,
+    p.current_institute_dise_code,
+    p.previous_institute_dise_code,
+    p.home_address
+FROM 
+    pp.applicant_primary_info p
+LEFT JOIN 
+    pp.applicant_secondary_info s 
+ON 
+    p.applicant_id = s.applicant_id
+WHERE 
+    p.applicant_id = $1;
+`;
+        // Note: Since this is inside a transaction after the ACCEPTED status
+        // has been confirmed and inserted into pp.home_verification,
+        // we only need to query the primary and secondary info tables.
+        // The JOIN to pp.home_verification and WHERE h.status='ACCEPTED'
+        // are unnecessary complexity here, as the JS condition and
+        // transaction isolation already guarantee the status is ACCEPTED
+        // for the specific applicantId.
+        await client.query(masterInsertQuery, [applicantId]);
+      }
+
+      await client.query("COMMIT");
+      return result.rows[0];
+    } catch (error) {
+      await client.query("ROLLBACK");
+
+      // 🛑 Cleanup: Delete the file if a transaction or rename error occurred
+      if (finalTargetPath && fsExistsSync(finalTargetPath)) {
+        await fs.unlink(finalTargetPath);
+      } else if (originalFilePath && fsExistsSync(originalFilePath)) {
+        // Check if the file remained in its original Multer location due to rename failure
+        await fs.unlink(originalFilePath);
+      }
+
+      console.error("Error in submitHomeVerification:", error);
+      throw new Error(`Home verification failed: ${error.message}`);
+    } finally {
+      client.release();
+    }
+  },
 
   async getAssignmentReportData(interviewerId, nmmsYear, applicantIds) {
     if (!applicantIds || applicantIds.length === 0) {
@@ -949,7 +1024,6 @@ async submitInterviewDetails(applicantId, interviewData, uploadedFile) {
     const applicantIdsFormatted = applicantIds.map(String);
     const nmmsYearNum = parseInt(nmmsYear, 10);
 
-  
     const profileSql = format(
       `
         SELECT

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './EvaluationInterview.css'; 
-
+ 
 const API_BASE_URL = `${process.env.REACT_APP_BACKEND_API_URL}/api/interview`;
 
 const api = {
@@ -35,7 +35,6 @@ const api = {
     getReassignableBlockStudents: (stateName, districtName, blockName, nmmsYear) =>
       axios.get(`${API_BASE_URL}/reassignable-students-by-block`, { params: { stateName, districtName, blockName, nmmsYear } }),
 };
-
 
 function BlockAssignmentView() {
     const [states, setStates] = useState([]);
@@ -146,25 +145,39 @@ function BlockAssignmentView() {
         }
     };
 
-    const handleDownloadFile = useCallback(async ({ applicantIds, nmmsYear, interviewerId, interviewerName }) => {
-        console.log(`[DOWNLOAD LOGIC] Initiated download for ${applicantIds.length} students assigned to ${interviewerName}.`);
-        try {
-            const res = await api.downloadAssignmentReport(applicantIds, nmmsYear, interviewerId);
-            const url = window.URL.createObjectURL(new Blob(
-                [res.data], 
-                { type: 'application/pdf' }
-            ));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `Assignment_Report_${interviewerId}_${Date.now()}.pdf`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-        } catch (error) {
-            console.error("Download failed:", error);
-            setMessages(prev => [...prev, "❌ Failed to automatically download assignment report."]);
-        }
-    }, [setMessages]);
+   const handleDownloadFile = useCallback(async ({ applicantIds, nmmsYear, interviewerId, interviewerName }) => {
+    console.log(`[DOWNLOAD LOGIC] Initiated download for ${applicantIds.length} students assigned to ${interviewerName}.`);
+    
+    // 1. Prepare a clean filename
+    // Replace spaces or special characters in the name with underscores for a valid filename
+    const cleanInterviewerName = interviewerName.replace(/[^a-zA-Z0-9]+/g, '_');
+    
+    // 2. Construct the final filename using the name and current timestamp
+    const filename = `Assignment_Report_${cleanInterviewerName}_${nmmsYear}.pdf`;
+
+    try {
+        const res = await api.downloadAssignmentReport(applicantIds, nmmsYear, interviewerId);
+        
+        const url = window.URL.createObjectURL(new Blob(
+            [res.data], 
+            { type: 'application/pdf' }
+        ));
+        
+        const link = document.createElement('a');
+        link.href = url;
+        
+        // 🔥 CORRECTION: Use the clean name variable here
+        link.setAttribute('download', filename);
+        
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        
+    } catch (error) {
+        console.error("Download failed:", error);
+        setMessages(prev => [...prev, "❌ Failed to automatically download assignment report."]);
+    }
+}, [setMessages]);
 
 
     const handleAssignOrReassign = () => {
@@ -463,8 +476,6 @@ function AssignmentTypeSelector({ onSelectType, selectedType }) {
     );
 }
 
-
-
 // --- Component: ConfirmationModal ---
 const ConfirmationModal = ({ message, onConfirm, onCancel }) => {
     return (
@@ -546,7 +557,6 @@ function AssignmentReportDownloader({ interviewerId, interviewerName, nmmsYear, 
         </button>
     );
 }
-
 
 
 const handleDownloadFile = async ({ applicantIds, nmmsYear, interviewerId, interviewerName }) => {
@@ -1481,10 +1491,9 @@ const FillInterviewView = () => {
                 return;
             }
 
-            // Validate file size (500 MB = 500 * 1024 * 1024 bytes)
-            const maxSizeBytes = 500 * 1024 * 1024; 
+            const maxSizeBytes = 1 * 1024 * 1024; 
             if (file.size > maxSizeBytes) {
-                setFileError('File size exceeds 500MB.'); 
+                setFileError('File size exceeds 10MB.'); 
                 setSelectedFile(null);
                 return;
             }
@@ -1498,7 +1507,6 @@ const FillInterviewView = () => {
         }
     };
 
-    // Handler for form input changes, updating the formData state
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -1507,7 +1515,6 @@ const FillInterviewView = () => {
         }));
     };
 
-    // The main function to handle form submission and send data to the backend
     const handleSubmit = async (e) => {
         e.preventDefault();
         showMessageBox({ type: '', text: '' }); // Clear previous messages
@@ -1517,19 +1524,16 @@ const FillInterviewView = () => {
             return;
         }
 
-        // Validate that a file has been selected
         if (!selectedFile) {
             setFileError('File upload is mandatory.');
             return;
         }
 
-        // Validate mandatory Remarks field
         if (!formData.remarks.trim()) {
             showMessageBox('error', 'Remarks field is mandatory.');
             return;
         }
 
-        // --- Conditional Validation ---
         const isRescheduled = formData.interviewStatus === 'Rescheduled';
         const isCompleted = formData.interviewStatus === 'Completed';
 
@@ -1538,7 +1542,6 @@ const FillInterviewView = () => {
             return;
         }
         
-        // Time validation omitted for brevity, assuming existing logic is correct
 
         setLoading(prev => ({ ...prev, submit: true }));
 
@@ -1909,7 +1912,7 @@ const FillInterviewView = () => {
                                 {/* File Upload Section */}
                                 <div className="pt-4">
                                     <label htmlFor="interviewFile" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Upload Interview Report (JPEG or PDF, max 500MB)
+                                        Upload Interview Report (JPEG or PDF, max 10MB)
                                     </label>
                                     <input
                                         type="file"
@@ -2007,8 +2010,8 @@ const HomeVerificationView = () => {
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
-        if (selectedFile && selectedFile.size > 500 * 1024 * 1024) { 
-            setMessage('File size exceeds the 500MB limit.');
+        if (selectedFile && selectedFile.size > 1 * 1024 * 1024) { 
+            setMessage('File size exceeds the 10MB limit.');
             setFile(null);
             e.target.value = null;
         } else {
@@ -2062,6 +2065,8 @@ const HomeVerificationView = () => {
         return (
             <div>
                 <h2>Home Verification Entry</h2>
+                <li> The report must consist of a PDF provided by the interviewer, and that PDF should correctly display the embedded images (only PDFs are accepted or one image).</li>
+
                 <p>
                     Verification submitted successfully! This application is complete.
                 </p>
@@ -2077,7 +2082,7 @@ const HomeVerificationView = () => {
         return (
             <div>
                 <h2>Home Verification Entry</h2>
-                <p>No students currently require Home Verification or all pending verifications have been submitted.</p>
+                <p>No students currently assigned for Home Verification or all pending verifications have been submitted.</p>
                 {message && <p>{message}</p>}
             </div>
         );
@@ -2182,9 +2187,9 @@ const HomeVerificationView = () => {
                     />
                 </div>
 
-                {/* 7. File Upload (Max 500MB) */}
+                {/* 7. File Upload (Max 10MB) */}
                 <div>
-                    <label htmlFor="file">Upload Document (Max 500MB):</label>
+                    <label htmlFor="file">Upload Document (Max 10MB):</label>
                     <input
                         type="file"
                         id="file"
@@ -2206,8 +2211,6 @@ const HomeVerificationView = () => {
     );
 };
 
-
-
 function EvaluationInterview() {
     // Added 'homeVerification' to the possible states
     const [view, setView] = useState('main'); // 'main', 'assign', 'fill', 'homeVerification'
@@ -2226,7 +2229,6 @@ function EvaluationInterview() {
                                 <li>A student can be assigned to one interviewer at a time for a round. They can be reassigned as many times as needed before the evaluation is submitted.</li>
                                 <li>To conclude the interview, a student will have a maximum of 3 rounds.</li>
                                 <li>A student cannot be assigned to the same interviewer for a subsequent round.</li>
-                                <li> Reschedule meanse pushed to next round. </li>
                             </ul>
                         </div>
                         <AssignInterviewView
@@ -2243,6 +2245,15 @@ function EvaluationInterview() {
                 return (
                     <div className="detailed-view">
                         <h1 className="detailed-view-heading">Fill Interview Results</h1>
+                         <div className="w-full max-w-2xl mt-8 pt-6 border-t-2 border-gray-200">
+                            <h2 className="text-2xl font-semibold text-gray-700 mb-4">Instructions</h2>
+                            <ul className="list-disc list-inside space-y-2 text-gray-600">
+                                <li>Rescheduled means the interview result can be "Another Round" or "Home Verification Required".</li>
+                                <li>Every field is required. Please double-check your submission, as no corrections will be permitted after saving.</li>
+                                <li>If the result is "Another Interview," the student must be assigned through the Assign Students Interview interface.</li>
+                                <li> The report must consist of a PDF provided by the interviewer, and that PDF should correctly display the embedded images (only PDFs are accepted or one image).</li>
+                            </ul>
+                        </div>
                         <FillInterviewView />
                         <div className="back-button-container">
                             <button onClick={() => setView('main')} className="back-button">Back</button>
