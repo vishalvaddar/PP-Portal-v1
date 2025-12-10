@@ -1,5 +1,4 @@
-/**
- * @fileoverview Single-file React component for Interview and Home Verification Tracking.
+/** * @fileoverview Single-file React component for Interview and Home Verification Tracking.
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
@@ -10,8 +9,7 @@ const API_BASE_URL = 'http://localhost:5000/api/tracking';
 const CURRENT_COHORT_FOLDER = 'cohort-2025'; 
 
 // --- FILTER CONSTANTS (FIXED) ---
-const STATUS_OPTIONS = ['Scheduled', 'Rescheduled', 'Completed'];
-// FIX: Added 'Home Verification Submitted' back for filter functionality
+const STATUS_OPTIONS = ['SCHEDULED', 'RESCHEDULED', 'COMPLETED'];
 const RESULT_OPTIONS = ['Accepted', 'Rejected', 'Home Verification Required'];
 
 
@@ -30,8 +28,8 @@ const EvaluationTracking = () => {
 
     // Filter State
     const [selectedInterviewerId, setSelectedInterviewerId] = useState(null);
-    const [selectedStatuses, setSelectedStatuses] = useState([]);  
-    const [selectedResults, setSelectedResults] = useState([]);    
+    const [selectedStatuses, setSelectedStatuses] = useState([]);  
+    const [selectedResults, setSelectedResults] = useState([]);    
 
     const isFilteredList = !!selectedInterviewerId || selectedStatuses.length > 0 || selectedResults.length > 0;
 
@@ -80,7 +78,7 @@ const EvaluationTracking = () => {
     }, [currentPage, selectedInterviewerId, selectedStatuses, selectedResults]);
 
     /**
-     * FIX: Always fetches ALL interviews and verifications for the detail view 
+     * Always fetches ALL interviews and verifications for the detail view 
      * to ensure documents and history are always visible.
      */
     const fetchStudentDetails = useCallback(async (applicantId) => {
@@ -95,15 +93,20 @@ const EvaluationTracking = () => {
                 axios.get(`${API_BASE_URL}/students/${applicantId}/home/all`)
             ]);
 
+            // Map home verification data to a similar structure as interviews
             let roundsData = [
                 ...interviewResponse.data, 
                 ...homeResponse.data.map(hv => ({ 
                     ...hv, 
                     is_home_verification: true, 
-                    interview_round: 999 
+                    interview_round: 999, // Use a high number to put verification at the end
+                    // Ensure the main status/result keys are correctly set for display in the box
+                    status: hv.home_verification_status || 'Submitted',
+                    interview_result: hv.home_verification_status || 'Verified',
                 })) 
             ];
             
+            // Sort by round number (interviews first, then home verification)
             roundsData.sort((a, b) => (a.interview_round || 0) - (b.interview_round || 0));
             
             studentName = roundsData.length > 0 ? (roundsData[0].student_name || 'N/A') : 'N/A';
@@ -166,8 +169,6 @@ const EvaluationTracking = () => {
     };
 
     const handleCardClick = (applicantId) => {
-        // FIX: Now always call fetchStudentDetails without the filtered flag, 
-        // ensuring ALL rounds are loaded for the detail view.
         fetchStudentDetails(applicantId); 
     };
 
@@ -183,6 +184,7 @@ const EvaluationTracking = () => {
              return;
         }
         
+        // This is the URL that the backend must handle, using 'interview' or 'home' as the type
         const url = `${API_BASE_URL}/document/${applicantId}/${cohortId}?type=${roundType}`;
         window.open(url, '_blank');
     };
@@ -249,10 +251,10 @@ const EvaluationTracking = () => {
     const RoundSelectorBox = ({ round, index, isActive, setActiveRoundIndex }) => {
         const isInterview = !round.is_home_verification;
 
-        const title = isInterview ? `Interview Round ${round.interview_round}` : `Home Verification `;
+        const title = isInterview ? `Interview Round ${round.interview_round}` : `🏠 Home Verification`;
         
-        const status = isInterview ? round.status : (round.home_verification_status || 'Pending');
-        const result = isInterview ? round.interview_result : (round.home_verification_status || 'Pending');
+        const status = round.status || round.home_verification_status || 'Pending';
+        const result = round.interview_result || round.home_verification_status || 'Pending';
         
         const isSubmitted = isInterview ? !!round.interview_result : !!round.verification_id; 
         
@@ -265,7 +267,7 @@ const EvaluationTracking = () => {
                 statusClass = 'status-success'; 
             } else if (result === 'Rejected' || result === 'Failed') {
                 statusClass = 'status-failure'; 
-            } else if (status === 'Scheduled' || status === 'Rescheduled' || result === 'Pending') {
+            } else if (status === 'Scheduled' || status === 'Rescheduled' || result === 'Pending' || result === 'Submitted') {
                 statusClass = 'status-pending'; 
             }
         }
@@ -285,94 +287,115 @@ const EvaluationTracking = () => {
         );
     };
 
-const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload }) => {
-    const isInterview = !round.is_home_verification;
-    const isHomeVerification = !!round.is_home_verification;
+    const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload }) => {
+        const isInterview = !round.is_home_verification;
+        const isHomeVerification = !!round.is_home_verification;
 
-    const docName = isInterview ? round.doc_name : round.home_verification_doc_name;
-    const docType = isInterview ? round.doc_type : round.home_verification_doc_type;
-    
-    // NOTE: The result variable is correctly determined here from interview_result or home_verification_status
-    const finalResult = isInterview ? round.interview_result : (round.home_verification_status || 'N/A');
-    const currentStatus = round.status || round.home_verification_status || 'N/A';
-    
-    const roundType = isInterview ? 'interview' : 'home';
-    const cohortId = CURRENT_COHORT_FOLDER; 
-    
-    // Document exists check
-    const documentExists = !!docName && !!docType; 
-    
-    // Determine the assignment/verifier details
-    const assignedPerson = isInterview ? (round.interviewer || 'N/A') : (round.verified_by || 'N/A');
-    const assignmentLabel = isInterview ? 'Interviewer' : 'Verified By';
+        // --- Path Cleaning Utility ---
+        const getCleanFileName = (fullPath) => {
+            if (!fullPath) return null;
+            // Split by both forward slash (/) and backslash (\) and return the last element
+            const parts = fullPath.split(/[/\\]/);
+            return parts.pop();
+        };
+        // ----------------------------
+        
+        // <<< CORRECTED DATA EXTRACTION LOGIC (Robust Check) >>>
+        let docNameRaw;
+        let docType;
 
+        if (isHomeVerification) {
+            // Explicitly use the Home Verification keys provided by the Model
+            docNameRaw = round.home_verification_doc_name;
+            docType = round.home_verification_doc_type;
+        } else {
+            // Use the standard Interview keys
+            docNameRaw = round.doc_name;
+            docType = round.doc_type;
+        }
+        // <<< END CORRECTED DATA EXTRACTION LOGIC >>>
 
-    return (
-        <div className="bg-white p-6 rounded-xl shadow-inner border border-gray-200 mt-4">
-            <h3 className="text-xl font-bold text-gray-800 mb-3 border-b pb-2">
-                {isHomeVerification ? `Home Verification Details` : `Interview Evaluation (Round ${round.interview_round || 'N/A'})`}
-            </h3>
-            
-            {/* --- PRIMARY DETAILS SECTION --- */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-                {/* Col 1: Date, Time, Mode */}
-                <div>
-                    <p className="font-semibold text-gray-800 mb-2">Round Details</p>
-                    <p className="mb-1">Date: {round.interview_date || round.date_of_verification || 'N/A'}</p>
-                </div>
+        // Use the Cleaned Name for Display
+        const docName = getCleanFileName(docNameRaw);
+
+        const finalResult = isInterview ? round.interview_result : (round.home_verification_status || 'N/A');
+        const currentStatus = round.status || round.home_verification_status || 'N/A';
+        const roundType = isInterview ? 'interview' : 'home';
+        const assignedPerson = isInterview ? (round.interviewer || 'N/A') : (round.verified_by || 'N/A');
+        const assignmentLabel = isInterview ? 'Interviewer' : 'Verified By';
+        
+        const cohortId = CURRENT_COHORT_FOLDER; 
+        
+        // Document exists check relies on the raw string (the full path) having a value AND a docType
+        const documentExists = !!docNameRaw && !!docType; 
+        
+
+        return (
+            <div className="bg-white p-6 rounded-xl shadow-inner border border-gray-200 mt-4">
+                <h3 className="text-xl font-bold text-gray-800 mb-3 border-b pb-2">
+                    {isHomeVerification ? `🏠 Home Verification Details` : `Interview Evaluation (Round ${round.interview_round || 'N/A'})`}
+                </h3>
                 
-                {/* Col 2: Assignment, Status, Result */}
-                <div>
-                    <p className="mb-1"> Status: {currentStatus}</p>
-                    <p className="mb-1 font-bold">
-                        Final Result: <span className="text-blue-700">{finalResult || 'Not Submitted'}</span>
-                    </p>
-                    <p className="mb-1">
-                        {assignmentLabel}: {assignedPerson}
-                    </p>
-                </div>
-            </div>
-
-            {/* --- HOME VERIFICATION SPECIFIC DETAILS --- */}
-            {isHomeVerification && (
-                <div className="mt-4 pt-3 border-t grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                {/* --- PRIMARY DETAILS SECTION --- */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                    {/* Col 1: Date, Time, Mode */}
                     <div>
-                        <p className="mb-1">Verification Type: {round.home_verification_type || 'N/A'}</p>
-                        <p className="mb-1">Remarks: {round.remarks || 'N/A'}</p>
+                        <p className="font-semibold text-gray-800 mb-2">Round Details</p>
+                        <p className="mb-1">Date: {round.interview_date || round.date_of_verification || 'N/A'}</p>
+                    </div>
+                    
+                    {/* Col 2: Assignment, Status, Result */}
+                    <div>
+                        <p className="mb-1"> Status: {currentStatus}</p>
+                        <p className="mb-1 font-bold">
+                            Final Result: <span className="text-blue-700">{finalResult || 'Not Submitted'}</span>
+                        </p>
+                        <p className="mb-1">
+                            {assignmentLabel}: {assignedPerson}
+                        </p>
                     </div>
                 </div>
-            )}
 
-
-            {/* --- INTERVIEW SCORES --- */}
-            {isInterview && (
-                <div className="mt-6 pt-3 border-t">
-                    <div className="grid grid-cols-2 gap-3 text-xs md:text-sm">
-                        <p>Life Goals & Zeal: {round.life_goals_and_zeal || 'N/A'}</p>
-                        <p>Commitment to Learning: {round.commitment_to_learning || 'N/A'}</p>
-                        <p>Integrity: {round.integrity || 'N/A'}</p>
-                        <p>Communication Skills: {round.communication_skills || 'N/A'}</p>
+                {/* --- HOME VERIFICATION SPECIFIC DETAILS --- */}
+                {isHomeVerification && (
+                    <div className="mt-4 pt-3 border-t grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                        <div>
+                            <p className="mb-1">Verification Type: {round.home_verification_type || 'N/A'}</p>
+                            <p className="mb-1">Remarks: {round.remarks || 'N/A'}</p>
+                        </div>
                     </div>
-                </div>
-            )}
-            
-            {/* --- DOCUMENT DOWNLOAD SECTION --- */}
-            {documentExists && (
-                <div className="mt-6 pt-3 border-t flex items-center justify-between bg-blue-50 p-3 rounded-lg border border-blue-200">
-                    <p className="text-sm font-medium text-blue-800 truncate mr-4">
-                        Uploaded File: {docName} ({docType})
-                    </p>
-                    <button
-                        onClick={() => handleDocumentDownload(applicantId, roundType, cohortId)}
-                        className="flex items-center text-xs font-semibold px-3 py-1 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition shadow-md"
-                    >
-                        View
-                    </button>
-                </div>
-            )}
-        </div>
-    );
-};
+                )}
+
+
+                {/* --- INTERVIEW SCORES (Only for Interview Rounds) --- */}
+                {isInterview && (
+                    <div className="mt-6 pt-3 border-t">
+                        <div className="grid grid-cols-2 gap-3 text-xs md:text-sm">
+                            <p>Life Goals & Zeal: {round.life_goals_and_zeal || 'N/A'}</p>
+                            <p>Commitment to Learning: {round.commitment_to_learning || 'N/A'}</p>
+                            <p>Integrity: {round.integrity || 'N/A'}</p>
+                            <p>Communication Skills: {round.communication_skills || 'N/A'}</p>
+                        </div>
+                    </div>
+                )}
+                
+                {/* --- DOCUMENT DOWNLOAD SECTION --- */}
+                {documentExists && (
+                    <div className="mt-6 pt-3 border-t flex items-center justify-between bg-blue-50 p-3 rounded-lg border border-blue-200">
+                        <p className="text-sm font-medium text-blue-800 truncate mr-4">
+                            Uploaded File: {docName} ({docType})
+                        </p>
+                        <button
+                            onClick={() => handleDocumentDownload(applicantId, roundType, cohortId)}
+                            className="flex items-center text-xs font-semibold px-3 py-1 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition shadow-md"
+                        >
+                            View
+                        </button>
+                    </div>
+                )}
+            </div>
+        );
+    };
 
     const DetailsView = ({ studentDetails, handleBackToList, error }) => {
         const [activeRoundIndex, setActiveRoundIndex] = useState(0);
@@ -406,7 +429,7 @@ const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload }) => {
         }
         // -------------------------------------
 
-        return (
+        return ( 
             <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
                 <button
                     onClick={handleBackToList}

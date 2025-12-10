@@ -37,19 +37,23 @@ app.use(express.urlencoded({ extended: true }));
 const actionLogger = require("./middleware/loggingMiddleware");
 app.use(actionLogger({ logBody: true, logQuery: true }));
 
-// ────────────────────────────────
-// STATIC FILES
-// ────────────────────────────────
+// ───── Static Files ─────
+// Serve the root Data directory for public access.
 app.use(
-  "/uploads/profile_photos",
-  express.static(path.join(__dirname, "uploads", "profile_photos"))
+  "/Data", 
+  express.static(dataDir)
+);
+ 
+app.use(
+  "/uploads/profile_photos",
+  express.static(path.join(__dirname, "uploads", "profile_photos"))
 );
 
 app.use("/logs", express.static(path.join(__dirname, "logs")));
 
 app.use(
-  "/halltickets",
-  express.static(path.join(__dirname, "public", "halltickets"))
+  "/halltickets",
+  express.static(path.join(__dirname, "public", "halltickets"))
 );
 
 // ────────────────────────────────
@@ -96,7 +100,7 @@ const authRoutes = require("./routes/authRoutes");
 const adminDashboardRoutes = require("./routes/adminDashboardRoutes");
 const coordinatorRoutes = require("./routes/coordinatorRoutes");
 const studentRoutes = require("./routes/studentRoutes");
-const applicantRoutes = require("./routes/applicantRoutes");
+const applicantRoutes = require("./routes/applicantRoutes"); 
 const bulkUploadRoutes = require("./routes/bulkUploadRoutes");
 const searchRoutes = require("./routes/searchRoutes");
 const jurisdictionRoutes = require("./routes/jurisdictionRoutes");
@@ -173,7 +177,7 @@ app.use("/api/timetable", timetableRoutes);
 // 404 HANDLER
 // ────────────────────────────────
 app.use((req, res) => {
-  res.status(404).json({ error: "Route not found" });
+  res.status(404).json({ error: "Route not found" });
 });
 
 // ────────────────────────────────
