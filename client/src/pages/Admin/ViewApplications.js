@@ -104,8 +104,6 @@ const ViewApplications = () => {
                                     <th>District</th>
                                     <th>Block</th>
                                     <th>Institute Name</th>
-                                    <th>Medium</th>
-                                    <th>State</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -122,8 +120,6 @@ const ViewApplications = () => {
                                         <td>{app.district_name}</td>
                                         <td>{app.block_name}</td>
                                         <td>{app.institute_name || 'N/A'}</td>
-                                        <td>{app.medium}</td>
-                                        <td>{app.state_name}</td>
                                     </tr>
                                 ))}
                             </tbody>

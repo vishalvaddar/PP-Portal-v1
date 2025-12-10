@@ -3,48 +3,95 @@ const cors = require("cors");
 const path = require("path");
 require("dotenv").config();
 const fs = require("fs");
+const multer = require("multer");
 
 const pool = require("./config/db");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ───── Ensure Uploads Directory ─────
+// ────────────────────────────────
+// PATHS & DIRECTORIES
+// ────────────────────────────────
+const PROJECT_ROOT_DIR = path.join(__dirname, "..");
+const dataDir = path.join(PROJECT_ROOT_DIR, "Data");
+const interviewDataDir = path.join(dataDir, "Interview-data");
+const homeVerificationDataDir = path.join(dataDir, "Home-verification-data");
+
 const uploadsDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-const interviewDataDir = path.join(__dirname, "Data", "Interview-data");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
 
-// ───── Middleware ─────
+// Ensure directories exist
+[uploadsDir, interviewDataDir, homeVerificationDataDir].forEach((dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
+
+// ────────────────────────────────
+// MIDDLEWARE
+// ────────────────────────────────
 app.use(cors({ origin: "*" }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// ───── Logging Middleware ─────
+// Logging Middleware
 const actionLogger = require("./middleware/loggingMiddleware");
 app.use(actionLogger({ logBody: true, logQuery: true }));
 
-// ───── Static Files ─────
-app.use(
-  "/Data/Interview-data",
-  express.static(path.join(__dirname, "Data", "Interview-data"))
-);
-app.use(
-  "/Data/Home-verification-data",
-  express.static(path.join(__dirname, "Data", "Home-verification-data"))
-);
+// ────────────────────────────────
+// STATIC FILES
+// ────────────────────────────────
 app.use(
   "/uploads/profile_photos",
   express.static(path.join(__dirname, "uploads", "profile_photos"))
 );
+
 app.use("/logs", express.static(path.join(__dirname, "logs")));
+
 app.use(
   "/halltickets",
   express.static(path.join(__dirname, "public", "halltickets"))
 );
 
-// ───── Routes ─────
+// ────────────────────────────────
+// DYNAMIC MULTER STORAGE
+// ────────────────────────────────
+const dynamicUploadStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    let baseDir =
+      file.fieldname === "verificationDocument"
+        ? homeVerificationDataDir
+        : interviewDataDir;
+
+    const nmmsYear = req.body.nmmsYear || new Date().getFullYear();
+    const cohortFolderName = `cohort-${String(nmmsYear)}`;
+    const finalTargetDirectory = path.join(baseDir, cohortFolderName);
+
+    if (!fs.existsSync(finalTargetDirectory)) {
+      fs.mkdirSync(finalTargetDirectory, { recursive: true });
+    }
+
+    cb(null, finalTargetDirectory);
+  },
+
+  filename: (req, file, cb) => {
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(
+      null,
+      `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`
+    );
+  },
+});
+
+const upload = multer({
+  storage: dynamicUploadStorage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+});
+
+app.set("multerUpload", upload);
+
+// ────────────────────────────────
+// ROUTES IMPORT
+// ────────────────────────────────
 const authRoutes = require("./routes/authRoutes");
 const adminDashboardRoutes = require("./routes/adminDashboardRoutes");
 const coordinatorRoutes = require("./routes/coordinatorRoutes");
@@ -72,18 +119,18 @@ const systemConfigRoutes = require("./routes/systemConfigRoutes");
 const eventRoutes = require("./routes/eventRoutes");
 const customListRoutes = require("./routes/customListRoutes");
 
+// ────────────────────────────────
+// ROUTE MOUNTING
+// ────────────────────────────────
 
-// ───── Use Routes ─────
-
+// Bulk Upload
 app.use("/api/bulk-upload", bulkUploadRoutes);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
+// Auth & System Config
 app.use("/auth", authRoutes);
 app.use("/api/system-config", systemConfigRoutes);
 
-// Applicant Management
+// Applicants
 app.use("/api/applicants", applicantRoutes);
 
 // Data & Utilities
@@ -96,7 +143,7 @@ app.use("/api/institutes", institutesRoutes);
 app.use("/api/districts", districtRoutes);
 app.use("/api", studentSearchRoutes);
 app.use("/api", eventRoutes);
-app.use('/api/custom-list', customListRoutes);
+app.use("/api/custom-list", customListRoutes);
 
 // Shortlisting
 app.use("/api/shortlist/generate", generateShortlistRoutes);
@@ -113,23 +160,25 @@ app.use("/api/evaluation", evaluationRoutes);
 app.use("/api/evaluation-dashboard", evaluationDashboardRoutes);
 app.use("/api/tracking", trackingRoutes);
 
-// Interviews 
+// Interview
 app.use("/api/interview", interviewRoutes);
 
-
-//result and ranking
-
-app.use("/api/results",resultandrankinkRoutes)
+// Results & Ranking
+app.use("/api/results", resultandrankinkRoutes);
 
 // Timetable
 app.use("/api/timetable", timetableRoutes);
 
-// ───── 404 Handler ─────
+// ────────────────────────────────
+// 404 HANDLER
+// ────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-// ───── Start Server ─────
+// ────────────────────────────────
+// START SERVER
+// ────────────────────────────────
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });

@@ -5,6 +5,8 @@ import ProfileSection from "../../components/ProfileSection";
 import ProfileField from "../../components/ProfileField";
 import classes from "./ViewStudentInfo.module.css";
 
+import { useFetchStates, useFetchEducationDistricts, useFetchBlocks, useFetchInstitutes } from "../../hooks/useJurisData";
+
 const ViewStudentInfo = () => {
   const { nmms_reg_number } = useParams();
   const navigate = useNavigate();
@@ -15,21 +17,31 @@ const ViewStudentInfo = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [photoPreview, setPhotoPreview] = useState("");
+  const [states, setStates] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [blocks, setBlocks] = useState([]);
   const [institutes, setInstitutes] = useState([]);
-  const [expandedSections, setExpandedSections] = useState({ "personal": true });
+  const [expandedSections, setExpandedSections] = useState({ personal: true });
 
   const isFromBatches = location.pathname.includes("/batches/view-student-info/");
   const pageTitle = isFromBatches ? "Student Profile" : "Applicant Profile";
 
-  // ---------------------------------------------
-  // LABELS
-  // ---------------------------------------------
+  useFetchStates(setStates);
+
+  useFetchEducationDistricts(formData?.app_state, setDistricts);
+
+  // Fetch Blocks when district changes
+  useFetchBlocks(formData?.district, setBlocks);
+
+  // Fetch Institutes when nmms_block changes
+  useFetchInstitutes(formData?.nmms_block, setInstitutes);
+
   const fieldLabels = {
     nmms_year: "NMMS Year",
     nmms_reg_number: "NMMS Registration Number",
     student_name: "Student Name",
     gender: "Gender",
-    DOB: "Date of Birth",
+    dob: "Date of Birth",
     medium: "Medium of Instruction",
     aadhaar: "Aadhaar Number",
     father_name: "Father's Name",
@@ -67,15 +79,12 @@ const ViewStudentInfo = () => {
     sat_score: "SAT Score"
   };
 
-  // ---------------------------------------------
-  // SECTIONS (safe)
-  // ---------------------------------------------
   const sections = [
     {
       key: "personal",
       title: "Personal Information",
       icon: "👤",
-      fields: ["student_name", "gender", "DOB", "aadhaar", "medium", "father_name", "mother_name"]
+      fields: ["student_name", "gender", "dob", "aadhaar", "medium", "father_name", "mother_name"]
     },
     {
       key: "address",
@@ -121,73 +130,69 @@ const ViewStudentInfo = () => {
     }
   ];
 
-  // ---------------------------------------------
-  // FETCH DATA
-  // ---------------------------------------------
+  // Fetch applicant data
   useEffect(() => {
     const fetchStudentDetails = async () => {
       try {
         setLoading(true);
         const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/applicants/reg/${nmms_reg_number}`);
-        const data = res.data;
+        const data = res.data.data;
+
+        console.log("Fetched student data:", data);
 
         if (!data) {
           setError("Student not found.");
           return;
         }
 
-        const dobFromServer = data.dob;
-        const formattedDOB = dobFromServer ? new Date(dobFromServer).toISOString().split("T")[0] : "";
+        const formattedDOB = data.dob ? new Date(data.dob).toISOString().split("T")[0] : "";
 
-        const primaryData = {
-          applicant_id: data.data.applicant_id,
-          nmms_year: data.data.nmms_year,
-          nmms_reg_number: data.data.nmms_reg_number,
-          app_state: data.data.state_name,
-          district: data.data.district_name,
-          nmms_block: data.data.block_name,
-          student_name: data.data.student_name,
-          father_name: data.data.father_name,
-          mother_name: data.data.mother_name,
-          gmat_score: data.data.gmat_score,
-          sat_score: data.data.sat_score,
-          gender: data.data.gender,
-          aadhaar: data.data.aadhaar,
-          DOB: formattedDOB,
-          home_address: data.data.home_address,
-          family_income_total: data.data.family_income_total,
-          contact_no1: data.data.contact_no1,
-          contact_no2: data.data.contact_no2,
-          current_institute_dise_code: data.data.current_institute_dise_code,
-          previous_institute_dise_code: data.data.previous_institute_dise_code,
-          medium: data.data.medium
-        };
+        setFormData({
+          applicant_id: data.applicant_id,
+          nmms_year: data.nmms_year,
+          nmms_reg_number: data.nmms_reg_number,
+          app_state: data.app_state,
+          district: data.district,
+          nmms_block: data.nmms_block,
+          student_name: data.student_name,
+          father_name: data.father_name,
+          mother_name: data.mother_name,
+          gmat_score: data.gmat_score,
+          sat_score: data.sat_score,
+          gender: data.gender,
+          aadhaar: data.aadhaar,
+          dob: formattedDOB,
+          home_address: data.home_address,
+          family_income_total: data.family_income_total,
+          contact_no1: data.contact_no1,
+          contact_no2: data.contact_no2,
+          current_institute_dise_code: data.current_institute_dise_code,
+          previous_institute_dise_code: data.previous_institute_dise_code,
+          medium: data.medium
+        });
 
-        const secondaryData = {
-          village: data.data.village || "",
-          father_occupation: data.data.father_occupation || "",
-          mother_occupation: data.data.mother_occupation || "",
-          father_education: data.data.father_education || "",
-          mother_education: data.data.mother_education || "",
-          household_size: data.data.household_size || "",
-          own_house: data.data.own_house || "",
-          smart_phone_home: data.data.smart_phone_home || "",
-          internet_facility_home: data.data.internet_facility_home || "",
-          career_goals: data.data.career_goals || "",
-          subjects_of_interest: data.data.subjects_of_interest || "",
-          transportation_mode: data.data.transportation_mode || "",
-          distance_to_school: data.data.distance_to_school || "",
-          num_two_wheelers: data.data.num_two_wheelers || "",
-          num_four_wheelers: data.data.num_four_wheelers || "",
-          irrigation_land: data.data.irrigation_land || "",
-          neighbor_name: data.data.neighbor_name || "",
-          neighbor_phone: data.data.neighbor_phone || "",
-          favorite_teacher_name: data.data.favorite_teacher_name || "",
-          favorite_teacher_phone: data.data.favorite_teacher_phone || ""
-        };
-
-        setFormData(primaryData);
-        setSecondaryData(secondaryData);
+        setSecondaryData({
+          village: data.village || "",
+          father_occupation: data.father_occupation || "",
+          mother_occupation: data.mother_occupation || "",
+          father_education: data.father_education || "",
+          mother_education: data.mother_education || "",
+          household_size: data.household_size || "",
+          own_house: data.own_house || "",
+          smart_phone_home: data.smart_phone_home || "",
+          internet_facility_home: data.internet_facility_home || "",
+          career_goals: data.career_goals || "",
+          subjects_of_interest: data.subjects_of_interest || "",
+          transportation_mode: data.transportation_mode || "",
+          distance_to_school: data.distance_to_school || "",
+          num_two_wheelers: data.num_two_wheelers || "",
+          num_four_wheelers: data.num_four_wheelers || "",
+          irrigation_land: data.irrigation_land || "",
+          neighbor_name: data.neighbor_name || "",
+          neighbor_phone: data.neighbor_phone || "",
+          favorite_teacher_name: data.favorite_teacher_name || "",
+          favorite_teacher_phone: data.favorite_teacher_phone || ""
+        });
 
         setPhotoPreview(
           data.photo
@@ -196,10 +201,6 @@ const ViewStudentInfo = () => {
             ? "/default-boy.png"
             : "/default-girl.png"
         );
-
-        if (primaryData.nmms_block) {
-          fetchInstitutes(data.nmms_block);
-        }
       } catch (err) {
         console.error("Error fetching student data:", err);
         setError("Failed to fetch student data. Please try again.");
@@ -208,29 +209,16 @@ const ViewStudentInfo = () => {
       }
     };
 
-    const fetchInstitutes = async (blockCode) => {
-      try {
-        const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/institutes-by-block/${blockCode}`);
-        setInstitutes(Array.isArray(res.data) ? res.data : []);
-      } catch (err) {
-        console.error("Error fetching institutes", err);
-        setInstitutes([]);
-      }
-    };
-
     fetchStudentDetails();
   }, [nmms_reg_number]);
 
-  // ---------------------------------------------
-  // UTILITIES
-  // ---------------------------------------------
   const toggleSection = (key) => {
-    setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+    setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   const formatValue = (key, value) => {
     if (!value) return "Not specified";
-    if (key === "DOB") return new Date(value).toLocaleDateString("en-IN");
+    if (key === "dob") return new Date(value).toLocaleDateString("en-IN");
     if (key === "family_income_total") return `₹${Number(value).toLocaleString("en-IN")}`;
     return value;
   };
@@ -240,9 +228,6 @@ const ViewStudentInfo = () => {
     return <ProfileField key={field} label={fieldLabels[field] || field} value={formatValue(field, value)} />;
   };
 
-  // ---------------------------------------------
-  // RENDER
-  // ---------------------------------------------
   if (loading) return <p>Loading...</p>;
   if (!formData) return <p>{error || "No applicant found"}</p>;
 
@@ -266,8 +251,7 @@ const ViewStudentInfo = () => {
         Edit Profile
       </button>
 
-      {/* SECTIONS */}
-      {sections.map((section) => (
+      {sections.map(section => (
         <ProfileSection
           key={section.key}
           section={section}

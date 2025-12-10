@@ -50,41 +50,40 @@ async function createApplicant(primaryData) {
     ];
 
     const { rows } = await client.query(insertPrimary, values);
+
+    if (!rows.length || !rows[0].applicant_id) {
+      throw new Error("Failed to retrieve applicant_id from primary insert");
+    }
+
     const applicantId = rows[0].applicant_id;
 
     // Insert empty secondary info row
-    await client.query(
+    const secResult = await client.query(
       `
-      INSERT INTO pp.applicant_secondary_info (applicant_id, created_by, updated_by)
-      VALUES ($1, $2, $2)
+        INSERT INTO pp.applicant_secondary_info (applicant_id, created_by, updated_by)
+        VALUES ($1, $2, $2)
+        RETURNING applicant_id
       `,
       [applicantId, primaryData.created_by]
     );
 
-    // REMOVE THIS unless you really want a default sibling!
-    /*
-    await client.query(
-      `
-      INSERT INTO pp.sibling_education (applicant_id, sibling_name, sibling_type, education, created_by, updated_by)
-      VALUES ($1, NULL, 'B', 'OTHERS', $2, $2)
-      `,
-      [applicantId, primaryData.created_by]
-    );
-    */
+    if (!secResult.rows.length) {
+      throw new Error("Failed to insert into applicant_secondary_info");
+    }
 
     await client.query("COMMIT");
     return { applicant_id: applicantId };
 
   } catch (err) {
     await client.query("ROLLBACK");
+    console.error("Error in createApplicant:", err.message);
     throw err;
   } finally {
     client.release();
   }
 }
 
-
-
+// GET APPLICANT BY ID
 async function getApplicantById(applicantId) {
   const query = `
     SELECT *
@@ -94,8 +93,6 @@ async function getApplicantById(applicantId) {
   const { rows } = await pool.query(query, [applicantId]);
   return rows[0] || null;
 }
-
-
 
 // UPDATE
 async function updateApplicant(applicantId, primaryData) {
@@ -155,8 +152,6 @@ async function updateApplicant(applicantId, primaryData) {
   return rows[0];
 }
 
-
-
 // DELETE
 async function deleteApplicant(applicantId) {
   const { rows } = await pool.query(
@@ -166,25 +161,39 @@ async function deleteApplicant(applicantId) {
   return rows[0];
 }
 
-
-
 // READ — View by NMMS registration number
 async function viewApplicantByRegNumber(nmms_reg_number) {
   const query = `
     SELECT 
       p.*,
-      s.*
+      s.village,
+      s.father_occupation,
+      s.mother_occupation,
+      s.father_education,
+      s.mother_education,
+      s.household_size,
+      s.own_house,
+      s.smart_phone_home,
+      s.internet_facility_home,
+      s.career_goals,
+      s.subjects_of_interest,
+      s.transportation_mode,
+      s.distance_to_school,
+      s.num_two_wheelers,
+      s.num_four_wheelers,
+      s.irrigation_land,
+      s.neighbor_name,
+      s.neighbor_phone,
+      s.favorite_teacher_name,
+      s.favorite_teacher_phone
     FROM pp.applicant_primary_info p
     LEFT JOIN pp.applicant_secondary_info s
       ON p.applicant_id = s.applicant_id
     WHERE p.nmms_reg_number = $1
   `;
-
   const { rows } = await pool.query(query, [nmms_reg_number]);
   return rows[0] || null;
 }
-
-
 
 // GET ALL
 async function getAllApplicants() {
@@ -206,7 +215,6 @@ async function getAllApplicants() {
   const { rows } = await pool.query(query);
   return rows;
 }
-
 
 // EXPORTS
 module.exports = {
