@@ -3,7 +3,7 @@
  * This file contains all SQL query functions to interact with the PostgreSQL database.
  */
 const pool = require("../config/db"); 
-
+ 
 const TrackingModel = {
     /**
      * Fetches all available interviewers.
@@ -193,8 +193,7 @@ const TrackingModel = {
                 h.verification_id, 
                 TO_CHAR(h.date_of_verification, 'YYYY-MM-DD') AS date_of_verification, -- DATE FORMATTING
                 h.status AS home_verification_status, h.verified_by, h.verification_type AS home_verification_type,
-                h.doc_name AS home_verification_doc_name, h.doc_type AS home_verification_doc_type, h.remarks,
-                TO_CHAR(h.next_verification_date, 'YYYY-MM-DD') AS next_verification_date -- DATE FORMATTING
+                h.doc_name AS home_verification_doc_name, h.doc_type AS home_verification_doc_type, h.remarks
             FROM pp.home_verification h
             WHERE h.applicant_id = $1
             ORDER BY h.date_of_verification ASC;
