@@ -63,58 +63,6 @@ const ReportsPage = () => {
                     <p className={styles.subtitle}>Generate and export various student and selection reports.</p>
                 </div>
 
-                {/* Filters Card */}
-                <div className={styles.card}>
-                    <h2 className={styles.cardTitle}>📆 Filter Data</h2>
-
-                    <div className={styles.filterContainer}>
-                        <div className={styles.filterGroup}>
-                            <label>Year</label>
-                            <select
-                                name="year"
-                                value={filters.year}
-                                onChange={handleFilterChange}
-                                className={styles.selectInput}
-                            >
-                                <option value="">All Years</option>
-                                {availableYears.map(year => (
-                                    <option key={year} value={year}>{year}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className={styles.filterGroup}>
-                            <label>Batch</label>
-                            <select
-                                name="batch"
-                                value={filters.batch}
-                                onChange={handleFilterChange}
-                                className={styles.selectInput}
-                            >
-                                <option value="">All Batches</option>
-                                {availableBatches.map(batch => (
-                                    <option key={batch} value={batch}>{batch}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className={styles.filterGroup}>
-                            <label>Status</label>
-                            <select
-                                name="status"
-                                value={filters.status}
-                                onChange={handleFilterChange}
-                                className={styles.selectInput}
-                            >
-                                <option value="">All Status</option>
-                                {availableStatuses.map(status => (
-                                    <option key={status} value={status}>{status}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
                 {/* Reports Section */}
                 <div className={styles.card}>
                     <h2 className={styles.cardTitle}>📑 Generate Reports</h2>

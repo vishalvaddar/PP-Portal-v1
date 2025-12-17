@@ -136,7 +136,7 @@ const InterviewModel = {
         si.applicant_id,
         si.interview_round,
         si.status,
-        si.interview_result,
+        si.interview_result,  
         ROW_NUMBER() OVER (
             PARTITION BY si.applicant_id
             ORDER BY si.interview_round DESC, si.interview_date DESC NULLS LAST
