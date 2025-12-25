@@ -136,7 +136,7 @@ const InterviewModel = {
         si.applicant_id,
         si.interview_round,
         si.status,
-        si.interview_result,  
+        si.interview_result,
         ROW_NUMBER() OVER (
             PARTITION BY si.applicant_id
             ORDER BY si.interview_round DESC, si.interview_date DESC NULLS LAST
@@ -211,7 +211,7 @@ ORDER BY api.student_name ASC;`,
             ORDER BY si.interview_round DESC, si.interview_date DESC NULLS LAST
         ) AS rn
     FROM pp.student_interview si
-)
+) 
 SELECT
     api.applicant_id,
     api.student_name,
@@ -547,106 +547,81 @@ ORDER BY api.student_name ASC;
       throw error;
     }
   },
-  async reassignStudents(applicantIds, newInterviewerId, nmmsYear) {
+ async reassignStudents(applicantIds, newInterviewerId, nmmsYear) {
     const client = await pool.connect();
     const results = { results: [] };
-
     const isCancellation = String(newInterviewerId) === NO_INTERVIEWER_ID;
 
     let numericNewInterviewerId = null;
     if (!isCancellation) {
-      numericNewInterviewerId = Number(newInterviewerId);
-      if (isNaN(numericNewInterviewerId)) {
-        throw new Error(
-          'Invalid newInterviewerId provided. Must be a valid numeric ID or "NO_ONE".'
-        );
-      }
+        numericNewInterviewerId = Number(newInterviewerId);
     }
 
     try {
-      await client.query("BEGIN"); // Start transaction
+        await client.query("BEGIN");
 
-      for (const applicantId of applicantIds) {
-        let updateQuery;
-        let updateParams;
-        let statusToReturn;
+        for (const applicantId of applicantIds) {
+            let updateQuery;
+            let updateParams;
 
-        if (isCancellation) {
-          // 🔥 CORRECTION APPLIED: Removed all leading whitespace from the SQL string.
-          updateQuery = `
-UPDATE pp.student_interview si
-SET interviewer_id = NULL,
-status = 'CANCELLED'
-FROM pp.applicant_primary_info api
-WHERE
-    si.applicant_id = api.applicant_id
-    AND si.applicant_id = $1
-    AND api.nmms_year = $2
-    AND si.status IN ('SCHEDULED', 'RESCHEDULED')
-    AND si.interview_round = (
-        SELECT MAX(interview_round)
-        FROM pp.student_interview
-        WHERE applicant_id = si.applicant_id
-    )
-RETURNING si.interview_round;
-`;
-          updateParams = [applicantId, nmmsYear];
-          statusToReturn = "CANCELLED";
-        } else {
-          // 🔥 CORRECTION APPLIED: Removed all leading whitespace from the SQL string.
-          updateQuery = `
-UPDATE pp.student_interview si
-SET interviewer_id = $1
-FROM pp.applicant_primary_info api
-WHERE
-    si.applicant_id = $2
-    AND api.applicant_id = si.applicant_id
-    AND api.nmms_year = $3
-    AND si.status = 'SCHEDULED'
-    AND si.interview_result IS NULL
-    AND si.interviewer_id IS DISTINCT FROM $1
-    AND NOT EXISTS (
-        SELECT 1
-        FROM pp.student_interview si2
-        WHERE
-            si2.applicant_id = si.applicant_id
-            AND si2.interviewer_id = $1
-            AND si2.status IN ('SCHEDULED', 'RESCHEDULED')
-            AND si2.interview_round <> si.interview_round
-    )
-RETURNING si.interview_round;
-`;
-          updateParams = [numericNewInterviewerId, applicantId, nmmsYear];
-          statusToReturn = "RESCHEDULED";
+            if (isCancellation) {
+                // Cancellation logic: Set interviewer to NULL and status to CANCELLED
+                updateQuery = `
+                    UPDATE pp.student_interview si
+                    SET interviewer_id = NULL, status = 'CANCELLED'
+                    FROM pp.applicant_primary_info api
+                    WHERE si.applicant_id = api.applicant_id 
+                      AND si.applicant_id = $1 
+                      AND api.nmms_year = $2
+                      AND si.status IN ('SCHEDULED', 'RESCHEDULED')
+                    RETURNING si.interview_round, si.status;`;
+                updateParams = [applicantId, nmmsYear];
+            } else {
+                // Reassignment logic
+                updateQuery = `
+                    UPDATE pp.student_interview si
+                    SET interviewer_id = $1, status = 'RESCHEDULED'
+                    FROM pp.applicant_primary_info api
+                    WHERE si.applicant_id = $2 
+                      AND api.applicant_id = si.applicant_id 
+                      AND api.nmms_year = $3
+                      AND si.status IN ('SCHEDULED', 'RESCHEDULED')
+                      AND si.interview_result IS NULL
+                      -- 🔥 CRITICAL FIX: Only update if the interviewer is actually DIFFERENT
+                      AND si.interviewer_id IS DISTINCT FROM $1
+                    RETURNING si.interview_round, si.status;`;
+                updateParams = [numericNewInterviewerId, applicantId, nmmsYear];
+            }
+
+            const updateRes = await client.query(updateQuery, updateParams);
+
+            if (updateRes.rowCount > 0) {
+                // If a row was modified, it means the interviewer was different or record was unassigned
+                results.results.push({
+                    applicantId,
+                    status: updateRes.rows[0].status, 
+                    interviewRound: updateRes.rows[0].interview_round,
+                });
+            } else {
+                // If rowCount is 0, the WHERE clause failed (likely because interviewer was the same)
+                results.results.push({ 
+                    applicantId, 
+                    status: "Skipped", 
+                    reason: isCancellation ? "Already unassigned" : "Student is already assigned to this interviewer" 
+                });
+            }
         }
 
-        const updateRes = await client.query(updateQuery, updateParams);
-
-        if (updateRes.rowCount > 0) {
-          results.results.push({
-            applicantId,
-            status: statusToReturn,
-            interviewRound: updateRes.rows[0].interview_round,
-          });
-        } else {
-          let reason = isCancellation
-            ? "No scheduled/rescheduled interview found to cancel (student not eligible or row already updated)."
-            : "Reassignment conditions not met (e.g., same interviewer, no pending interview).";
-
-          results.results.push({ applicantId, status: "Skipped", reason });
-        }
-      }
-
-      await client.query("COMMIT");
-      return results;
+        await client.query("COMMIT");
+        return results;
     } catch (error) {
-      await client.query("ROLLBACK");
-      console.error("Error reassigning/cancelling students:", error);
-      throw error;
+        await client.query("ROLLBACK");
+        console.error("Error in reassignStudents model:", error);
+        throw error;
     } finally {
-      client.release();
+        client.release();
     }
-  },
+},
 
   async getStudentsByInterviewer(interviewerName, nmmsYear) {
     try {

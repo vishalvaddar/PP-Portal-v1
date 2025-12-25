@@ -4,23 +4,14 @@ const controller = require('../controllers/customListController');
 
 // GET Routes
 router.get('/lists', controller.getAllLists);
-router.get('/students-by-cohort/:cohortId', controller.getStudentsByCohort);
+router.get('/batches', controller.getAllBatches);
+router.get('/available-fields', controller.getAvailableFields);
 router.get('/students-by-list/:listId', controller.getStudentsByListId);
-
-// POST Routes
-router.post('/create-list-with-students', controller.createListWithStudents);
-
-// PUT Routes
-router.put('/list/:id', controller.updateListName);
-
-// DELETE Routes
+router.get('/students-by-cohort/:cohortId', controller.getStudentsByCohort);
+router.get('/download-pdf/:listId', controller.downloadListPDF);
+router.get('/download-xlsx/:listId', controller.downloadListXLS);
+// POST & DELETE Routes
+router.post('/save-list-full', controller.saveListFull);
 router.delete('/list/:id', controller.deleteList);
-// ... existing routes
-
-// Add students to an existing list
-router.post('/add-students', controller.addStudentsToList);
-
-// Remove a specific student from a list
-router.delete('/list/:listId/student/:studentId', controller.removeStudentFromList);
 
 module.exports = router;

@@ -3,7 +3,7 @@ import axios from 'axios';
 import './EvaluationInterview.css'; 
  
 const API_BASE_URL = `${process.env.REACT_APP_BACKEND_API_URL}/api/interview`;
-
+ 
 const api = {
     getExamCenters: () => axios.get(`${API_BASE_URL}/exam-centers`),
     getUnassignedStudents: (centerName, nmmsYear) => axios.get(`${API_BASE_URL}/unassigned-students`, { params: { centerName, nmmsYear } }),
@@ -198,64 +198,70 @@ function BlockAssignmentView() {
         setShowConfirmModal(true);
     };
 
-    const handleConfirm = async () => {
-        setShowConfirmModal(false);
-        setLoading(true);
-        setMessages([]);
-        
-        const isCancellation = selectedInterviewer.id === NO_INTERVIEWER_ID;
-        
-        try {
-            let response;
-            if (assignmentType === 'unassigned') {
-                response = await api.assignStudents(selectedStudents, selectedInterviewer.id, nmmsYear);
-            } else {
-                response = await api.reassignStudents(selectedStudents, selectedInterviewer.id, nmmsYear);
-            }
-            
-            const results = response.data?.results || [];
-            const studentNameMap = new Map(students.map(s => [s.applicant_id, s.student_name]));
-            
-            const feedback = results.map(result => {
-                const name = studentNameMap.get(result.applicantId) || `Applicant ID ${result.applicantId}`;
-                switch (result.status) {
-                    case 'Skipped': return `⚠️ Skipped: ${name} - Same interviewer assigned for previous interview`;
-                    case 'Assigned': return `✅ Assigned: ${name} has been successfully assigned for Interview Round ${result.interviewRound}.`;
-                    case 'Reassigned': return `✅ Reassigned: ${name} was successfully reassigned for Interview Round ${result.interviewRound}.`;
-                    case 'Cancelled': return `🗑️ Unassigned: ${name} was successfully unassigned.`;
-                    case 'Failed': return `❌ Failed: ${name} - ${result.reason || 'An unexpected error occurred.'}`;
-                    default: return `ℹ️ Status: ${name} ${result.status}`;
-                }
-            });
-            setMessages(feedback);
-
-            const successfullyAssignedIds = results
-                .filter(r => (r.status === 'Assigned' || r.status === 'Reassigned') && !isCancellation)
-                .map(r => r.applicantId);
-
-            if (successfullyAssignedIds.length > 0) {
-                await handleDownloadFile({
-                    applicantIds: successfullyAssignedIds,
-                    nmmsYear: nmmsYear,
-                    interviewerId: selectedInterviewer.id,
-                    interviewerName: selectedInterviewer.name
-                });
-            }
-
-            const fetchFn = assignmentType === 'unassigned'
-                ? api.getUnassignedBlockStudents
-                : api.getReassignableBlockStudents;
-            const refreshed = await fetchFn(selectedState, selectedDistrict, selectedBlock, nmmsYear);
-            setStudents(refreshed.data);
-            setSelectedStudents([]);
-            setSelectedInterviewer(null);
-            
-        } catch (err) {
-            setMessages([`Error: ${err.response?.data?.error || err.message}`]);
-        } finally {
-            setLoading(false);
+  const handleConfirm = async () => {
+    setShowConfirmModal(false);
+    setLoading(true);
+    setMessages([]);
+    
+    const isCancellation = selectedInterviewer.id === NO_INTERVIEWER_ID;
+    
+    try {
+        let response;
+        if (assignmentType === 'unassigned') {
+            response = await api.assignStudents(selectedStudents, selectedInterviewer.id, nmmsYear);
+        } else {
+            response = await api.reassignStudents(selectedStudents, selectedInterviewer.id, nmmsYear);
         }
-    };
+        
+        const results = response.data?.results || [];
+        const studentNameMap = new Map(students.map(s => [s.applicant_id, s.student_name]));
+        
+        const feedback = results.map(result => {
+            const name = studentNameMap.get(result.applicantId) || `Applicant ID ${result.applicantId}`;
+            switch (result.status) {
+                case 'Skipped': return `⚠️ Skipped: ${name} - ${result.reason || 'Already assigned'}`;
+                case 'Assigned': return `✅ Assigned: ${name} has been successfully assigned for Interview Round ${result.interviewRound}.`;
+                case 'Reassigned':
+                case 'RESCHEDULED': // 🔥 FIX: Catch the 'RESCHEDULED' status for Block Reassignment
+                    return `✅ Reassigned: ${name} was successfully reassigned for Interview Round ${result.interviewRound}.`;
+                case 'Cancelled': return `🗑️ Unassigned: ${name} was successfully unassigned.`;
+                case 'Failed': return `❌ Failed: ${name} - ${result.reason || 'An error occurred.'}`;
+                default: return `ℹ️ Status: ${name} ${result.status}`;
+            }
+        });
+        setMessages(feedback);
+
+        // 🔥 CRITICAL FIX: Filter for successful assignments AND successful reassignments (RESCHEDULED)
+        const successfullyAssignedIds = results
+            .filter(r => (r.status === 'Assigned' || r.status === 'Reassigned' || r.status === 'RESCHEDULED') && !isCancellation)
+            .map(r => r.applicantId);
+
+        // 🔥 TRIGGER AUTOMATIC DOWNLOAD FOR BLOCK VIEW
+        if (successfullyAssignedIds.length > 0) {
+            console.log(`[BLOCK DOWNLOAD] Triggering PDF for ${successfullyAssignedIds.length} students.`);
+            await handleDownloadFile({
+                applicantIds: successfullyAssignedIds,
+                nmmsYear: nmmsYear,
+                interviewerId: selectedInterviewer.id,
+                interviewerName: selectedInterviewer.name
+            });
+        }
+
+        // Refresh the list
+        const fetchFn = assignmentType === 'unassigned'
+            ? api.getUnassignedBlockStudents
+            : api.getReassignableBlockStudents;
+        const refreshed = await fetchFn(selectedState, selectedDistrict, selectedBlock, nmmsYear);
+        setStudents(refreshed.data);
+        setSelectedStudents([]);
+        setSelectedInterviewer(null);
+        
+    } catch (err) {
+        setMessages([`Error: ${err.response?.data?.error || err.message}`]);
+    } finally {
+        setLoading(false);
+    }
+};
 
 
     // --- JSX RENDER ---
@@ -559,43 +565,30 @@ function AssignmentReportDownloader({ interviewerId, interviewerName, nmmsYear, 
 }
 
 
+// Move this OUTSIDE of any component function
 const handleDownloadFile = async ({ applicantIds, nmmsYear, interviewerId, interviewerName }) => {
-    if (!interviewerId || interviewerId === NO_INTERVIEWER_ID || applicantIds.length === 0) {
-        console.warn("Download skipped: No valid interviewer or no students selected for report.");
+    if (!interviewerId || interviewerId === 'NO_ONE' || applicantIds.length === 0) {
+        console.warn("Download skipped: No valid interviewer or no students selected.");
         return;
     }
     
-    
     try {
-        const response = await api.downloadAssignmentReport(applicantIds, nmmsYear, interviewerId);
+        const res = await api.downloadAssignmentReport(applicantIds, nmmsYear, interviewerId);
+        const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+        const link = document.createElement('a');
+        link.href = url;
         
-        const contentType = response.headers['content-type'] || 'application/pdf';
-        const fileExtension = contentType.includes('json') ? 'txt' : (contentType.includes('pdf') ? 'pdf' : 'txt');
+        const cleanName = interviewerName.replace(/[^a-zA-Z0-9]+/g, '_');
+        link.setAttribute('download', `Assignment_Report_${cleanName}_${nmmsYear}.pdf`);
         
-        const fileName = sanitizeFilename(`Assignment_Report_${interviewerName || interviewerId}_${nmmsYear}.${fileExtension}`);
-        const blob = new Blob([response.data], { type: contentType });
-        
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
         window.URL.revokeObjectURL(url);
-        
-        console.log(`Successfully triggered download for ${applicantIds.length} students.`);
-
     } catch (error) {
-        console.error('Error during automated report download:', error);
-        if (error.response && error.response.data instanceof Blob) {
-            const text = await error.response.data.text();
-            console.error('Backend Error Response:', text);
-        }
-        alert('Assignment successful, but report download failed. Check console for details.');
+        console.error("Automated download failed:", error);
     }
 };
-
 
 function InterviewerDropdown({ onSelectInterviewer, selectedInterviewerId }) {
     const [interviewers, setInterviewers] = useState([]);
@@ -1014,12 +1007,10 @@ function InterviewerDropdown2({ onSelectInterviewer, selectedInterviewerId }) {
 function ReassignStudentsList({ selectedCenter }) { 
     const [students, setStudents] = useState([]);
     const [selectedStudents, setSelectedStudents] = useState([]);
-    // State for the selected interviewer/action. Initialized to null to show placeholder.
     const [newInterviewer, setNewInterviewer] = useState(null); 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [reassignmentMessages, setReassignmentMessages] = useState([]);
-
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
 
@@ -1029,14 +1020,6 @@ function ReassignStudentsList({ selectedCenter }) {
         if (!selectedCenter) return;
         setLoading(true);
         setError(null);
-        setStudents([]);
-        setSelectedStudents([]);
-        
-        // 🔥 FIX APPLIED: REMOVE setNewInterviewer(null) from here!
-        // The selection should be persistent across re-fetches unless an action
-        // is explicitly confirmed or the selectedCenter changes.
-        // setNewInterviewer(null); // <-- DELETED
-
         try {
             const response = await api.getReassignableStudents(selectedCenter, nmmsYear);
             setStudents(response.data);
@@ -1086,125 +1069,95 @@ function ReassignStudentsList({ selectedCenter }) {
         setShowConfirmModal(true);
     };
 
-    const handleConfirmReassignment = async () => {
-        setShowConfirmModal(false);
+  const handleConfirmReassignment = async () => {
+    setShowConfirmModal(false);
+    setLoading(true);
+    setError(null);
+    setReassignmentMessages([]);
 
-        setLoading(true);
-        setError(null);
-        setReassignmentMessages([]);
-        try {
-            const response = await api.reassignStudents(selectedStudents, newInterviewer.id, nmmsYear);
-            
-            const reassignmentResults = response?.data?.results || [];
+    try {
+        const response = await api.reassignStudents(selectedStudents, newInterviewer.id, nmmsYear);
+        const reassignmentResults = response?.data?.results || [];
 
-            const feedbackMessages = formatReassignmentMessages(reassignmentResults, students);
-            setReassignmentMessages(feedbackMessages);
+        const feedbackMessages = formatReassignmentMessages(reassignmentResults, students);
+        setReassignmentMessages(feedbackMessages);
 
-            // Filter for SUCCESSFULLY REASSIGNED students only
-            const successfullyReassignedIds = reassignmentResults
-                .filter(r => r.status === 'Reassigned')
-                .map(r => r.applicantId);
-            
-            // AUTOMATIC DOWNLOAD FOR SUCCESSFUL REASSIGNMENTS
-            if (successfullyReassignedIds.length > 0 && newInterviewer.id !== NO_INTERVIEWER_ID) {
-                 handleDownloadFile({
-                     applicantIds: successfullyReassignedIds,
-                     nmmsYear: nmmsYear,
-                     interviewerId: newInterviewer.id,
-                     interviewerName: newInterviewer.name
-                 });
-            }
-
-            await fetchStudents(); 
-            
-            setSelectedStudents([]);
-            // This reset is correct: it clears the action after completion, forcing
-            // the user to select a new one for the next batch.
-            setNewInterviewer(null);
-
-            setTimeout(() => {
-                setReassignmentMessages([]);
-            }, 5000);
-            
-        } catch (err) {
-            const errorMessage = `Error reassigning students: ${err.response?.data?.error || err.message}`;
-            setReassignmentMessages([errorMessage]);
-            setError('Error during reassignment.');
-            console.error('Reassignment error:', err);
-            setTimeout(() => {
-                setReassignmentMessages([]);
-            }, 5000);
-        } finally {
-            setLoading(false);
+        // 🔥 FIX: The status returned from the backend for successful reassignment is 'RESCHEDULED' 
+        // or 'Reassigned' depending on your controller logic. 
+        // We filter for anything that isn't 'Skipped' or 'Failed' and ensure it wasn't a Cancellation.
+        const successfullyReassignedIds = reassignmentResults
+            .filter(r => (r.status === 'Reassigned' || r.status === 'RESCHEDULED') && newInterviewer.id !== NO_INTERVIEWER_ID)
+            .map(r => r.applicantId);
+        
+        // 🔥 TRIGGER AUTOMATIC DOWNLOAD
+        if (successfullyReassignedIds.length > 0) {
+            console.log("Triggering automatic download for reassigned students...");
+            await handleDownloadFile({
+                applicantIds: successfullyReassignedIds,
+                nmmsYear: nmmsYear,
+                interviewerId: newInterviewer.id,
+                interviewerName: newInterviewer.name
+            });
         }
-    };
+
+        await fetchStudents(); 
+        setSelectedStudents([]);
+        setNewInterviewer(null);
+
+        setTimeout(() => {
+            setReassignmentMessages([]);
+        }, 5000);
+        
+    } catch (err) {
+        const errorMessage = `Error reassigning students: ${err.response?.data?.error || err.message}`;
+        setReassignmentMessages([errorMessage]);
+        setError('Error during reassignment.');
+        console.error('Reassignment error:', err);
+    } finally {
+        setLoading(false);
+    }
+};
 
     const handleCancelReassignment = () => {
         setShowConfirmModal(false);
     };
 
+    // --- UPDATED MESSAGE FORMATTER ---
     const formatReassignmentMessages = (results, allStudents) => {
-        const resultsArray = Array.isArray(results) ? results : Array.from(results ?? []);
+        const resultsArray = Array.isArray(results) ? results : [];
+        if (resultsArray.length === 0) return ['No reassignment results were returned by the server.'];
 
-        if (resultsArray.length === 0) {
-            return ['No reassignment results were returned by the server.'];
-        }
+        const studentNameMap = new Map(allStudents.map(s => [s.applicant_id, s.student_name]));
 
-        const messages = [];
-        const studentNameMap = new Map();
-        allStudents.forEach(student => {
-            studentNameMap.set(student.applicant_id, student.student_name);
-        });
-
-        resultsArray.forEach(result => {
+        return resultsArray.map(result => {
             const studentName = studentNameMap.get(result.applicantId) || `Applicant ID ${result.applicantId}`;
-            let message = '';
-            const status = result.status || 'Unknown';
+            const status = result.status;
 
             switch (status) {
                 case 'Skipped':
-                    message = `⚠️ Skipped: ${studentName} - ${result.reason || 'Reason unknown.'}`;
-                    break;
+                    return `⚠️ Skipped: ${studentName} - ${result.reason || 'Not eligible.'}`;
                 case 'Reassigned':
-                    // Note: Front-end uses 'Reassigned', back-end uses 'RESCHEDULED' for reassign,
-                    // but the name change indicates success. Using Reassigned for consistency here.
-                    message = `✅ Reassigned: ${studentName} was successfully reassigned for Interview Round ${result.interviewRound}.`;
-                    break;
-                case 'CANCELLED': // Using the constant value for consistency is better
+                case 'RESCHEDULED': // 🔥 FIX: Recognized backend status
+                    return `✅ Reassigned: ${studentName} was successfully reassigned to Interview Round ${result.interviewRound}.`;
+                case 'CANCELLED': 
                 case 'Cancelled': 
-                    message = `🗑️ Unassigned: ${studentName} was successfully unassigned.`;
-                    break;
+                    return `🗑️ Unassigned: ${studentName} was successfully unassigned.`;
                 case 'Failed':
-                    message = `❌ Failed: ${studentName} - ${result.reason || 'An unexpected error occurred during reassignment.'}`;
-                    break;
+                    return `❌ Failed: ${studentName} - ${result.reason || 'Server error.'}`;
                 default:
-                    message = `ℹ️ Status: ${studentName} - Unknown status: ${result.status}`;
-                    break;
+                    return `ℹ️ Status: ${studentName} - ${status}`;
             }
-            messages.push(message);
         });
-        return messages;
     };
-    
-    if (!selectedCenter) return <div className="p-6 text-center text-gray-600 bg-gray-100 rounded-lg">Please select an exam center first.</div>;
-    if (loading && students.length === 0) return <div className="p-6 text-center text-gray-600 bg-gray-100 rounded-lg">Loading reassignable students...</div>;
-    if (error) return <div className="p-6 text-center text-red-500 bg-red-50 rounded-lg">Error: {error}</div>;
 
     return (
         <div className="p-6 bg-gray-50 rounded-xl shadow-lg font-sans">
             <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Reassign Students for {selectedCenter}</h2>
             
-            {loading && students.length > 0 && (
-                <div className="p-2 text-center text-sm text-blue-600 bg-blue-50 rounded-lg mb-4">Processing action...</div>
-            )}
-            
             {students.length === 0 ? (
-                <p className="p-4 text-center text-gray-600 bg-gray-100 rounded-lg">
-                    No students found for reassigning in this center.
-                </p>
+                <p className="p-4 text-center text-gray-600 bg-gray-100 rounded-lg">No students found for reassigning.</p>
             ) : (
                 <>
-                    {/* Select All Checkbox */}
                     <div className="mb-2 flex justify-end items-center">
                         <label htmlFor="select-all-reassign" className="mr-2 text-gray-700 font-medium cursor-pointer">
                             Select All ({selectedStudents.length}/{students.length})
@@ -1214,34 +1167,30 @@ function ReassignStudentsList({ selectedCenter }) {
                             id="select-all-reassign"
                             checked={selectedStudents.length === students.length && students.length > 0}
                             onChange={e => handleSelectAll(e.target.checked)}
-                            className="form-checkbox h-5 w-5 text-blue-600 rounded-full transition-colors cursor-pointer"
+                            className="form-checkbox h-5 w-5 text-blue-600 rounded-full cursor-pointer"
                         />
                     </div>
                     
-                    {/* Student List */}
                     <div className="overflow-y-auto max-h-96 pr-2">
                         <ul className="space-y-3">
                             {students.map((student) => (
-                                <li key={student.applicant_id} className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                                <li key={student.applicant_id} className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm">
                                     <input
                                         type="checkbox"
                                         id={`reassign-student-${student.applicant_id}`}
                                         checked={selectedStudents.includes(student.applicant_id)}
                                         onChange={(e) => handleStudentSelect(student.applicant_id, e.target.checked)}
-                                        className="form-checkbox h-5 w-5 text-blue-600 rounded-full transition-colors cursor-pointer"
+                                        className="form-checkbox h-5 w-5 text-blue-600 rounded-full cursor-pointer"
                                     />
                                     <label htmlFor={`reassign-student-${student.applicant_id}`} className="flex-1 text-gray-700 cursor-pointer text-sm">
-                                        <span className="font-semibold">{student.student_name}</span> - 
-                                        Score: {student.pp_exam_score} - 
-                                        Current: <span className="font-bold text-indigo-600">{student.current_interviewer || 'N/A'}</span> 
-                                        (Round: {student.interview_round})
+                                        <span className="font-semibold">{student.student_name}</span> - Score: {student.pp_exam_score} - 
+                                        Current: <span className="font-bold text-indigo-600">{student.current_interviewer || 'N/A'}</span> (Round: {student.interview_round})
                                     </label>
                                 </li>
                             ))}
                         </ul>
                     </div>
                     
-                    {/* Action Bar */}
                     <div className="mt-6 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
                         <InterviewerDropdown2
                             onSelectInterviewer={setNewInterviewer}
@@ -1250,9 +1199,8 @@ function ReassignStudentsList({ selectedCenter }) {
                         <button
                             onClick={handleReassign}
                             disabled={loading || selectedStudents.length === 0 || !newInterviewer || !newInterviewer.id}
-                            className="w-full md:w-auto px-8 py-3 bg-orange-600 text-white rounded-full font-bold shadow-lg hover:bg-orange-700 disabled:bg-gray-400 disabled:shadow-none transition-all duration-300 transform hover:scale-[1.02]"
+                            className="w-full md:w-auto px-8 py-3 bg-orange-600 text-white rounded-full font-bold shadow-lg hover:bg-orange-700 disabled:bg-gray-400 transition-all transform hover:scale-[1.02]"
                         >
-                            {/* Dynamic button text */}
                             {newInterviewer?.id === NO_INTERVIEWER_ID 
                                 ? `Cancel ${selectedStudents.length} Assignment(s)` 
                                 : `Reassign Selected Students`
@@ -1260,18 +1208,14 @@ function ReassignStudentsList({ selectedCenter }) {
                         </button>
                     </div>
 
-                    {/* Reassignment Messages */}
                     {reassignmentMessages.length > 0 && (
                         <div className="mt-4 space-y-2 max-h-40 overflow-y-auto p-2 bg-white rounded-lg shadow-inner">
                             {reassignmentMessages.map((msg, index) => (
-                                <p
-                                    key={index}
-                                    className={`p-3 rounded-lg text-sm ${
-                                        msg.includes('Error') ? 'bg-red-100 text-red-700 font-medium' :
-                                        (msg.includes('Skipped') ? 'bg-yellow-100 text-yellow-700' : 
-                                        (msg.includes('Cancelled') || msg.includes('Unassigned') ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'))
-                                    }`}
-                                >
+                                <p key={index} className={`p-3 rounded-lg text-sm ${
+                                    msg.includes('Error') || msg.includes('Failed') ? 'bg-red-100 text-red-700' :
+                                    msg.includes('Skipped') ? 'bg-yellow-100 text-yellow-700' : 
+                                    (msg.includes('Cancelled') || msg.includes('Unassigned')) ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
+                                }`}>
                                     {msg}
                                 </p>
                             ))}
