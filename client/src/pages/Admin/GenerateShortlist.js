@@ -316,14 +316,14 @@ const GenerateShortlist = () => {
                                 <label>Shortlist Name</label>
                                 <div className={styles.inputWrapper}>
                                     <FileText size={16} className={styles.inputIcon} />
-                                    <input type="text" placeholder="e.g., Phase 1 Shortlist" value={shortlistName} onChange={(e) => setShortlistName(e.target.value)} />
+                                    <input type="text" placeholder="BELAGAVI-KITTUR" value={shortlistName} onChange={(e) => setShortlistName(e.target.value)} />
                                 </div>
                             </div>
                             <div className={styles.formGroup}>
                                 <label>Shortlist Description</label>
                                 <div className={styles.inputWrapper}>
                                     <Edit size={16} className={styles.inputIcon} />
-                                    <textarea placeholder="A brief description of this shortlist's purpose." value={shortlistDescription} onChange={(e) => setShortlistDescription(e.target.value)} rows="4" />
+                                    <textarea placeholder="THIS IS SHORTLIST FOR KITTUR BLOCK " value={shortlistDescription} onChange={(e) => setShortlistDescription(e.target.value)} rows="4" />
                                 </div>
                             </div>
                         </div>
