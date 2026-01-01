@@ -36,6 +36,7 @@
     "multer": "^1.4.5-lts.1",
     "papaparse": "^5.5.3",
     "pdfkit": "^0.17.1",
+    "pdfkit-table": "^0.1.99",
     "pg": "^8.13.3",
     "pg-copy-streams": "^7.0.0",
     "pg-format": "^1.0.4",
