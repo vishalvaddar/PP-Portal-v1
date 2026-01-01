@@ -4,7 +4,7 @@ const PDFDocument = require('pdfkit');
 const InterviewModel = require("../models/interviewModel");
 
 const NO_INTERVIEWER_ID = 'NO_ONE'; 
-
+ 
 const cleanText = (text) => {
     if (text === null || text === undefined) return '';
     return String(text).replace(/[^\x20-\x7E\xA0-\xFF\u0100-\uFFFF]/g, '').trim();

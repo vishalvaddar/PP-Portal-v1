@@ -10,8 +10,7 @@ const CURRENT_COHORT_FOLDER = 'cohort-2025';
 
 // --- FILTER CONSTANTS (FIXED) ---
 const STATUS_OPTIONS = ['SCHEDULED', 'RESCHEDULED', 'COMPLETED'];
-const RESULT_OPTIONS = ['Accepted', 'Rejected', 'Home Verification Required'];
-
+const RESULT_OPTIONS = ['ACCEPTED', 'REJECTED', 'HOME VERIFICATION REQUIRED'];
 
 // --- MAIN COMPONENT ---
 const EvaluationTracking = () => {

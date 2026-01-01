@@ -122,183 +122,99 @@ const GenerateShortlistModel = {
       throw error;
     }
   },
-async createShortlistBatch(shortlistName, description, criteriaId, selectedBlocks, state, district, year) {
+
+  async createShortlistBatch(shortlistName, description, criteriaId, selectedBlocks, state, district, year) {
     let shortlistedCount = 0;
-    let shortlistBatchId = null; 
+    let shortlistBatchId = null;
 
     try {
-      
-      
       await pool.query("BEGIN");
 
-      // 1. Check for existing shortlists... (No change)
-      if (selectedBlocks && selectedBlocks.length > 0) {
-        const checkExistingQuery = `
-          SELECT sb.shortlist_batch_name, block.juris_name
-          FROM pp.shortlist_batch_jurisdiction AS sbj
-          JOIN pp.jurisdiction AS block ON sbj.juris_code = block.juris_code
-          JOIN pp.shortlist_batch AS sb ON sbj.shortlist_batch_id = sb.shortlist_batch_id
-          WHERE LOWER(TRIM(block.juris_name)) = ANY($1)
-            AND sb.frozen_yn = 'N';
-        `;
-        const blockNamesToSearch = selectedBlocks.map((b) => b.toLowerCase().trim());
-        const existingShortlists = await pool.query(checkExistingQuery, [blockNamesToSearch]);
-
-        if (existingShortlists.rows.length > 0) {
-          let errorMessage = "Shortlists already exist for the following blocks:\n";
-          existingShortlists.rows.forEach(row => {
-            errorMessage += `- ${row.juris_name}: ${row.shortlist_batch_name}\n`;
-          });
-          errorMessage += "Please delete them first if not frozen.";
-          throw new Error(errorMessage);
-        }
+      // 1. Check for existing non-frozen shortlists
+      const blockNamesToSearch = selectedBlocks.map((b) => b.toLowerCase().trim());
+      const checkExistingQuery = `
+        SELECT sb.shortlist_batch_name, block.juris_name
+        FROM pp.shortlist_batch_jurisdiction AS sbj
+        JOIN pp.jurisdiction AS block ON sbj.juris_code = block.juris_code
+        JOIN pp.shortlist_batch AS sb ON sbj.shortlist_batch_id = sb.shortlist_batch_id
+        WHERE LOWER(TRIM(block.juris_name)) = ANY($1) AND sb.frozen_yn = 'N';
+      `;
+      const existing = await pool.query(checkExistingQuery, [blockNamesToSearch]);
+      if (existing.rows.length > 0) {
+        throw new Error("Shortlists already exist for these blocks. Please delete them first.");
       }
 
-      // 2. Insert the new shortlist batch record. (No change)
-      const insertBatchResult = await pool.query(
-        `
-          INSERT INTO pp.shortlist_batch (shortlist_batch_name, description, criteria_id)
-          VALUES ($1, $2, $3)
-          RETURNING shortlist_batch_id;
-        `,
+      // 2. Insert Batch
+      const insertBatch = await pool.query(
+        `INSERT INTO pp.shortlist_batch (shortlist_batch_name, description, criteria_id)
+         VALUES ($1, $2, $3) RETURNING shortlist_batch_id;`,
         [shortlistName, description, criteriaId]
       );
+      shortlistBatchId = insertBatch.rows[0].shortlist_batch_id;
 
-      shortlistBatchId = insertBatchResult.rows[0].shortlist_batch_id;
+      // 3. Link Jurisdictions
+      await pool.query(
+        `INSERT INTO pp.shortlist_batch_jurisdiction (shortlist_batch_id, juris_code)
+         SELECT $1, juris_code FROM pp.jurisdiction
+         WHERE LOWER(TRIM(juris_name)) = ANY($2) AND LOWER(juris_type) = 'block';`,
+        [shortlistBatchId, blockNamesToSearch]
+      );
 
-      if (selectedBlocks && selectedBlocks.length > 0) {
+      // 4. Get Criteria Logic
+      const criteriaRes = await pool.query(`SELECT criteria FROM pp.shortlist_criteria WHERE criteria_id = $1`, [criteriaId]);
+      const procCriteria = criteriaRes.rows[0].criteria.toLowerCase().replace(/\s+/g, ' ').trim();
 
-        const insertJurisdictionQuery = `
-          INSERT INTO pp.shortlist_batch_jurisdiction (shortlist_batch_id, juris_code)
-          SELECT $1, juris_code
-          FROM pp.jurisdiction
-          WHERE LOWER(TRIM(juris_name)) = ANY($2) AND LOWER(juris_type) = 'block';
-        `;
+      // 5. Query with Tie-Breaker (Ensures 4%, 6%, 8% are different)
+      const commonSQL = `
+        WITH ApplicantRanked AS (
+          SELECT applicant_id, app_state, district, nmms_block AS block,
+          (gmat_score * 0.7 + sat_score * 0.3) AS weighted_score,
+          PERCENT_RANK() OVER (
+            ORDER BY (gmat_score * 0.7 + sat_score * 0.3) DESC, applicant_id ASC
+          ) AS percentile_rank
+          FROM pp.applicant_primary_info WHERE nmms_year = $4
+        )
+        SELECT applicant_id FROM ApplicantRanked ar
+        JOIN pp.jurisdiction sj ON ar.app_state = sj.juris_code
+        JOIN pp.jurisdiction dj ON ar.district = dj.juris_code
+        JOIN pp.jurisdiction bj ON ar.block = bj.juris_code
+        WHERE LOWER(TRIM(sj.juris_name)) = LOWER(TRIM($1))
+          AND LOWER(TRIM(dj.juris_name)) = LOWER(TRIM($2))
+          AND LOWER(TRIM(bj.juris_name)) = LOWER(TRIM($3))
+          AND percentile_rank <= `;
 
-        const blockNamesLowercased = selectedBlocks.map((block) => block.toLowerCase().trim());
-        await pool.query(insertJurisdictionQuery, [shortlistBatchId, blockNamesLowercased]);
+      let query = "";
+      if (procCriteria.includes("top 4%")) query = commonSQL + "0.04;";
+      else if (procCriteria.includes("top 6%")) query = commonSQL + "0.06;";
+      else if (procCriteria.includes("top 8%")) query = commonSQL + "0.08;";
 
-        // 4. Retrieve the criteria name... (No change)
-        const criteriaResult = await pool.query(
-          `SELECT criteria FROM pp.shortlist_criteria WHERE criteria_id = $1`,
-          [criteriaId]
-        );
-        if (criteriaResult.rows.length === 0) {
-          throw new Error(`Invalid criteriaId: ${criteriaId}`);
+      if (query) {
+        let applicantIds = [];
+        for (const block of blockNamesToSearch) {
+          const res = await pool.query(query, [state, district, block, year]);
+          res.rows.forEach(r => applicantIds.push(r.applicant_id));
         }
 
-        const rawCriteriaName = criteriaResult.rows[0].criteria;
-        const processedCriteriaName = rawCriteriaName
-            .toLowerCase()
-            .replace(/\s+/g, ' ') 
-            .trim();             
-
-        let selectApplicantsQuery = "";
-
-        // 5. Conditionally build the SQL query... (No change)
-        if (processedCriteriaName.includes("top 4%")) {
-            selectApplicantsQuery = `
-                WITH ApplicantRanked AS (
-                  SELECT
-                    applicant_id,
-                    app_state,
-                    district,
-                    nmms_block AS block,
-                    (gmat_score * 0.7 + sat_score * 0.3) AS weighted_score,
-                    PERCENT_RANK() OVER (ORDER BY (gmat_score * 0.7 + sat_score * 0.3) DESC) AS percentile_rank
-                  FROM pp.applicant_primary_info
-                  WHERE nmms_year = $4
-                )
-                SELECT applicant_id FROM ApplicantRanked ar
-                JOIN pp.jurisdiction sj ON ar.app_state = sj.juris_code
-                JOIN pp.jurisdiction dj ON ar.district = dj.juris_code
-                JOIN pp.jurisdiction bj ON ar.block = bj.juris_code
-                WHERE LOWER(TRIM(sj.juris_name)) = LOWER(TRIM($1))
-                  AND LOWER(TRIM(dj.juris_name)) = LOWER(TRIM($2))
-                  AND LOWER(TRIM(bj.juris_name)) = LOWER(TRIM($3))
-                  AND percentile_rank <= 0.04;
-            `;
-        } else if (processedCriteriaName.includes("top 8%")) {
-            selectApplicantsQuery = `
-                WITH ApplicantRanked AS (
-                  SELECT
-                    applicant_id,
-                    app_state,
-                    district,
-                    nmms_block AS block,
-                    (gmat_score * 0.7 + sat_score * 0.3) AS weighted_score,
-                    PERCENT_RANK() OVER (ORDER BY (gmat_score * 0.7 + sat_score * 0.3) DESC) AS percentile_rank
-                  FROM pp.applicant_primary_info
-                  WHERE nmms_year = $4
-                )
-                SELECT applicant_id FROM ApplicantRanked ar
-                JOIN pp.jurisdiction sj ON ar.app_state = sj.juris_code
-                JOIN pp.jurisdiction dj ON ar.district = dj.juris_code
-                JOIN pp.jurisdiction bj ON ar.block = bj.juris_code
-                WHERE LOWER(TRIM(sj.juris_name)) = LOWER(TRIM($1))
-                  AND LOWER(TRIM(dj.juris_name)) = LOWER(TRIM($2))
-                  AND LOWER(TRIM(bj.juris_name)) = LOWER(TRIM($3))
-                  AND percentile_rank <= 0.08;
-            `;
-        } 
-        
-        // 6. Execute the selected query and insert/update shortlisted applicants.
-        
-        let applicantIdList = []; 
-
-        if (selectApplicantsQuery) { 
-          for (const block of blockNamesLowercased) {
-            
-            const applicantResult = await pool.query(selectApplicantsQuery, [state, district, block, year]);
-            
-            
-            applicantResult.rows.forEach(applicant => applicantIdList.push(applicant.applicant_id));
+        shortlistedCount = applicantIds.length;
+        if (shortlistedCount > 0) {
+          let vals = [], params = [], counter = 1;
+          for (const id of applicantIds) {
+            vals.push(`($${counter++}, 'Y', $${counter++})`);
+            params.push(id, shortlistBatchId);
           }
-
-          shortlistedCount = applicantIdList.length;
-          
-          if (shortlistedCount > 0) {
-              
-              let valuesClause = [];
-              let bulkParams = [];
-              let paramCounter = 1;
-              
-              // Build the SQL string and parameter array
-              for (const applicantId of applicantIdList) {
-                  // Use simple string concatenation here for maximum compatibility
-                  valuesClause.push('(' + `$${paramCounter++}` + ", 'Y', " + `$${paramCounter++}` + ')');
-                  
-                  bulkParams.push(applicantId);
-                  bulkParams.push(shortlistBatchId); // Correctly added the shortlistBatchId here
-              }
-              
-              // **THE ULTIMATE STRING ISOLATION FIX: Using simple single quotes on one line.**
-              const sqlPrefix = 'INSERT INTO pp.applicant_shortlist_info (applicant_id, shortlisted_yn, shortlist_batch_id) VALUES ';
-              const bulkInsertQuery = sqlPrefix + valuesClause.join(', ');
-
-            
-              
-              // Use pool.query, as it handles transactions correctly.
-              await pool.query(bulkInsertQuery, bulkParams); 
-          }
-
-        } else {
-            console.error(`ERROR: Select query is empty for criteria: ${rawCriteriaName}`);
-            throw new Error(`No shortlisting logic found for criteria: ${rawCriteriaName}. Please define a query for this criteria.`);
+          await pool.query(`INSERT INTO pp.applicant_shortlist_info (applicant_id, shortlisted_yn, shortlist_batch_id) VALUES ${vals.join(', ')}`, params);
         }
+      } else {
+        throw new Error(`Criteria "${procCriteria}" logic not implemented.`);
       }
 
-      await pool.query("COMMIT"); // Commit the transaction if all operations succeed
+      await pool.query("COMMIT");
       return { shortlistBatchId, shortlistedCount };
-    } catch (error) {
-      // --- DEBUG STEP 5: Log the specific error before rollback ---
-      console.error(`FATAL ERROR in createShortlistBatch: Rolling back transaction.`, error);
-      // -------------------------------------------------------------
-      await pool.query("ROLLBACK"); // Rollback the transaction on any error
-      throw error; // Re-throw the error for the controller to handle
+    } catch (e) {
+      await pool.query("ROLLBACK");
+      throw e;
     }
   },
-
 
 
   async getShortlistedCountForBlocksAndYear(blockNames, year) {

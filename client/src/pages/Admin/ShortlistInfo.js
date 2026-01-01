@@ -308,7 +308,7 @@ function ShortlistInfo({ onClose }) {
       <h1 className={styles.heading}>Shortlist Management</h1>
       <div className={styles.countsContainer}>
         <div className={styles.countBox}>
-          <p className={styles.countBoxText}>Total Applicants: {applicantCount}</p>
+          <p className={styles.countBoxText}>Total Students: {applicantCount}</p>
         </div>
         <div className={styles.countBox}>
           <p className={styles.countBoxText}>Shortlisted Students: {shortlistedCount}</p>

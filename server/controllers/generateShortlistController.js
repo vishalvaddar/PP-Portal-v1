@@ -64,107 +64,45 @@ const generateShortlistController = {
 
  
 startShortlisting: async (req, res) => {
-    // 1. Destructure and trim inputs immediately for safety
-    const { 
-        criteriaId, 
-        name, 
-        description, 
-        year, 
-        locations 
-    } = req.body;
-    
-    // Ensure locations exists before destructuring
+    const { criteriaId, name, description, year, locations } = req.body;
     const state = locations?.state?.trim();
     const district = locations?.district?.trim();
-    const blocks = locations?.blocks; // blocks will be an array
-    
-    // Trim other required string inputs
-    const trimmedName = name ? name.trim() : null;
-    const trimmedDescription = description ? description.trim() : null;
+    const blocks = locations?.blocks;
 
     try {
-        // 2. Validation Check (using trimmed values)
-        if (!state || !district || !criteriaId || !trimmedName || !trimmedDescription || !year || !blocks || !Array.isArray(blocks) || blocks.length === 0) {
-            return res.status(400).json({ 
-                error: "State, district, criteria, name, description, year, and at least one block are required." 
-            });
+        if (!state || !district || !criteriaId || !name || !year || !blocks?.length) {
+            return res.status(400).json({ error: "Required fields missing." });
         }
 
-        // 3. Call the Model function
+        // 1. Run Shortlisting
         const result = await GenerateShortlistModel.createShortlistBatch(
-            trimmedName,
-            trimmedDescription,
-            criteriaId,
-            blocks, // Model handles trimming blocks internally
-            state,
-            district,
-            year
+            name.trim(), description?.trim(), criteriaId, blocks, state, district, year
         );
 
-        const shortlistBatchId = result.shortlistBatchId;
+        // 2. Fix Population Count (Matched Model Logic)
+        const blockNamesLower = blocks.map(b => b.toLowerCase().trim());
+        const totalPopRes = await pool.query(
+            `SELECT COUNT(api.applicant_id) FROM pp.applicant_primary_info api
+             WHERE api.nmms_year = $2 AND api.nmms_block IN (
+                SELECT j.juris_code FROM pp.jurisdiction j 
+                WHERE LOWER(TRIM(j.juris_name)) = ANY($1) AND LOWER(j.juris_type) = 'block'
+             )`, [blockNamesLower, year]
+        );
 
-        // 4. Fetch additional counts for response
-        
-        // **CORRECTED QUERY: Count of all eligible applicants within the selected BLOCKS and YEAR**
-        // This calculates the base population for the shortlisting scope.
-        const totalApplicantsQuery = `
-          SELECT COUNT(api.applicant_id) AS count 
-          FROM pp.applicant_primary_info api
-          WHERE api.nmms_year = $2
-            AND api.nmms_block IN (
-              SELECT j.juris_code
-              FROM pp.jurisdiction j
-              WHERE LOWER(TRIM(j.juris_name)) = ANY($1) AND LOWER(j.juris_type) = 'block'
-            );
-        `.trim();
-        
-        const blockNamesForQuery = blocks.map(b => b.toLowerCase().trim());
-        const totalApplicantsResult = await pool.query(totalApplicantsQuery, [blockNamesForQuery, year]);
-        const totalApplicantsCount = totalApplicantsResult.rows[0].count;
-        // **END CORRECTION**
+        const totalShortlistedInBlocks = await GenerateShortlistModel.getShortlistedCountForBlocksAndYear(blocks, year);
 
-        // Count of students shortlisted under this *specific batch*
-        const shortlistedStudentsQuery = `
-          SELECT COUNT(applicant_id) as count
-          FROM pp.applicant_shortlist_info
-          WHERE shortlist_batch_id = $1 AND shortlisted_yn = 'Y';
-        `.trim();
-        const shortlistedStudentsResult = await pool.query(shortlistedStudentsQuery, [shortlistBatchId]);
-        const shortlistedStudentsCount = shortlistedStudentsResult.rows[0].count;
-
-        // Count of shortlisted students in the selected blocks across ALL batches (using the existing model function)
-        const shortlistedCountForBlocksAndYear = await GenerateShortlistModel.getShortlistedCountForBlocksAndYear(blocks, year);
-
-        // 5. Successful Response
         res.status(200).json({
-            // FIX APPLIED: Using the correct variable for the total shortlisted count in the message string.
-            message: "Shortlisting process completed successfully. (Total Shortlisted: " + result.shortlistedCount + ")",
-            
-            shortlistBatchId: shortlistBatchId,
-            shortlistedCountInBatch: result.shortlistedCount, // Matches the count returned by createShortlistBatch
-            
-            // **VARIABLES INCLUDED IN RESPONSE**
-            totalApplicantsCount: totalApplicantsCount, // The total population in the selected blocks/year
-            
-            shortlistedStudentsCountInBatch: shortlistedStudentsCount,
-            totalShortlistedInBlocks: shortlistedCountForBlocksAndYear 
+            message: `Shortlist created successfully! ${result.shortlistedCount} students.`,
+            shortlistBatchId: result.shortlistBatchId,
+            shortlistedCountInBatch: result.shortlistedCount,
+            totalApplicantsCount: totalPopRes.rows[0].count,
+            totalShortlistedInBlocks: totalShortlistedInBlocks
         });
 
     } catch (error) {
-        // 6. Centralized Error Handling
-        if (error.message.startsWith("Shortlists already exist")) {
-            console.warn("startShortlisting - Conflict Error:", error.message);
-            return res.status(409).json({ error: error.message });
-        }
-        if (error.message.startsWith("Invalid criteriaId")) {
-            return res.status(404).json({ error: error.message });
-        }
-
-        console.error("startShortlisting - General Error:", error);
-        res.status(500).json({ 
-            message: "Internal server error during shortlisting process.", 
-            error: error.message 
-        });
+        console.error("Shortlisting Failed:", error.message);
+        const status = error.message.includes("exist") ? 409 : 500;
+        res.status(status).json({ error: error.message });
     }
 },
 

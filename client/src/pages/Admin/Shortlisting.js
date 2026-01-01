@@ -30,7 +30,8 @@ const guidelines = [
   "Generate multiple shortlists but maintain only one active version per block",
   "Use the freeze option to prevent further modifications",
   "Download options include PDF, Excel, and CSV formats",
-  "Changes to frozen lists require administrator approval"
+  "Changes to frozen lists require administrator approval",
+  "No 2 shortlist batch can have same name"
 ];
 
 const tips = [
