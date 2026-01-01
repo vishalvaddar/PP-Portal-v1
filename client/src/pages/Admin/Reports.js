@@ -148,7 +148,7 @@ const ListManager = () => {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1>Custom List Manager</h1>
+        <h1>Custom List </h1>
         {view === 'list' && (
           <button className={styles.buttonPrimary} onClick={() => {resetForm(); setView('form')}}>
             <Plus size={18} /> New List

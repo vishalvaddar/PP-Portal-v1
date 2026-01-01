@@ -70,7 +70,7 @@ exports.getStudentsByCohort = async (cohortId, batchId, stateId, divisionId, dis
         LEFT JOIN pp.jurisdiction sj ON api.app_state = sj.juris_code
         LEFT JOIN pp.jurisdiction dj ON api.district = dj.juris_code
         LEFT JOIN pp.jurisdiction bj ON api.nmms_block = bj.juris_code
-        WHERE b.cohort_number = $1
+        WHERE b.cohort_number = $1 and sm.active_yn='ACTIVE'
     `;
     
     const params = [cohortId];
