@@ -9,8 +9,13 @@ const EventDetailsPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // State for resolved names
+    const [districtName, setDistrictName] = useState("");
+    const [talukaName, setTalukaName] = useState("");
+
     const API_BASE_URL = process.env.REACT_APP_BACKEND_API_URL;
 
+    // 1. Fetch Event Data
     useEffect(() => {
         const fetchEvent = async () => {
             setLoading(true);
@@ -19,12 +24,11 @@ const EventDetailsPage = () => {
                 const res = await axios.get(`${API_BASE_URL}/api/events/${eventId}`);
                 const eventData = res.data;
 
-                // Safely convert photos CSV string to an array
-                if (eventData.event_photos && typeof eventData.event_photos === 'string') {
-                    eventData.event_photos = eventData.event_photos
-                        .split(",")
-                        .map((p) => p.trim())
-                        .filter(p => p.length > 0);
+                // Fix Photos Array
+                if (Array.isArray(eventData.photos)) {
+                    eventData.event_photos = eventData.photos.map((p) => {
+                        return p.file_path ? p.file_path.replace(/\\/g, "/") : "";
+                    }).filter(path => path.length > 0);
                 } else {
                     eventData.event_photos = [];
                 }
@@ -41,26 +45,49 @@ const EventDetailsPage = () => {
         fetchEvent();
     }, [eventId, API_BASE_URL]);
 
-    if (loading) return <p className={styles.statusMessage}>Loading event details...</p>;
-    if (error) return <p className={`${styles.statusMessage} ${styles.errorMessage}`}>{error}</p>;
-    if (!event) return <p className={styles.statusMessage}>Event not found.</p>;
+    // 2. Fetch District Name
+    useEffect(() => {
+        if (event?.event_district) {
+            axios.get(`${API_BASE_URL}/api/juris-name/${event.event_district}`)
+                .then((res) => {
+                    const name = res.data?.data?.name || res.data?.name;
+                    if (name) setDistrictName(name);
+                })
+                .catch((err) => console.error("Error fetching district name:", err));
+        }
+    }, [event?.event_district, API_BASE_URL]);
 
-    // Destructure for cleaner access and provide safe defaults
+    // 3. Fetch Taluka Name
+    useEffect(() => {
+        if (event?.event_block) {
+            axios.get(`${API_BASE_URL}/api/juris-name/${event.event_block}`)
+                .then((res) => {
+                    const name = res.data?.data?.name || res.data?.name;
+                    if (name) setTalukaName(name);
+                })
+                .catch((err) => console.error("Error fetching taluka name:", err));
+        }
+    }, [event?.event_block, API_BASE_URL]);
+
+
+    if (loading) return <div className={styles.loadingContainer}><div className={styles.spinner}></div><p>Loading Details...</p></div>;
+    if (error) return <div className={styles.errorContainer}>{error}</div>;
+    if (!event) return <div className={styles.errorContainer}>Event not found.</div>;
+
     const {
-        eventTitle,
-        eventType_name, // Assuming the backend returns the name alongside the ID
+        event_title,
+        event_type_name,
         eventType,
-        startDate,
-        endDate,
-        location,
-        taluka,
-        district,
-        state, // Include state in the display
-        cohort,
-        boysCount,
-        girlsCount,
-        parentsCount,
-        description,
+        event_start_date,
+        event_end_date,
+        event_location: location,
+        event_block: talukaId,
+        event_district: districtId,
+        cohort_number: cohort,
+        boys_attended: boysCount,
+        girls_attended: girlsCount,
+        parents_attended: parentsCount,
+        event_description: description,
         event_photos,
     } = event;
 
@@ -72,118 +99,126 @@ const EventDetailsPage = () => {
     const formatDate = (dateString) => {
         if (!dateString) return "N/A";
         const d = new Date(dateString);
-        // Use a standard format, e.g., DD/MM/YYYY
         return isNaN(d.getTime()) ? "Invalid Date" : d.toLocaleDateString("en-IN", {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
+            day: 'numeric', month: 'long', year: 'numeric'
         });
     };
 
     return (
-        <div className={styles.detailsContainer}>
-            <Link to="/admin/academics/events" className={styles.backLink}>
-                ← Back to Events List
-            </Link>
-
-            <header className={styles.header}>
-                <h1 className={styles.title}>{eventTitle || "Untitled Event"}</h1>
-                <span className={styles.eventTypeTag}>{eventType_name || `Type ID: ${eventType}` || "Unknown Type"}</span>
-            </header>
-            
-            <hr className={styles.separator} />
-
-            <div className={styles.contentGrid}>
+        <div className={styles.pageWrapper}>
+            <div className={styles.container}>
                 
-                {/* MAIN CONTENT COLUMN */}
-                <div className={styles.mainContent}>
-
-                    {/* EVENT DETAILS */}
-                    <div className={styles.card}>
-                        <h3 className={styles.cardHeader}>📌 Event Information</h3>
-                        
-                        <div className={styles.detailItem}>
-                            <strong className={styles.detailLabel}>Dates:</strong>
-                            <span className={styles.detailValue}>
-                                {formatDate(startDate)} {startDate !== endDate && `to ${formatDate(endDate)}`}
-                            </span>
-                        </div>
-
-                        <div className={styles.detailItem}>
-                            <strong className={styles.detailLabel}>Location:</strong>
-                            <span className={styles.detailValue}>
-                                {location || "N/A"}
-                                <span className={styles.locationJurisdiction}>
-                                    ({taluka}, {district}, {state})
-                                </span>
-                            </span>
-                        </div>
-                        
-                        <div className={styles.detailItem}>
-                            <strong className={styles.detailLabel}>Cohort:</strong>
-                            <span className={styles.detailValue}>{cohort || "N/A"}</span>
-                        </div>
-                    </div>
-                    
-                    {/* DESCRIPTION */}
-                    <div className={styles.card}>
-                        <h3 className={styles.cardHeader}>📝 Description</h3>
-                        <p className={styles.descriptionText}>{description || "No description provided for this event."}</p>
-                    </div>
-
-                    {/* PHOTOS SECTION */}
-                    <div className={styles.card}>
-                        <h3 className={styles.cardHeader}>📸 Event Photos ({event_photos?.length || 0})</h3>
-                        <div className={styles.photoGrid}>
-                            {event_photos && event_photos.length > 0 ? (
-                                event_photos.map((photo, idx) => (
-                                    <a 
-                                        key={idx} 
-                                        href={`${API_BASE_URL}/${photo}`} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        className={styles.photoWrapper}
-                                    >
-                                        <img
-                                            src={`${API_BASE_URL}/${photo}`}
-                                            alt={`Event Photo ${idx + 1}`}
-                                            className={styles.photo}
-                                        />
-                                    </a>
-                                ))
-                            ) : (
-                                <p>No photos uploaded for this event.</p>
-                            )}
-                        </div>
-                    </div>
+                {/* Top Navigation Bar */}
+                <div className={styles.topBar}>
+                    <Link to="/admin/academics/events" className={styles.backLink}>
+                        &larr; Back to Events
+                    </Link>
+                    <Link to={`/admin/academics/events/${eventId}/edit`} className={styles.editButton}>
+                        Edit Event
+                    </Link>
                 </div>
 
-                {/* SIDEBAR COLUMN */}
-                <aside className={styles.sidebar}>
-                    <div className={`${styles.card} ${styles.attendanceCard}`}>
-                        <h3 className={styles.cardHeader}>👥 Attendance Summary</h3>
-
-                        <div className={styles.attendanceItem}>
-                            <strong className={styles.detailLabel}>Boys:</strong>
-                            <span className={styles.attendanceCount}>{boysCount || 0}</span>
-                        </div>
-
-                        <div className={styles.attendanceItem}>
-                            <strong className={styles.detailLabel}>Girls:</strong>
-                            <span className={styles.attendanceCount}>{girlsCount || 0}</span>
-                        </div>
-
-                        <div className={styles.attendanceItem}>
-                            <strong className={styles.detailLabel}>Parents:</strong>
-                            <span className={styles.attendanceCount}>{parentsCount || 0}</span>
-                        </div>
-
-                        <div className={styles.totalRow}>
-                            <strong className={styles.detailLabel}>Total Attendees:</strong>
-                            <span className={styles.totalCount}>{totalAttendees}</span>
+                {/* Hero / Header Section */}
+                <header className={styles.header}>
+                    <div className={styles.headerContent}>
+                        <span className={styles.eventTypeTag}>{event_type_name || eventType || "Event"}</span>
+                        <h1 className={styles.title}>{event_title || "Untitled Event"}</h1>
+                        <div className={styles.metaRow}>
+                            <span className={styles.metaItem}>📅 {formatDate(event_start_date)} {event_start_date !== event_end_date && ` - ${formatDate(event_end_date)}`}</span>
+                            <span className={styles.metaItem}>📍 {location || "No Location"}</span>
                         </div>
                     </div>
-                </aside>
+                </header>
+
+                {/* Main Content Grid - Full Width Layout */}
+                <div className={styles.gridContainer}>
+                    
+                    {/* Column 1: Details & Jurisdiction */}
+                    <section className={styles.card}>
+                        <h3 className={styles.cardTitle}>📍 Jurisdiction & Location</h3>
+                        <div className={styles.infoList}>
+                            <div className={styles.infoItem}>
+                                <span className={styles.label}>District</span>
+                                <span className={styles.value}>{districtName || districtId || "N/A"}</span>
+                            </div>
+                            <div className={styles.infoItem}>
+                                <span className={styles.label}>Taluka / Block</span>
+                                <span className={styles.value}>{talukaName || talukaId || "N/A"}</span>
+                            </div>
+                            <div className={styles.infoItem}>
+                                <span className={styles.label}>Venue</span>
+                                <span className={styles.value}>{location || "N/A"}</span>
+                            </div>
+                            <div className={styles.infoItem}>
+                                <span className={styles.label}>Cohort</span>
+                                <span className={styles.value}>{cohort || "N/A"}</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Column 2: Attendance Stats */}
+                    <section className={styles.card}>
+                        <h3 className={styles.cardTitle}>👥 Attendance Overview</h3>
+                        <div className={styles.statsGrid}>
+                            <div className={styles.statBox}>
+                                <span className={styles.statNumber}>{boysCount || 0}</span>
+                                <span className={styles.statLabel}>Boys</span>
+                            </div>
+                            <div className={styles.statBox}>
+                                <span className={styles.statNumber}>{girlsCount || 0}</span>
+                                <span className={styles.statLabel}>Girls</span>
+                            </div>
+                            <div className={styles.statBox}>
+                                <span className={styles.statNumber}>{parentsCount || 0}</span>
+                                <span className={styles.statLabel}>Parents</span>
+                            </div>
+                            <div className={`${styles.statBox} ${styles.totalBox}`}>
+                                <span className={styles.statNumber}>{totalAttendees}</span>
+                                <span className={styles.statLabel}>Total</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Full Width: Description */}
+                    <section className={`${styles.card} ${styles.fullWidth}`}>
+                        <h3 className={styles.cardTitle}>📝 About this Event</h3>
+                        <div className={styles.descriptionContent}>
+                            {description ? description : <span className={styles.placeholderText}>No description provided.</span>}
+                        </div>
+                    </section>
+
+                    {/* Full Width: Photos */}
+                    <section className={`${styles.card} ${styles.fullWidth}`}>
+                        <h3 className={styles.cardTitle}>📸 Gallery ({event_photos?.length || 0})</h3>
+                        {event_photos && event_photos.length > 0 ? (
+                            <div className={styles.galleryGrid}>
+                                {event_photos.map((photoPath, idx) => (
+                                    <a 
+                                        key={idx} 
+                                        href={`${API_BASE_URL}/${photoPath}`} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className={styles.galleryItem}
+                                    >
+                                        <img
+                                            src={`${API_BASE_URL}/${photoPath}`}
+                                            alt={`Event ${idx + 1}`}
+                                            loading="lazy"
+                                            onError={(e) => {
+                                                e.target.onerror = null; 
+                                                e.target.src = "https://via.placeholder.com/300x200?text=Image+Error"; 
+                                            }}
+                                        />
+                                        <div className={styles.overlay}>View Full Size</div>
+                                    </a>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className={styles.emptyState}>No photos available for this event.</div>
+                        )}
+                    </section>
+
+                </div>
             </div>
         </div>
     );

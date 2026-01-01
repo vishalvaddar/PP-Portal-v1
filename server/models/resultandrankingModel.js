@@ -96,30 +96,25 @@ async function searchStudentsByBlocks(division, education_district, blocks, app_
     paramCount++;
     query += ` AND dist.parent_juris = $${paramCount}`;
     params.push(division);
-    console.log(`Adding division filter via parent_juris: ${division}`);
   }
 
   if (education_district && education_district !== '') {
     paramCount++;
     query += ` AND api.district = $${paramCount}`;
     params.push(education_district);
-    console.log(`Adding education district filter: ${education_district}`);
   }
 
   if (blocks && blocks.length > 0) {
     paramCount++;
     query += ` AND api.nmms_block = ANY($${paramCount})`;
     params.push(blocks);
-    console.log(`Adding blocks filter: ${blocks}`);
   }
 
   query += ` ORDER BY COALESCE(blk.juris_name, 'Unknown'), api.student_name`;
 
   // console.log('Final query:', query);
-  console.log('Query params:', params);
 
   const result = await pool.query(query, params);
-  console.log(`Found ${result.rows.length} students`);
   return result.rows;
 }
 

@@ -3,136 +3,170 @@ import axios from "axios";
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_API_URL;
 
-// ------------------------- //
-// Fetch States
-// ------------------------- //
+/* =========================================================
+   Fetch States
+========================================================= */
 export function useFetchStates(setStates) {
   useEffect(() => {
+    let isMounted = true;
+
     const fetchStates = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/states`);
-        const data = Array.isArray(response.data)
-          ? response.data
-          : response.data.data || [];
-        setStates(data);
-      } catch (error) {
-        console.error("Error fetching states:", error);
-        setStates([]);
+        const res = await axios.get(`${API_BASE_URL}/api/states`);
+        const data = Array.isArray(res.data) ? res.data : res.data.data || [];
+        if (isMounted) setStates(data);
+      } catch (err) {
+        console.error("Error fetching states:", err);
+        if (isMounted) setStates([]);
       }
     };
+
     fetchStates();
+    return () => (isMounted = false);
   }, [setStates]);
 }
 
-// ------------------------- //
-// Fetch Districts (via State → Division → District)
-// ------------------------- //
+/* =========================================================
+   Fetch Districts (State → Division → District)
+========================================================= */
 export function useFetchEducationDistricts(stateId, setDistricts) {
   useEffect(() => {
-    const fetchDistricts = async () => {
-      if (!stateId) {
-        setDistricts([]);
-        return;
-      }
+    let isMounted = true;
 
+    if (!stateId) {
+      setDistricts([]);
+      return;
+    }
+
+    const fetchDistricts = async () => {
       try {
-        const divisionsRes = await axios.get(
+        const divRes = await axios.get(
           `${API_BASE_URL}/api/divisions-by-state/${stateId}`
         );
-        const divisions = Array.isArray(divisionsRes.data)
-          ? divisionsRes.data
-          : divisionsRes.data.data || [];
+        const divisions = Array.isArray(divRes.data)
+          ? divRes.data
+          : divRes.data.data || [];
 
-        let allDistricts = [];
+        const districtRequests = divisions.map((d) =>
+          axios.get(`${API_BASE_URL}/api/districts-by-division/${d.id}`)
+        );
 
-        for (const division of divisions) {
-          const distRes = await axios.get(
-            `${API_BASE_URL}/api/districts-by-division/${division.id}`
-          );
-          const dists = Array.isArray(distRes.data)
-            ? distRes.data
-            : distRes.data.data || [];
-          allDistricts = [...allDistricts, ...dists];
-        }
+        const districtResponses = await Promise.all(districtRequests);
 
-        setDistricts(allDistricts);
-      } catch (error) {
-        console.error("Error fetching districts:", error);
-        setDistricts([]);
+        const allDistricts = districtResponses.flatMap((res) =>
+          Array.isArray(res.data) ? res.data : res.data.data || []
+        );
+
+        if (isMounted) setDistricts(allDistricts);
+      } catch (err) {
+        console.error("Error fetching districts:", err);
+        if (isMounted) setDistricts([]);
       }
     };
 
     fetchDistricts();
+    return () => (isMounted = false);
   }, [stateId, setDistricts]);
 }
 
-// ------------------------- //
-// Fetch Blocks (via District → Block)
-// ------------------------- //
+/* =========================================================
+   Fetch Blocks (District → Block)
+========================================================= */
 export function useFetchBlocks(districtId, setBlocks) {
   useEffect(() => {
-    const fetchBlocks = async () => {
-      if (!districtId) {
-        setBlocks([]);
-        return;
-      }
+    let isMounted = true;
 
+    if (!districtId) {
+      setBlocks([]);
+      return;
+    }
+
+    const fetchBlocks = async () => {
       try {
-        const response = await axios.get(
+        const res = await axios.get(
           `${API_BASE_URL}/api/blocks-by-district/${districtId}`
         );
-        const data = Array.isArray(response.data)
-          ? response.data
-          : response.data.data || [];
-        setBlocks(data);
-      } catch (error) {
-        console.error("Error fetching blocks:", error);
-        setBlocks([]);
+        const data = Array.isArray(res.data) ? res.data : res.data.data || [];
+        if (isMounted) setBlocks(data);
+      } catch (err) {
+        console.error("Error fetching blocks:", err);
+        if (isMounted) setBlocks([]);
       }
     };
 
     fetchBlocks();
+    return () => (isMounted = false);
   }, [districtId, setBlocks]);
 }
 
-// ------------------------- //
-// Fetch Institutes (via Block → Cluster → Institute)
-// ------------------------- //
+/* =========================================================
+   Fetch Institutes (Block → Cluster → Institute)
+========================================================= */
 export function useFetchInstitutes(blockId, setInstitutes) {
   useEffect(() => {
-    const fetchInstitutes = async () => {
-      if (!blockId) {
-        setInstitutes([]);
-        return;
-      }
+    let isMounted = true;
 
+    if (!blockId) {
+      setInstitutes([]);
+      return;
+    }
+
+    const fetchInstitutes = async () => {
       try {
-        const clustersRes = await axios.get(
+        const clusterRes = await axios.get(
           `${API_BASE_URL}/api/clusters-by-block/${blockId}`
         );
-        const clusters = Array.isArray(clustersRes.data)
-          ? clustersRes.data
-          : clustersRes.data.data || [];
+        const clusters = Array.isArray(clusterRes.data)
+          ? clusterRes.data
+          : clusterRes.data.data || [];
 
-        let allInstitutes = [];
+        const instituteRequests = clusters.map((c) =>
+          axios.get(`${API_BASE_URL}/api/institutes-by-cluster/${c.id}`)
+        );
 
-        for (const cluster of clusters) {
-          const instRes = await axios.get(
-            `${API_BASE_URL}/api/institutes-by-cluster/${cluster.id}`
-          );
-          const institutes = Array.isArray(instRes.data)
-            ? instRes.data
-            : instRes.data.data || [];
-          allInstitutes = [...allInstitutes, ...institutes];
-        }
+        const instituteResponses = await Promise.all(instituteRequests);
 
-        setInstitutes(allInstitutes);
-      } catch (error) {
-        console.error("Error fetching institutes:", error);
-        setInstitutes([]);
+        const allInstitutes = instituteResponses.flatMap((res) =>
+          Array.isArray(res.data) ? res.data : res.data.data || []
+        );
+
+        if (isMounted) setInstitutes(allInstitutes);
+      } catch (err) {
+        console.error("Error fetching institutes:", err);
+        if (isMounted) setInstitutes([]);
       }
     };
 
     fetchInstitutes();
+    return () => (isMounted = false);
   }, [blockId, setInstitutes]);
+}
+
+/* =========================================================
+   Fetch Jurisdiction Name by Code
+========================================================= */
+export function useJurisName(juris_code, setJurisName) {
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!juris_code) {
+      setJurisName("");
+      return;
+    }
+
+    const fetchJurisName = async () => {
+      try {
+        const res = await axios.get(
+          `${API_BASE_URL}/api/juris-name/${juris_code}`
+        );
+        if (isMounted) setJurisName(res.data?.name || "");
+      } catch (err) {
+        console.error("Error fetching jurisdiction name:", err);
+        if (isMounted) setJurisName("");
+      }
+    };
+
+    fetchJurisName();
+    return () => (isMounted = false);
+  }, [juris_code, setJurisName]);
 }

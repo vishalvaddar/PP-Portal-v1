@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import logo from '../../assets/images.png';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
@@ -13,198 +12,170 @@ const LoginForm = () => {
   const [credentials, setCredentials] = useState({ user_name: '', password: '' });
   const [step, setStep] = useState(1);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  
   const [roles, setRoles] = useState([]);
   const [selectedRole, setSelectedRole] = useState('');
+  const [preAuthToken, setPreAuthToken] = useState(null);
+
   const navigate = useNavigate();
   const auth = useAuth();
 
   useEffect(() => {
-    if (auth.user) {
-      navigate('/');
-    }
+    if (auth.user) navigate('/');
   }, [auth.user, navigate]);
 
-  // Map backend roles to normalized frontend keys
   const roleMap = {
-    ADMIN: 'admin',
+    ADMIN: 'ADMIN',
     'BATCH COORDINATOR': 'BATCH COORDINATOR',
-    TEACHER: 'teacher',
-    STUDENT: 'student',
-    INTERVIEWER: 'interviewer',
+    TEACHER: 'TEACHER',
+    STUDENT: 'STUDENT',
+    INTERVIEWER: 'INTERVIEWER',
   };
 
+  // STEP 1: Verify Password
   const handleFirstStep = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
       const response = await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/auth/login`, {
-        user_name: credentials.user_name,
+        user_name: credentials.user_name.trim(),
         password: credentials.password,
       });
 
-      const { roles: backendRoles, user_name } = response.data;
+      const { roles: backendRoles, preAuthToken: token } = response.data;
+      
+      setPreAuthToken(token); // Save token for Step 2
 
       if (backendRoles?.length === 1) {
-        // If only one role, auto-select and proceed to next step
+        // If only 1 role, auto-select it immediately
         const normalizedRole = roleMap[backendRoles[0].toUpperCase()] || backendRoles[0].toLowerCase();
-        setSelectedRole(normalizedRole);
-        handleRoleSelection(normalizedRole, user_name);
+        handleRoleSelection(normalizedRole, token);
       } else if (backendRoles?.length > 1) {
-        // Normalize all roles for selection
+        // If multiple roles, show selection screen
         const normalizedRoles = backendRoles.map(
           (r) => roleMap[r.toUpperCase()] || r.toLowerCase()
         );
         setRoles(normalizedRoles);
         setStep(2);
       } else {
-        setError('No roles assigned to this user.');
+        setError('No active roles found for this user.');
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed');
+      setError(err.response?.data?.error || 'Login failed.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleRoleSelection = async (eOrRole, overrideUsername = null) => {
+  // STEP 2: Authorize Role
+  const handleRoleSelection = async (eOrRole, overrideToken = null) => {
     if (typeof eOrRole === 'object') eOrRole.preventDefault();
-
+    
     const role = typeof eOrRole === 'string' ? eOrRole : selectedRole;
-    const username = overrideUsername || credentials.user_name;
+    const tokenToUse = overrideToken || preAuthToken;
 
-    if (!role) {
-      setError('Please select a role.');
+    if (!tokenToUse) {
+      setError('Session expired. Please login again.');
+      setStep(1);
       return;
     }
 
-    setError('');
-
+    setIsLoading(true);
     try {
+      // Send the Pre-Auth Token to prove identity
       const response = await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/auth/authorize-role`, {
-        user_name: username,
-        role_name: role,
+        preAuthToken: tokenToUse,
+        selectedRole: role, 
       });
 
       const { token, user } = response.data;
-      const { user_id, user_name: dbUserName, role_name } = user;
+      const normalizedRole = roleMap[user.role_name.toUpperCase()] || user.role_name.toLowerCase();
 
-      // Normalize role for frontend use
-      const normalizedRole = roleMap[role_name.toUpperCase()] || role_name.toLowerCase();
-
-      const userData = {
-        user_id,
-        user_name: dbUserName,
+      auth.login({
+        user_id: user.user_id,
+        user_name: user.user_name,
         role: normalizedRole,
         token,
+      });
+
+      // Redirect based on role
+      const dashboardMap = {
+        'ADMIN': '/admin/admin-dashboard',
+        'BATCH COORDINATOR': '/coordinator/coordinator-dashboard',
+        'STUDENT': '/student/student-dashboard',
+        'TEACHER': '/teacher/teacher-dashboard',
+        'INTERVIEWER': '/interviewer/interviewer-dashboard'
       };
+      navigate(dashboardMap[normalizedRole] || '/');
 
-      auth.login(userData);
-
-      // Navigate based on normalized role
-      switch (normalizedRole) {
-        case 'admin':
-          navigate('/admin/admin-dashboard');
-          break;
-        case 'BATCH COORDINATOR':
-          navigate('/coordinator/coordinator-dashboard');
-          break;
-        case 'student':
-          navigate('/student/student-dashboard');
-          break;
-        case 'teacher':
-          navigate('/teacher/teacher-dashboard');
-          break;
-        case 'interviewer':
-          navigate('/interviewer/interviewer-dashboard');
-          break;
-        default:
-          navigate('/');
-          break;
-      }
     } catch (err) {
-      setError(err.response?.data?.error || 'Authorization failed');
+      setError(err.response?.data?.error || 'Authorization failed.');
+      if(err.response?.status === 401) setStep(1); // Go back if token expired
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  // Render logic remains similar to your existing code, just bind loading states
   return (
     <div className={styles.loginFormContainer}>
       <Card className={styles.card}>
         <CardHeader className={styles.cardHeader}>
-          <img src={logo} alt="Logo" className={styles.logo} />
-          <CardTitle className={styles.cardTitle}>PP Portal</CardTitle>
-          <CardDescription className={styles.cardDescription}>
-            {step === 1 ? 'Sign in to your account' : 'Select a role'}
-          </CardDescription>
+            <CardTitle className={styles.cardTitle}>Pratibha Poshak Portal</CardTitle>
         </CardHeader>
-
         <CardContent>
-          {error && <div className={styles.errorMessage}>{error}</div>}
+            {error && <div className={styles.errorMessage}>{error}</div>}
+            
+            {step === 1 && (
+                <form onSubmit={handleFirstStep} className={styles.formSpaceY4}>
+                    {/* Inputs for User/Pass */}
+                    <div>
+                        <Label>Username</Label>
+                        <Input 
+                            value={credentials.user_name} 
+                            onChange={e => setCredentials({...credentials, user_name: e.target.value})}
+                            disabled={isLoading}
+                        />
+                    </div>
+                    <div>
+                        <Label>Password</Label>
+                        <Input 
+                            type="password"
+                            value={credentials.password} 
+                            onChange={e => setCredentials({...credentials, password: e.target.value})}
+                            disabled={isLoading}
+                        />
+                    </div>
+                    <Button type="submit" disabled={isLoading} className={styles.button}>
+                        {isLoading ? 'Verifying...' : 'Next'}
+                    </Button>
+                </form>
+            )}
 
-          {step === 1 && (
-            <form onSubmit={handleFirstStep} className={styles.formSpaceY4}>
-              <div>
-                <Label htmlFor="username" className={styles.label}>Username</Label>
-                <Input
-                  id="username"
-                  type="text"
-                  value={credentials.user_name}
-                  onChange={(e) =>
-                    setCredentials({ ...credentials, user_name: e.target.value })
-                  }
-                  required
-                  className={styles.inputField}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="password" className={styles.label}>Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={credentials.password}
-                  onChange={(e) =>
-                    setCredentials({ ...credentials, password: e.target.value })
-                  }
-                  required
-                  className={styles.inputField}
-                />
-              </div>
-
-              <Button type="submit" className={styles.button}>Next</Button>
-            </form>
-          )}
-
-          {step === 2 && (
-            <form onSubmit={handleRoleSelection} className={styles.formSpaceY4}>
-              <div>
-                <Label htmlFor="role" className={styles.label}>Select Role</Label>
-                <div className={styles.roleRadioGroup}>
-                  {roles.map((role) => (
-                    <label
-                      key={role}
-                      className={styles.roleOption}
-                      htmlFor={role}
-                      data-checked={selectedRole === role}
-                    >
-                      <input
-                        type="radio"
-                        name="role"
-                        id={role}
-                        value={role}
-                        checked={selectedRole === role}
-                        onChange={() => setSelectedRole(role)}
-                        className={styles.roleRadioGroupItem}
-                      />
-                      {role.charAt(0).toUpperCase() + role.slice(1)}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <Button type="submit" className={styles.button} disabled={!selectedRole}>
-                Continue
-              </Button>
-            </form>
-          )}
+            {step === 2 && (
+                <form onSubmit={handleRoleSelection} className={styles.formSpaceY4}>
+                    <Label>Select Role</Label>
+                    <div className={styles.roleRadioGroup}>
+                        {roles.map(role => (
+                            <label key={role} className={styles.roleOption}>
+                                <input 
+                                    type="radio" 
+                                    name="role" 
+                                    checked={selectedRole === role} 
+                                    onChange={() => setSelectedRole(role)}
+                                />
+                                {role}
+                            </label>
+                        ))}
+                    </div>
+                    <Button type="submit" disabled={!selectedRole || isLoading} className={styles.button}>
+                        {isLoading ? 'Signing In...' : 'Login'}
+                    </Button>
+                </form>
+            )}
         </CardContent>
       </Card>
     </div>

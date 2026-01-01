@@ -119,27 +119,6 @@ const Applications = () => {
             </p>
           </aside>
         )}
-
-        <section className={styles.infoSection}>
-          <article className={styles.alertCard}>
-            <h2 className={styles.sectionTitle}>
-              <AlertTriangle size={20} className={styles.sectionIcon} />
-              Important Information
-            </h2>
-            <ul className={styles.alertList}>
-              <li>Bulk uploads must follow the standardized template format.</li>
-              <li>
-                Submitted applications remain in a pending state until verified
-                by an administrator.
-              </li>
-              <li>Potential duplicate applications are automatically flagged.</li>
-              <li>
-                Applications are archived automatically after a retention period
-                of six months.
-              </li>
-            </ul>
-          </article>
-        </section>
       </section>
     </main>
   );

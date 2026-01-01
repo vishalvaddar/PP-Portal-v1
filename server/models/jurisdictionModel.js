@@ -1,5 +1,4 @@
 const pool = require("../config/db");
-
 // Fetch all States
 async function getStates() {
   const query = `
@@ -69,6 +68,16 @@ async function getInstitutesByCluster(clusterId) {
   return result.rows;
 }
 
+async function getJurisName(juris_code) {
+  const query = `
+    SELECT JURIS_NAME AS name
+    FROM PP.JURISDICTION
+    WHERE JURIS_CODE = $1
+  `;
+  const result = await pool.query(query, [juris_code]);
+  return result.rows[0];
+};
+
 module.exports = {
   getStates,
   getDivisionsByState,
@@ -76,4 +85,5 @@ module.exports = {
   getBlocksByDistrict,
   getClustersByBlock,
   getInstitutesByCluster,
+  getJurisName,
 };

@@ -2,16 +2,27 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import classes from "./EditForm.module.css";
+// Importing ONLY the requested hooks
+import { 
+  useFetchStates, 
+  useFetchEducationDistricts, 
+  useFetchBlocks, 
+  useFetchInstitutes 
+} from "../../hooks/useJurisData";
 
 const EditForm = () => {
   const { nmms_reg_number } = useParams();
   const navigate = useNavigate();
+  
+  // --- Form Data State ---
   const [formData, setFormData] = useState(null);
+  const [secondaryData, setSecondaryData] = useState(null);
+  
+  // --- UI/Loading State ---
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [photoPreview, setPhotoPreview] = useState("");
-  const [institutes, setInstitutes] = useState([]);
   const [expandedSections, setExpandedSections] = useState({
     personal: true,
     address: true,
@@ -22,8 +33,27 @@ const EditForm = () => {
     teacher: true,
     property: true,
   });
-  const [secondaryData, setSecondaryData] = useState(null);
 
+  // --- LOCAL STATE FOR DROPDOWNS ---
+  const [states, setStates] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [blocks, setBlocks] = useState([]);
+  const [institutes, setInstitutes] = useState([]);
+
+  // --- INTEGRATING HOOKS ---
+  // 1. Fetch States
+  useFetchStates(setStates);
+
+  // 2. Fetch Districts (Triggered by formData.app_state)
+  useFetchEducationDistricts(formData?.app_state, setDistricts);
+
+  // 3. Fetch Blocks (Triggered by formData.district)
+  useFetchBlocks(formData?.district, setBlocks);
+
+  // 4. Fetch Institutes (Triggered by formData.nmms_block)
+  useFetchInstitutes(formData?.nmms_block, setInstitutes);
+
+  // --- Options Definitions ---
   const mediumOptions = ["ENGLISH", "KANNADA", "URDU", "MARATHI"];
   
   const genderOptions = [
@@ -37,7 +67,6 @@ const EditForm = () => {
     { label: "No", value: "N" }
   ];
 
-  // --- NEW: Occupation Options added here ---
   const occupationOptions = [
     { value: "Agriculture", label: "Agriculture/Farming" },
     { value: "Dairy-Poultry", label: "Dairy/Poultry/Fishery" },
@@ -74,7 +103,7 @@ const EditForm = () => {
     contact_no2: "Secondary Contact",
     app_state: "State",
     district: "District",
-    nmms_block: "NMMS Block",
+    nmms_block: "Block",
     current_institute_dise_code: "Current School",
     previous_institute_dise_code: "Previous School",
     village: "Village/Town",
@@ -102,29 +131,22 @@ const EditForm = () => {
   };
 
   const toggleSection = (section) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
   const expandAll = () => {
     const allExpanded = {};
-    Object.keys(expandedSections).forEach(key => {
-      allExpanded[key] = true;
-    });
+    Object.keys(expandedSections).forEach(key => { allExpanded[key] = true; });
     setExpandedSections(allExpanded);
   };
 
   const collapseAll = () => {
     const allCollapsed = {};
-    Object.keys(expandedSections).forEach(key => {
-      allCollapsed[key] = false;
-    });
+    Object.keys(expandedSections).forEach(key => { allCollapsed[key] = false; });
     setExpandedSections(allCollapsed);
   };
 
-
+  // --- Initial Data Fetch ---
   useEffect(() => {
     let isMounted = true; 
 
@@ -145,12 +167,16 @@ const EditForm = () => {
             applicant_id: data.data.applicant_id,
             nmms_year: data.data.nmms_year,
             nmms_reg_number: data.data.nmms_reg_number,
+            
+            // --- JURISDICTION DATA PRESERVATION ---
+            // Crucial: We must load division/cluster into state even if we don't have dropdowns for them.
+            // Otherwise, they will be missing on submit and set to NULL in the DB.
             app_state: data.data.app_state,
-            state_name: data.data.state_name,
-            district_name: data.data.district_name,
-            block_name: data.data.block_name,
+            division: data.data.division, // RESTORED
             district: data.data.district,
             nmms_block: data.data.nmms_block,
+            cluster: data.data.cluster,   // RESTORED
+            
             student_name: data.data.student_name,
             father_name: data.data.father_name,
             mother_name: data.data.mother_name,
@@ -158,7 +184,7 @@ const EditForm = () => {
             sat_score: data.data.sat_score,
             gender: data.data.gender,
             aadhaar: data.data.aadhaar,
-            DOB: formattedDOB, // Use formatted date for input
+            DOB: formattedDOB,
             home_address: data.data.home_address,
             family_income_total: data.data.family_income_total,
             contact_no1: data.data.contact_no1,
@@ -199,63 +225,36 @@ const EditForm = () => {
             : data.gender === "M" ? "/default-boy.png" : "/default-girl.png"
           );
 
-          if (primaryData.nmms_block) {
-            fetchInstitutes(primaryData.nmms_block);
-          }
-
         } else {
           setError("Student not found.");
-          setFormData(null);
-          setSecondaryData(null);
         }
       } catch (err) {
         if (isMounted) {
           console.error("Error fetching student data:", err);
-          setError("Failed to fetch student data. Please try again.");
-          setFormData(null);
-          setSecondaryData(null);
+          setError("Failed to fetch student data.");
         }
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    const fetchInstitutes = async (blockCode) => {
-      if (!blockCode) return;
-      try {
-        const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/institutes-by-block/${blockCode}`);
-        if (isMounted) {
-          setInstitutes(Array.isArray(res.data) ? res.data : []);
-        }
-      } catch (err) {
-        if (isMounted) {
-          console.error("Error fetching institutes", err);
-          setInstitutes([]);
-        }
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchStudentDetails();
 
-    return () => {
-      isMounted = false;
-    };
-
+    return () => { isMounted = false; };
   }, [nmms_reg_number]);
 
+  // --- Change Handler ---
   const handleChange = (e) => {
     const { name, value } = e.target;
     let val = value;
 
-    // Convert to uppercase for name fields
+    // Convert Uppercase
     if (["student_name", "father_name", "mother_name", "home_address", "village", 
          "neighbor_name", "favorite_teacher_name"].includes(name)) {
       val = val.toUpperCase();
     }
 
-    // Validate numeric fields
+    // Numeric Validation
     if (["aadhaar", "contact_no1", "contact_no2", "gmat_score", "sat_score", 
          "family_income_total", "household_size", "num_two_wheelers", 
          "num_four_wheelers", "distance_to_school", "irrigation_land",
@@ -263,12 +262,50 @@ const EditForm = () => {
       if (!/^\d*$/.test(val)) return;
     }
 
-    // Field-specific validations
     if (name === "aadhaar" && val.length > 12) return;
     if (["contact_no1", "contact_no2", "neighbor_phone", "favorite_teacher_phone"].includes(name) && val.length > 10) return;
     if (name === "family_income_total" && parseInt(val) > 9999999) return;
 
-    // Update the appropriate state based on the field
+    // --- CASCADING RESET LOGIC ---
+    
+    // 1. State Changed
+    if (name === "app_state") {
+      setFormData(prev => ({ 
+        ...prev, 
+        [name]: val,
+        division: "", // Reset implicit division
+        district: "", 
+        nmms_block: "",
+        cluster: "",  // Reset implicit cluster
+        current_institute_dise_code: "" 
+      }));
+      return; 
+    }
+
+    // 2. District Changed
+    if (name === "district") {
+      setFormData(prev => ({ 
+        ...prev, 
+        [name]: val,
+        nmms_block: "",
+        cluster: "",  // Reset implicit cluster
+        current_institute_dise_code: "" 
+      }));
+      return;
+    }
+
+    // 3. Block Changed
+    if (name === "nmms_block") {
+      setFormData(prev => ({ 
+        ...prev, 
+        [name]: val,
+        cluster: "", // Reset implicit cluster
+        current_institute_dise_code: "" 
+      }));
+      return;
+    }
+
+    // Standard Update
     if (secondaryData && Object.keys(secondaryData).includes(name)) {
       setSecondaryData(prev => ({ ...prev, [name]: val }));
     } else if (formData && Object.keys(formData).includes(name)) {
@@ -277,63 +314,36 @@ const EditForm = () => {
   };
 
   const validateForm = () => {
-    if (!formData) {
-      setError("Form data is not loaded.");
-      return false;
-    }
+    if (!formData) return false;
 
-    const required = ["student_name", "gender", "contact_no1"];
+    // Removed 'division' and 'cluster' from validation as they are hidden
+    const required = ["student_name", "gender", "contact_no1", "app_state", "district", "nmms_block", "current_institute_dise_code"];
     const phoneRegex = /^\d{10}$/;
     const aadhaarRegex = /^\d{12}$/;
     const nameRegex = /^[a-zA-Z\s]+$/;
 
-    // Validate required fields
     for (const field of required) {
       if (!formData[field]) {
-        setError(`${fieldLabels[field]} is required.`);
+        setError(`${fieldLabels[field] || field} is required.`);
         return false;
       }
     }
 
-    // Validate phone numbers
     if (formData.contact_no1 && !phoneRegex.test(formData.contact_no1)) {
       setError("Primary contact must be 10 digits.");
       return false;
     }
-    if (formData.contact_no2 && !phoneRegex.test(formData.contact_no2)) {
-      setError("Secondary contact must be 10 digits.");
-      return false;
-    }
-    if (secondaryData?.neighbor_phone && !phoneRegex.test(secondaryData.neighbor_phone)) {
-      setError("Neighbor's phone must be 10 digits.");
-      return false;
-    }
-    if (secondaryData?.favorite_teacher_phone && !phoneRegex.test(secondaryData.favorite_teacher_phone)) {
-      setError("Teacher's contact must be 10 digits.");
-      return false;
-    }
-
-    // Validate Aadhaar
+    
     if (formData.aadhaar && !aadhaarRegex.test(formData.aadhaar)) {
       setError("Aadhaar must be exactly 12 digits.");
       return false;
     }
 
-    // Validate names
     if (formData.student_name && !nameRegex.test(formData.student_name)) {
-      setError("Student name must contain only letters and spaces.");
-      return false;
-    }
-    if (formData.father_name && !nameRegex.test(formData.father_name)) {
-      setError("Father's name must contain only letters and spaces.");
-      return false;
-    }
-    if (formData.mother_name && !nameRegex.test(formData.mother_name)) {
-      setError("Mother's name must contain only letters and spaces.");
-      return false;
+        setError("Student name must contain only letters and spaces.");
+        return false;
     }
 
-    // Validate date of birth
     if (formData.DOB) {
       const today = new Date().toISOString().split('T')[0];
       if (formData.DOB > today) {
@@ -347,6 +357,9 @@ const EditForm = () => {
   };
 
   const filterValidFields = (obj) => {
+    // Keeps values even if they are null, but removes undefined/empty string
+    // This allows passing 'division' even if it is null (if that is intended), 
+    // or typically we want to keep it if it has a value.
     return Object.fromEntries(
       Object.entries(obj).filter(([_, v]) => v !== undefined && v !== "")
     );
@@ -364,25 +377,20 @@ const EditForm = () => {
       return;
     }
   
-    if (!formData || !secondaryData) {
-      setError("Form data is not available for submission.");
-      window.scrollTo(0, 0);
-      setLoading(false);
-      return;
-    }
-  
     try {
-      // Create a copy of formData without the protected fields
-      const { app_state, district, nmms_block, state_name, district_name, block_name, ...filteredFormData } = formData;
+      // Destructure to remove display names, but KEEP ids including division/cluster
+      const { state_name, district_name, block_name, ...filteredFormData } = formData;
   
       const primaryDataToSend = filterValidFields({
         ...filteredFormData,
+        // Explicitly format numbers if they exist
         nmms_year: formData.nmms_year ? Number(formData.nmms_year) : null,
         gmat_score: formData.gmat_score ? Number(formData.gmat_score) : null,
         sat_score: formData.sat_score ? Number(formData.sat_score) : null,
         family_income_total: formData.family_income_total ? Number(formData.family_income_total) : null,
-        current_institute_dise_code: formData.current_institute_dise_code ? Number(formData.current_institute_dise_code) : null,
-        previous_institute_dise_code: formData.previous_institute_dise_code ? Number(formData.previous_institute_dise_code) : null
+        current_institute_dise_code: formData.current_institute_dise_code, 
+        previous_institute_dise_code: formData.previous_institute_dise_code
+        // Note: division and cluster are inside ...filteredFormData, so they are sent!
       });
   
       const secondaryDataToSend = filterValidFields({
@@ -395,7 +403,7 @@ const EditForm = () => {
       });
   
       const response = await axios.put(
-        `${process.env.REACT_APP_BACKEND_API_URL}/api/applicants/update/${formData.applicant_id}`,
+        `${process.env.REACT_APP_BACKEND_API_URL}/api/applicants/${formData.applicant_id}/update`,
         {
           primaryData: primaryDataToSend,
           secondaryData: secondaryDataToSend
@@ -406,18 +414,17 @@ const EditForm = () => {
         setSuccess(true);
         setTimeout(() => navigate(`/admin/admissions/view-student-info/${nmms_reg_number}`), 1500);
       } else {
-        setError("Update was not completely successful. Please check the data and try again.");
+        setError("Update was not completely successful.");
       }
     } catch (err) {
       console.error("Error updating student:", err);
-      setError(err.response?.data?.message || "Failed to update student information. Please try again.");
+      setError(err.response?.data?.message || "Failed to update student information.");
     } finally {
       setLoading(false);
       window.scrollTo(0, 0);
     }
   };
 
-  // Updated renderField to always be editable
   const renderField = (key, value, isSecondary = false, disabled = false) => {
     const sourceData = isSecondary ? secondaryData : formData;
     if (!sourceData) return null;
@@ -433,62 +440,72 @@ const EditForm = () => {
     return (
       <div className={classes.formGroup} key={key}>
         <label className={classes.formLabel}>{fieldLabels[key] || key}</label>
+        
         {key === "gender" ? (
           <select {...commonProps}>
             <option value="">Select Gender</option>
-            {genderOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
+            {genderOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
           </select>
         ) : key === "medium" ? (
           <select {...commonProps}>
             <option value="">Select Medium</option>
-            {mediumOptions.map(option => (
-              <option key={option} value={option}>{option}</option>
-            ))}
+            {mediumOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
           </select>
         ) : ["own_house", "smart_phone_home", "internet_facility_home"].includes(key) ? (
           <select {...commonProps}>
             <option value="">Select</option>
-            {yesNoOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        ) : ["current_institute_dise_code", "previous_institute_dise_code"].includes(key) ? (
-          <select {...commonProps}>
-            <option value="">Select School</option>
-            {institutes.map(institute => (
-              <option key={institute.institute_id} value={institute.dise_code}>
-                {institute.institute_name || `School ${institute.dise_code}`}
-              </option>
-            ))}
+            {yesNoOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
           </select>
         ) : ["father_occupation", "mother_occupation"].includes(key) ? (
-          // --- NEW: Logic for Occupation Dropdown ---
           <select {...commonProps}>
             <option value="">Select Occupation</option>
-            {occupationOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
+            {occupationOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+          </select>
+
+        ) : key === "app_state" ? (
+            <select {...commonProps}>
+              <option value="">Select State</option>
+              {states && states.map(s => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+
+        ) : key === "district" ? (
+            <select {...commonProps} disabled={!formData.app_state}>
+              <option value="">Select District</option>
+              {districts && districts.map(d => (
+                <option key={d.id} value={d.id}>{d.name}</option>
+              ))}
+            </select>
+
+        ) : key === "nmms_block" ? (
+            <select {...commonProps} disabled={!formData.district}>
+              <option value="">Select Block</option>
+              {blocks && blocks.map(b => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+
+        ) : ["current_institute_dise_code", "previous_institute_dise_code"].includes(key) ? (
+          <select {...commonProps} disabled={key === "current_institute_dise_code" && !formData.nmms_block}>
+            <option value="">Select School</option>
+            {institutes && institutes.map(institute => (
+              <option key={institute.institute_id} value={institute.dise_code}>
+                {institute.institute_name} ({institute.dise_code})
               </option>
             ))}
           </select>
+
         ) : key === "DOB" ? (
-          // Always render date input
           <input type="date" {...commonProps} />
         ) : (
-          // Default to text input
           <input type="text" {...commonProps} />
         )}
       </div>
     );
   };
 
-  const renderSectionHeader = (title, section, disabled = false) => (
+  const renderSectionHeader = (title, section) => (
     <div
       className={`${classes.sectionHeader} ${expandedSections[section] ? classes.expanded : ''}`}
       onClick={() => toggleSection(section)}
@@ -498,9 +515,7 @@ const EditForm = () => {
         <h3>{title}</h3>
       </div>
       <div className={classes.sectionToggle}>
-        <span className={classes.toggleIcon}>
-          {expandedSections[section] ? '−' : '+'} 
-        </span>
+        <span className={classes.toggleIcon}>{expandedSections[section] ? '−' : '+'}</span>
       </div>
     </div>
   );
@@ -516,7 +531,7 @@ const EditForm = () => {
     property: "🏗"
   };
 
-  if (loading) {
+  if (loading && !formData) {
     return (
       <div className={classes.container}>
         <div className={classes.loadingMessage}>
@@ -527,7 +542,7 @@ const EditForm = () => {
     );
   }
 
-  if (!formData) {
+  if (!formData && !loading) {
     return (
       <div className={classes.container}>
         <div className={classes.errorMessage}>
@@ -549,7 +564,7 @@ const EditForm = () => {
           </div>
           <div className={classes.studentIdRow}>
             <span className={classes.idLabel}>Student ID: </span>
-            <span className={classes.idValue}>{formData.applicant_id}</span>
+            <span className={classes.idValue}>{formData?.applicant_id}</span>
           </div>
         </div>
         <div className={classes.profileImageContainer}>
@@ -558,36 +573,22 @@ const EditForm = () => {
             alt="Profile" 
             className={classes.profileImage} 
             onError={(e) => { 
-              e.target.src = formData.gender === "M" ? "/default-boy.png" : "/default-girl.png";
+              e.target.src = formData?.gender === "M" ? "/default-boy.png" : "/default-girl.png";
             }} 
           />
         </div>
       </div>
 
-      {error && (
-        <div className={classes.errorMessage}>
-          <span className={classes.errorIcon}>⚠</span>
-          <span>{error}</span>
-        </div>
-      )}
-      {success && (
-        <div className={classes.successMessage}>
-          <span className={classes.successIcon}>✅</span>
-          <span>Update successful! Redirecting...</span>
-        </div>
-      )}
+      {error && <div className={classes.errorMessage}><span className={classes.errorIcon}>⚠</span><span>{error}</span></div>}
+      {success && <div className={classes.successMessage}><span className={classes.successIcon}>✅</span><span>Update successful! Redirecting...</span></div>}
 
-      {/* Updated Section Controls - Removed Edit/Cancel toggle */}
       <div className={classes.sectionControls}>
-        <button type="button" className={classes.expandAllBtn} onClick={expandAll}>
-          Expand All
-        </button>
-        <button type="button" className={classes.collapseAllBtn} onClick={collapseAll}>
-          Collapse All
-        </button>
+        <button type="button" className={classes.expandAllBtn} onClick={expandAll}>Expand All</button>
+        <button type="button" className={classes.collapseAllBtn} onClick={collapseAll}>Collapse All</button>
       </div>
 
       <form onSubmit={handleSubmit} className={classes.studentForm}>
+        
         {renderSectionHeader("Personal Information", "personal")}
         <div className={`${classes.sectionContent} ${expandedSections.personal ? classes.visible : ''}`}>
           <div className={classes.formGrid}>
@@ -601,19 +602,17 @@ const EditForm = () => {
           </div>
         </div>
 
-        {/* Address Information Section */}
-        {renderSectionHeader("Address Information", "address")}
+        {renderSectionHeader("Address & Location", "address")}
         <div className={`${classes.sectionContent} ${expandedSections.address ? classes.visible : ''}`}>
           <div className={classes.formGrid}>
-            {renderField("app_state", formData.state_name, true)}
-            {renderField("district", formData.district_name, true)}
-            {renderField("nmms_block", formData.block_name)}
+            {renderField("app_state", formData.app_state)} 
+            {renderField("district", formData.district)}
+            {renderField("nmms_block", formData.nmms_block)}
             {renderField("home_address", formData.home_address)}
             {secondaryData && renderField("village", secondaryData.village, true)}
           </div>
         </div>
 
-        {/* Educational Information Section */}
         {renderSectionHeader("Educational Information", "educational")}
         <div className={`${classes.sectionContent} ${expandedSections.educational ? classes.visible : ''}`}>
           <div className={classes.formGrid}>
@@ -626,7 +625,6 @@ const EditForm = () => {
           </div>
         </div>
 
-        {/* Family Information Section */}
         {renderSectionHeader("Family Information", "family")}
         <div className={`${classes.sectionContent} ${expandedSections.family ? classes.visible : ''}`}>
           <div className={classes.formGrid}>
@@ -639,7 +637,6 @@ const EditForm = () => {
           </div>
         </div>
 
-        {/* Contact Information Section */}
         {renderSectionHeader("Contact Information", "contact")}
         <div className={`${classes.sectionContent} ${expandedSections.contact ? classes.visible : ''}`}>
           <div className={classes.formGrid}>
@@ -650,7 +647,6 @@ const EditForm = () => {
           </div>
         </div>
 
-        {/* Transportation Section */}
         {renderSectionHeader("Transportation & Facilities", "transportation")}
         <div className={`${classes.sectionContent} ${expandedSections.transportation ? classes.visible : ''}`}>
           <div className={classes.formGrid}>
@@ -661,7 +657,6 @@ const EditForm = () => {
           </div>
         </div>
 
-        {/* Teacher Information Section */}
         {renderSectionHeader("Teacher Information", "teacher")}
         <div className={`${classes.sectionContent} ${expandedSections.teacher ? classes.visible : ''}`}>
           <div className={classes.formGrid}>
@@ -670,7 +665,6 @@ const EditForm = () => {
           </div>
         </div>
 
-        {/* Property Information Section */}
         {renderSectionHeader("Property Information", "property")}
         <div className={`${classes.sectionContent} ${expandedSections.property ? classes.visible : ''}`}>
           <div className={classes.formGrid}>
@@ -681,21 +675,11 @@ const EditForm = () => {
           </div>
         </div>
 
-        {/* Added Form Actions */}
         <div className={classes.formActions}>
-          <button 
-            type="button" 
-            className={classes.cancelBtn} 
-            onClick={() => navigate(`/admin/admissions/view-student-info/${nmms_reg_number}`)} 
-            disabled={loading} // Disable while submitting
-          >
+          <button type="button" className={classes.cancelBtn} onClick={() => navigate(`/admin/admissions/view-student-info/${nmms_reg_number}`)} disabled={loading}>
             Cancel
           </button>
-          <button 
-            type="submit" 
-            className={classes.submitButton} 
-            disabled={loading} // Disable while submitting
-          >
+          <button type="submit" className={classes.submitButton} disabled={loading}>
             {loading ? 'Saving...' : 'Save Changes'}
           </button>
         </div>

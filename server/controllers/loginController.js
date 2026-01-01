@@ -4,125 +4,73 @@ const jwt = require('jsonwebtoken');
 const logger = require('../utils/logger');
 
 const loginController = async (req, res) => {
-  const { user_name, password, selectedRole } = req.body;
-  console.log('Login attempt:', { user_name, selectedRole });
-  
-  // Get client IP for logging
+  const { user_name, password } = req.body;
   const clientIp = logger.constructor.getClientIp(req);
 
-  // Step 1: Validate input
+  // 1. Basic Validation
   if (!user_name || !password) {
     return res.status(400).json({ error: 'Username and password are required' });
   }
 
-  // Step 2: Ensure JWT_SECRET is available
-  if (!process.env.JWT_SECRET) {
-    console.error("JWT_SECRET is not set in environment variables.");
-    return res.status(500).json({ error: 'Server configuration error' });
-  }
-
   try {
-    // Step 3: Query user and their roles
+    // 2. Fetch User & Roles
     const query = `
-  SELECT u.user_id, u.user_name, u.enc_password, r.role_name
-  FROM "pp"."user" u
-  JOIN "pp"."user_role" ur ON u.user_id = ur.user_id
-  JOIN "pp"."role" r ON ur.role_id = r.role_id
-  WHERE LOWER(u.user_name) = LOWER($1)
-    AND u.locked_yn = 'N'
-    AND r.active_yn = 'Y';
-`;
-
+      SELECT u.user_id, u.user_name, u.enc_password, u.locked_yn, r.role_name
+      FROM pp.user u
+      JOIN pp.user_role ur ON u.user_id = ur.user_id
+      JOIN pp.role r ON ur.role_id = r.role_id
+      WHERE LOWER(u.user_name) = LOWER($1) AND r.active_yn = 'Y';
+    `;
 
     const result = await pool.query(query, [user_name]);
 
+    // 3. Prevent Enumeration (Generic Error)
     if (result.rows.length === 0) {
-      console.log('No matching user or active roles found');
-      // Log failed login attempt
-      logger.logLogin({
-        user_name,
-        status: 'failed',
-        reason: 'invalid_username',
-        ip: clientIp
-      });
-      return res.status(401).json({ error: 'Invalid username or no active roles assigned' });
+      logger.logLogin({ user_name, status: 'failed', reason: 'user_not_found', ip: clientIp });
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Step 4: Compare password with the hashed password
-    const { enc_password, user_id, user_name: dbUserName } = result.rows[0];
-    const isMatch = await bcrypt.compare(password, enc_password);
+    const user = result.rows[0];
+
+    // 4. Check Lock Status
+    if (user.locked_yn === 'Y') {
+      return res.status(403).json({ error: 'Account is locked. Contact support.' });
+    }
+
+    // 5. Verify Password
+    const isMatch = await bcrypt.compare(password, user.enc_password);
     if (!isMatch) {
-      console.log('Incorrect password');
-      // Log failed login attempt
-      logger.logLogin({
-        user_name,
-        user_id,
-        status: 'failed',
-        reason: 'incorrect_password',
-        ip: clientIp
-      });
-      return res.status(401).json({ error: 'Incorrect password' });
+      logger.logLogin({ user_name, status: 'failed', reason: 'bad_password', ip: clientIp });
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Step 5: Extract all roles
+    // 6. Extract Roles
     const roles = result.rows.map(row => row.role_name);
-    console.log('Roles found:', roles);
 
-    // Step 6: If multiple roles exist, handle role selection
-    if (roles.length > 1) {
-      if (!selectedRole) {
-        return res.status(200).json({
-          message: 'Multiple roles found. Please select a role.',
-          user_id,
-          user_name: dbUserName,
-          roles,
-        });
-      }
-
-      const matchedRole = roles.find(r => r.toLowerCase() === selectedRole.toLowerCase());
-      if (!matchedRole) {
-        return res.status(403).json({ error: 'Selected role is not assigned to this user' });
-      }
-    }
-
-    // Step 7: Use the selected role or default to the only role
-    const roleToUse = selectedRole || roles[0];
-    console.log(`Login successful as ${roleToUse}`);
-
-    // Step 8: Generate JWT token
-    const tokenPayload = {
-      user_id,
-      user_name: dbUserName,
-      role_name: roleToUse,
-    };
-
-    const token = jwt.sign(
-      tokenPayload,
+    // 7. Generate PRE-AUTH TOKEN
+    // This token is ONLY valid for role selection, NOT for API access.
+    const preAuthToken = jwt.sign(
+      { 
+        user_id: user.user_id, 
+        user_name: user.user_name, 
+        type: 'PRE_AUTH_ROLE_SELECT', // Specific type claim
+        allowed_roles: roles // Embed roles so we don't need another DB query
+      },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '1d' }
+      { expiresIn: '5m' } // Expire quickly (5 mins)
     );
 
-    // Log successful login
-    logger.logLogin({
-      user_id,
-      user_name: dbUserName,
-      role_name: roleToUse,
-      status: 'success',
-      ip: clientIp
-    });
+    logger.logLogin({ user_name, status: 'success_pre_auth', ip: clientIp });
 
-    // Step 9: Send response
     return res.status(200).json({
-      message: 'Login successful',
-      token,
-      user_id,
-      user_name: dbUserName,
-      selected_role: roleToUse,
-      roles,
+      message: 'Credentials verified',
+      user_name: user.user_name,
+      roles: roles,
+      preAuthToken: preAuthToken 
     });
 
   } catch (err) {
-    console.error('Login error:', err.message);
+    console.error('Login Error:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

@@ -12,7 +12,7 @@ const studentSearchController = async (req, res) => {
       offset = 0,
     } = req.query;
 
-    const parsedLimit = Math.min(Math.max(parseInt(limit) || 50, 1), 100); // Max 100 records
+    const parsedLimit = Math.min(Math.max(parseInt(limit) || 50, 1), 100);
     const parsedOffset = Math.max(parseInt(offset) || 0, 0);
 
     const baseQuery = `

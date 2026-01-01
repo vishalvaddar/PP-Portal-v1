@@ -5,7 +5,13 @@ import ProfileSection from "../../components/ProfileSection";
 import ProfileField from "../../components/ProfileField";
 import classes from "./ViewStudentInfo.module.css";
 
-import { useFetchStates, useFetchEducationDistricts, useFetchBlocks, useFetchInstitutes } from "../../hooks/useJurisData";
+// 1. Import the Hooks
+import { 
+  useFetchStates, 
+  useFetchEducationDistricts, 
+  useFetchBlocks, 
+  useFetchInstitutes 
+} from "../../hooks/useJurisData";
 
 const ViewStudentInfo = () => {
   const { nmms_reg_number } = useParams();
@@ -17,23 +23,22 @@ const ViewStudentInfo = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [photoPreview, setPhotoPreview] = useState("");
+  
+  // 2. Local state to store Jurisdiction Lists (Names)
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [blocks, setBlocks] = useState([]);
   const [institutes, setInstitutes] = useState([]);
+  
   const [expandedSections, setExpandedSections] = useState({ personal: true });
 
   const isFromBatches = location.pathname.includes("/batches/view-student-info/");
   const pageTitle = isFromBatches ? "Student Profile" : "Applicant Profile";
 
+  // 3. Call Hooks to fetch lists based on Student Data
   useFetchStates(setStates);
-
   useFetchEducationDistricts(formData?.app_state, setDistricts);
-
-  // Fetch Blocks when district changes
   useFetchBlocks(formData?.district, setBlocks);
-
-  // Fetch Institutes when nmms_block changes
   useFetchInstitutes(formData?.nmms_block, setInstitutes);
 
   const fieldLabels = {
@@ -138,8 +143,6 @@ const ViewStudentInfo = () => {
         const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/applicants/reg/${nmms_reg_number}`);
         const data = res.data.data;
 
-        console.log("Fetched student data:", data);
-
         if (!data) {
           setError("Student not found.");
           return;
@@ -216,10 +219,43 @@ const ViewStudentInfo = () => {
     setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
+  // 4. Update Format Value Logic to lookup Names from IDs
   const formatValue = (key, value) => {
     if (!value) return "Not specified";
+
+    // Date
     if (key === "dob") return new Date(value).toLocaleDateString("en-IN");
+
+    // Money
     if (key === "family_income_total") return `₹${Number(value).toLocaleString("en-IN")}`;
+
+    // --- Name Lookups ---
+    
+    // State Name
+    if (key === "app_state") {
+      const state = states.find(s => String(s.id) === String(value));
+      return state ? state.name : value; // Return name if found, else ID
+    }
+
+    // District Name
+    if (key === "district") {
+      const dist = districts.find(d => String(d.id) === String(value));
+      return dist ? dist.name : value;
+    }
+
+    // Block Name
+    if (key === "nmms_block") {
+      const blk = blocks.find(b => String(b.id) === String(value));
+      return blk ? blk.name : value;
+    }
+
+    // School Name (Current & Previous)
+    if (key === "current_institute_dise_code" || key === "previous_institute_dise_code") {
+      const inst = institutes.find(i => String(i.dise_code) === String(value));
+      // Returns: "Govt High School (123456)"
+      return inst ? `${inst.institute_name} (${value})` : value;
+    }
+
     return value;
   };
 
@@ -228,14 +264,13 @@ const ViewStudentInfo = () => {
     return <ProfileField key={field} label={fieldLabels[field] || field} value={formatValue(field, value)} />;
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (!formData) return <p>{error || "No applicant found"}</p>;
+  if (loading) return <div className={classes.loadingContainer}><div className={classes.spinner}></div><p>Loading...</p></div>;
+  if (!formData) return <div className={classes.errorContainer}><p>{error || "No applicant found"}</p></div>;
 
   return (
     <div className={classes.container}>
       <h1 className={classes.pageTitle}>{pageTitle}</h1>
 
-      {/* Header */}
       <div className={classes.headerSection}>
         <div>
           <p><strong>NMMS Reg No:</strong> {formData.nmms_reg_number}</p>

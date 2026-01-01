@@ -2,24 +2,60 @@ const express = require("express");
 const router = express.Router();
 
 const eventController = require("../controllers/eventController");
+const {
+  uploadEventFiles,
+  validateEventBody,
+  validateEventId,
+  sanitizeEventNumbers
+} = require("../middleware/eventMiddleware");
 
-// Get event types
-router.get("/types/all", eventController.getEventTypes);
+/* =========================================================
+   EVENT TYPE ROUTES
+========================================================= */
 
-// Create event type
-router.post("/types", eventController.createEventType);
+router.post("/event-types", eventController.createEventType);
+router.put("/event-type/:id", validateEventId, eventController.updateEventType);
+router.get("/event-types", eventController.getEventTypes);
 
-// Create Event
-router.post("/", eventController.createEvent);
 
-// Get all events
-router.get("/", eventController.getAllEvents);
+/* =========================================================
+   EVENT ROUTES
+========================================================= */
 
-// Get single event
-router.get("/:eventId", eventController.getEventById);
+// CREATE EVENT
+router.post(
+  "/events",
+  uploadEventFiles,
+  sanitizeEventNumbers,
+  validateEventBody,
+  eventController.createEvent
+);
 
-// Delete event
-router.delete("/:eventId", eventController.deleteEvent);
+// GET ALL EVENTS
+router.get("/events", eventController.getAllEvents);
 
+// GET EVENT BY ID
+router.get(
+  "/events/:id",
+  validateEventId,
+  eventController.getEventById
+);
+
+// UPDATE EVENT
+router.put(
+  "/events/:id",
+  validateEventId,
+  uploadEventFiles,
+  sanitizeEventNumbers,
+  validateEventBody,
+  eventController.updateEvent
+);
+
+// DELETE EVENT
+router.delete(
+  "/events/:id",
+  validateEventId,
+  eventController.deleteEvent
+);
 
 module.exports = router;

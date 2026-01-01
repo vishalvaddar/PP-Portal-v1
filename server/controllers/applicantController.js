@@ -17,7 +17,6 @@ const sanitizeDate = (dateStr) => {
 // CREATE Applicant
 exports.createApplicant = async (req, res) => {
   try {
-    const body = req.body;
     const userId = req.user?.user_id;
 
     if (!userId) {
@@ -27,14 +26,27 @@ exports.createApplicant = async (req, res) => {
       });
     }
 
-    // Required fields
+    // Handle incoming data structure (Nested vs Flat)
+    let { primaryData, secondaryData } = req.body;
+
+    // If primaryData is missing, assume flat structure (legacy support)
+    if (!primaryData) {
+      primaryData = { ...req.body };
+      // Remove secondaryData key if it exists inside flat body to avoid duplication
+      if (primaryData.secondaryData) delete primaryData.secondaryData;
+    }
+
+    // Ensure secondaryData is initialized
+    if (!secondaryData) secondaryData = {};
+
+    // Required fields check (Validating primaryData)
     const requiredFields = [
       "nmms_year", "nmms_reg_number", "student_name", "father_name",
       "medium", "contact_no1", "district", "nmms_block",
       "gmat_score", "sat_score"
     ];
 
-    const missing = requiredFields.filter((f) => !body[f]);
+    const missing = requiredFields.filter((f) => !primaryData[f]);
     if (missing.length > 0) {
       return res.status(400).json({
         success: false,
@@ -43,42 +55,51 @@ exports.createApplicant = async (req, res) => {
     }
 
     // Validate numbers
-    if (isNaN(body.nmms_year))
+    if (isNaN(primaryData.nmms_year))
       return res.status(400).json({ success: false, message: "nmms_year must be numeric" });
 
-    if (body.contact_no1 && !/^[0-9]{10}$/.test(body.contact_no1))
+    if (primaryData.contact_no1 && !/^[0-9]{10}$/.test(primaryData.contact_no1))
       return res.status(400).json({ success: false, message: "contact_no1 must be a valid 10-digit number" });
 
-    if (body.contact_no2 && !/^[0-9]{10}$/.test(body.contact_no2))
+    if (primaryData.contact_no2 && !/^[0-9]{10}$/.test(primaryData.contact_no2))
       return res.status(400).json({ success: false, message: "contact_no2 must be a valid 10-digit number" });
 
-    // Sanitized payload
-    const applicantData = {
-      nmms_year: sanitizeValue(body.nmms_year),
-      nmms_reg_number: sanitizeValue(body.nmms_reg_number),
-      app_state: sanitizeValue(body.app_state),
-      district: sanitizeValue(body.district),
-      nmms_block: sanitizeValue(body.nmms_block),
-      student_name: sanitizeValue(body.student_name),
-      father_name: sanitizeValue(body.father_name),
-      mother_name: sanitizeValue(body.mother_name),
-      gmat_score: sanitizeValue(body.gmat_score),
-      sat_score: sanitizeValue(body.sat_score),
-      gender: sanitizeValue(body.gender),
-      medium: sanitizeValue(body.medium),
-      aadhaar: sanitizeValue(body.aadhaar),
-      dob: sanitizeDate(body.dob),
-      home_address: sanitizeValue(body.home_address),
-      family_income_total: sanitizeValue(body.family_income_total),
-      contact_no1: sanitizeValue(body.contact_no1),
-      contact_no2: sanitizeValue(body.contact_no2),
-      current_institute_dise_code: sanitizeValue(body.current_institute_dise_code),
-      previous_institute_dise_code: sanitizeValue(body.previous_institute_dise_code),
+    // Sanitized Primary Data
+    const sanitizedPrimary = {
+      nmms_year: sanitizeValue(primaryData.nmms_year),
+      nmms_reg_number: sanitizeValue(primaryData.nmms_reg_number),
+      app_state: sanitizeValue(primaryData.app_state),
+      district: sanitizeValue(primaryData.district),
+      nmms_block: sanitizeValue(primaryData.nmms_block),
+      student_name: sanitizeValue(primaryData.student_name),
+      father_name: sanitizeValue(primaryData.father_name),
+      mother_name: sanitizeValue(primaryData.mother_name),
+      gmat_score: sanitizeValue(primaryData.gmat_score),
+      sat_score: sanitizeValue(primaryData.sat_score),
+      gender: sanitizeValue(primaryData.gender),
+      medium: sanitizeValue(primaryData.medium),
+      aadhaar: sanitizeValue(primaryData.aadhaar),
+      dob: sanitizeDate(primaryData.dob),
+      home_address: sanitizeValue(primaryData.home_address),
+      family_income_total: sanitizeValue(primaryData.family_income_total),
+      contact_no1: sanitizeValue(primaryData.contact_no1),
+      contact_no2: sanitizeValue(primaryData.contact_no2),
+      current_institute_dise_code: sanitizeValue(primaryData.current_institute_dise_code),
+      previous_institute_dise_code: sanitizeValue(primaryData.previous_institute_dise_code),
       created_by: userId,
       updated_by: userId
     };
 
-    const applicant = await applicantModel.createApplicant(applicantData);
+    // Prepare Secondary Data (Inject User ID)
+    const sanitizedSecondary = { ...secondaryData };
+    sanitizedSecondary.created_by = userId;
+    sanitizedSecondary.updated_by = userId;
+
+    // Call Model with Nested Structure
+    const applicant = await applicantModel.createApplicant({
+      primaryData: sanitizedPrimary,
+      secondaryData: sanitizedSecondary
+    });
 
     return res.status(201).json({
       success: true,
@@ -88,6 +109,10 @@ exports.createApplicant = async (req, res) => {
 
   } catch (error) {
     console.error("Error creating applicant:", error);
+    // Handle Duplicate Key Error (Postgres code 23505)
+    if (error.code === '23505') {
+       return res.status(400).json({ success: false, message: "Registration Number already exists." });
+    }
     return res.status(500).json({
       success: false,
       message: "Failed to create applicant",
@@ -129,13 +154,26 @@ exports.getApplicantById = async (req, res) => {
 exports.updateApplicant = async (req, res) => {
   try {
     const { applicantId } = req.params;
+    const userId = req.user?.user_id;
+
     if (!applicantId)
       return res.status(400).json({ success: false, message: "applicantId is required" });
 
-    const updated = await applicantModel.updateApplicant(applicantId, req.body);
+    // Handle nested structure from Frontend
+    let { primaryData, secondaryData } = req.body;
+
+    // Inject updated_by user ID
+    if (primaryData) primaryData.updated_by = userId;
+    if (secondaryData) secondaryData.updated_by = userId;
+
+    // Call model with nested structure
+    const updated = await applicantModel.updateApplicant(applicantId, { 
+      primaryData, 
+      secondaryData 
+    });
 
     if (!updated)
-      return res.status(404).json({ success: false, message: "Applicant not found" });
+      return res.status(404).json({ success: false, message: "Applicant not found or update failed" });
 
     res.status(200).json({
       success: true,
@@ -214,7 +252,7 @@ exports.viewApplicantByRegNumber = async (req, res) => {
       });
     }
 
-    // Clean and validate numeric type (since DB column is numeric)
+    // Clean and validate numeric type
     nmms_reg_number = nmms_reg_number.trim();
 
     if (!/^\d+$/.test(nmms_reg_number)) {
@@ -250,4 +288,3 @@ exports.viewApplicantByRegNumber = async (req, res) => {
     });
   }
 };
-

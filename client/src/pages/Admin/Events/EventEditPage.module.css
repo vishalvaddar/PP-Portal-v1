@@ -1,0 +1,331 @@
+/* --- Variables & Reset --- */
+.pageWrapper {
+    background-color: #f3f4f6; /* Very light grey background for the whole page */
+    min-height: 100vh;
+    padding: 40px 20px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1f2937;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* --- Header Section --- */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.pageTitle {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.025em;
+}
+
+.pageSubtitle {
+    font-size: 1rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.backButton {
+    background: white;
+    border: 1px solid #d1d5db;
+    color: #374151;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.backButton:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+    color: #111827;
+}
+
+/* --- Form Layout --- */
+.formContent {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* --- Cards --- */
+.card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.06); /* Soft subtle shadow */
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+}
+
+.cardHeader {
+    padding: 16px 24px;
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.cardTitle {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.cardBody {
+    padding: 24px;
+}
+
+/* --- Grids --- */
+.gridRow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.colSpan2 {
+    grid-column: span 2;
+}
+
+/* --- Form Inputs --- */
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.req {
+    color: #ef4444;
+    margin-left: 2px;
+}
+
+.input,
+.textarea,
+.select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #111827;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    appearance: none; /* Removes default OS styling */
+}
+
+/* Custom Select Arrow fix */
+.input:where(select) {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+.input:focus,
+.textarea:focus {
+    outline: none;
+    border-color: #3b82f6; /* Modern Blue */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); /* Blue glow ring */
+}
+
+.input:disabled {
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+    color: #9ca3af;
+}
+
+.textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* --- File Upload (Drop Zone Style) --- */
+.fileDropZone {
+    position: relative;
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    background-color: #f9fafb;
+    padding: 24px;
+    text-align: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.fileDropZone:hover {
+    border-color: #3b82f6;
+    background-color: #eff6ff;
+}
+
+.fileInput {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.fileDropText {
+    color: #6b7280;
+    font-size: 0.9rem;
+    font-weight: 500;
+    pointer-events: none;
+}
+
+/* --- Multimedia Previews --- */
+.existingPhotosWrapper {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.subLabel {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 12px;
+}
+
+.photoGrid {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.photoThumb {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.photoThumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* --- Footer Actions --- */
+.footerActions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 10px;
+    margin-bottom: 60px; /* Space at bottom of page */
+}
+
+.saveBtn {
+    background-color: #2563eb; /* Strong Blue */
+    color: #ffffff;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    transition: transform 0.1s ease, background-color 0.2s ease;
+}
+
+.saveBtn:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(37, 99, 235, 0.3);
+}
+
+.saveBtn:disabled {
+    background-color: #93c5fd;
+    cursor: wait;
+    transform: none;
+}
+
+/* --- Alerts --- */
+.alertError {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    font-weight: 500;
+}
+
+.alertSuccess {
+    background-color: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #047857;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    font-weight: 500;
+}
+
+/* --- Loading --- */
+.loadingScreen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+    color: #6b7280;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e5e7eb;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 640px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .backButton {
+        width: 100%;
+        text-align: center;
+    }
+
+    .colSpan2 {
+        grid-column: span 1;
+    }
+    
+    .saveBtn {
+        width: 100%;
+        padding: 14px;
+    }
+}
