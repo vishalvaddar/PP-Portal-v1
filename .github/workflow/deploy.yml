@@ -27,11 +27,12 @@ jobs:
 
             cd ${{ secrets.VPS_PATH }}
 
-            if [ ! -d ".git" ]; then
-              git clone https://github.com/vishalvaddar/PP-Portal-v1.git
-            else
-              git pull origin main
-            fi
+            if [ ! -d "PP-Portal-v1/.git" ]; then
+             git clone https://github.com/vishalvaddar/PP-Portal-v1.git
+            fi 
+
+            cd PP-Portal-v1
+            git pull origin main
 
             docker compose -f docker-compose.prod.yml down
             docker compose -f docker-compose.prod.yml build

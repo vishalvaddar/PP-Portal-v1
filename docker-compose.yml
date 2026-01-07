@@ -1,20 +1,18 @@
 version: "3.8"
 
 services:
-  client:
-    build:
-      context: ./client
-      dockerfile: Dockerfile
-    ports:
-      - "80:80"
-    depends_on:
-      - server
-    restart: always
-
   server:
     image: pp-portal-backend
     container_name: pp-backend
     network_mode: host
     env_file:
       - ./server/.env.production
+    restart: always
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.prod
+    ports:
+      - "80:80"
     restart: always
