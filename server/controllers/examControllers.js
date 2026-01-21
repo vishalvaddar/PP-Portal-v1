@@ -213,7 +213,7 @@ function generateHallTicket(applicantId, nmmsYear) {
   return `${yearSuffix}${paddedId}`;
 }
 
-  async function createExamAndAssignApplicants(req, res) {
+ async function createExamAndAssignApplicants(req, res) {
     const { centreId, Exam_name, date, district, blocks } = req.body;
 
     if (!centreId || !Exam_name || !date || !district || !blocks || blocks.length === 0) {
@@ -322,6 +322,7 @@ function generateHallTicket(applicantId, nmmsYear) {
     }
   }
 
+  //done dusted
 async function generateStudentList(req, res) {
   try {
     const examId = req.params.examId;
@@ -330,7 +331,8 @@ async function generateStudentList(req, res) {
     const result = await pool.query(`
       SELECT 
         ae.pp_hall_ticket_no, 
-        api.student_name, 
+        api.student_name,
+        i.dise_code, 
         i.institute_name, 
         api.contact_no1, 
         api.contact_no2,
@@ -351,8 +353,27 @@ async function generateStudentList(req, res) {
       return res.status(404).json({ message: "No students found for this exam." });
     }
 
+        // ---------------- STORAGE PATH ----------------
+    const BASE_PATH = process.env.FILE_STORAGE_PATH;
+    if (!BASE_PATH) throw new Error("FILE_STORAGE_PATH not set");
+
+    const hallTicketDir = path.join(
+      BASE_PATH,
+      "Admission",
+      "Exam",
+      "halltickets"
+    );
+
+    if (!fs.existsSync(hallTicketDir)) {
+      fs.mkdirSync(hallTicketDir, { recursive: true });
+    }
+
+    const filePath = path.join(
+      hallTicketDir,
+      `Exam_callingList_${examId}.pdf`
+    );
+      // --------------------------------------
     const doc = new PDFDocument({ margin: 50 });
-    const filePath = path.join(__dirname, `../public/halltickets/Exam_callingList_${examId}.pdf`);
     const stream = fs.createWriteStream(filePath);
     
     // Variables for page numbering
@@ -476,7 +497,7 @@ async function generateStudentList(req, res) {
       const rowData = [
         row.pp_hall_ticket_no || '',
         row.student_name || '',
-        row.institute_name || '',
+        row.dise_code || '',
         row.contact_no1 || '',
         row.contact_no2 || ''
       ];
@@ -557,99 +578,72 @@ async function generateStudentList(req, res) {
 
 // async function generateStudentList(req, res)
 async function downloadAllHallTickets(req, res) {
-const { examId, exam_name } = req.params;
-  const dirPath = path.join(__dirname, `../public/halltickets`);
-  
-  // Ensure directory exists
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-  }
-
-  // File paths
-  const logoLeftPath = path.join(__dirname, "../public/assets/rcf_logo-removebg-preview.png");
-  const logoRightPath = path.join(__dirname, "../public/assets/logo.png");
-  const kannadaFontPath = path.join(__dirname, "../public/fonts/NotoSansKannada-Regular.ttf");
-  const authoritySignaturePath = path.join(__dirname, "../public/assets/ravi_sir_sign-removebg-preview.png");
-  const stamplogo = path.join(__dirname, "../public/assets/rcf_stamp-removebg-preview.png");
-
-  // Validate required files exist
-  const requiredFiles = [
-    logoLeftPath,
-    logoRightPath,
-    kannadaFontPath,
-    authoritySignaturePath,
-    stamplogo
-  ];
-
-  for (const filePath of requiredFiles) {
-    if (!fs.existsSync(filePath)) {
-      return res.status(500).json({ 
-        message: `Required file missing: ${path.basename(filePath)}` 
-      });
-    }
-  }
-
-  // Sanitize filename function
-  function sanitizeFilename(name) {
-    if (!name) return 'unknown';
-    return name.toString().replace(/[<>:"/\\|?*]/g, '_').substring(0, 100);
-  }
-
-  // Date formatting function
-  function formatDate(dateString) {
-    if (!dateString) return 'N/A';
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return 'Invalid Date';
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}-${month}-${year}`;
-    } catch (error) {
-      return 'N/A';
-    }
-  }
-
-  // Time formatting function
-  function formatTimeManual(timeStr) {
-    if (!timeStr) return "N/A";
-    try {
-      // Support "HH:MM", "HH:MM:SS", or "HH:MM:SS.sss" optionally with timezone suffix
-      const m = timeStr.match(/^(\d{1,2}):(\d{2})(?::\d{2}(?:\.\d+)?)?/);
-      if (!m) return timeStr;
-      let hh = parseInt(m[1], 10);
-      const mm = m[2];
-      const ampm = hh >= 12 ? "PM" : "AM";
-      hh = hh % 12;
-      if (hh === 0) hh = 12;
-      return `${hh.toString().padStart(2, "0")}:${mm} ${ampm}`;
-    } catch (error) {
-      return "N/A";
-    }
-  }
-
-  const tempFiles = [];
+  const { examId, exam_name } = req.params;
 
   try {
-    // Create a zip stream
-    const archive = archiver('zip', { 
-      zlib: { level: 9 } 
-    });
+    // ---------------- ENV BASED STORAGE ----------------
+    const BASE_PATH = process.env.FILE_STORAGE_PATH;
+    if (!BASE_PATH) {
+      throw new Error("FILE_STORAGE_PATH not set in environment");
+    }
 
-    // Set response headers
-    res.setHeader('Content-Disposition', `attachment; filename=All_Hall_Tickets_${examId}_${exam_name}.zip`);
-    res.setHeader('Content-Type', 'application/zip');
+    const hallTicketDir = path.join(
+      BASE_PATH,
+      "Admission",
+      "Exam",
+      "halltickets"
+    );
 
-    // Pipe archive to the response
+    if (!fs.existsSync(hallTicketDir)) {
+      fs.mkdirSync(hallTicketDir, { recursive: true });
+    }
+
+    // ---------------- STATIC ASSETS ----------------
+    // These should stay INSIDE your project
+    const assetsBase = path.join(process.cwd(), "public");
+
+    const logoLeftPath = path.join(assetsBase, "assets/rcf_logo-removebg-preview.png");
+    const logoRightPath = path.join(assetsBase, "assets/logo.png");
+    const kannadaFontPath = path.join(assetsBase, "fonts/NotoSansKannada-Regular.ttf");
+    const authoritySignaturePath = path.join(assetsBase, "assets/ravi_sir_sign-removebg-preview.png");
+    const stamplogo = path.join(assetsBase, "assets/rcf_stamp-removebg-preview.png");
+
+    const requiredFiles = [
+      logoLeftPath,
+      logoRightPath,
+      kannadaFontPath,
+      authoritySignaturePath,
+      stamplogo
+    ];
+
+    for (const f of requiredFiles) {
+      if (!fs.existsSync(f)) {
+        throw new Error(`Missing required file: ${f}`);
+      }
+    }
+
+    // ---------------- SANITIZE ----------------
+    const sanitizeFilename = (name) =>
+      name ? name.replace(/[<>:"/\\|?*]/g, "_").substring(0, 100) : "unknown";
+
+    // ---------------- ZIP SETUP ----------------
+    const archive = archiver("zip", { zlib: { level: 9 } });
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=All_Hall_Tickets_${examId}_${sanitizeFilename(exam_name)}.zip`
+    );
+    res.setHeader("Content-Type", "application/zip");
+
     archive.pipe(res);
 
-    // Handle archive errors
-    archive.on('error', (err) => {
-      throw new Error(`Archive error: ${err.message}`);
+    archive.on("error", (err) => {
+      throw err;
     });
 
-    // Get all applicants for this exam
-    const result = await pool.query(`
+    // ---------------- FETCH STUDENTS ----------------
+    const result = await pool.query(
+      `
       SELECT 
         ae.pp_hall_ticket_no,
         api.student_name,
@@ -668,55 +662,60 @@ const { examId, exam_name } = req.params;
       JOIN pp.examination e ON ae.exam_id = e.exam_id
       JOIN pp.pp_exam_centre ec ON e.pp_exam_centre_id = ec.pp_exam_centre_id
       WHERE ae.exam_id = $1
-    `, [examId]);
+      `,
+      [examId]
+    );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: 'No hall tickets found for this exam.' });
+      return res.status(404).json({ message: "No hall tickets found" });
     }
 
-    // Generate individual hall tickets
+    const tempFiles = [];
+
+    // ---------------- GENERATE PDFs ----------------
     for (const student of result.rows) {
       const safeExamName = sanitizeFilename(student.exam_name);
-      const safeHallTicketNo = sanitizeFilename(student.pp_hall_ticket_no);
-      const ticketPath = path.join(dirPath, `${safeExamName}_${safeHallTicketNo}.pdf`);
-      
-      tempFiles.push(ticketPath);
+      const safeHallTicket = sanitizeFilename(student.pp_hall_ticket_no);
 
-      // Generate PDF
-      await generateStudentPDF(student, ticketPath, {
+      const pdfPath = path.join(
+        hallTicketDir,
+        `${safeExamName}_${safeHallTicket}.pdf`
+      );
+
+      tempFiles.push(pdfPath);
+
+      await generateStudentPDF(student, pdfPath, {
         logoLeftPath,
         logoRightPath,
         kannadaFontPath,
         authoritySignaturePath,
         stamplogo
       });
-      
-      // Add to archive with safe name
-      archive.file(ticketPath, { 
-        name: `${safeExamName}_${safeHallTicketNo}.pdf` 
+
+      archive.file(pdfPath, {
+        name: `${safeExamName}_${safeHallTicket}.pdf`
       });
     }
 
-    // Cleanup after archive completion
-    archive.on('end', () => {
-      cleanupTempFiles(tempFiles);
+    // ---------------- CLEANUP ----------------
+    archive.on("end", () => {
+      tempFiles.forEach((file) => {
+        if (fs.existsSync(file)) fs.unlinkSync(file);
+      });
     });
 
-    // Finalize archive
     await archive.finalize();
 
   } catch (error) {
-    // Clean up temp files on error
-    cleanupTempFiles(tempFiles);
-    console.error('Error generating hall tickets:', error);
-    res.status(500).json({ 
-      message: "Failed to generate hall tickets", 
-      error: error.message 
+    console.error("Hall ticket ZIP error:", error);
+    res.status(500).json({
+      message: "Failed to download hall tickets",
+      error: error.message
     });
   }
 }
 
-// Helper function to generate individual student PDF
+// Helper function to generate individual student PDF //CORE PDF ONLY
 function generateStudentPDF(student, ticketPath, assets) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -1211,7 +1210,7 @@ async function assignApplicantsToExam(req, res) {
       return res.status(404).json({ error: "Exam does not exist." });
     }
 
-    // ✅ 2. Fetch shortlisted applicants based on division → education district → block
+    
    // ✅ 2. Fetch shortlisted applicants based on jurisdiction hierarchy
 const shortlistedApplicants = await client.query(
   `
