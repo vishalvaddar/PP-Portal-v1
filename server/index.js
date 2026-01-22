@@ -149,7 +149,7 @@ const customListRoutes = require("./routes/customListRoutes");
 app.use("/api/bulk-upload", bulkUploadRoutes);
 
 // Auth & System Config
-app.use("/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/api/system-config", systemConfigRoutes);
 
 // Applicants
