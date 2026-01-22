@@ -246,7 +246,7 @@ button {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-top: 15px;
+  /* margin-top: 15px; */
 }
 
 button:hover:not(:disabled) {
