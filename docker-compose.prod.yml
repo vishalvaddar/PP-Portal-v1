@@ -1,11 +1,23 @@
 version: "3.8"
 
 services:
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.prod
+    container_name: pp-portal-backend
+    env_file:
+      - ./server/.env.production
+    network_mode: host
+    volumes:
+      - /var/www/imas/multi_media:/var/www/imas/multi_media
+    restart: always
+
   client:
     build:
       context: ./client
       dockerfile: Dockerfile.prod
     container_name: pp-portal-client
     ports:
-      - "3000:80"   # 👈 moved from 80 to 3000
+      - "3000:80"
     restart: always
