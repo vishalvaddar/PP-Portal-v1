@@ -44,7 +44,7 @@ const LoginForm = () => {
 
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_API_URL}/auth/login`,
+        `${process.env.REACT_APP_BACKEND_API_URL}/api/auth/login`,
         {
           user_name: credentials.user_name.trim(),
           password: credentials.password,
@@ -90,7 +90,7 @@ const LoginForm = () => {
     setIsLoading(true);
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_API_URL}/auth/authorize-role`,
+        `${process.env.REACT_APP_BACKEND_API_URL}/api/auth/authorize-role`,
         {
           preAuthToken: tokenToUse,
           selectedRole: role,
