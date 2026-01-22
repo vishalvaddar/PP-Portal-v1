@@ -3,7 +3,7 @@ import axios from "axios";
 import useCreateExamHooks from "../../../hooks/CreateExamHooks";
 import classes from "./AssignStudents.module.css";
 
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = process.env.REACT_APP_BACKEND_API_URL;
 
 const AssignStudentsModal = ({ examId, onClose, onAssigned }) => {
   const {

@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.prod
+    container_name: pp-portal-client
+    ports:
+      - "3000:80"   # 👈 moved from 80 to 3000
+    restart: always
