@@ -250,6 +250,76 @@ select:focus {
   background-color: #c82333;
 }
 
+/* ----------------------------------------------------------- */
+/* NEW STYLES FOR GET INFO CARD ONLY (Do not change above)   */
+/* ----------------------------------------------------------- */
+
+.shortlistDetailsCard {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 25px;
+  text-align: left;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.cardTitle {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+  color: #333;
+  border-bottom: 1px solid #eeeeee;
+  padding-bottom: 10px;
+}
+
+.infoRow {
+  margin-bottom: 10px;
+  font-size: 1rem;
+  line-height: 1.4;
+  display: flex; 
+}
+
+.infoRow strong {
+  color: #555555;
+  min-width: 140px; 
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.infoValue {
+  color: #333333;
+  word-break: break-word;
+}
+
+.statsContainer {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #eeeeee;
+}
+
+.statBox {
+  flex: 1;
+  background-color: #f8f9fa;
+  padding: 12px;
+  border-radius: 6px;
+  text-align: center;
+  border: 1px solid #efefef;
+}
+
+.statBox span {
+  font-size: 0.9rem;
+  color: #666666;
+}
+
+.statBox strong {
+  font-size: 1.1rem;
+  color: #007bff;
+  margin-left: 5px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .countsContainer {
@@ -266,5 +336,14 @@ select:focus {
 
   select {
     width: 100%;
+  }
+
+  .infoRow {
+    flex-direction: column;
+  }
+
+  .infoRow strong {
+    min-width: auto;
+    margin-bottom: 2px;
   }
 }

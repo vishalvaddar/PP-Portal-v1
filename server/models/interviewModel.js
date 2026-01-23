@@ -128,73 +128,8 @@ const InterviewModel = {
     }
   },
 
- async getUnassignedStudents(centerName, nmmsYear) {
-    try {
-        const { rows } = await pool.query(
-            `WITH LatestInterview AS (
-                SELECT
-                    si.applicant_id,
-                    si.interview_round,
-                    si.status,
-                    si.interview_result,
-                    ROW_NUMBER() OVER (
-                        PARTITION BY si.applicant_id
-                        ORDER BY si.interview_round DESC, si.interview_date DESC NULLS LAST
-                    ) AS rn
-                FROM pp.student_interview si
-                JOIN pp.applicant_primary_info api_sub 
-                    ON si.applicant_id = api_sub.applicant_id 
-                WHERE api_sub.nmms_year = $2
-            )
-            SELECT
-                api.applicant_id,
-                api.student_name,
-                COALESCE(inst.institute_name, '-') AS institute_name,
-                exam.pp_exam_score,
-                centre.pp_exam_centre_name,
-                COALESCE(li.interview_round, 0) AS current_max_round,
-                COALESCE(li.status, 'NOT ASSIGNED') AS latest_interview_status
-            FROM pp.applicant_primary_info api
-            JOIN pp.exam_results exam 
-                ON api.applicant_id = exam.applicant_id
-            JOIN pp.applicant_exam ap 
-                ON ap.applicant_id = exam.applicant_id
-            JOIN pp.examination e 
-                ON e.exam_id = ap.exam_id
-            JOIN pp.pp_exam_centre centre 
-                ON e.pp_exam_centre_id = centre.pp_exam_centre_id
-            LEFT JOIN pp.institute inst 
-                ON api.current_institute_dise_code = inst.dise_code
-            LEFT JOIN LatestInterview li 
-                ON api.applicant_id = li.applicant_id 
-                AND li.rn = 1
-            WHERE
-                -- Case-insensitive comparison for input center name
-                LOWER(TRIM(centre.pp_exam_centre_name)) = LOWER(TRIM($1))
-                AND api.nmms_year = $2
-                AND exam.pp_exam_cleared = 'Y'
-                AND exam.interview_required_yn = 'Y'
-                AND (
-                    li.applicant_id IS NULL
-                    OR (
-                        -- Updated to match UPPERCASE constraints: 'RESCHEDULED'
-                        TRIM(UPPER(li.status)) = 'RESCHEDULED'
-                        -- Updated to match UPPERCASE constraint: 'ANOTHER INTERVIEW REQUIRED'
-                        AND TRIM(UPPER(li.interview_result)) = 'ANOTHER INTERVIEW REQUIRED'
-                        AND li.interview_round < 3
-                    )
-                    -- Updated to match UPPERCASE constraint: 'CANCELLED'
-                    OR TRIM(UPPER(li.status)) = 'CANCELLED'
-                )
-            ORDER BY api.student_name ASC;`,
-            [centerName, nmmsYear]
-        );
-        return rows;
-    } catch (error) {
-        console.error("Error fetching unassigned students:", error);
-        throw error;
-    }
-},
+
+
 async getStudentsByInterviewer(interviewerName, nmmsYear) {
     try {
       const { rows } = await pool.query(
@@ -239,84 +174,122 @@ async getStudentsByInterviewer(interviewerName, nmmsYear) {
     }
   },
 
-async getUnassignedStudentsByBlock(
-    stateName,
-    districtName,
-    blockName,
-    nmmsYear
-) {
+async getUnassignedStudents(centerName, nmmsYear) {
     try {
-        const { rows } = await pool.query(
-            `WITH LatestInterview AS (
-                SELECT
-                    si.applicant_id,
-                    si.interview_round,
-                    si.status,
-                    si.interview_result,
-                    ROW_NUMBER() OVER (
-                        PARTITION BY si.applicant_id
-                        ORDER BY si.interview_round DESC, si.interview_date DESC NULLS LAST
-                    ) AS rn
-                FROM pp.student_interview si
-            ) 
+      const { rows } = await pool.query(
+        `WITH LatestInterview AS (
             SELECT
-                api.applicant_id,
-                api.student_name,
-                COALESCE(inst.institute_name, '-') AS institute_name,
-                COALESCE(exam.pp_exam_score, 0) AS pp_exam_score,
-                COALESCE(centre.pp_exam_centre_name, '-') AS pp_exam_centre_name,
-                COALESCE(sj.juris_name, '-') AS state_name,
-                COALESCE(dj.juris_name, '-') AS district_name,
-                COALESCE(bj.juris_name, '-') AS block_name,
-                COALESCE(li.interview_round, 0) AS current_max_round,
-                COALESCE(li.status, 'NOT ASSIGNED') AS latest_interview_status
-            FROM pp.applicant_primary_info api
-            LEFT JOIN pp.exam_results exam 
-                ON api.applicant_id = exam.applicant_id 
-                AND exam.pp_exam_cleared = 'Y'
-                AND exam.interview_required_yn = 'Y'
-            LEFT JOIN pp.applicant_exam ap 
-                ON ap.applicant_id = api.applicant_id
-            LEFT JOIN pp.examination e 
-                ON e.exam_id = ap.exam_id
-            LEFT JOIN pp.pp_exam_centre centre 
-                ON e.pp_exam_centre_id = centre.pp_exam_centre_id
-            LEFT JOIN pp.institute inst 
-                ON api.current_institute_dise_code = inst.dise_code
-            LEFT JOIN LatestInterview li 
-                ON api.applicant_id = li.applicant_id 
-                AND li.rn = 1
-            LEFT JOIN pp.jurisdiction sj 
-                ON api.app_state = sj.juris_code
-            LEFT JOIN pp.jurisdiction dj 
-                ON api.district = dj.juris_code
-            LEFT JOIN pp.jurisdiction bj 
-                ON api.nmms_block = bj.juris_code
-            WHERE
-                -- Case-insensitive and trimmed comparison for jurisdiction names
-                LOWER(TRIM(sj.juris_name)) = LOWER(TRIM($1))
-                AND LOWER(TRIM(dj.juris_name)) = LOWER(TRIM($2))
-                AND LOWER(TRIM(bj.juris_name)) = LOWER(TRIM($3))
-                AND api.nmms_year = $4
-                AND (
-                    li.applicant_id IS NULL
-                    OR (
-                        -- Matching constraints for STATUS and RESULT
-                        UPPER(TRIM(li.status)) = 'RESCHEDULED'
-                        AND UPPER(TRIM(li.interview_result)) = 'ANOTHER INTERVIEW REQUIRED'
-                        AND li.interview_round < 3
-                    )
-                    OR UPPER(TRIM(li.status)) = 'CANCELLED'
+                si.applicant_id,
+                si.interview_round,
+                si.status,
+                si.interview_result,
+                ROW_NUMBER() OVER (
+                    PARTITION BY si.applicant_id
+                    ORDER BY si.interview_round DESC,
+                             si.interview_date DESC NULLS LAST
+                ) AS rn
+            FROM pp.student_interview si
+            JOIN pp.applicant_primary_info api_sub 
+                ON si.applicant_id = api_sub.applicant_id
+            WHERE api_sub.nmms_year = $2
+        )
+        SELECT
+            api.applicant_id,
+            api.student_name,
+            exam.pp_exam_score
+        FROM pp.applicant_primary_info api
+        JOIN pp.exam_results exam 
+            ON api.applicant_id = exam.applicant_id
+            AND exam.pp_exam_cleared = 'Y'
+            AND exam.interview_required_yn = 'Y'
+        JOIN pp.applicant_exam ap 
+            ON ap.applicant_id = exam.applicant_id
+        JOIN pp.examination e 
+            ON e.exam_id = ap.exam_id
+        JOIN pp.pp_exam_centre centre 
+            ON e.pp_exam_centre_id = centre.pp_exam_centre_id
+        LEFT JOIN LatestInterview li 
+            ON api.applicant_id = li.applicant_id 
+            AND li.rn = 1
+        WHERE
+            LOWER(TRIM(centre.pp_exam_centre_name)) = LOWER(TRIM($1))
+            AND api.nmms_year = $2
+            AND (
+                li.applicant_id IS NULL
+                OR (
+                    TRIM(UPPER(li.status)) = 'RESCHEDULED'
+                    AND TRIM(UPPER(li.interview_result)) = 'ANOTHER INTERVIEW REQUIRED'
+                    AND li.interview_round < 3
                 )
-            ORDER BY api.student_name ASC;`,
-            [stateName, districtName, blockName, nmmsYear]
-        );
-        return rows;
+                OR TRIM(UPPER(li.status)) = 'CANCELLED'
+            );`,
+        [centerName, nmmsYear]
+      );
+      return rows;
     } catch (error) {
-        console.error("Error fetching unassigned students by block:", error);
-        throw error;
+      console.error("Error fetching unassigned students:", error);
+      throw error;
     }
-},
+  },
+
+  async getUnassignedStudentsByBlock(stateName, districtName, blockName, nmmsYear) {
+    try {
+      const { rows } = await pool.query(
+        `WITH LatestInterview AS (
+            SELECT
+                si.applicant_id,
+                si.interview_round,
+                si.status,
+                si.interview_result,
+                ROW_NUMBER() OVER (
+                    PARTITION BY si.applicant_id
+                    ORDER BY si.interview_round DESC,
+                             si.interview_date DESC NULLS LAST
+                ) AS rn
+            FROM pp.student_interview si
+        )
+        SELECT
+             api.applicant_id,
+             api.student_name, 
+             exam.pp_exam_score
+        FROM pp.applicant_primary_info api
+        JOIN pp.exam_results exam
+            ON api.applicant_id = exam.applicant_id
+            AND exam.pp_exam_cleared = 'Y'
+            AND exam.interview_required_yn = 'Y'
+        LEFT JOIN LatestInterview li 
+            ON api.applicant_id = li.applicant_id 
+            AND li.rn = 1
+        LEFT JOIN pp.jurisdiction sj 
+            ON api.app_state = sj.juris_code
+        LEFT JOIN pp.jurisdiction dj 
+            ON api.district = dj.juris_code
+        LEFT JOIN pp.jurisdiction bj 
+            ON api.nmms_block = bj.juris_code
+        WHERE
+            LOWER(TRIM(sj.juris_name)) = LOWER(TRIM($1))
+            AND LOWER(TRIM(dj.juris_name)) = LOWER(TRIM($2))
+            AND LOWER(TRIM(bj.juris_name)) = LOWER(TRIM($3))
+            AND api.nmms_year = $4
+            AND (
+                li.applicant_id IS NULL
+                OR (
+                    UPPER(TRIM(li.status)) = 'RESCHEDULED'
+                    AND UPPER(TRIM(li.interview_result)) = 'ANOTHER INTERVIEW REQUIRED'
+                    AND li.interview_round < 3
+                )
+                OR (
+                    UPPER(TRIM(li.status)) = 'CANCELLED'
+                )
+            );`,
+        [stateName, districtName, blockName, nmmsYear]
+      );
+      return rows;
+    } catch (error) {
+      console.error("Error fetching unassigned students by block:", error);
+      throw error;
+    }
+  },
 
 async assignStudents(applicantIds, interviewerId, nmmsYear) {
     const client = await pool.connect();
@@ -610,7 +583,7 @@ async getReassignableStudents(centerName, nmmsYear) {
         JOIN pp.examination e 
             ON e.exam_id = ap.exam_id
         JOIN pp.pp_exam_centre centre 
-            ON e.pp_exam_centre_id = centre.pp_exam_centre_id
+            ON e.pp_exam_centre_id = centre.pp_exam_centre_id 
         LEFT JOIN pp.institute inst 
             ON api.current_institute_dise_code = inst.dise_code
         JOIN pp.student_interview si 
@@ -643,6 +616,52 @@ async getReassignableStudents(centerName, nmmsYear) {
       throw error;
     }
   },
+
+async getReassignableStudentsByBlock(stateName, districtName, blockName, nmmsYear) {
+    try {
+        const { rows } = await pool.query(
+            `SELECT
+                api.applicant_id,
+                api.student_name,
+                inst.institute_name,
+                exam.pp_exam_score,
+                si.interview_round,
+                i.interviewer_name AS current_interviewer,
+                si.interviewer_id AS current_interviewer_id
+            FROM pp.applicant_primary_info api
+            JOIN pp.exam_results exam ON api.applicant_id = exam.applicant_id
+            LEFT JOIN pp.institute inst ON api.current_institute_dise_code = inst.dise_code
+            JOIN pp.student_interview si ON api.applicant_id = si.applicant_id
+            LEFT JOIN pp.interviewer i ON si.interviewer_id = i.interviewer_id
+            JOIN pp.jurisdiction sj ON api.app_state = sj.juris_code
+            JOIN pp.jurisdiction dj ON api.district = dj.juris_code
+            JOIN pp.jurisdiction bj ON api.nmms_block = bj.juris_code
+            WHERE
+                api.nmms_year = $4
+                AND LOWER(TRIM(sj.juris_name)) = LOWER(TRIM($1))
+                AND LOWER(TRIM(dj.juris_name)) = LOWER(TRIM($2))
+                AND LOWER(TRIM(bj.juris_name)) = LOWER(TRIM($3))
+                AND exam.pp_exam_cleared = 'Y'
+                AND exam.interview_required_yn = 'Y'
+                -- 🔥 Standardized string comparison
+                AND UPPER(TRIM(si.status)) IN ('SCHEDULED', 'RESCHEDULED')
+                AND (UPPER(TRIM(si.interview_result)) = 'ANOTHER INTERVIEW REQUIRED' OR si.interview_result IS NULL)
+                AND si.interview_round = (
+                    SELECT MAX(sub_si.interview_round)
+                    FROM pp.student_interview sub_si
+                    JOIN pp.applicant_primary_info sub_api ON sub_si.applicant_id = sub_api.applicant_id
+                    WHERE sub_si.applicant_id = si.applicant_id
+                        AND sub_api.nmms_year = $4
+                )
+            ORDER BY api.student_name ASC;`,
+            [stateName, districtName, blockName, nmmsYear]
+        );
+        return rows;
+    } catch (error) {
+        console.error("Error fetching reassignable students by block:", error);
+        throw error;
+    }
+},
 
 async reassignStudents(applicantIds, newInterviewerId, nmmsYear) {
     const client = await pool.connect();
@@ -723,10 +742,10 @@ async reassignStudents(applicantIds, newInterviewerId, nmmsYear) {
     }
 },
 
- getStudentsForVerification: async () => {
+// CHANGE: Added nmmsYear as a parameter
+getStudentsForVerification: async (nmmsYear) => {
     try {
-      // Use native JS to get the current year for the NMMS cycle
-      const currentYear = new Date().getFullYear();
+      // REMOVED: const currentYear = new Date().getFullYear();
       
       const query = `
         SELECT 
@@ -736,287 +755,304 @@ async reassignStudents(applicantIds, newInterviewerId, nmmsYear) {
         JOIN pp.applicant_primary_info a
             ON a.applicant_id = s.applicant_id
         WHERE 
-            -- Match the exact 'Y' value from your CHECK constraint
             UPPER(TRIM(s.home_verification_req_yn)) = 'Y'
-            AND a.nmms_year = $1
-            -- Ensure we only fetch students who haven't been verified yet
+            AND a.nmms_year = $1  -- Filter by the passed year
             AND a.applicant_id NOT IN (
                 SELECT applicant_id 
                 FROM pp.home_verification
             );
       `;
 
-      const { rows } = await pool.query(query, [currentYear]);
+      // CHANGE: Pass nmmsYear to the query
+      const { rows } = await pool.query(query, [nmmsYear]);
       return rows;
     } catch (error) {
       console.error("Error in getStudentsForVerification:", error);
       throw new Error("Could not fetch students for verification.");
     }
-  },
+},
 
-  async submitInterviewDetails(applicantId, interviewData, uploadedFile) {
-    const {
-      interviewDate,
-      interviewTime,
-      interviewMode,
-      interviewStatus,
-      lifeGoalsAndZeal,
-      commitmentToLearning,
-      integrity,
-      communicationSkills,
-      homeVerificationRequired,
-      interviewResult,
-      remarks,
-      nmmsYear,
-    } = interviewData;
+ async submitInterviewDetails(applicantId, interviewData, uploadedFile) {
+  const {
+    interviewDate,
+    interviewTime,
+    interviewMode,
+    interviewStatus,
+    lifeGoalsAndZeal,
+    commitmentToLearning,
+    integrity,
+    communicationSkills,
+    homeVerificationRequired,
+    interviewResult,
+    remarks,
+    nmmsYear,
+  } = interviewData;
 
-    const client = await pool.connect();
-    let originalFilePath = uploadedFile?.path;
-    let finalTargetPath = null;
+  const client = await pool.connect();
+  let originalFilePath = uploadedFile?.path;
+  let finalTargetPath = null;
 
-    try {
-      await client.query("BEGIN");
+  try {
+    await client.query("BEGIN");
 
-      // 1. VALIDATION
-      if (!uploadedFile) {
-        throw new Error("No file was uploaded. File upload is mandatory.");
-      }
-      if (!remarks || remarks.trim() === "") {
-        throw new Error("Remarks field is mandatory.");
-      }
-
-      // 2. FILE HANDLING (RENAME & CUSTOMIZE)
-      const fileExtension = path.extname(uploadedFile.filename);
-      const dbDocType = fileExtension.substring(1).toUpperCase();
-      const newFileName = `INTERVIEW-${applicantId}-${nmmsYear}${fileExtension}`;
-      const targetDirectory = path.dirname(originalFilePath);
-
-      finalTargetPath = path.join(targetDirectory, newFileName);
-      await fs.rename(originalFilePath, finalTargetPath);
-
-      // 3. LOGIC PROCESSING
-      // Ensure interviewResult matches exact UPPERCASE constraint values
-      const dbInterviewResult = interviewResult.toUpperCase().trim();
-      
-      const isHomeVerificationRequired =
-        homeVerificationRequired === "Required" ||
-        dbInterviewResult === "HOME VERIFICATION REQUIRED";
-      
-      const homeVerificationYN = isHomeVerificationRequired ? "Y" : "N";
-
-      const dbStatus = interviewStatus.toUpperCase().trim();
-      const dbMode = interviewMode.toUpperCase().trim();
-
-      // 4. DATABASE UPDATE
-      const updateResult = await client.query(
-        `UPDATE pp.student_interview
-         SET
-            interview_date = $1, 
-            interview_time = $2, 
-            interview_mode = $3, 
-            status = $4, 
-            life_goals_and_zeal = $5, 
-            commitment_to_learning = $6, 
-            integrity = $7, 
-            communication_skills = $8, 
-            home_verification_req_yn = $9, 
-            interview_result = $10, 
-            doc_name = $11, 
-            doc_type = $12, 
-            remarks = $13
-         WHERE applicant_id = $14 
-           AND UPPER(TRIM(status)) = 'SCHEDULED' 
-           AND interview_result IS NULL
-         RETURNING *;`,
-        [
-          interviewDate,
-          interviewTime,
-          dbMode,
-          dbStatus,
-          lifeGoalsAndZeal,
-          commitmentToLearning,
-          integrity,
-          communicationSkills,
-          homeVerificationYN,
-          dbInterviewResult,
-          newFileName,
-          dbDocType,
-          remarks,
-          applicantId,
-        ]
-      );
-
-      if (updateResult.rowCount === 0) {
-        throw new Error("Update failed. No matching scheduled interview found.");
-      }
-
-      // 5. CONDITIONAL INSERT FOR 'ACCEPTED'
-      if (dbInterviewResult === "ACCEPTED") {
-        const insertQuery = `
-          INSERT INTO pp.student_master (
-            applicant_id, student_name, father_name, mother_name,
-            father_occupation, mother_occupation, gender,
-            contact_no1, contact_no2, current_institute_dise_code,
-            previous_institute_dise_code, home_address
-          )
-          SELECT
-            p.applicant_id, p.student_name, p.father_name, p.mother_name,
-            s.father_occupation, s.mother_occupation, p.gender,
-            p.contact_no1, p.contact_no2, p.current_institute_dise_code,
-            p.previous_institute_dise_code, p.home_address
-          FROM pp.applicant_primary_info p
-          LEFT JOIN pp.applicant_secondary_info s ON p.applicant_id = s.applicant_id
-          WHERE p.applicant_id = $1;
-        `;
-        await client.query(insertQuery, [applicantId]);
-      }
-
-      await client.query("COMMIT");
-      return updateResult.rows[0];
-
-    } catch (error) {
-      await client.query("ROLLBACK");
-      // Cleanup file on failure
-      if (finalTargetPath && fsExistsSync(finalTargetPath)) await fs.unlink(finalTargetPath);
-      console.error("Error submitting interview details:", error);
-      throw error;
-    } finally {
-      client.release();
+    // 1. VALIDATION
+    if (!uploadedFile) {
+      throw new Error("No file was uploaded. File upload is mandatory.");
     }
-  },
+    if (!remarks || remarks.trim() === "") {
+      throw new Error("Remarks field is mandatory.");
+    }
+
+    // 2. FILE HANDLING (RENAME & CUSTOMIZE)
+    const fileExtension = path.extname(uploadedFile.filename);
+    const dbDocType = fileExtension.substring(1).toUpperCase();
+    const newFileName = `INTERVIEW-${applicantId}-${nmmsYear}${fileExtension}`;
+    const targetDirectory = path.dirname(originalFilePath);
+
+    finalTargetPath = path.join(targetDirectory, newFileName);
+    await fs.rename(originalFilePath, finalTargetPath);
+
+    // 3. LOGIC PROCESSING
+    // Normalize input to uppercase
+    let dbInterviewResult = interviewResult.toUpperCase().trim();
+    
+    // Check if Home Verification is required
+    const isHomeVerificationRequired =
+      homeVerificationRequired === "Required" ||
+      dbInterviewResult === "HOME VERIFICATION REQUIRED";
+    
+    const homeVerificationYN = isHomeVerificationRequired ? "Y" : "N";
+
+    // --- NEW CHANGE ---
+    // If the selection was "HOME VERIFICATION REQUIRED", 
+    // we set the flag to 'Y' (done above) but store the result as 'SELECTED'
+    if (dbInterviewResult === "HOME VERIFICATION REQUIRED") {
+      dbInterviewResult = "SELECTED";
+    }
+
+    const dbStatus = interviewStatus.toUpperCase().trim();
+    const dbMode = interviewMode.toUpperCase().trim();
+
+    // 4. DATABASE UPDATE
+    const updateResult = await client.query(
+      `UPDATE pp.student_interview
+       SET
+         interview_date = $1, 
+         interview_time = $2, 
+         interview_mode = $3, 
+         status = $4, 
+         life_goals_and_zeal = $5, 
+         commitment_to_learning = $6, 
+         integrity = $7, 
+         communication_skills = $8, 
+         home_verification_req_yn = $9, 
+         interview_result = $10, 
+         doc_name = $11, 
+         doc_type = $12, 
+         remarks = $13
+       WHERE applicant_id = $14 
+         AND UPPER(TRIM(status)) = 'SCHEDULED' 
+         AND interview_result IS NULL
+       RETURNING *;`,
+      [
+        interviewDate,
+        interviewTime,
+        dbMode,
+        dbStatus,
+        lifeGoalsAndZeal,
+        commitmentToLearning,
+        integrity,
+        communicationSkills,
+        homeVerificationYN,
+        dbInterviewResult, // This will now be 'SELECTED' if home verification was req.
+        newFileName,
+        dbDocType,
+        remarks,
+        applicantId,
+      ]
+    );
+
+    if (updateResult.rowCount === 0) {
+      throw new Error("Update failed. No matching scheduled interview found.");
+    }
+
+    // 5. CONDITIONAL INSERT FOR STUDENT MASTER
+    // Updated logic: Moved to master if result is 'ACCEPTED' OR 'SELECTED'
+    if (dbInterviewResult === "ACCEPTED" || dbInterviewResult === "SELECTED") {
+      const insertQuery = `
+        INSERT INTO pp.student_master (
+          applicant_id, student_name, father_name, mother_name,
+          father_occupation, mother_occupation, gender,
+          contact_no1, contact_no2, current_institute_dise_code,
+          previous_institute_dise_code, home_address
+        )
+        SELECT
+          p.applicant_id, p.student_name, p.father_name, p.mother_name,
+          s.father_occupation, s.mother_occupation, p.gender,
+          p.contact_no1, p.contact_no2, p.current_institute_dise_code,
+          p.previous_institute_dise_code, p.home_address
+        FROM pp.applicant_primary_info p
+        LEFT JOIN pp.applicant_secondary_info s ON p.applicant_id = s.applicant_id
+        WHERE p.applicant_id = $1
+        ON CONFLICT (applicant_id) DO NOTHING;
+      `;
+      await client.query(insertQuery, [applicantId]);
+    }
+
+    await client.query("COMMIT");
+    return updateResult.rows[0];
+
+  } catch (error) {
+    await client.query("ROLLBACK");
+    // Cleanup file on failure
+    if (finalTargetPath && fsExistsSync(finalTargetPath)) {
+        await fs.unlink(finalTargetPath);
+    }
+    console.error("Error submitting interview details:", error);
+    throw error;
+  } finally {
+    client.release();
+  }
+},
   
- submitHomeVerification: async (data, fileData) => {
+submitHomeVerification: async (data, fileData) => {
     const client = await pool.connect();
     let originalFilePath = null;
     let finalTargetPath = null;
 
     try {
-      await client.query("BEGIN");
+        await client.query("BEGIN");
 
-      const {
-        applicantId,
-        dateOfVerification,
-        remarks,
-        status,
-        verifiedBy,
-        verificationType,
-      } = data;
+        // 1. Destructure nmmsYear from data (passed from Frontend)
+        const {
+            applicantId,
+            dateOfVerification,
+            remarks,
+            status,
+            verifiedBy,
+            verificationType,
+            nmmsYear // Now coming from frontend configuration
+        } = data;
 
-      const nmmsYear = new Date().getFullYear();
+        // Validation to ensure nmmsYear is present
+        if (!nmmsYear) {
+            throw new Error("Academic Year (nmmsYear) is missing.");
+        }
 
-      // --- 1. FILE HANDLING (RENAME & CUSTOMIZE) ---
-      let docName = null;
-      let docType = null;
-      let newFileName = null;
+        // --- 2. FILE HANDLING (RENAME & CUSTOMIZE) ---
+        let docName = null;
+        let docType = null;
+        let newFileName = null;
 
-      if (fileData) {
-        originalFilePath = fileData.path;
-        const fileExtension = path.extname(fileData.filename);
-        docType = fileExtension.substring(1).toUpperCase();
+        if (fileData) {
+            originalFilePath = fileData.path;
+            const fileExtension = path.extname(fileData.filename);
+            docType = fileExtension.substring(1).toUpperCase();
 
-        // Custom name format: HOME-VERI-{applicantId}-{nmmsYear}.ext
-        newFileName = `HOME-VERI-${applicantId}-${nmmsYear}${fileExtension}`;
-        const targetDirectory = path.dirname(originalFilePath);
-        finalTargetPath = path.join(targetDirectory, newFileName);
+            // Custom name format uses the dynamic nmmsYear
+            newFileName = `HOME-VERI-${applicantId}-${nmmsYear}${fileExtension}`;
+            const targetDirectory = path.dirname(originalFilePath);
+            finalTargetPath = path.join(targetDirectory, newFileName);
 
-        // Rename the file to the custom standardized name
-        await fs.rename(originalFilePath, finalTargetPath);
-        docName = newFileName;
-      }
+            // Rename the file to the custom standardized name
+            await fs.rename(originalFilePath, finalTargetPath);
+            docName = newFileName;
+        }
 
-      // --- 2. DATABASE INSERTION (pp.home_verification) ---
-      // Force status and type to UPPERCASE to match CHECK constraints
-      const dbStatus = status.toUpperCase().trim();
-      const dbVerificationType = verificationType.toUpperCase().trim();
-      const rejectionReasonId = dbStatus === "REJECTED" ? 1 : null;
+        // --- 3. DATABASE INSERTION (pp.home_verification) ---
+        // Force status and type to UPPERCASE to match CHECK constraints
+        const dbStatus = status.toUpperCase().trim();
+        const dbVerificationType = verificationType.toUpperCase().trim();
+        const rejectionReasonId = dbStatus === "REJECTED" ? 1 : null;
 
-      const insertQuery = `
-        INSERT INTO pp.home_verification (
-            applicant_id, 
-            date_of_verification, 
-            remarks, 
-            status, 
-            verified_by, 
-            rejection_reason_id, 
-            verification_type, 
-            doc_name, 
-            doc_type
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
-        RETURNING *;
-      `;
-
-      const values = [
-        applicantId,
-        dateOfVerification,
-        remarks,
-        dbStatus,
-        verifiedBy,
-        rejectionReasonId,
-        dbVerificationType,
-        docName,
-        docType,
-      ];
-
-      const result = await client.query(insertQuery, values);
-
-      // --- 3. CONDITIONAL INSERT (pp.student_master) ---
-      if (dbStatus === "ACCEPTED") {
-        const masterInsertQuery = `
-          INSERT INTO pp.student_master (
-              applicant_id,
-              student_name,
-              father_name,
-              mother_name,
-              father_occupation,
-              mother_occupation,
-              gender,
-              contact_no1,
-              contact_no2,
-              current_institute_dise_code,
-              previous_institute_dise_code,
-              home_address
-          )
-          SELECT
-              p.applicant_id,
-              p.student_name,
-              p.father_name,
-              p.mother_name,
-              s.father_occupation,
-              s.mother_occupation,
-              p.gender,
-              p.contact_no1,
-              p.contact_no2,
-              p.current_institute_dise_code,
-              p.previous_institute_dise_code,
-              p.home_address
-          FROM pp.applicant_primary_info p
-          LEFT JOIN pp.applicant_secondary_info s 
-            ON p.applicant_id = s.applicant_id
-          WHERE p.applicant_id = $1;
+        const insertQuery = `
+            INSERT INTO pp.home_verification (
+                applicant_id, 
+                date_of_verification, 
+                remarks, 
+                status, 
+                verified_by, 
+                rejection_reason_id, 
+                verification_type, 
+                doc_name, 
+                doc_type
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+            RETURNING *;
         `;
-        await client.query(masterInsertQuery, [applicantId]);
-      }
 
-      await client.query("COMMIT");
-      return result.rows[0];
+        const values = [
+            applicantId,
+            dateOfVerification,
+            remarks,
+            dbStatus,
+            verifiedBy,
+            rejectionReasonId,
+            dbVerificationType,
+            docName,
+            docType,
+        ];
+
+        const result = await client.query(insertQuery, values);
+
+        // --- 4. CONDITIONAL INSERT (pp.student_master) ---
+        if (dbStatus === "ACCEPTED") {
+            const masterInsertQuery = `
+                INSERT INTO pp.student_master (
+                    applicant_id,
+                    student_name,
+                    father_name,
+                    mother_name,
+                    father_occupation,
+                    mother_occupation,
+                    gender,
+                    contact_no1,
+                    contact_no2,
+                    current_institute_dise_code,
+                    previous_institute_dise_code,
+                    home_address
+                )
+                SELECT
+                    p.applicant_id,
+                    p.student_name,
+                    p.father_name,
+                    p.mother_name,
+                    s.father_occupation,
+                    s.mother_occupation,
+                    p.gender,
+                    p.contact_no1,
+                    p.contact_no2,
+                    p.current_institute_dise_code,
+                    p.previous_institute_dise_code,
+                    p.home_address
+                FROM pp.applicant_primary_info p
+                LEFT JOIN pp.applicant_secondary_info s 
+                    ON p.applicant_id = s.applicant_id
+                WHERE p.applicant_id = $1
+                ON CONFLICT (applicant_id) DO NOTHING;
+            `;
+            await client.query(masterInsertQuery, [applicantId]);
+        }
+
+        await client.query("COMMIT");
+        return result.rows[0];
 
     } catch (error) {
-      await client.query("ROLLBACK");
+        await client.query("ROLLBACK");
 
-      // 🛑 CLEANUP: Delete file if transaction fails
-      if (finalTargetPath && fsExistsSync(finalTargetPath)) {
-        await fs.unlink(finalTargetPath);
-      } else if (originalFilePath && fsExistsSync(originalFilePath)) {
-        await fs.unlink(originalFilePath);
-      }
+        // 🛑 CLEANUP: Delete file if transaction fails
+        if (finalTargetPath && fsExistsSync(finalTargetPath)) {
+            await fs.unlink(finalTargetPath);
+        } else if (originalFilePath && fsExistsSync(originalFilePath)) {
+            await fs.unlink(originalFilePath);
+        }
 
-      console.error("Error in submitHomeVerification:", error);
-      throw new Error(`Home verification failed: ${error.message}`);
+        console.error("Error in submitHomeVerification:", error);
+        throw new Error(`Home verification failed: ${error.message}`);
     } finally {
-      client.release();
+        client.release();
     }
-  },
-
+}
+,
  async getAssignmentReportData(interviewerId, nmmsYear, applicantIds) {
     if (!applicantIds || applicantIds.length === 0) {
       return [];

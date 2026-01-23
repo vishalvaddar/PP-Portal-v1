@@ -1,7 +1,7 @@
 const path = require('path'); 
 const fs = require('fs'); 
 const PDFDocument = require('pdfkit'); 
-const InterviewModel = require("../models/interviewModel");
+const InterviewModel = require("../models/interviewModel"); 
 
 const NO_INTERVIEWER_ID = 'NO_ONE'; 
  
@@ -466,19 +466,22 @@ async getDivisionsByState(req, res) {
     }
   },
 
-  async getReassignableStudentsByBlock(req, res) {
+async getReassignableStudentsByBlock(req, res) {
     const { stateName, districtName, blockName, nmmsYear } = req.query;
-    if (!stateName || !districtName || !blockName || !nmmsYear) {
-      return res.status(400).json({ message: 'Missing required query parameters.' });
-    }
     try {
-      const students = await InterviewModel.getReassignableStudentsByBlock(stateName, districtName, blockName, nmmsYear);
-      res.status(200).json(students);
+        // Must pass all 4 variables
+        const students = await InterviewModel.getReassignableStudentsByBlock(
+            stateName, 
+            districtName, 
+            blockName, 
+            nmmsYear
+        );
+        res.status(200).json(students);
     } catch (error) {
-      console.error('Controller Error - getReassignableStudentsByBlock:', error);
-      res.status(500).json({ message: 'Internal server error while fetching reassignable students by block.' });
+        console.error('Controller Error:', error);
+        res.status(500).json({ message: 'Internal server error.' });
     }
-  },
+},
 
   async getInterviewers(req, res) {
     try {
@@ -508,7 +511,7 @@ async assignStudents(req, res) {
       console.error('Controller Error - assignStudents:', error);
       res.status(500).json({ message: 'Internal server error while assigning students.' });
     }
-},
+}, 
 
   async getReassignableStudents(req, res) {
     const { centerName, nmmsYear } = req.query;
@@ -563,44 +566,50 @@ async assignStudents(req, res) {
     }
   },
 
-  async getStudentsForVerification(req, res) {
-    try {
-      const students = await InterviewModel.getStudentsForVerification();
-      res.status(200).json(students);
-    } catch (error) {
-      console.error('Controller Error - getStudentsForVerification:', error);
-      res.status(500).json({ message: "Failed to fetch students for verification." });
-    }
-  },
- 
-  async getStudentsForVerification(req, res) {
-    try {
-      // NOTE: If you receive a TypeError here, verify that 
-      // InterviewModel.getStudentsForVerification is correctly included and exported in the Model file.
-      const students = await InterviewModel.getStudentsForVerification();
-      res.status(200).json(students);
-    } catch (error) {
-      console.error('Controller Error - getStudentsForVerification:', error);
-      res.status(500).json({ message: "Failed to fetch students for verification." });
-    }
-  },
+async getStudentsForVerification(req, res) {
+    // Look for nmmsYear in query params
+    const { nmmsYear } = req.query;
 
+    // 🔥 Fix: Improved validation
+    if (!nmmsYear || nmmsYear === 'undefined' || nmmsYear === 'null') {
+        return res.status(400).json({ 
+            message: 'Missing or invalid nmmsYear. Received: ' + nmmsYear 
+        });
+    }
+
+    try {
+        const students = await InterviewModel.getStudentsForVerification(nmmsYear);
+        res.status(200).json(students);
+    } catch (error) {
+        console.error('Controller Error:', error);
+        res.status(500).json({ message: "Failed to fetch students for verification." });
+    }
+},
+
+// Replace your current submitHomeVerification with this:
 async submitHomeVerification(req, res) {
     const verificationData = req.body;
-    const { applicantId, status, verifiedBy, verificationType, dateOfVerification } = verificationData;
+    const { 
+        applicantId, 
+        status, 
+        verifiedBy, 
+        verificationType, 
+        dateOfVerification,
+        nmmsYear // 🔥 Added this
+    } = verificationData;
 
-    // 🔥 CORRECTION: Retrieve file from req.file (Multer standard)
     const uploadedFile = req.file; 
 
-    // Server-side check for mandatory fields (File is considered optional here, based on validation logic)
+    // Updated validation to include nmmsYear
     if (
         !applicantId || 
         !status || 
         !verifiedBy || 
         !verificationType ||
-        !dateOfVerification
+        !dateOfVerification ||
+        !nmmsYear // 🔥 Added this
     ) {
-        return res.status(400).json({ message: 'Missing applicantId, status, verifiedBy, verificationType, or dateOfVerification.' });
+        return res.status(400).json({ message: 'Missing applicantId, status, verifiedBy, verificationType, dateOfVerification, or nmmsYear.' });
     }
 
     try {
@@ -613,36 +622,32 @@ async submitHomeVerification(req, res) {
         console.error('Controller Error - submitHomeVerification:', error);
         res.status(500).json({ message: error.message || 'Internal server error during home verification submission.' });
     }
-}
-,
+},
+// Replace your current submitInterviewDetails with this:
 async submitInterviewDetails(req, res) {
     const interviewData = req.body;
-    const { applicantId, remarks } = interviewData;
+    const { applicantId, remarks, nmmsYear } = interviewData; // 🔥 Added nmmsYear
 
-    // 🔥 CHANGE 1: Multer puts the single file object on req.file (Correct)
     const uploadedFile = req.file; 
 
-    // Server-side check for mandatory fields: applicantId, file, and remarks
     if (
         !applicantId || 
         !remarks || 
         remarks.trim() === '' ||
-        // 🔥 CHANGE 2: Check for existence of req.file instead of req.files (Correct)
-        !uploadedFile 
+        !uploadedFile ||
+        !nmmsYear // 🔥 Added validation
     ) {
-        return res.status(400).json({ message: 'Missing applicantId, mandatory remarks, or interview document file in the request.' });
+        return res.status(400).json({ message: 'Missing applicantId, mandatory remarks, interview file, or nmmsYear.' });
     }
 
     try {
-        // Pass all necessary data to the model
         const updatedInterview = await InterviewModel.submitInterviewDetails(applicantId, interviewData, uploadedFile);
         res.status(200).json({ message: 'Interview details and file submitted successfully.', data: updatedInterview });
     } catch (error) {
         console.error('Controller Error - submitInterviewDetails:', error);
-        res.status(500).json({ error: true, message: error.message || 'Internal server error while submitting interview details.' });
+        res.status(500).json({ error: true, message: error.message || 'Internal server error.' });
     }
-}
-
+},
 };
 
 module.exports = InterviewController;

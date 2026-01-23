@@ -1,7 +1,7 @@
 /**
  * @fileoverview Express controllers for handling API requests for student and interview tracking.
  */ 
-const path = require('path');
+const path = require('path'); 
 const fs = require('fs'); 
 const trackingModel = require('../models/trackingModel'); // Assuming correct path
 
@@ -39,28 +39,40 @@ const trackingController = {
         }
     },
 
-    async getStudents(req, res) {
-        const page = parseInt(req.query.page) || 1;
-        const limit = 10;
-        
-        const statuses = req.query.statuses ? req.query.statuses.split(',').filter(s => s.trim() !== '') : [];
-        const results = req.query.results ? req.query.results.split(',').filter(s => s.trim() !== '') : [];
+async getStudents(req, res) {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    
+    const statuses = req.query.statuses ? req.query.statuses.split(',').filter(s => s.trim() !== '') : [];
+    const resultsRaw = req.query.results ? req.query.results.split(',').filter(s => s.trim() !== '') : [];
 
-        try {
-            const data = await trackingModel.getStudentsWithLatestStatus(page, limit, statuses, results);
+    // Identify if the special home verification filter is active
+    const homeVerificationSelected = resultsRaw.includes('HOME VERIFICATION REQUIRED');
+    
+    // Clean the results array so it only contains DB-stored values (like SELECTED, REJECTED)
+    const results = resultsRaw.filter(r => r !== 'HOME VERIFICATION REQUIRED');
 
-            res.json({
-                students: data.students,
-                currentPage: page,
-                totalPages: data.totalPages,
-                totalStudents: data.totalCount
-            });
+    try {
+        const data = await trackingModel.getStudentsWithLatestStatus(
+            page, 
+            limit, 
+            statuses, 
+            results, 
+            homeVerificationSelected // Explicitly pass this instruction
+        );
 
-        } catch (error) {
-            console.error("Error fetching students by status/result:", error.message);
-            res.status(500).json({ error: "Could not fetch student tracking data." });
-        }
-    },
+        res.json({
+            students: data.students,
+            currentPage: page,
+            totalPages: data.totalPages,
+            totalStudents: data.totalCount
+        });
+
+    } catch (error) {
+        console.error("Error fetching students:", error.message);
+        res.status(500).json({ error: "Could not fetch student tracking data." });
+    }
+},
 
     async getStudentsByInterviewer(req, res) {
         const interviewerId = parseInt(req.params.interviewerId);
