@@ -125,4 +125,29 @@ router.get("/search", async (req, res) => {
   }
 });
 
+router.get("/cohorts", async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT * from pp.cohort ORDER BY cohort_number ASC
+    `);
+    res.json({ data: rows });
+  } catch (error) {
+    console.error("Error fetching cohorts:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+});
+
+router.get("/batches/cohort/:cohortNumber", async (req, res) => {
+  try {
+    const { cohortNumber } = req.params;
+    const { rows } = await pool.query(`
+      SELECT * from pp.batch WHERE cohort_number = $1 ORDER BY batch_id ASC
+    `, [cohortNumber]);
+    res.json({ data: rows });
+  } catch (error) {
+    console.error("Error fetching batches:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+});
+
 module.exports = router;
