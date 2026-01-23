@@ -6,8 +6,9 @@ const pool = require("../config/db"); // IMPORTANT: Ensure 'pool' is imported he
 const shortlistInfoController = {
   // Fetch all shortlist batch names
   getShortlistNames: async (req, res) => {
+    const { year } = req.query; // Extract year from query params
     try {
-      const names = await ShortlistInfoModel.getAllShortlistNames();
+      const names = await ShortlistInfoModel.getAllShortlistNames(year);
       res.json(names);
     } catch (error) {
       console.error("getShortlistNames Error in controller:", error);
@@ -17,8 +18,9 @@ const shortlistInfoController = {
 
   // Fetch only non-frozen shortlist batch names
   getNonFrozenShortlistNames: async (req, res) => {
+    const { year } = req.query; // Extract year from query params
     try {
-      const nonFrozenNames = await ShortlistInfoModel.getNonFrozenShortlistNames();
+      const nonFrozenNames = await ShortlistInfoModel.getNonFrozenShortlistNames(year);
       res.json(nonFrozenNames);
     } catch (error) {
       console.error("getNonFrozenShortlistNames Error in controller:", error);
@@ -29,8 +31,9 @@ const shortlistInfoController = {
   // Fetch shortlist batch details by name
   getShortlistDetails: async (req, res) => {
     const { shortlistName } = req.params;
+    const { year } = req.query; // Extract year from query params
     try {
-      const info = await ShortlistInfoModel.getShortlistInfo(shortlistName);
+      const info = await ShortlistInfoModel.getShortlistInfo(shortlistName, year);
       if (!info) return res.status(404).json({ message: "Shortlist not found" });
       res.json(info);
     } catch (error) {
@@ -41,9 +44,10 @@ const shortlistInfoController = {
 
   // Fetch total applicants and shortlisted counts
   getCounts: async (req, res) => {
+    const { year } = req.query; // Extract year from query params
     try {
-      const totalApplicants = await ShortlistInfoModel.getTotalApplicantCount();
-      const totalShortlisted = await ShortlistInfoModel.getTotalShortlistedCount();
+      const totalApplicants = await ShortlistInfoModel.getTotalApplicantCount(year);
+      const totalShortlisted = await ShortlistInfoModel.getTotalShortlistedCount(year);
       res.json({ totalApplicants, totalShortlisted });
     } catch (error) {
       console.error("getCounts Error in controller:", error);
@@ -73,11 +77,12 @@ const shortlistInfoController = {
   // Delete a shortlist batch by ID
   deleteShortlist: async (req, res) => {
     const { shortlistBatchId } = req.body;
+    const { year } = req.query; // Extract year from query params
     if (!shortlistBatchId) {
       return res.status(400).json({ message: "Shortlist batch ID is required for deletion" });
     }
     try {
-      const success = await ShortlistInfoModel.deleteShortlist(shortlistBatchId);
+      const success = await ShortlistInfoModel.deleteShortlist(shortlistBatchId, year);
       if (success) {
         res.json({ message: "Shortlist deleted successfully" });
       } else {
@@ -92,12 +97,13 @@ const shortlistInfoController = {
   // Get shortlisted applicants (view only)
   getShortlistedApplicantsForShow: async (req, res) => {
     const { shortlistName } = req.params;
+    const { year } = req.query; // Extract year from query params
     try {
-      const shortlistInfo = await ShortlistInfoModel.getShortlistInfo(shortlistName);
+      const shortlistInfo = await ShortlistInfoModel.getShortlistInfo(shortlistName, year);
       if (!shortlistInfo) {
         return res.status(404).json({ message: "Shortlist not found" });
       }
-      const applicants = await ShortlistInfoModel.getShortlistedApplicantsForShow(shortlistInfo.id);
+      const applicants = await ShortlistInfoModel.getShortlistedApplicantsForShow(shortlistInfo.id, year);
       res.json({ name: shortlistInfo.name, data: applicants });
     } catch (error) {
       console.error(`getShortlistedApplicantsForShow Error [${shortlistName}] in controller:`, error);
@@ -108,33 +114,35 @@ const shortlistInfoController = {
   // Get shortlisted applicants (for Excel download)
   getShortlistedApplicantsForDownload: async (req, res) => {
     const { shortlistName } = req.params;
+    const { year: queryYear } = req.query; // Extract year from query params
     try {
-      const shortlistInfo = await ShortlistInfoModel.getShortlistInfo(shortlistName);
+      // Use the year from query. Fallback to system year only if queryYear is missing
+      const year = queryYear;
+
+      const shortlistInfo = await ShortlistInfoModel.getShortlistInfo(shortlistName, year);
       if (!shortlistInfo) {
         return res.status(404).json({ message: "Shortlist not found" });
       }
 
-      const year = new Date().getFullYear();
       const totalStudentsInBatchRes = await pool.query(
         `SELECT COUNT(*) AS total_students
-         FROM pp.applicant_primary_info api
-         JOIN pp.shortlist_batch_jurisdiction sbj ON api.nmms_block = sbj.juris_code
-         WHERE api.nmms_year = $1
-           AND sbj.shortlist_batch_id = $2
-           AND api.applicant_id IN (
-             SELECT applicant_id FROM pp.applicant_shortlist_info
-           );`,
+           FROM pp.applicant_primary_info api
+           JOIN pp.shortlist_batch_jurisdiction sbj ON api.nmms_block = sbj.juris_code
+           WHERE api.nmms_year = $1
+             AND sbj.shortlist_batch_id = $2
+             AND api.applicant_id IN (
+               SELECT applicant_id FROM pp.applicant_shortlist_info
+             );`,
         [year, shortlistInfo.id]
       );
       const totalStudentsInBatch = parseInt(totalStudentsInBatchRes.rows[0]?.total_students || "0", 10);
 
       if (totalStudentsInBatch === 0) {
-        console.log(`Controller: No students found for download in shortlist "${shortlistName}". Sending 'no_data' status.`);
-        // **Updated Message Here**
+        console.log(`Controller: No students found for download in shortlist "${shortlistName}" for year ${year}. Sending 'no_data' status.`);
         return res.status(200).json({ status: "no_data", message: "Cannot download: No students exist for this shortlist." });
       }
 
-      let applicants = await ShortlistInfoModel.getShortlistedApplicantsForDownload(shortlistInfo.id);
+      let applicants = await ShortlistInfoModel.getShortlistedApplicantsForDownload(shortlistInfo.id, year);
 
       // Add S. No. as the first column
       applicants = applicants.map((applicant, index) => {
@@ -145,7 +153,7 @@ const shortlistInfoController = {
         return newApplicant;
       });
 
-      console.log(`Controller: Data fetched for download of "${shortlistName}", records: ${applicants.length}`);
+      console.log(`Controller: Data fetched for download of "${shortlistName}" (Year: ${year}), records: ${applicants.length}`);
       res.json({ status: "success", name: shortlistInfo.name, data: applicants });
     } catch (error) {
       console.error(`getShortlistedApplicantsForDownload Error [${shortlistName}] in controller:`, error);

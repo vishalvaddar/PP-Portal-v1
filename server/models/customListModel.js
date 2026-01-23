@@ -56,7 +56,6 @@ exports.getStudentsByListId = async (listId) => {
     return { students: students.rows, fields: fields.rows };
 };
 
-// --- In models/customListModel.js ---
 
 exports.getStudentsByCohort = async (cohortId, batchId, stateId, divisionId, districtId, blockId) => {
     let query = `
