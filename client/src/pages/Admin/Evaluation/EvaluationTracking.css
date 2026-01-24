@@ -1,84 +1,208 @@
-/* --- Essential Tailwind Imports --- */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* src/pages/Admin/Evaluation/EvaluationTracking.css */
 
-/* 1. BACK TO STUDENT LIST - Restore original size but make it BLACK */
+/* 1. LAYOUT & ROOT THEME */
+:root {
+    --primary-blue: #2563eb;
+    --hover-blue: #1d4ed8;
+    --soft-blue-bg: #f0f7ff;
+    --slate-text: #1e293b;
+    --slate-muted: #64748b;
+    --border-soft: #e2e8f0;
+    --white: #ffffff;
+    --shadow-gentle: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.min-h-screen {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    padding-bottom: 40px;
+}
+
+/* 2. BACK TO STUDENT LIST BUTTON */
 button.text-blue-600.hover\:text-blue-800 {
-    font-size: 1rem !important; /* Original size */
-    font-weight: 700 !important;   
-    color: #000000 !important; /* Pure Black */
-    text-decoration: underline;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;   
+    color: var(--primary-blue) !important; 
+    background-color: var(--white);
+    border: 1px solid var(--primary-blue);
+    padding: 8px 20px !important;
+    border-radius: 8px;
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.2s ease;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1);
 }
 
-/* 2. STUDENT DETAILS HEADER - Same size as before but BLACK */
+button.text-blue-600.hover\:text-blue-800:hover {
+    background-color: var(--primary-blue) !important;
+    color: var(--white) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+/* 3. HEADERS & TITLES */
 h1.text-3xl.font-extrabold {
-    color: #000000 !important; 
+    color: var(--slate-text) !important;
+    letter-spacing: -0.02em;
+    border-left: 4px solid var(--primary-blue);
+    padding-left: 16px;
+    margin-bottom: 24px;
 }
 
-p.text-sm.text-gray-500 {
-    font-weight: 700;
-    color: #000000 !important; /* Make ID also black for visibility */
+.applicant-id-label {
+    font-weight: 600;
+    color: var(--primary-blue) !important;
+    background: var(--soft-blue-bg);
+    border: 1px solid #bfdbfe;
+    padding: 4px 12px;
+    border-radius: 6px;
 }
 
-/* 3. SELECTOR BOXES - Added light tint so you can see them on white background */
+/* 4. STUDENT CARDS (LIST VIEW) */
+.StudentCard {
+    border: 1px solid var(--border-soft) !important;
+    background: var(--white);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.StudentCard:hover {
+    border-color: var(--primary-blue) !important;
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.text-blue-700 { color: var(--primary-blue) !important; font-weight: 700; }
+.text-gray-500 { color: var(--slate-muted) !important; }
+
+/* 5. SELECTOR BOXES (ROUND NAVIGATION) */
 .round-box-base {
-    padding: 1rem;
-    border-radius: 0.75rem;
-    border-width: 2px;
-    background-color: #f9fafb !important; /* Very light gray so box is visible */
-    color: #000000 !important; /* Pure Black text */
+    padding: 1.25rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-soft) !important;
+    background-color: var(--white) !important;
+    color: var(--slate-text) !important;
+    font-weight: 600;
+    transition: all 0.2s ease;
 }
 
-/* 4. ACTIVE BOX - Keeps original blue palette but with black text */
 .round-box-active {
-    border-color: #2563eb !important;
-    background-color: #eff6ff !important;
-    color: #000000 !important; /* Pure Black text */
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.4);
+    border-color: var(--primary-blue) !important;
+    background-color: var(--soft-blue-bg) !important;
+    color: var(--primary-blue) !important; 
+    transform: scale(1.02);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-/* 5. STATUS BORDERS - Keeping your logic but ensuring text is black */
+/* 6. STATUS BORDERS (LOGIC COLORS) */
+.status-success { border-color: #10b981 !important; background-color: #f0fdf4 !important; }
+.status-pending { border-color: #f59e0b !important; background-color: #fffbeb !important; }
+.status-failure, .status-not-submitted { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
 
-/* RED: Not Submitted / Failure */
-.status-not-submitted, .status-failure {
-    border-color: #ef4444 !important; 
-    color: #000000 !important; /* Black text for readability */
-    background-color: #fff1f1 !important; 
+/* 7. DYNAMIC BADGES (LIST VIEW) */
+.bg-red-100.text-red-700 {
+    background-color: #fef2f2 !important;
+    color: #dc2626 !important;
+    border: 1px solid #fecaca !important;
+    font-weight: 600 !important;
 }
 
-/* GREEN: Success / Verified */
-.status-success {
-    border-color: #22c55e !important; 
-    color: #000000 !important; /* Black text */
-    background-color: #f0fdf4 !important; 
+.bg-green-100.text-green-700 {
+    background-color: #f0fdf4 !important;
+    color: #15803d !important;
+    border: 1px solid #bbf7d0 !important;
+    font-weight: 600 !important;
 }
 
-/* YELLOW: Pending */
-.status-pending {
-    border-color: #f59e0b !important; 
-    color: #000000 !important; /* Black text */
-    background-color: #fffdf6 !important;
+/* 8. ROUND DETAIL PANEL */
+.RoundDetailPanel {
+    background-color: var(--white) !important;
+    border: 1px solid var(--border-soft);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
 }
 
-/* 6. FILTER BUTTONS - Selected state is now Black for visibility */
-button.bg-blue-600.text-white {
-    background-color: #000000 !important; /* Black background for selected filter */
-    color: #ffffff !important;
+.RoundDetailPanel h3 {
+    background: #f8fafc;
+    color: var(--slate-text) !important;
+    border-bottom: 1px solid var(--border-soft);
+    margin: 0;
+    padding: 1.25rem;
     font-weight: 700;
 }
 
-/* 7. STUDENT CARD (List View) - Make text black */
-.text-blue-700 {
-    color: #000000 !important; /* Student Name in list now Black */
-}
-.text-gray-500 {
-    color: #000000 !important; /* Labels now Black */
+/* 9. NOT YET SUBMITTED ALERT */
+.not-submitted-container {
+    border: 2px dashed #fca5a5 !important;
+    background: #fffafa !important;
+    padding: 2.5rem;
+    text-align: center;
+    border-radius: 12px;
 }
 
-/* 8. ROUND DETAIL PANEL (Bottom Content) */
-.bg-white.p-6.rounded-xl {
-    background-color: #f9fafb !important;
-    border: 1px solid #d1d5db;
-    color: #000000 !important;
+.not-submitted-text {
+    color: #ef4444 !important;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+/* 10. FILTER BUTTONS - UPDATED FOR VISIBILITY */
+button.bg-blue-600.text-white {
+    background-color: var(--primary-blue) !important; 
+    color: var(--white) !important; 
+    border: none !important;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+button.bg-blue-600.text-white:hover {
+    background-color: var(--hover-blue) !important;
+}
+
+/* 11. SELECT DROPDOWNS */
+select {
+    border: 1px solid var(--border-soft) !important;
+    border-radius: 8px !important;
+    font-weight: 500;
+    padding: 10px !important;
+    background-color: var(--white);
+    color: var(--slate-text);
+}
+
+select:focus {
+    border-color: var(--primary-blue) !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* 12. VIEW DOCUMENT BUTTON */
+.bg-blue-600.text-white.hover\:bg-blue-700 {
+    background-color: var(--soft-blue-bg) !important;
+    color: var(--primary-blue) !important;
+    border: 1px solid var(--primary-blue) !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+}
+
+.bg-blue-600.text-white.hover\:bg-blue-700:hover {
+    background-color: var(--primary-blue) !important;
+    color: var(--white) !important;
+}
+
+/* 13. PAGINATION BUTTONS */
+.pagination-btn {
+    background-color: var(--white) !important;
+    color: var(--slate-text) !important;
+    border: 1px solid var(--border-soft) !important;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    border-color: var(--primary-blue) !important;
+    color: var(--primary-blue) !important;
 }

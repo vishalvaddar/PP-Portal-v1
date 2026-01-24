@@ -1,7 +1,10 @@
 // controllers/shortlistInfoController.js
 const ShortlistInfoModel = require("../models/shortlistInfoModel");
 const xlsx = require("xlsx");
-const pool = require("../config/db"); // IMPORTANT: Ensure 'pool' is imported here
+const pool = require("../config/db");
+const path = require('path'); 
+const fs = require('fs');    
+const GENERATED_FILES_ROOT = path.join(process.env.FILE_STORAGE_PATH, 'generated-shortlist-data');
 
 const shortlistInfoController = {
   // Fetch all shortlist batch names
@@ -112,54 +115,84 @@ const shortlistInfoController = {
   },
 
   // Get shortlisted applicants (for Excel download)
-  getShortlistedApplicantsForDownload: async (req, res) => {
+  // Get shortlisted applicants (for Excel download and Local Production Save)
+getShortlistedApplicantsForDownload: async (req, res) => {
     const { shortlistName } = req.params;
     const { year: queryYear } = req.query; // Extract year from query params
+
     try {
-      // Use the year from query. Fallback to system year only if queryYear is missing
-      const year = queryYear;
+        // Use the year from query. 
+        const year = queryYear;
 
-      const shortlistInfo = await ShortlistInfoModel.getShortlistInfo(shortlistName, year);
-      if (!shortlistInfo) {
-        return res.status(404).json({ message: "Shortlist not found" });
-      }
-
-      const totalStudentsInBatchRes = await pool.query(
-        `SELECT COUNT(*) AS total_students
-           FROM pp.applicant_primary_info api
-           JOIN pp.shortlist_batch_jurisdiction sbj ON api.nmms_block = sbj.juris_code
-           WHERE api.nmms_year = $1
-             AND sbj.shortlist_batch_id = $2
-             AND api.applicant_id IN (
-               SELECT applicant_id FROM pp.applicant_shortlist_info
-             );`,
-        [year, shortlistInfo.id]
-      );
-      const totalStudentsInBatch = parseInt(totalStudentsInBatchRes.rows[0]?.total_students || "0", 10);
-
-      if (totalStudentsInBatch === 0) {
-        console.log(`Controller: No students found for download in shortlist "${shortlistName}" for year ${year}. Sending 'no_data' status.`);
-        return res.status(200).json({ status: "no_data", message: "Cannot download: No students exist for this shortlist." });
-      }
-
-      let applicants = await ShortlistInfoModel.getShortlistedApplicantsForDownload(shortlistInfo.id, year);
-
-      // Add S. No. as the first column
-      applicants = applicants.map((applicant, index) => {
-        const newApplicant = { "S. No.": index + 1 };
-        for (const key in applicant) {
-          newApplicant[key] = applicant[key];
+        const shortlistInfo = await ShortlistInfoModel.getShortlistInfo(shortlistName, year);
+        if (!shortlistInfo) {
+            return res.status(404).json({ message: "Shortlist not found" });
         }
-        return newApplicant;
-      });
 
-      console.log(`Controller: Data fetched for download of "${shortlistName}" (Year: ${year}), records: ${applicants.length}`);
-      res.json({ status: "success", name: shortlistInfo.name, data: applicants });
+        const totalStudentsInBatchRes = await pool.query(
+            `SELECT COUNT(*) AS total_students
+             FROM pp.applicant_primary_info api
+             JOIN pp.shortlist_batch_jurisdiction sbj ON api.nmms_block = sbj.juris_code
+             WHERE api.nmms_year = $1
+               AND sbj.shortlist_batch_id = $2
+               AND api.applicant_id IN (
+                 SELECT applicant_id FROM pp.applicant_shortlist_info
+               );`,
+            [year, shortlistInfo.id]
+        );
+        const totalStudentsInBatch = parseInt(totalStudentsInBatchRes.rows[0]?.total_students || "0", 10);
+
+        if (totalStudentsInBatch === 0) {
+            console.log(`Controller: No students found for download in shortlist "${shortlistName}" for year ${year}. Sending 'no_data' status.`);
+            return res.status(200).json({ status: "no_data", message: "Cannot download: No students exist for this shortlist." });
+        }
+
+        let applicants = await ShortlistInfoModel.getShortlistedApplicantsForDownload(shortlistInfo.id, year);
+
+        // Add S. No. as the first column
+        applicants = applicants.map((applicant, index) => {
+            const newApplicant = { "S. No.": index + 1 };
+            for (const key in applicant) {
+                newApplicant[key] = applicant[key];
+            }
+            return newApplicant;
+        });
+
+        // --- EXCEL GENERATION ---
+        const fileName = `${shortlistName}_Applicants.xlsx`;
+        const worksheet = xlsx.utils.json_to_sheet(applicants);
+        const workbook = xlsx.utils.book_new();
+        xlsx.utils.book_append_sheet(workbook, worksheet, "Applicants");
+
+        // --- STEP A: SAVE LOCALLY ON PRODUCTION SERVER DISK ---
+        // Using strictly: path.join(process.env.FILE_STORAGE_PATH, 'generated-shortlist-data')
+        const GENERATED_FILES_ROOT = path.join(process.env.FILE_STORAGE_PATH, 'generated-shortlist-data');
+        
+        if (!fs.existsSync(GENERATED_FILES_ROOT)) {
+            fs.mkdirSync(GENERATED_FILES_ROOT, { recursive: true });
+        }
+
+        const localSavePath = path.join(GENERATED_FILES_ROOT, fileName);
+        xlsx.writeFile(workbook, localSavePath);
+       // console.log(`✅ Production copy saved locally: ${localSavePath}`);
+
+        // --- STEP B: SEND TO USER FOR DOWNLOAD (BINARY BUFFER) ---
+        const buffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+        // Set headers to trigger browser download
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        
+     //   console.log(`Controller: Binary data sent for download of "${shortlistName}" (Year: ${year})`);
+        return res.status(200).send(buffer);
+
     } catch (error) {
-      console.error(`getShortlistedApplicantsForDownload Error [${shortlistName}] in controller:`, error);
-      res.status(500).json({ message: "Error fetching applicants for download", error: error.message });
+        console.error(`getShortlistedApplicantsForDownload Error [${shortlistName}] in controller:`, error);
+        if (!res.headersSent) {
+            res.status(500).json({ message: "Error fetching applicants for download", error: error.message });
+        }
     }
-  },
+}
 };
 
 module.exports = shortlistInfoController;

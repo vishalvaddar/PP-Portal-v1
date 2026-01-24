@@ -913,7 +913,7 @@ getStudentsForVerification: async (nmmsYear) => {
   } finally {
     client.release();
   }
-},
+}, 
   
 submitHomeVerification: async (data, fileData) => {
     const client = await pool.connect();
@@ -923,7 +923,7 @@ submitHomeVerification: async (data, fileData) => {
     try {
         await client.query("BEGIN");
 
-        // 1. Destructure nmmsYear from data (passed from Frontend)
+        // 1. Destructure data
         const {
             applicantId,
             dateOfVerification,
@@ -931,15 +931,14 @@ submitHomeVerification: async (data, fileData) => {
             status,
             verifiedBy,
             verificationType,
-            nmmsYear // Now coming from frontend configuration
+            nmmsYear 
         } = data;
 
-        // Validation to ensure nmmsYear is present
         if (!nmmsYear) {
             throw new Error("Academic Year (nmmsYear) is missing.");
         }
 
-        // --- 2. FILE HANDLING (RENAME & CUSTOMIZE) ---
+        // --- 2. FILE HANDLING ---
         let docName = null;
         let docType = null;
         let newFileName = null;
@@ -949,22 +948,19 @@ submitHomeVerification: async (data, fileData) => {
             const fileExtension = path.extname(fileData.filename);
             docType = fileExtension.substring(1).toUpperCase();
 
-            // Custom name format uses the dynamic nmmsYear
             newFileName = `HOME-VERI-${applicantId}-${nmmsYear}${fileExtension}`;
             const targetDirectory = path.dirname(originalFilePath);
             finalTargetPath = path.join(targetDirectory, newFileName);
 
-            // Rename the file to the custom standardized name
             await fs.rename(originalFilePath, finalTargetPath);
             docName = newFileName;
         }
 
-        // --- 3. DATABASE INSERTION (pp.home_verification) ---
-        // Force status and type to UPPERCASE to match CHECK constraints
+        // --- 3. DATABASE INSERTION ---
         const dbStatus = status.toUpperCase().trim();
         const dbVerificationType = verificationType.toUpperCase().trim();
-        const rejectionReasonId = dbStatus === "REJECTED" ? 1 : null;
 
+        // 🔥 REMOVED the "REJECTED ? 1 : null" logic here
         const insertQuery = `
             INSERT INTO pp.home_verification (
                 applicant_id, 
@@ -986,7 +982,7 @@ submitHomeVerification: async (data, fileData) => {
             remarks,
             dbStatus,
             verifiedBy,
-            rejectionReasonId,
+            null, // 🔥 Explicitly passing null to avoid foreign key violation
             dbVerificationType,
             docName,
             docType,
@@ -1039,7 +1035,6 @@ submitHomeVerification: async (data, fileData) => {
     } catch (error) {
         await client.query("ROLLBACK");
 
-        // 🛑 CLEANUP: Delete file if transaction fails
         if (finalTargetPath && fsExistsSync(finalTargetPath)) {
             await fs.unlink(finalTargetPath);
         } else if (originalFilePath && fsExistsSync(originalFilePath)) {

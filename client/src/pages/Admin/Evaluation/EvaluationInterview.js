@@ -799,12 +799,20 @@ function InterviewerDropdown({ onSelectInterviewer, selectedInterviewerId }) {
 
   useEffect(() => {
     const fetchInterviewers = async () => {
+      setLoading(true);
       try {
-        const response = await api.getInterviewers();
-        setInterviewers(response.data);
-      } catch (err) {
-        setError("Failed to load interviewers.");
-        console.error("Error fetching interviewers:", err);
+        // Use the API_BASE_URL defined at the top of your file
+        const response = await fetch(`${API_BASE_URL}/interviewers`);
+        
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        setInterviewers(data);
+      } catch (error) {
+        console.error("Error fetching interviewers:", error);
+        setError("Could not fetch interviewers.");
+        // 🔥 REMOVED showMessageBox call because it doesn't exist in this scope
       } finally {
         setLoading(false);
       }
@@ -815,7 +823,6 @@ function InterviewerDropdown({ onSelectInterviewer, selectedInterviewerId }) {
   const handleInterviewerChange = (e) => {
     const selectedId = e.target.value;
 
-    // 🔥 FIX: This dropdown is for ASSIGNMENT ONLY. We only check for a valid interviewer ID.
     if (selectedId) {
       const selectedInterviewer = interviewers.find(
         (interviewer) =>
@@ -823,12 +830,10 @@ function InterviewerDropdown({ onSelectInterviewer, selectedInterviewerId }) {
       );
 
       onSelectInterviewer({
-        // Convert to int
         id: parseInt(selectedId),
         name: selectedInterviewer?.interviewer_name || "",
       });
     } else {
-      // Placeholder selected
       onSelectInterviewer(null);
     }
   };
@@ -839,6 +844,7 @@ function InterviewerDropdown({ onSelectInterviewer, selectedInterviewerId }) {
         Loading interviewers...
       </div>
     );
+    
   if (error)
     return (
       <div className="p-2 text-center text-red-500 w-full md:w-1/2">
@@ -863,8 +869,6 @@ function InterviewerDropdown({ onSelectInterviewer, selectedInterviewerId }) {
         <option key="select-interviewer-placeholder" value="">
           --Please select an interviewer
         </option>
-
-        {/* NO 'NO ONE' OPTION HERE */}
 
         {interviewers.map((interviewer) => (
           <option
@@ -1659,6 +1663,8 @@ function AssignInterviewView() {
   );
 }
 
+
+
 const FillInterviewView = () => {
   // State to hold data fetched from the backend
   const [interviewers, setInterviewers] = useState([]);
@@ -1744,10 +1750,8 @@ const FillInterviewView = () => {
     const fetchInterviewers = async () => {
       setLoading((prev) => ({ ...prev, interviewers: true }));
       try {
-        // Fetch from your local backend API
-        const response = await fetch(
-          "http://localhost:5000/api/interview/interviewers",
-        );
+        // Fetch from your local backend API using BASE URL
+        const response = await fetch(`${API_BASE_URL}/interviewers`);
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
@@ -1783,9 +1787,9 @@ const FillInterviewView = () => {
 
           const interviewerName = selectedInterviewer.interviewer_name;
 
-          // Fetch students from your local backend API using interviewerName and nmmsYear
+          // Fetch students using API_BASE_URL
           const response = await fetch(
-            `http://localhost:5000/api/interview/students/${encodeURIComponent(interviewerName)}?nmmsYear=${nmmsYear}`,
+            `${API_BASE_URL}/students/${encodeURIComponent(interviewerName)}?nmmsYear=${nmmsYear}`,
           );
           if (!response.ok) {
             throw new Error("Network response was not ok");
@@ -1829,7 +1833,7 @@ const FillInterviewView = () => {
         return;
       }
 
-      const maxSizeBytes = 1 * 1024 * 1024;
+      const maxSizeBytes = 10 * 1024 * 1024;
       if (file.size > maxSizeBytes) {
         setFileError("File size exceeds 10MB.");
         setSelectedFile(null);
@@ -1852,97 +1856,81 @@ const FillInterviewView = () => {
       [name]: value,
     }));
   };
+
+ 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    showMessageBox("", ""); // Clear previous messages using standard reset
+  e.preventDefault();
+  showMessageBox("", ""); 
 
-    // 1. Validations
-    if (!selectedStudent) {
-      showMessageBox("error", "Please select a student before submitting.");
-      return;
-    }
+  // 1. Validations
+  if (!selectedStudent) {
+    showMessageBox("error", "Please select a student before submitting.");
+    return;
+  }
+  if (!selectedFile) {
+    setFileError("File upload is mandatory.");
+    return;
+  }
+  if (!formData.remarks.trim()) {
+    showMessageBox("error", "Remarks field is mandatory.");
+    return;
+  }
 
-    if (!selectedFile) {
-      setFileError("File upload is mandatory.");
-      return;
-    }
+  setLoading((prev) => ({ ...prev, submit: true }));
 
-    if (!formData.remarks.trim()) {
-      showMessageBox("error", "Remarks field is mandatory.");
-      return;
-    }
+  // 2. Prepare FormData
+  const requestFormData = new FormData();
 
-    const isRescheduled = formData.interviewStatus === "Rescheduled";
-    if (!isRescheduled && !formData.interviewResult) {
-      showMessageBox(
-        "error",
-        "Interview Result is mandatory for Completed status.",
-      );
-      return;
-    }
+  // 🔥 CRITICAL CHANGE: Append nmmsYear and applicantId FIRST
+  // Multer on the backend parses fields in order. To use nmmsYear in the 
+  // 'destination' function, it must be received before the 'file'.
+  requestFormData.append("nmmsYear", nmmsYear); 
+  requestFormData.append("applicantId", selectedStudent.applicant_id);
+  requestFormData.append("remarks", formData.remarks);
+  
+  // Now append the file
+  requestFormData.append("file", selectedFile); 
 
-    setLoading((prev) => ({ ...prev, submit: true }));
+  // Append remaining fields
+  requestFormData.append("interviewDate", formData.interviewDate);
+  requestFormData.append(
+    "interviewTime",
+    `${formData.interviewTimeHours.padStart(2, "0")}:${formData.interviewTimeMinutes.padStart(2, "0")} ${formData.interviewTimeAmPm}`,
+  );
+  requestFormData.append("interviewMode", formData.interviewMode);
+  requestFormData.append("interviewStatus", formData.interviewStatus);
+  requestFormData.append("lifeGoalsAndZeal", parseFloat(formData.lifeGoalsAndZeal) || 0);
+  requestFormData.append("commitmentToLearning", parseFloat(formData.commitmentToLearning) || 0);
+  requestFormData.append("integrity", parseFloat(formData.integrity) || 0);
+  requestFormData.append("communicationSkills", parseFloat(formData.communicationSkills) || 0);
+  requestFormData.append("homeVerificationRequired", formData.homeVerificationRequired);
+  requestFormData.append("interviewResult", formData.interviewResult);
 
-    // 2. Prepare FormData
-    const requestFormData = new FormData();
-
-    // 🔥 CRITICAL: These must match the keys your Controller destructures
-    requestFormData.append("applicantId", selectedStudent.applicant_id);
-    requestFormData.append("remarks", formData.remarks);
-    requestFormData.append("file", selectedFile);
-    requestFormData.append("nmmsYear", nmmsYear); // Ensure this is the parsed year (e.g., 2025)
-
-    // Other fields
-    requestFormData.append("interviewDate", formData.interviewDate);
-    requestFormData.append(
-      "interviewTime",
-      `${formData.interviewTimeHours.padStart(2, "0")}:${formData.interviewTimeMinutes.padStart(2, "0")} ${formData.interviewTimeAmPm}`,
+  try {
+    // 3. The Fetch Call
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_API_URL}/api/interview/submit-interview`,
+      {
+        method: "POST",
+        body: requestFormData, // Headers are set automatically by the browser for FormData
+      },
     );
-    requestFormData.append("interviewMode", formData.interviewMode);
-    requestFormData.append("interviewStatus", formData.interviewStatus);
-    requestFormData.append("lifeGoalsAndZeal", formData.lifeGoalsAndZeal);
-    requestFormData.append(
-      "commitmentToLearning",
-      formData.commitmentToLearning,
-    );
-    requestFormData.append("integrity", formData.integrity);
-    requestFormData.append("communicationSkills", formData.communicationSkills);
-    requestFormData.append(
-      "homeVerificationRequired",
-      formData.homeVerificationRequired,
-    );
-    requestFormData.append("interviewResult", formData.interviewResult);
 
-    try {
-      // 3. The Fetch Call
-      // Check if the URL is exactly what is defined in your backend routes
-      const response = await fetch(
-        `${process.env.REACT_APP_BACKEND_API_URL}/api/interview/submit-interview`,
-        {
-          method: "POST",
-          // Note: Do NOT set Content-Type header manually when using FormData
-          body: requestFormData,
-        },
-      );
-
-      // Handle 404 or 500 errors from server
-      if (!response.ok) {
-        const errorText = await response.text(); // Get raw error if JSON fails
-        console.error("Server Error Response:", errorText);
-        throw new Error(errorText || "Something went wrong on the server.");
-      }
-
-      const result = await response.json();
-      setSubmissionStatus("success");
-      showMessageBox("success", "Interview details submitted successfully!");
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      setSubmissionStatus("error");
-      showMessageBox("error", `Submission failed: ${error.message}`);
-    } finally {
-      setLoading((prev) => ({ ...prev, submit: false }));
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || "Something went wrong on the server.");
     }
-  };
+
+    setSubmissionStatus("success");
+    showMessageBox("success", "Interview details submitted successfully!");
+  } catch (error) {
+    console.error("Error submitting form:", error);
+    setSubmissionStatus("error");
+    showMessageBox("error", `Submission failed: ${error.message}`);
+  } finally {
+    setLoading((prev) => ({ ...prev, submit: false }));
+  }
+};
   const getMessageClasses = (type) => {
     switch (type) {
       case "success":
@@ -1978,6 +1966,12 @@ const FillInterviewView = () => {
               </h2>
               <p className="text-sm sm:text-base">{message.text}</p>
             </div>
+            <button
+              onClick={resetFormAndSelections}
+              className="bg-blue-600 text-white font-bold py-2 px-6 rounded-full shadow-md hover:bg-blue-700 transition duration-300"
+            >
+              Go Back
+            </button>
           </div>
         )}
 
@@ -2450,6 +2444,8 @@ const FillInterviewView = () => {
   );
 };
 
+
+
 const HomeVerificationView = () => {
   // 2. Access config from context
   const { appliedConfig } = useSystemConfig();
@@ -2520,56 +2516,56 @@ const HomeVerificationView = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setMessage("");
 
-    if (
-      !selectedApplicantId ||
-      !status ||
-      !verifiedBy ||
-      !verificationType ||
-      !dateOfVerification
-    ) {
-      setMessage("Please fill all mandatory fields (marked with *).");
-      setLoading(false);
-      return;
-    }
+  if (
+    !selectedApplicantId ||
+    !status ||
+    !verifiedBy ||
+    !verificationType ||
+    !dateOfVerification
+  ) {
+    setMessage("Please fill all mandatory fields (marked with *).");
+    setLoading(false);
+    return;
+  }
 
-    const formData = new FormData();
-    formData.append("applicantId", selectedApplicantId);
-    formData.append("dateOfVerification", dateOfVerification);
-    formData.append("status", status);
-    formData.append("verifiedBy", verifiedBy);
-    formData.append("verificationType", verificationType);
-    formData.append("remarks", remarks);
+  // 1. Variable initialized as 'formData'
+  const formData = new FormData();
 
-    // 🔥 Send nmmsYear for file naming on backend
-    formData.append("nmmsYear", nmmsYear);
+  // 2. Use 'formData' for all appends (Fixes the ESLint errors)
+  formData.append("applicantId", selectedApplicantId);
+  formData.append("dateOfVerification", dateOfVerification);
+  formData.append("status", status);
+  formData.append("verifiedBy", verifiedBy);
+  formData.append("verificationType", verificationType);
+  formData.append("remarks", remarks);
+  formData.append("nmmsYear", nmmsYear);
 
-    if (file) {
-      // field name must match 'verificationDocument' in your routes
-      formData.append("verificationDocument", file);
-    }
+  if (file) {
+    formData.append("verificationDocument", file);
+  }
 
-    try {
-      await axios.post(
-        `${process.env.REACT_APP_BACKEND_API_URL}/api/interview/submit-home-verification`,
-        formData,
-      );
-      setMessage("Verification submitted successfully! ✅");
-      setIsSubmitted(true);
-    } catch (error) {
-      const errMsg =
-        error.response?.data?.message ||
-        "A network error occurred during submission.";
-      console.error("Submission Error:", error);
-      setMessage(`Error: ${errMsg} ❌`);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    await axios.post(
+      `${process.env.REACT_APP_BACKEND_API_URL}/api/interview/submit-home-verification`,
+      formData // 3. Pass the correct variable here
+    );
+    setMessage("Verification submitted successfully! ✅");
+    setIsSubmitted(true);
+  } catch (error) {
+    const errMsg =
+      error.response?.data?.message ||
+      "A network error occurred during submission.";
+    console.error("Submission Error:", error);
+    setMessage(`Error: ${errMsg} ❌`);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // --- Renders ---
   if (isSubmitted) {
@@ -2721,12 +2717,14 @@ const HomeVerificationView = () => {
 
 
 function EvaluationInterview() {
-  const { appliedConfig } = useSystemConfig();
+  const { appliedConfig, loading } = useSystemConfig();
   const [view, setView] = useState("main"); // 'main', 'assign', 'fill', 'homeVerification'
   const [selectedCenter, setSelectedCenter] = useState("");
 
+  // Check if admissions are open based on system configuration
+  const isAdmissionsOpen = !loading && appliedConfig?.phase === "Admissions are started";
+
   // 🚀 1. Show ONLY the base path segments (no sub-views like 'Submit Result')
-  // We use lowercase to match your appRouter.js for valid link generation.
   const currentPath = useMemo(() => {
     return ['Admin', 'Admissions', 'Evaluation', 'Interview'];
   }, []);
@@ -2734,6 +2732,13 @@ function EvaluationInterview() {
   const nmmsYear = appliedConfig?.academic_year
     ? appliedConfig.academic_year.split("-")[0]
     : new Date().getFullYear();
+
+  // Helper to handle navigation only if active
+  const handleProtectedNavigation = (targetView) => {
+    if (isAdmissionsOpen) {
+      setView(targetView);
+    }
+  };
 
   const renderView = () => {
     switch (view) {
@@ -2787,15 +2792,24 @@ function EvaluationInterview() {
       default:
         return (
           <div className="interview-options-grid">
-            <div className="option-box" onClick={() => setView("assign")}>
+            <div 
+              className={`option-box ${!isAdmissionsOpen ? "option-box-disabled" : ""}`} 
+              onClick={() => handleProtectedNavigation("assign")}
+            >
               <span className="icon-box">👨‍💻</span>
               <span className="text-box">Assign Interviews</span>
             </div>
-            <div className="option-box" onClick={() => setView("fill")}>
+            <div 
+              className={`option-box ${!isAdmissionsOpen ? "option-box-disabled" : ""}`} 
+              onClick={() => handleProtectedNavigation("fill")}
+            >
               <span className="icon-box">📝</span>
               <span className="text-box">Submit Interview Results</span>
             </div>
-            <div className="option-box" onClick={() => setView("homeVerification")}>
+            <div 
+              className={`option-box ${!isAdmissionsOpen ? "option-box-disabled" : ""}`} 
+              onClick={() => handleProtectedNavigation("homeVerification")}
+            >
               <span className="icon-box">🏡</span>
               <span className="text-box">Home Verification Status</span>
             </div>
@@ -2806,14 +2820,10 @@ function EvaluationInterview() {
 
   return (
     <div className="interview-module">
-      {/* 🚀 2. Breadcrumbs Setup */}
       <Breadcrumbs 
         path={currentPath} 
-        // 'admin', 'admissions', and 'interview' are fixed. 
-        // Only 'evaluation' remains as a clickable link to go back.
-        nonLinkSegments={['admin', 'admissions', 'interview']} 
+        nonLinkSegments={['Admin', 'Admissions', 'Interview']} 
         onSegmentClick={(segment) => {
-          // If they click 'interview', just reset the local view to main menu
           if (segment === 'interview') {
             setView('main');
           }
@@ -2826,6 +2836,5 @@ function EvaluationInterview() {
     </div>
   );
 }
-
 
 export default EvaluationInterview;

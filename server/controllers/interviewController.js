@@ -26,12 +26,14 @@ const formatDateForPdf = (dateString) => {
 };
 
 
-// --- CONFIGURATION: DEFINE LOGO PATHS ---
+
 // Project root assumed relative to this file's location.
 const PROJECT_ROOT = path.join(__dirname, '..', '..');
 const PATH_TO_RCF_LOGO = path.join(PROJECT_ROOT, 'server', 'public', 'assets', 'rcf_logo-removebg-preview.png');
 const PATH_TO_PP_LOGO = path.join(PROJECT_ROOT, 'server', 'public', 'assets', 'logo.png');
 
+const GENERATED_FILES_ROOT = path.join(process.env.FILE_STORAGE_PATH, 'generated-eval-data');
+    
 
 // --- PDF HEADER UTILITY FUNCTION ---
 const drawReportHeader = (doc, isFirstPage, nmmsYear) => {
@@ -115,255 +117,233 @@ const drawReportHeader = (doc, isFirstPage, nmmsYear) => {
 const InterviewController = {
     
 async downloadAssignmentReport(req, res) {
-        console.log('--- HIT: Download Assignment Report Route REACHED ---');
-        
-        const { 
+    console.log('--- HIT: Download Assignment Report Route REACHED ---');
+    
+    const { 
+        interviewerId, 
+        nmmsYear, 
+        applicantIds
+    } = req.body; 
+
+    const applicantIdsArray = applicantIds || [];
+    
+    if (!interviewerId || !nmmsYear || applicantIdsArray.length === 0) {
+        return res.status(400).json({ error: 'Missing required parameters: interviewerId, nmmsYear, or applicantIds list is empty/invalid.' });
+    }
+
+    const cleanInterviewerId = interviewerId.toString().replace(/[^a-zA-Z0-9-]/g, '');
+    const filename = `Interview-Assignment${cleanInterviewerId}_${Date.now()}.pdf`;
+
+    // 🔥 MODIFIED: Store directly in generated-eval-data without the cohort sub-folder
+    const GENERATED_FILES_ROOT = "C:\\Users\\priya\\Downloads\\dump\\generated-eval-data";
+    const localFilePath = path.join(GENERATED_FILES_ROOT, filename);
+
+    try {
+        // Ensure the root directory exists
+        if (!fs.existsSync(GENERATED_FILES_ROOT)) {
+            fs.mkdirSync(GENERATED_FILES_ROOT, { recursive: true });
+        }
+
+        const students = await InterviewModel.getAssignmentReportData(
             interviewerId, 
             nmmsYear, 
-            applicantIds
-        } = req.body; 
+            applicantIdsArray
+        );
 
-        const applicantIdsArray = applicantIds || [];
+        if (students.length === 0) {
+            return res.status(404).json({ error: 'No student data found for the selected criteria.' });
+        }
+
+        // --- PDF Generation Setup ---
+        const TOP_MARGIN_FOR_HEADER = 100;
+        const doc = new PDFDocument({ 
+            margins: { top: TOP_MARGIN_FOR_HEADER, bottom: 30, left: 30, right: 30 },
+            size: 'A4'
+        });
         
-        if (!interviewerId || !nmmsYear || applicantIdsArray.length === 0) {
-            // ... (error handling)
-            return res.status(400).json({ error: 'Missing required parameters: interviewerId, nmmsYear, or applicantIds list is empty/invalid.' });
-        }
-
-        const cleanInterviewerId = interviewerId.toString().replace(/[^a-zA-Z0-9-]/g, '');
-        const filename = `Assignment_Report_${cleanInterviewerId}_${Date.now()}.pdf`;
-
-        try {
-            const students = await InterviewModel.getAssignmentReportData(
-                interviewerId, 
-                nmmsYear, 
-                applicantIdsArray
-            );
-
-            if (students.length === 0) {
-                return res.status(404).json({ error: 'No student data found for the selected criteria.' });
-            }
-
-            // --- PDF Generation Setup ---
-            const TOP_MARGIN_FOR_HEADER = 100; // Increased margin to fit the header block
-            const doc = new PDFDocument({ 
-                margins: { top: TOP_MARGIN_FOR_HEADER, bottom: 30, left: 30, right: 30 },
-                size: 'A4'
-            });
-            
-            doc.on('error', (err) => {
-                console.error('!!! PDF STREAM CRASHED (STREAM ERROR) !!! Detailed Error:', err);
-                if (!res.headersSent) {
-                    res.status(500).json({ error: 'PDF generation stream failed.' });
-                } else {
-                    res.end();
-                }
-            });
-
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-            doc.pipe(res);
-            
-            // 🔥 1. Draw header on the first page
-            drawReportHeader(doc, true, nmmsYear);
-            
-            // 🔥 2. Draw header on every subsequent page
-            doc.on('pageAdded', () => {
-                drawReportHeader(doc, false, nmmsYear);
-            });
-            
-            // --- New Report Title ---
-            doc.font('Times-Roman').fontSize(14).text(`Interview Assignment`, 30, doc.y);
-            doc.moveDown(0.5);
-            doc.font('Times-Bold').fontSize(12).text(`Assigned Student Details:`, 30, doc.y);
-            doc.moveDown(1.5);
-
-            // --- Content Generation ---
-            students.forEach((student, index) => {
-                
-                doc.save(); 
-
-                try { 
-                    // Move every student to a new page
-                    if (index > 0) {
-                        doc.addPage();
-                    }
-
-                    // --- SAFE DATA ACCESS HELPER ---
-                    const safeGet = (field) => cleanText(student[field] ?? 'N/A');
-                    
-                    // Define font sizes based on your new requirement (bigger on page 1, smaller on others)
-                    // The Header is now handled by drawReportHeader. We set the content sizes here.
-                    const FONT_SIZE_TITLE = 16;
-                    const FONT_SIZE_HEADER = 12;
-                    const FONT_SIZE_NORMAL = 10;
-                    
-                    // --- Student Title (NO NUMBERING) ---
-                    doc.font('Times-Bold'); 
-                    doc.fontSize(FONT_SIZE_TITLE)
-                        .text(`Student Interview Report: ${safeGet("Student Name")}`, 30, doc.y);
-                    doc.moveDown(0.5);
-
-                    doc.moveTo(30, doc.y).lineTo(560, doc.y).stroke();
-                    doc.moveDown(0.5);
-
-                    // --- Primary Applicant Details (NO NUMBERING) ---
-                    doc.fontSize(FONT_SIZE_HEADER).text('Primary Applicant & Profile Details');
-                    doc.moveDown(0.5);
-
-                    // 🔥 UPDATED Profile Fields: removed Applicant ID and NMMS Reg. No, split GMAT/SAT
-                    const infoFields = [
-                        ["Current School:", safeGet("Current School Name")],
-                        ["Previous School:", safeGet("Previous School Name")],
-                        ["State:", safeGet("State Name")],
-                        ["District:", safeGet("District Name")],
-                        ["Block:", safeGet("Block Name")],
-                        ["Village:", safeGet("village")],
-                        ["PP Exam Score:", safeGet("pp_exam_score")],
-                        ["GMAT Score:", safeGet("gmat_score")],
-                        ["SAT Score:", safeGet("sat_score")],
-                        ["Contact No 1:", safeGet("Contact No 1")],
-                        ["Contact No 2:", safeGet("Contact No 2")],
-                        ["Father's Occupation:", safeGet("father_occupation")],
-                        ["Mother's Occupation:", safeGet("mother_occupation")],
-                        ["Father's Education:", safeGet("father_education")],
-                        ["Mother's Education:", safeGet("mother_education")],
-                        ["Household Size:", safeGet("household_size")],
-                        ["Own House:", safeGet("own_house")],
-                        ["Smart Phone Home:", safeGet("smart_phone_home")],
-                        ["Internet Facility:", safeGet("internet_facility_home")],
-                        ["Career Goals:", safeGet("career_goals")],
-                        ["Subjects of Interest:", safeGet("subjects_of_interest")],
-                        ["Transportation Mode:", safeGet("transportation_mode")],
-                        ["Distance to School:", safeGet("distance_to_school")],
-                        ["Two Wheelers:", safeGet("num_two_wheelers")],
-                        ["Four Wheelers:", safeGet("num_four_wheelers")],
-                        ["Irrigation Land:", safeGet("irrigation_land")],
-                        ["Neighbor Name:", safeGet("neighbor_name")],
-                        ["Favorite Teacher:", safeGet("favorite_teacher_name")],
-                        ["Assigned Interviewer:", safeGet("Assigned Interviewer Name")],
-                    ];
-
-                    doc.fontSize(FONT_SIZE_NORMAL).font('Times-Roman'); 
-                    
-                    infoFields.forEach((field) => {
-                        doc.text(`${String(field[0])} `, 30, doc.y + 5, { continued: true })
-                            .font('Times-Bold').text(`${String(field[1])}`, { continued: false })
-                            .font('Times-Roman');
-                    });
-
-                    doc.moveDown(1.5); 
-
-                    // --- INTERVIEW DATA STRUCTURES (Sections 2 and 3: removed numbering) ---
-                    const pendingAssignment = student["Pending Assignment"];
-                    const completedRounds = student["Completed Rounds"] || [];
-                    const isFinalResultAvailable = completedRounds.length > 0;
-
-                    // =================================================================================
-                    // SECTION: CURRENT ASSIGNMENT (Pending)
-                    // =================================================================================
-                    if (pendingAssignment) {
-                        
-                        doc.fontSize(FONT_SIZE_HEADER).font('Times-Bold').text('Current Assignment Details');
-                        doc.moveDown(0.5);
-
-                        const safeGetPending = (field) => cleanText(pendingAssignment[field] ?? 'N/A');
-
-                        const currentAssignmentFields = [
-                            ["Round:", safeGetPending("Interview Round") || 'N/A'],
-                            ["Status:", safeGetPending("Assignment Status")],
-                            ["Interviewer:", safeGetPending("Assigned Interviewer Name")],
-                        ];
-
-                        doc.fontSize(FONT_SIZE_NORMAL).font('Times-Roman');
-                        currentAssignmentFields.forEach((field) => {
-                            doc.text(`${String(field[0])} `, 30, doc.y + 5, { continued: true })
-                               .font('Times-Bold').text(`${String(field[1])}`, { continued: false })
-                               .font('Times-Roman');
-                        });
-                        doc.moveDown(1.5);
-                    }
-                    
-                    // =================================================================================
-                    // SECTION: COMPLETED ROUNDS
-                    // =================================================================================
-                    
-                    if (isFinalResultAvailable) {
-                        doc.fontSize(FONT_SIZE_HEADER).font('Times-Bold').text(`Completed Interview Results (${completedRounds.length} Round${completedRounds.length > 1 ? 's' : ''})`, 30, doc.y);
-                        doc.moveDown(0.5);
-                        
-                        completedRounds.forEach((completedRecord, i) => {
-                            const safeGetCompleted = (field) => cleanText(completedRecord[field] ?? 'N/A');
-                            const { date } = formatDateForPdf(completedRecord["Interview Date"]);
-                            
-                            doc.fontSize(FONT_SIZE_NORMAL + 1).font('Times-Bold').text(`Result - ${safeGetCompleted("Interview Result")}`, 30, doc.y);
-                            doc.moveDown(0.2);
-
-                            const roundFields = [
-                                ["Interviewer:", safeGetCompleted("Assigned Interviewer Name")], 
-                                ["Date:", date], // ONLY DATE
-                                ["Mode:", safeGetCompleted("Interview Mode")],
-                                ["Assignment Status:", safeGetCompleted("Assignment Status")],
-                            ];
-                            
-                            doc.fontSize(FONT_SIZE_NORMAL).font('Times-Roman');
-                            roundFields.forEach(field => {
-                                doc.text(`${String(field[0])} `, 30, doc.y + 3, { continued: true })
-                                    .font('Times-Bold').text(`${String(field[1])}`, { continued: false })
-                                    .font('Times-Roman'); 
-                            });
-                            
-                            doc.moveDown(0.5); // Separator before scores
-
-                            // Scoring
-                            doc.fontSize(FONT_SIZE_HEADER - 2).font('Times-Bold').text('--- Scores ---');
-                            doc.moveDown(0.2);
-
-                            const scoreFields = [
-                                ["Life Goals & Zeal:", safeGetCompleted("Life Goals and Zeal")],
-                                ["Commitment to Learning:", safeGetCompleted("Commitment to Learning")],
-                                ["Integrity:", safeGetCompleted("Integrity")],
-                                ["Communication Skills:", safeGetCompleted("Communication Skills")],
-                            ];
-                            
-                            doc.fontSize(FONT_SIZE_NORMAL).font('Times-Roman');
-                            scoreFields.forEach(field => {
-                                doc.text(`${String(field[0])} `, 30, doc.y + 3, { continued: true })
-                                    .font('Times-Bold').text(`${String(field[1])}`, { continued: false })
-                                    .font('Times-Roman'); 
-                            });
-                            doc.moveDown(1.0); // Space between rounds
-                        });
-                    }
-                    
-                    // Final Status Message
-                    if (!pendingAssignment && !isFinalResultAvailable) {
-                        doc.fontSize(FONT_SIZE_NORMAL).font('Times-Bold').fillColor('gray')
-                        .text('No current assignment or completed interview records found.', 30, doc.y);
-                        doc.fillColor('black'); 
-                    }
-
-                } catch (contentError) {
-                    console.error(`Skipping PDF content for student ${cleanText(student.applicant_id || '')} due to content error:`, contentError);
-                    doc.fillColor('red').text(`[ERROR: Could not generate data for this student: ${contentError.message}]`, 30, doc.y + 10).fillColor('black');
-                } finally {
-                    doc.restore(); 
-                }
-            });
-
-            // Finalize the PDF and close the stream
-            doc.end();
-
-        } catch (error) {
-            console.error('Error in PDF generation or data fetching:', error);
+        doc.on('error', (err) => {
+            console.error('!!! PDF STREAM CRASHED (STREAM ERROR) !!! Detailed Error:', err);
             if (!res.headersSent) {
-                res.status(500).json({ error: 'Failed to generate PDF report due to a server error.' });
+                res.status(500).json({ error: 'PDF generation stream failed.' });
             } else {
-                doc.end(); 
+                res.end();
             }
-        }
-    },
+        });
 
+        // 🔥 PIPE TO LOCAL PC FOLDER
+        const writeStream = fs.createWriteStream(localFilePath);
+        doc.pipe(writeStream);
+
+        // 🔥 PIPE TO BROWSER RESPONSE (User download)
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        doc.pipe(res);
+        
+        // Draw header on the first page
+        drawReportHeader(doc, true, nmmsYear);
+        
+        // Draw header on every subsequent page
+        doc.on('pageAdded', () => {
+            drawReportHeader(doc, false, nmmsYear);
+        });
+        
+        // --- Report Titles ---
+        doc.font('Times-Roman').fontSize(14).text(`Interview Assignment`, 30, doc.y);
+        doc.moveDown(0.5);
+        doc.font('Times-Bold').fontSize(12).text(`Assigned Student Details:`, 30, doc.y);
+        doc.moveDown(1.5);
+
+        // --- Content Generation ---
+        students.forEach((student, index) => {
+            doc.save(); 
+            try { 
+                if (index > 0) {
+                    doc.addPage();
+                }
+
+                const safeGet = (field) => cleanText(student[field] ?? 'N/A');
+                const FONT_SIZE_TITLE = 16;
+                const FONT_SIZE_HEADER = 12;
+                const FONT_SIZE_NORMAL = 10;
+                
+                doc.font('Times-Bold').fontSize(FONT_SIZE_TITLE)
+                    .text(`Student Interview Report: ${safeGet("Student Name")}`, 30, doc.y);
+                doc.moveDown(0.5);
+                doc.moveTo(30, doc.y).lineTo(560, doc.y).stroke();
+                doc.moveDown(0.5);
+
+                doc.fontSize(FONT_SIZE_HEADER).text('Primary Applicant & Profile Details');
+                doc.moveDown(0.5);
+
+                const infoFields = [
+                    ["Current School:", safeGet("Current School Name")],
+                    ["Previous School:", safeGet("Previous School Name")],
+                    ["State:", safeGet("State Name")],
+                    ["District:", safeGet("District Name")],
+                    ["Block:", safeGet("Block Name")],
+                    ["Village:", safeGet("village")],
+                    ["PP Exam Score:", safeGet("pp_exam_score")],
+                    ["GMAT Score:", safeGet("gmat_score")],
+                    ["SAT Score:", safeGet("sat_score")],
+                    ["Contact No 1:", safeGet("Contact No 1")],
+                    ["Contact No 2:", safeGet("Contact No 2")],
+                    ["Father's Occupation:", safeGet("father_occupation")],
+                    ["Mother's Occupation:", safeGet("mother_occupation")],
+                    ["Father's Education:", safeGet("father_education")],
+                    ["Mother's Education:", safeGet("mother_education")],
+                    ["Household Size:", safeGet("household_size")],
+                    ["Own House:", safeGet("own_house")],
+                    ["Smart Phone Home:", safeGet("smart_phone_home")],
+                    ["Internet Facility:", safeGet("internet_facility_home")],
+                    ["Career Goals:", safeGet("career_goals")],
+                    ["Subjects of Interest:", safeGet("subjects_of_interest")],
+                    ["Transportation Mode:", safeGet("transportation_mode")],
+                    ["Distance to School:", safeGet("distance_to_school")],
+                    ["Two Wheelers:", safeGet("num_two_wheelers")],
+                    ["Four Wheelers:", safeGet("num_four_wheelers")],
+                    ["Irrigation Land:", safeGet("irrigation_land")],
+                    ["Neighbor Name:", safeGet("neighbor_name")],
+                    ["Favorite Teacher:", safeGet("favorite_teacher_name")],
+                    ["Assigned Interviewer:", safeGet("Assigned Interviewer Name")],
+                ];
+
+                doc.fontSize(FONT_SIZE_NORMAL).font('Times-Roman'); 
+                infoFields.forEach((field) => {
+                    doc.text(`${String(field[0])} `, 30, doc.y + 5, { continued: true })
+                        .font('Times-Bold').text(`${String(field[1])}`, { continued: false })
+                        .font('Times-Roman');
+                });
+
+                doc.moveDown(1.5); 
+
+                const pendingAssignment = student["Pending Assignment"];
+                const completedRounds = student["Completed Rounds"] || [];
+                const isFinalResultAvailable = completedRounds.length > 0;
+
+                if (pendingAssignment) {
+                    doc.fontSize(FONT_SIZE_HEADER).font('Times-Bold').text('Current Assignment Details');
+                    doc.moveDown(0.5);
+                    const safeGetPending = (field) => cleanText(pendingAssignment[field] ?? 'N/A');
+                    const currentAssignmentFields = [
+                        ["Round:", safeGetPending("Interview Round") || 'N/A'],
+                        ["Status:", safeGetPending("Assignment Status")],
+                        ["Interviewer:", safeGetPending("Assigned Interviewer Name")],
+                    ];
+                    doc.fontSize(FONT_SIZE_NORMAL).font('Times-Roman');
+                    currentAssignmentFields.forEach((field) => {
+                        doc.text(`${String(field[0])} `, 30, doc.y + 5, { continued: true })
+                           .font('Times-Bold').text(`${String(field[1])}`, { continued: false })
+                           .font('Times-Roman');
+                    });
+                    doc.moveDown(1.5);
+                }
+                
+                if (isFinalResultAvailable) {
+                    doc.fontSize(FONT_SIZE_HEADER).font('Times-Bold').text(`Completed Interview Results (${completedRounds.length} Round${completedRounds.length > 1 ? 's' : ''})`, 30, doc.y);
+                    doc.moveDown(0.5);
+                    completedRounds.forEach((completedRecord, i) => {
+                        const safeGetCompleted = (field) => cleanText(completedRecord[field] ?? 'N/A');
+                        const { date } = formatDateForPdf(completedRecord["Interview Date"]);
+                        doc.fontSize(FONT_SIZE_NORMAL + 1).font('Times-Bold').text(`Result - ${safeGetCompleted("Interview Result")}`, 30, doc.y);
+                        doc.moveDown(0.2);
+                        const roundFields = [
+                            ["Interviewer:", safeGetCompleted("Assigned Interviewer Name")], 
+                            ["Date:", date],
+                            ["Mode:", safeGetCompleted("Interview Mode")],
+                            ["Assignment Status:", safeGetCompleted("Assignment Status")],
+                        ];
+                        doc.fontSize(FONT_SIZE_NORMAL).font('Times-Roman');
+                        roundFields.forEach(field => {
+                            doc.text(`${String(field[0])} `, 30, doc.y + 3, { continued: true })
+                                .font('Times-Bold').text(`${String(field[1])}`, { continued: false })
+                                .font('Times-Roman'); 
+                        });
+                        doc.moveDown(0.5);
+                        doc.fontSize(FONT_SIZE_HEADER - 2).font('Times-Bold').text('--- Scores ---');
+                        doc.moveDown(0.2);
+                        const scoreFields = [
+                            ["Life Goals & Zeal:", safeGetCompleted("Life Goals and Zeal")],
+                            ["Commitment to Learning:", safeGetCompleted("Commitment to Learning")],
+                            ["Integrity:", safeGetCompleted("Integrity")],
+                            ["Communication Skills:", safeGetCompleted("Communication Skills")],
+                        ];
+                        doc.fontSize(FONT_SIZE_NORMAL).font('Times-Roman');
+                        scoreFields.forEach(field => {
+                            doc.text(`${String(field[0])} `, 30, doc.y + 3, { continued: true })
+                                .font('Times-Bold').text(`${String(field[1])}`, { continued: false })
+                                .font('Times-Roman'); 
+                        });
+                        doc.moveDown(1.0);
+                    });
+                }
+                
+                if (!pendingAssignment && !isFinalResultAvailable) {
+                    doc.fontSize(FONT_SIZE_NORMAL).font('Times-Bold').fillColor('gray')
+                    .text('No current assignment or completed interview records found.', 30, doc.y);
+                    doc.fillColor('black'); 
+                }
+            } catch (contentError) {
+                console.error(`Skipping content for student ${student.applicant_id}:`, contentError);
+            } finally {
+                doc.restore(); 
+            }
+        });
+
+        doc.end();
+
+        writeStream.on('finish', () => {
+            console.log(`✅ Copy saved locally to: ${localFilePath}`);
+        });
+
+    } catch (error) {
+        console.error('Error in PDF generation:', error);
+        if (!res.headersSent) {
+            res.status(500).json({ error: 'Failed to generate PDF report.' });
+        } else {
+            doc.end(); 
+        }
+    }
+},
 
 
   async getExamCenters(req, res) {

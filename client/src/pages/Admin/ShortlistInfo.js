@@ -6,10 +6,12 @@ import { useSystemConfig } from "../../contexts/SystemConfigContext";
 
 function ShortlistInfo({ onClose }) {
   // --- Year Configuration from Context ---
-  const { appliedConfig } = useSystemConfig();
+  const { appliedConfig, loading } = useSystemConfig();
   const currentYear = appliedConfig?.academic_year ? appliedConfig.academic_year.split("-")[0] : "";
+  
   // Path for Breadcrumbs
   const currentPath = ['Admin', 'Admissions', 'Shortlisting', 'Shortlist-Info'];
+const isAdmissionsOpen = !loading && appliedConfig?.phase === "Admissions are started";
 
   // --- State Variables ---
   const [applicantCount, setApplicantCount] = useState(0);
@@ -225,19 +227,48 @@ function ShortlistInfo({ onClose }) {
     setShowDownloadConfirmation(true);
   };
 
-  const handleDownloadConfirmationResponse = async (confirm) => {
+ const handleDownloadConfirmationResponse = async (confirm) => {
     setShowDownloadConfirmation(false);
+    
     if (confirm) {
       setIsDownloading(true);
       try {
-        const response = await fetch(`${BASE_API_URL}/download-data/${selectedShortlistDownloadName}?year=${currentYear}`);
+        const response = await fetch(
+          `${BASE_API_URL}/download-data/${selectedShortlistDownloadName}?year=${currentYear}`
+        );
+
         if (!response.ok) {
+          // If the server sends an error, it's likely still JSON
           const errorData = await response.json();
           throw new Error(errorData.message || "Error");
         }
-        const result = await response.json();
-        handleDownloadResponse(result);
+
+        // 🔥 STEP 1: Receive the response as a Blob (Binary Large Object)
+        // This is necessary because the server is sending a buffer
+        const blob = await response.blob();
+
+        // 🔥 STEP 2: Create a temporary local URL for the blob
+        const url = window.URL.createObjectURL(blob);
+
+        // 🔥 STEP 3: Create a hidden anchor element to trigger download
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        
+        // Use the shortlist name for the file download
+        a.download = `${selectedShortlistDownloadName}_Applicants.xlsx`; 
+        
+        document.body.appendChild(a);
+        a.click(); // This starts the download on the User's PC
+
+        // 🔥 STEP 4: Cleanup memory and DOM
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+       // alert("Downloaded.");
+
       } catch (error) {
+        console.error("Download failed:", error);
         alert(`Download error: ${error.message}`);
       } finally {
         setIsDownloading(false);
@@ -263,32 +294,41 @@ function ShortlistInfo({ onClose }) {
   };
 
   // --- Render Functions ---
-  const renderMainView = () => (
-    <div className={styles.container}>
-      <h1 className={styles.heading}>Shortlist Management ({appliedConfig?.academic_year})</h1>
-      <div className={styles.countsContainer}>
-        <div className={styles.countBox}>
-          <p className={styles.countBoxText}>Total Students: {applicantCount}</p>
-        </div>
-        <div className={styles.countBox}>
-          <p className={styles.countBoxText}>Shortlisted Students: {shortlistedCount}</p>
-        </div>
+const renderMainView = () => (
+  <div className={styles.container}>
+    <h1 className={styles.heading}>Shortlist Management ({appliedConfig?.academic_year})</h1>
+    <div className={styles.countsContainer}>
+      <div className={styles.countBox}>
+        <p className={styles.countBoxText}>Total Students: {applicantCount}</p>
       </div>
-      <div className={styles.shortlistingStepsGrid}>
-        {[
-          { icon: "ℹ", label: "Get Shortlist Info", boxId: "getInfo" },
-          { icon: "🔒", label: "Freeze Shortlist", boxId: "freeze" },
-          { icon: "🗑", label: "Delete Shortlist", boxId: "delete" },
-          { icon: "⬇", label: "Download Shortlist", boxId: "download" },
-        ].map((item) => (
-          <div key={item.boxId} className={styles.optionBox} onClick={() => handleBoxClick(item.boxId)}>
+      <div className={styles.countBox}>
+        <p className={styles.countBoxText}>Shortlisted Students: {shortlistedCount}</p>
+      </div>
+    </div>
+    <div className={styles.shortlistingStepsGrid}>
+      {[
+        { icon: "ℹ", label: "Get Shortlist Info", boxId: "getInfo", protected: false },
+        { icon: "🔒", label: "Freeze Shortlist", boxId: "freeze", protected: true },
+        { icon: "🗑", label: "Delete Shortlist", boxId: "delete", protected: true },
+        { icon: "⬇", label: "Download Shortlist", boxId: "download", protected: false },
+      ].map((item) => {
+        // Determine if this specific box should be blocked
+        const isBlocked = item.protected && !isAdmissionsOpen;
+
+        return (
+          <div 
+            key={item.boxId} 
+            className={`${styles.optionBox} ${isBlocked ? styles.blockedCursor : ""}`} 
+            onClick={() => !isBlocked && handleBoxClick(item.boxId)}
+          >
             <div className={styles.iconBox}>{item.icon}</div>
             <div className={styles.textBox}>{item.label}</div>
           </div>
-        ))}
-      </div>
+        );
+      })}
     </div>
-  );
+  </div>
+);
 
   const renderGetInfo = () => (
   <div className={`${styles.detailedView} ${styles.getInfoView}`}>
@@ -350,27 +390,39 @@ function ShortlistInfo({ onClose }) {
   </div>
 );
 
-  const renderFreeze = () => (
-    <div className={styles.detailedView}>
-      <h2 className={styles.detailedViewHeading}>Freeze Shortlist</h2>
-      <select onChange={handleShortlistSelectFreeze} value={selectedShortlistFreezeName}>
-        {renderOptions(nonFrozenShortlistNames, loadingNonFrozenNames, nonFrozenNamesError, true)}
-      </select>
-      <button className={styles.freezeButton} onClick={handleFreezeSubmit} disabled={!selectedShortlistFreezeId}>Freeze Shortlist</button>
-      <button className={styles.backButton} onClick={() => setActiveBox(null)}>Back</button>
-    </div>
-  );
+const renderFreeze = () => (
+  <div className={styles.detailedView}>
+    <h2 className={styles.detailedViewHeading}>Freeze Shortlist</h2>
+    <select onChange={handleShortlistSelectFreeze} value={selectedShortlistFreezeName}>
+      {renderOptions(nonFrozenShortlistNames, loadingNonFrozenNames, nonFrozenNamesError, true)}
+    </select>
+    <button 
+      className={`${styles.freezeButton} ${!isAdmissionsOpen ? styles.blockedCursor : ""}`} 
+      onClick={handleFreezeSubmit} 
+      disabled={!selectedShortlistFreezeId}
+    >
+      Freeze Shortlist
+    </button>
+    <button className={styles.backButton} onClick={() => setActiveBox(null)}>Back</button>
+  </div>
+);
 
-  const renderDelete = () => (
-    <div className={styles.detailedView}>
-      <h2 className={styles.detailedViewHeading}>Delete Shortlist</h2>
-      <select onChange={handleShortlistSelectDelete} value={selectedShortlistDeleteName}>
-        {renderOptions(nonFrozenShortlistNames, loadingNonFrozenNames, nonFrozenNamesError, true)}
-      </select>
-      <button className={styles.deleteButton} onClick={handleDeleteSubmit} disabled={!selectedShortlistDeleteId}>Delete Shortlist</button>
-      <button className={styles.backButton} onClick={() => setActiveBox(null)}>Back</button>
-    </div>
-  );
+ const renderDelete = () => (
+  <div className={styles.detailedView}>
+    <h2 className={styles.detailedViewHeading}>Delete Shortlist</h2>
+    <select onChange={handleShortlistSelectDelete} value={selectedShortlistDeleteName}>
+      {renderOptions(nonFrozenShortlistNames, loadingNonFrozenNames, nonFrozenNamesError, true)}
+    </select>
+    <button 
+      className={`${styles.deleteButton} ${!isAdmissionsOpen ? styles.blockedCursor : ""}`} 
+      onClick={handleDeleteSubmit} 
+      disabled={!selectedShortlistDeleteId}
+    >
+      Delete Shortlist
+    </button>
+    <button className={styles.backButton} onClick={() => setActiveBox(null)}>Back</button>
+  </div>
+);
 
   const renderDownload = () => (
     <div className={`${styles.detailedView} ${styles.downloadView}`}>
@@ -413,12 +465,6 @@ return (
       */}
       {renderContent()}
       
-      {/* Optional: A small subtle indicator if the year is missing */}
-      {!currentYear && (
-        <p style={{ textAlign: 'center', color: '#666', fontSize: '12px' }}>
-        //  Waiting for academic year...
-        </p>
-      )}
     </div>
   );
 }

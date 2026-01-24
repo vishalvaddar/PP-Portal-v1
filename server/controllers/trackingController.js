@@ -1,23 +1,19 @@
-/**
+/** 
  * @fileoverview Express controllers for handling API requests for student and interview tracking.
  */ 
 const path = require('path'); 
 const fs = require('fs'); 
 const trackingModel = require('../models/trackingModel'); // Assuming correct path
 
-// --- Configuration ---
-const BASE_DATA_DIR = 'Data'; 
+const PC_STORAGE_ROOT = process.env.FILE_STORAGE_PATH; 
 const INTERVIEW_DOC_DIR = 'Interview-data';
-const HOME_VERIFICATION_DOC_DIR = 'home-verification-data'; // Use this constant for file path construction
+const HOME_VERIFICATION_DOC_DIR = 'home-verification-data';
 
-// --- Utility Function: Path Construction ---
+// --- Utility Function: Updated Path Construction ---
 const constructFilePath = (docTypeFolder, doc_name, cohortFolder) => {
-    // __dirname is inside /server/controllers. We assume the 'Data' folder is in the project root.
-    const PROJECT_ROOT = path.join(__dirname, '..', '..');
-
+    // 🔥 CHANGE: Instead of PROJECT_ROOT, we use the external PC_STORAGE_ROOT
     const filePath = path.join(
-        PROJECT_ROOT,
-        BASE_DATA_DIR, 
+        PC_STORAGE_ROOT,
         docTypeFolder, 
         String(cohortFolder), 
         doc_name
@@ -168,77 +164,77 @@ async getStudents(req, res) {
     },
 
     // --- DOCUMENT DOWNLOAD FUNCTION (Cleaned and Confirmed) ---
-    async downloadDocument(req, res) {
-        const applicantId = parseInt(req.params.applicantId);
-        let cohortFolder = req.params.cohortId; 
-        const docType = req.query.type; 
+   /**
+ * Corrected downloadDocument controller
+ * Ensures files are retrieved from process.env.FILE_STORAGE_PATH
+ */
+async downloadDocument(req, res) {
+    const applicantId = parseInt(req.params.applicantId);
+    let cohortFolder = req.params.cohortId; 
+    const docType = req.query.type; 
 
-        if (isNaN(applicantId) || !cohortFolder || !['interview', 'home'].includes(docType)) {
-            return res.status(400).send('Invalid Applicant ID, Cohort ID, or Type parameter.');
+    // 1. Validation
+    if (isNaN(applicantId) || !cohortFolder || !['interview', 'home'].includes(docType)) {
+        return res.status(400).send('Invalid Applicant ID, Cohort ID, or Type parameter.');
+    }
+
+    try {
+        let docInfo;
+        let dataFolder;
+
+        // Determine folders based on document type
+        if (docType === 'home') {
+            docInfo = await trackingModel.getHomeVerificationDocument(applicantId);
+            dataFolder = HOME_VERIFICATION_DOC_DIR; // 'home-verification-data'
+        } else { 
+            docInfo = await trackingModel.getInterviewDocument(applicantId);
+            dataFolder = INTERVIEW_DOC_DIR; // 'Interview-data'
         }
 
-        try {
-            let docInfo;
-            let dataFolder;
-            let urlFolderSegment; 
+        // 2. Database Check
+        if (!docInfo || !docInfo.doc_name) {
+            return res.status(404).send(`Document metadata not found in database for ${docType}.`);
+        }
 
-            if (docType === 'home') {
-                docInfo = await trackingModel.getHomeVerificationDocument(applicantId);
-                dataFolder = HOME_VERIFICATION_DOC_DIR; 
-                urlFolderSegment = HOME_VERIFICATION_DOC_DIR; 
-            } else { // 'interview'
-                docInfo = await trackingModel.getInterviewDocument(applicantId);
-                dataFolder = INTERVIEW_DOC_DIR; 
-                urlFolderSegment = INTERVIEW_DOC_DIR;
-            }
+        let { doc_name } = docInfo;
 
-            if (!docInfo || !docInfo.doc_name) {
-                return res.status(404).send(`Document metadata not found in database for ${docType}.`);
-            }
+        // Filename sanitation: get only the base name (prevents path traversal)
+        const pathSegments = doc_name.split(/\\|\//).filter(s => s); 
+        if (pathSegments.length > 0) {
+            doc_name = pathSegments.pop();
+        }
 
-            let { doc_name } = docInfo;
+        // --- 3. Verify File Existence on External Storage ---
+        // constructFilePath now uses process.env.FILE_STORAGE_PATH internally
+        const absoluteFilePath = constructFilePath(dataFolder, doc_name, cohortFolder);
+        
+        console.log('--- Document Retrieval Debug ---');
+        console.log('Checking PC Path:', absoluteFilePath);
 
-            // Filename sanitation to get only the base name (no path segments)
-            const pathSegments = doc_name.split(/\\|\//).filter(s => s); 
-            if (pathSegments.length > 1) {
-                doc_name = pathSegments.pop();
-            }
+        if (!fs.existsSync(absoluteFilePath)) {
+            console.error(`[ERROR] Metadata exists but file missing at: ${absoluteFilePath}`);
+            return res.status(404).send(`File not found on the physical storage.`);
+        }
+        
+        // --- 4. Construct the Public Redirect URL ---
+        // IMPORTANT: Use '/Data' because server.js maps this to your external PC folder
+        const publicUrlPath = path.posix.join(
+            '/Data', 
+            dataFolder, 
+            String(cohortFolder), 
+            doc_name
+        );
+        
+        console.log('Success! Redirecting user to:', publicUrlPath);
+        return res.redirect(publicUrlPath);
 
-            // --- 1. Verify File Existence on Disk ---
-            const absoluteFilePath = constructFilePath(dataFolder, doc_name, cohortFolder);
-            
-            // Add debug logging
-            console.log('Document Request Info:', {
-                applicantId,
-                cohortFolder,
-                docType,
-                absoluteFilePath: absoluteFilePath,
-            });
-
-            if (!fs.existsSync(absoluteFilePath)) {
-                console.error(`[ERROR] File metadata exists, but file not found on disk at: ${absoluteFilePath}`);
-                return res.status(404).send(`File not found on the server in the expected folder.`);
-            }
-            
-            // --- 2. Construct the Public Redirect URL ---
-            const publicUrlPath = path.posix.join(
-                '/', 
-                BASE_DATA_DIR, 
-                urlFolderSegment, // Uses 'home-verification-data' for home files
-                String(cohortFolder), 
-                doc_name
-            );
-            
-            console.log('Redirecting client to file path:', publicUrlPath);
-            return res.redirect(publicUrlPath);
-
-        } catch (err) {
-            console.error('Error in downloadDocument controller:', err);
-            if (!res.headersSent) {
-                res.status(500).send('Server Error retrieving document.');
-            }
+    } catch (err) {
+        console.error('Error in downloadDocument controller:', err);
+        if (!res.headersSent) {
+            res.status(500).send('Server Error retrieving document.');
         }
     }
+}
 };
 
 module.exports = {

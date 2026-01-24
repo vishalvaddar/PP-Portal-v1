@@ -347,3 +347,20 @@ select:focus {
     margin-bottom: 2px;
   }
 }
+/* --- Blocked Phase Styles --- */
+
+.blockedCursor {
+  /* Forces the red circle / slashed icon on hover */
+  cursor: not-allowed !important;
+  
+  /* Ensures the cursor shows even if the button is technically 'disabled' */
+  pointer-events: auto !important; 
+  
+  /* Keeps the button looking the same but prevents lifting animations */
+  transform: none !important;
+}
+
+.blockedCursor:hover {
+  /* Prevent background color changes if you had any on hover */
+  opacity: 0.8; 
+}

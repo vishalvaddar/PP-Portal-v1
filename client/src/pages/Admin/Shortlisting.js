@@ -130,10 +130,7 @@ const Shortlisting = () => {
         {!isAdmissionsOpen && (
           <aside className={styles.disabledNotice}>
             <AlertTriangle size={18} className={styles.disabledNoticeIcon} />
-            <p>
-              The <strong>Generate Shortlist</strong> feature is disabled because 
-              the admissions phase has not yet started.
-            </p>
+           
           </aside>
         )}
 

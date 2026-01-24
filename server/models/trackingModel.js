@@ -4,7 +4,7 @@
  */
 const pool = require("../config/db"); 
  
-const TrackingModel = {
+const TrackingModel = { 
     /**
      * Fetches all available interviewers.
      */

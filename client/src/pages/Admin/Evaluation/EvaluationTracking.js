@@ -4,11 +4,11 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import Breadcrumbs from '../../../components/Breadcrumbs/Breadcrumbs';
 import './EvaluationTracking.css'; 
+import { useSystemConfig } from '../../../contexts/SystemConfigContext';
 
 // --- CONFIGURATION ---
-const API_BASE_URL = 'http://localhost:5000/api/tracking';
+    const API_BASE_URL = `${process.env.REACT_APP_BACKEND_API_URL}/api/tracking`;
 
-const CURRENT_COHORT_FOLDER = 'cohort-2025'; 
 
 // --- FILTER CONSTANTS (FIXED) ---
 const STATUS_OPTIONS = ['SCHEDULED', 'RESCHEDULED', 'COMPLETED'];
@@ -33,6 +33,13 @@ const EvaluationTracking = () => {
     const [selectedResults, setSelectedResults] = useState([]);    
 
     const isFilteredList = !!selectedInterviewerId || selectedStatuses.length > 0 || selectedResults.length > 0;
+   
+    const { appliedConfig } = useSystemConfig();
+    const cohortId = useMemo(() => {
+        return appliedConfig?.academic_year 
+            ? `cohort-${appliedConfig.academic_year.split('-')[0]}` 
+            : `cohort-${new Date().getFullYear()}`;
+    }, [appliedConfig]);
 
     // 🚀 Added Path Logic
     const currentPath = useMemo(() => {
@@ -191,37 +198,34 @@ const EvaluationTracking = () => {
 
     // --- Helper Components & Rendering ---
 
-    const StatusBadge = ({ status, result }) => {
-        let color = 'bg-gray-200 text-gray-800';
-        let resultDisplay = '';
+   const StatusBadge = ({ status, result }) => {
+    let color = 'bg-gray-200 text-gray-800';
+    let resultDisplay = '';
 
-        if (result) {
-            resultDisplay = result;
-            if (result === 'Accepted' || result === 'Completed') {
-                color = 'bg-green-100 text-green-700';
-            } else if (result === 'Rejected') {
-                color = 'bg-red-100 text-red-700';
-            }
+    // 🔥 Check if result exists
+    if (result && result !== 'Not Submitted') {
+        resultDisplay = result;
+        // Standard success/fail colors for valid results
+        if (result === 'Accepted' || result === 'Completed' || result === 'SELECTED') {
+            color = 'bg-green-100 text-green-700 border border-green-400';
+        } else if (result === 'Rejected') {
+            color = 'bg-red-100 text-red-700 border border-red-400';
         } else {
-            resultDisplay = 'Not Submitted';
-            if (status === 'Scheduled' || status === 'Rescheduled') {
-                color = 'bg-yellow-100 text-yellow-700';
-            } else if (status === 'Home Verification Required' || status === 'Home Verification Submitted') {
-                color = 'bg-blue-100 text-blue-700';
-            } else if (status === 'Completed') {
-                color = 'bg-gray-100 text-gray-700';
-            }
+            color = 'bg-blue-100 text-blue-700 border border-blue-400';
         }
+    } else {
+        // 🔥 If result is null or empty, show "Not Submitted" in RED
+        resultDisplay = 'Not Submitted';
+        color = 'bg-red-100 text-red-700 border border-red-500 font-bold';
+    }
 
-        const statusLabel = status || 'N/A';
-        const finalLabel = `Status: ${statusLabel} | Result: ${resultDisplay}`;
-
-        return (
-            <span className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full ${color} whitespace-nowrap`}>
-                {finalLabel}
-            </span>
-        );
-    };
+    const statusLabel = status || 'N/A';
+    return (
+        <span className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full ${color} whitespace-nowrap`}>
+            Status: {statusLabel} | Result: {resultDisplay}
+        </span>
+    );
+};
 
     const StudentCard = ({ student }) => {
         const latestRound = student.interview_round || 'N/A';
@@ -280,79 +284,101 @@ const EvaluationTracking = () => {
         );
     };
 
-    const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload }) => {
-        const isInterview = !round.is_home_verification;
-        const isHomeVerification = !!round.is_home_verification;
+const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload, cohortId }) => {
+    const isInterview = !round.is_home_verification;
+    const isHomeVerification = !!round.is_home_verification;
 
-        const getCleanFileName = (fullPath) => {
-            if (!fullPath) return null;
-            const parts = fullPath.split(/[/\\]/);
-            return parts.pop();
-        };
-        
-        let docNameRaw = isHomeVerification ? round.home_verification_doc_name : round.doc_name;
-        let docType = isHomeVerification ? round.home_verification_doc_type : round.doc_type;
-        const docName = getCleanFileName(docNameRaw);
-        const finalResult = isInterview ? round.interview_result : (round.home_verification_status || 'N/A');
-        const roundType = isInterview ? 'interview' : 'home';
-        const assignedPerson = isInterview ? (round.interviewer || 'N/A') : (round.verified_by || 'N/A');
-        const documentExists = !!docNameRaw && !!docType; 
-
-        return (
-            <div className="bg-white p-6 rounded-xl shadow-inner border border-gray-200 mt-4">
-                <h3 className="text-xl font-bold text-gray-800 mb-3 border-b pb-2">
-                    {isHomeVerification ? `🏠 Home Verification Details` : `Interview Evaluation (Round ${round.interview_round || 'N/A'})`}
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-                    <div>
-                        <p className="font-semibold text-gray-800 mb-2">Round Details</p>
-                        <p className="mb-1">Date: {round.interview_date || round.date_of_verification || 'N/A'}</p>
-                    </div>
-                    <div>
-                        <p className="mb-1"> Status: {round.status || round.home_verification_status || 'N/A'}</p>
-                        <p className="mb-1 font-bold">
-                            Final Result: <span className="text-blue-700">{finalResult || 'Not Submitted'}</span>
-                        </p>
-                        <p className="mb-1">
-                            {isInterview ? 'Interviewer' : 'Verified By'}: {assignedPerson}
-                        </p>
-                    </div>
-                </div>
-                {isHomeVerification && (
-                    <div className="mt-4 pt-3 border-t grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-                        <div>
-                            <p className="mb-1">Verification Type: {round.home_verification_type || 'N/A'}</p>
-                            <p className="mb-1">Remarks: {round.remarks || 'N/A'}</p>
-                        </div>
-                    </div>
-                )}
-                {isInterview && (
-                    <div className="mt-6 pt-3 border-t">
-                        <div className="grid grid-cols-2 gap-3 text-xs md:text-sm">
-                            <p>Life Goals & Zeal: {round.life_goals_and_zeal || 'N/A'}</p>
-                            <p>Commitment to Learning: {round.commitment_to_learning || 'N/A'}</p>
-                            <p>Integrity: {round.integrity || 'N/A'}</p>
-                            <p>Communication Skills: {round.communication_skills || 'N/A'}</p>
-                        </div>
-                    </div>
-                )}
-                {documentExists && (
-                    <div className="mt-6 pt-3 border-t flex items-center justify-between bg-blue-50 p-3 rounded-lg border border-blue-200">
-                        <p className="text-sm font-medium text-blue-800 truncate mr-4">
-                            Uploaded File: {docName} ({docType})
-                        </p>
-                        <button
-                            onClick={() => handleDocumentDownload(applicantId, roundType, CURRENT_COHORT_FOLDER)}
-                            className="flex items-center text-xs font-semibold px-3 py-1 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition shadow-md"
-                        >
-                            View
-                        </button>
-                    </div>
-                )}
-            </div>
-        );
+    const getCleanFileName = (fullPath) => {
+        if (!fullPath) return null;
+        const parts = fullPath.split(/[/\\]/);
+        return parts.pop();
     };
 
+    let docNameRaw = isHomeVerification ? round.home_verification_doc_name : round.doc_name;
+    let docType = isHomeVerification ? round.home_verification_doc_type : round.doc_type;
+    const docName = getCleanFileName(docNameRaw);
+    
+    // Check if result exists
+    const finalResult = isInterview ? round.interview_result : (round.home_verification_status);
+    const isSubmitted = !!finalResult && finalResult !== 'Pending';
+    
+    const roundType = isInterview ? 'interview' : 'home';
+    const assignedPerson = isInterview ? (round.interviewer || 'N/A') : (round.verified_by || 'N/A');
+    const documentExists = !!docNameRaw && !!docType;
+
+    return (
+        <div className="bg-white p-6 rounded-xl shadow-inner border border-gray-200 mt-4">
+            <h3 className="text-xl font-bold text-gray-800 mb-3 border-b pb-2">
+                {isHomeVerification ? `🏠 Home Verification Details` : `Interview Evaluation (Round ${round.interview_round || 'N/A'})`}
+            </h3>
+
+            {!isSubmitted ? (
+                // 🔥 SHOW THIS IF NOT SUBMITTED
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-600 font-bold text-lg animate-pulse">
+                        ⚠️ Not yet submitted
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">
+                        Assigned to: <strong>{assignedPerson}</strong>
+                    </p>
+                </div>
+            ) : (
+                // 🔥 SHOW THIS ONLY IF SUBMITTED
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                        <div>
+                            <p className="font-semibold text-gray-800 mb-2">Round Details</p>
+                            <p className="mb-1">Date: {round.interview_date || round.date_of_verification || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p className="mb-1"> Status: {round.status || round.home_verification_status || 'N/A'}</p>
+                            <p className="mb-1 font-bold">
+                                Final Result: <span className="text-green-700">{finalResult}</span>
+                            </p>
+                            <p className="mb-1">
+                                {isInterview ? 'Interviewer' : 'Verified By'}: {assignedPerson}
+                            </p>
+                        </div>
+                    </div>
+
+                    {isHomeVerification && (
+                        <div className="mt-4 pt-3 border-t grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                            <div>
+                                <p className="mb-1">Verification Type: {round.home_verification_type || 'N/A'}</p>
+                                <p className="mb-1">Remarks: {round.remarks || 'N/A'}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {isInterview && (
+                        <div className="mt-6 pt-3 border-t">
+                            <div className="grid grid-cols-2 gap-3 text-xs md:text-sm">
+                                <p>Life Goals & Zeal: {round.life_goals_and_zeal || 'N/A'}</p>
+                                <p>Commitment to Learning: {round.commitment_to_learning || 'N/A'}</p>
+                                <p>Integrity: {round.integrity || 'N/A'}</p>
+                                <p>Communication Skills: {round.communication_skills || 'N/A'}</p>
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
+
+            {documentExists && isSubmitted && (
+                <div className="mt-6 pt-3 border-t flex items-center justify-between bg-blue-50 p-3 rounded-lg border border-blue-200">
+                    <p className="text-sm font-medium text-blue-800 truncate mr-4">
+                        Uploaded File: {docName} ({docType})
+                    </p>
+                    <button
+                        onClick={() => handleDocumentDownload(applicantId, roundType, cohortId)}
+                        className="flex items-center text-xs font-semibold px-3 py-1 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition shadow-md"
+                    >
+                        View
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
     const DetailsView = ({ studentDetails, handleBackToList, error }) => {
         const [activeRoundIndex, setActiveRoundIndex] = useState(0);
         const rounds = studentDetails?.rounds || [];
@@ -437,6 +463,7 @@ const EvaluationTracking = () => {
                         round={selectedRound}
                         applicantId={studentDetails.applicantId}
                         handleDocumentDownload={handleDocumentDownload}
+                        cohortId={cohortId}
                     />
                 )}
                 {error && <div className="p-4 mt-8 bg-red-100 text-red-700 border border-red-400 rounded-lg">{error}</div>}

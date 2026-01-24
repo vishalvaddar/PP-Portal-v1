@@ -123,7 +123,7 @@ const GenerateShortlistModel = {
     }
   },
 
-  async createShortlistBatch(shortlistName, description, criteriaId, selectedBlocks, state, district, year) {
+ async createShortlistBatch(shortlistName, description, criteriaId, selectedBlocks, state, district, year) {
     let shortlistedCount = 0;
     let shortlistBatchId = null;
 
@@ -162,33 +162,44 @@ const GenerateShortlistModel = {
 
       // 4. Get Criteria Logic
       const criteriaRes = await pool.query(`SELECT criteria FROM pp.shortlist_criteria WHERE criteria_id = $1`, [criteriaId]);
-      const procCriteria = criteriaRes.rows[0].criteria.toLowerCase().replace(/\s+/g, ' ').trim();
+      const procCriteria = criteriaRes.rows[0].criteria.toLowerCase();
 
-      // 5. Query with Tie-Breaker (Ensures 4%, 6%, 8% are different)
-      const commonSQL = `
-        WITH ApplicantRanked AS (
-          SELECT applicant_id, app_state, district, nmms_block AS block,
-          (gmat_score * 0.7 + sat_score * 0.3) AS weighted_score,
-          PERCENT_RANK() OVER (
-            ORDER BY (gmat_score * 0.7 + sat_score * 0.3) DESC, applicant_id ASC
-          ) AS percentile_rank
-          FROM pp.applicant_primary_info WHERE nmms_year = $4
-        )
-        SELECT applicant_id FROM ApplicantRanked ar
-        JOIN pp.jurisdiction sj ON ar.app_state = sj.juris_code
-        JOIN pp.jurisdiction dj ON ar.district = dj.juris_code
-        JOIN pp.jurisdiction bj ON ar.block = bj.juris_code
-        WHERE LOWER(TRIM(sj.juris_name)) = LOWER(TRIM($1))
-          AND LOWER(TRIM(dj.juris_name)) = LOWER(TRIM($2))
-          AND LOWER(TRIM(bj.juris_name)) = LOWER(TRIM($3))
-          AND percentile_rank <= `;
+      // Determine the percentile threshold based on criteria text
+      let threshold = 0;
+      if (procCriteria.includes("top 4%")) threshold = 0.04;
+      else if (procCriteria.includes("top 6%")) threshold = 0.06;
+      else if (procCriteria.includes("top 8%")) threshold = 0.08;
 
-      let query = "";
-      if (procCriteria.includes("top 4%")) query = commonSQL + "0.04;";
-      else if (procCriteria.includes("top 6%")) query = commonSQL + "0.06;";
-      else if (procCriteria.includes("top 8%")) query = commonSQL + "0.08;";
+      if (threshold > 0) {
+        // 5. Your exact query logic applied here
+        const query = `
+          WITH ApplicantRanked AS (
+              SELECT 
+                  applicant_id, 
+                  app_state, 
+                  district, 
+                  nmms_block AS block,
+                  (gmat_score * 0.7 + sat_score * 0.3) AS weighted_score,
+                  PERCENT_RANK() OVER (
+                      PARTITION BY nmms_block 
+                      ORDER BY (gmat_score * 0.7 + sat_score * 0.3) DESC, applicant_id ASC
+                  ) AS percentile_rank
+              FROM pp.applicant_primary_info 
+              WHERE nmms_year = $4
+          )
+          SELECT 
+              ar.applicant_id
+          FROM ApplicantRanked ar
+          JOIN pp.jurisdiction sj ON ar.app_state = sj.juris_code
+          JOIN pp.jurisdiction dj ON ar.district = dj.juris_code
+          JOIN pp.jurisdiction bj ON ar.block = bj.juris_code
+          WHERE LOWER(TRIM(sj.juris_name)) = LOWER(TRIM($1))
+            AND LOWER(TRIM(dj.juris_name)) = LOWER(TRIM($2))
+            AND LOWER(TRIM(bj.juris_name)) = LOWER(TRIM($3))
+            AND ar.percentile_rank <= ${threshold}
+          ORDER BY ar.weighted_score DESC;
+        `;
 
-      if (query) {
         let applicantIds = [];
         for (const block of blockNamesToSearch) {
           const res = await pool.query(query, [state, district, block, year]);
@@ -214,7 +225,7 @@ const GenerateShortlistModel = {
       await pool.query("ROLLBACK");
       throw e;
     }
-  },
+},
 
 
   async getShortlistedCountForBlocksAndYear(blockNames, year) {

@@ -211,3 +211,26 @@ button:active { transform: scale(0.98); }
   .interview-module { margin: 0; border-radius: 0; padding: 20px; }
   .option-box { min-height: 140px; }
 }
+
+/* The 'blocked' state for the buttons */
+.option-box-disabled {
+  opacity: 0.6;
+  cursor: not-allowed !important; /* This shows the red circle/slashed icon */
+  filter: grayscale(1);
+  border: 2px solid #ffcfcf !important;
+  pointer-events: auto; /* Allow cursor to show even if we block logic */
+}
+
+/* The 'blocked' state for the buttons */
+.option-box-disabled {
+  opacity: 0.6;
+  cursor: not-allowed !important; /* Shows the blocked cursor icon */
+  filter: grayscale(1);
+  pointer-events: auto; /* Required to ensure the cursor icon actually shows */
+}
+
+.option-box-disabled:hover {
+  transform: none !important; /* Prevents lifting effect when blocked */
+  border-color: var(--border-color) !important; /* Keeps border neutral */
+
+}
