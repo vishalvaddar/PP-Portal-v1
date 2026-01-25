@@ -1,59 +1,64 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { jwtDecode } from "jwt-decode"; 
 
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
-const isTokenValid = (token) => {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.exp * 1000 > Date.now();
-  } catch {
-    return false;
-  }
-};
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Define logout BEFORE useEffect to prevent “Cannot access before initialization”
+  // Helper: Check if token is valid and not expired
+  const validateToken = (token) => {
+    try {
+      const decoded = jwtDecode(token);
+      const currentTime = Date.now() / 1000;
+      return decoded.exp > currentTime;
+    } catch (e) {
+      return false;
+    }
+  };
+
   const logout = useCallback(() => {
     localStorage.removeItem("user");
     setUser(null);
   }, []);
 
-  // Load user from storage on mount
+  // 1. Load User on Mount
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
+    const storedData = localStorage.getItem("user");
+    if (storedData) {
       try {
-        const parsed = JSON.parse(storedUser);
-        if (parsed.token && isTokenValid(parsed.token)) {
-          setUser(parsed);
+        const parsedUser = JSON.parse(storedData);
+        if (parsedUser.token && validateToken(parsedUser.token)) {
+          setUser(parsedUser);
         } else {
-          logout();
+          logout(); // Token expired or invalid
         }
-      } catch {
-        logout();
+      } catch (e) {
+        logout(); // Data corrupted
       }
     }
     setLoading(false);
   }, [logout]);
 
-  // Auto logout when token expires
+  // 2. Auto-Logout Timer
   useEffect(() => {
     if (!user?.token) return;
 
     try {
-      const payload = JSON.parse(atob(user.token.split(".")[1]));
-      const expiryTime = payload.exp * 1000;
-      const remainingTime = expiryTime - Date.now();
+      const decoded = jwtDecode(user.token);
+      const expiryTime = decoded.exp * 1000;
+      const timeoutDuration = expiryTime - Date.now();
 
-      if (remainingTime <= 0) {
+      if (timeoutDuration <= 0) {
         logout();
       } else {
-        const timer = setTimeout(logout, remainingTime);
+        const timer = setTimeout(() => {
+          console.log("Session expired. Logging out.");
+          logout();
+        }, timeoutDuration);
         return () => clearTimeout(timer);
       }
     } catch {
@@ -61,32 +66,22 @@ export const AuthProvider = ({ children }) => {
     }
   }, [user, logout]);
 
-  const login = useCallback(({ token, ...userData }) => {
-    const userWithToken = { ...userData, token };
-    localStorage.setItem("user", JSON.stringify(userWithToken));
-    setUser(userWithToken);
+  const login = useCallback((userData) => {
+    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(userData);
   }, []);
 
-  const updateUserProfile = useCallback(
-    (updates) => {
-      if (!user) return;
-      const updatedUser = { ...user, ...updates };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      setUser(updatedUser);
-    },
-    [user]
-  );
-
-  const getToken = useCallback(
-    () => (user?.token && isTokenValid(user.token) ? user.token : null),
-    [user]
-  );
+  const getToken = useCallback(() => {
+    if (user?.token && validateToken(user.token)) {
+      return user.token;
+    }
+    if (user?.token) logout(); // Logout if we try to use an expired token
+    return null;
+  }, [user, logout]);
 
   return (
-    <AuthContext.Provider
-      value={{ user, login, logout, getToken, updateUserProfile, loading }}
-    >
-      {children}
+    <AuthContext.Provider value={{ user, login, logout, getToken, loading }}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

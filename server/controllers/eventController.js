@@ -1,91 +1,245 @@
+const pool = require("../config/db");
 const EventModel = require("../models/eventModel");
 
-const EventController = {
-  async createEvent(req, res) {
-    try {
-      const eventId = await EventModel.insertEvent(req.body, req.files);
+/* =========================================================
+   EVENT TYPE CONTROLLERS
+========================================================= */
 
-      res.status(201).json({
-        message: "Event created successfully",
-        eventId,
-      });
-    } catch (err) {
-      console.error("Create Event Error:", err);
-      res.status(400).json({ msg: err.message });
+exports.createEventType = async (req, res) => {
+  try {
+    const { event_type_name } = req.body;
+
+    if (!event_type_name) {
+      return res.status(400).json({ message: "Event type name is required" });
     }
-  },
 
-  async getAllEvents(req, res) {
-    try {
-      const events = await EventModel.getAllEvents();
-      res.json(events);
-    } catch (err) {
-      console.error("Error getAllEvents:", err);
-      res.status(500).json({ msg: "Server Error" });
-    }
-  },
+    const data = await EventModel.createEventType(event_type_name);
+    res.status(201).json(data);
 
-  async getEventById(req, res) {
-    try {
-      const event = await EventModel.getEventById(req.params.eventId);
-      if (!event) return res.status(404).json({ msg: "Event not found" });
-      res.json(event);
-    } catch (err) {
-      console.error("Error getEventById:", err);
-      res.status(500).json({ msg: "Server Error" });
-    }
-  },
-
-  async updateEvent(req, res) {
-    try {
-      const eventId = req.params.eventId;
-      const updated = await EventModel.updateEvent(eventId, req.body, req.files);
-
-      res.json({
-        message: "Event updated successfully",
-        updated,
-      });
-    } catch (err) {
-      console.error("Update Event Error:", err);
-      res.status(400).json({ msg: err.message });
-    }
-  },
-
-  async deleteEvent(req, res) {
-    try {
-      await EventModel.deleteEvent(req.params.eventId);
-      res.json({ message: "Event deleted successfully" });
-    } catch (err) {
-      console.error("Delete Event Error:", err);
-      res.status(500).json({ msg: err.message });
-    }
-  },
-
-  async getEventTypes(req, res) {
-    try {
-      const types = await EventModel.getEventTypes();
-      res.json(types);
-    } catch (err) {
-      console.error("Error getEventTypes:", err);
-      res.status(500).json([]);
-    }
-  },
-
-  async createEventType(req, res) {
-    try {
-      const { name } = req.body;
-      if (!name) return res.status(400).json({ msg: "Event type name required" });
-      const newType = await EventModel.createEventType(name);
-
-      res.status(201).json(newType);
-    } catch (err) {
-      console.error("Error createEventType:", err);
-      if (err.code === "23505")
-        return res.status(409).json({ msg: "Event type already exists" });
-
-      res.status(500).json({ msg: err.message });
-    }
-  },
+  } catch (err) {
+    console.error("Error creating event type:", err);
+    res.status(500).json({ message: "Failed to create event type" });
+  }
 };
 
-module.exports = EventController;
+
+exports.updateEventType = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { event_type_name } = req.body;
+
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid event type id" });
+    }
+
+    const data = await EventModel.updateEventType(id, event_type_name);
+    res.json(data);
+
+  } catch (err) {
+    console.error("Error updating event type:", err);
+    res.status(500).json({ message: "Failed to update event type" });
+  }
+};
+
+
+exports.getEventTypes = async (req, res) => {
+  try {
+    const data = await EventModel.getEventTypes();
+    res.json(data);
+  } catch (err) {
+    console.error("Error fetching event types:", err);
+    res.status(500).json({ message: "Failed to fetch event types" });
+  }
+};
+
+
+/* =========================================================
+   EVENT MASTER CONTROLLERS
+========================================================= */
+
+exports.createEvent = async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const {
+      event_type_id,
+      event_title,
+      event_description,
+      event_start_date,
+      event_end_date,
+      event_district,
+      event_block,
+      event_location,
+      pincode,
+      cohort_number,
+      boys_attended = 0,
+      girls_attended = 0,
+      parents_attended = 0
+    } = req.body;
+
+    const created_by = req.user?.user_id || null;
+
+    const eventId = await EventModel.createEvent(client, [
+      event_type_id,
+      event_title,
+      event_description,
+      event_start_date,
+      event_end_date,
+      event_district,
+      event_block,
+      event_location,
+      pincode,
+      cohort_number,
+      boys_attended,
+      girls_attended,
+      parents_attended,
+      created_by
+    ]);
+
+    // Photos upload
+    if (req.files?.photos) {
+      for (const file of req.files.photos) {
+        await EventModel.insertPhoto(client, [
+          eventId,
+          file.path,
+          file.originalname,
+          created_by
+        ]);
+      }
+    }
+
+    await client.query("COMMIT");
+    res.status(201).json({ message: "Event created", event_id: eventId });
+
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("Error creating event:", err);
+    res.status(500).json({ message: "Failed to create event" });
+
+  } finally {
+    client.release();
+  }
+};
+
+
+exports.updateEvent = async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const { id } = req.params;
+
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid event id" });
+    }
+
+    await client.query("BEGIN");
+
+    const {
+      event_type_id,
+      event_title,
+      event_description,
+      event_start_date,
+      event_end_date,
+      event_district,
+      event_block,
+      event_location,
+      pincode,
+      cohort_number,
+      boys_attended,
+      girls_attended,
+      parents_attended
+    } = req.body;
+
+    const updated_by = req.user?.user_id || null;
+
+    await EventModel.updateEvent(client, [
+      event_type_id,
+      event_title,
+      event_description,
+      event_start_date,
+      event_end_date,
+      event_district,
+      event_block,
+      event_location,
+      pincode,
+      cohort_number,
+      boys_attended,
+      girls_attended,
+      parents_attended,
+      updated_by,
+      id
+    ]);
+
+    await client.query("COMMIT");
+    res.json({ message: "Event updated successfully" });
+
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("Error updating event:", err);
+    res.status(500).json({ message: "Failed to update event" });
+
+  } finally {
+    client.release();
+  }
+};
+
+
+exports.deleteEvent = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid event id" });
+    }
+
+    await EventModel.deleteEvent(id);
+    res.json({ message: "Event deleted successfully" });
+
+  } catch (err) {
+    console.error("Error deleting event:", err);
+    res.status(500).json({ message: "Failed to delete event" });
+  }
+};
+
+
+/* =========================================================
+   FETCH EVENTS
+========================================================= */
+
+exports.getAllEvents = async (req, res) => {
+  try {
+    const data = await EventModel.getAllEvents();
+    res.json(data);
+  } catch (err) {
+    console.error("Error fetching events:", err);
+    res.status(500).json({ message: "Failed to fetch events" });
+  }
+};
+
+
+exports.getEventById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid event id" });
+    }
+
+    const event = await EventModel.getEventById(id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    const photos = await EventModel.getEventPhotos(id);
+    const reports = await EventModel.getEventReports(id);
+
+    res.json({ ...event, photos, reports });
+
+  } catch (err) {
+    console.error("Error getEventById:", err);
+    res.status(500).json({ message: "Failed to fetch event" });
+  }
+};

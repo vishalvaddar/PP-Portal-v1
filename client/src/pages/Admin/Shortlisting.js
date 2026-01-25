@@ -1,53 +1,40 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { 
   ScrollText,
   Info,
   ListChecks,
-  AlertCircle
+  AlertCircle,
+  AlertTriangle 
 } from "lucide-react";
 import styles from "./Shortlisting.module.css";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
+import { useSystemConfig } from "../../contexts/SystemConfigContext"; // Import context
 
-const features = [
-  {
-    title: "Generate Shortlist",
-    icon: <ListChecks size={32} className={styles.featureIcon} />,
-    description: "Generate a shortlist of students based on the selected criteria.",
-    link: "/admin/admissions/generate-shortlist",
-    badge: "New"
-  },
-  {
-    title: "View Shortlisted Info",
-    icon: <Info size={32} className={styles.featureIcon} />,
-    description: "View detailed information about shortlisted students.",
-    link: "/admin/admissions/shortlist-info",
-    badge: "Updated"
-  }
-];
+const FeatureCard = ({ title, icon, description, link, badge, isDisabled }) => {
+  const content = (
+    <>
+      {badge && <span className={styles.featureBadge}>{badge}</span>}
+      <div className={styles.featureIconContainer}>{icon}</div>
+      <h3 className={styles.featureTitle}>{title}</h3>
+      <p className={styles.featureDescription}>{description}</p>
+      <div className={styles.featureArrow}>→</div>
+    </>
+  );
 
-const guidelines = [
-  "Generate multiple shortlists but maintain only one active version per block",
-  "Use the freeze option to prevent further modifications",
-  "Download options include PDF, Excel, and CSV formats",
-  "Changes to frozen lists require administrator approval"
-];
-
-const tips = [
-  "Only one active shortlist per block is allowed",
-  "Changes made to frozen shortlists require admin approval",
-  "Use filters to refine your shortlisting criteria"
-];
-
-const FeatureCard = ({feature}) => (
-  <Link to={feature.link} className={styles.featureCard}>
-    {feature.badge && <span className={styles.featureBadge}>{feature.badge}</span>}
-    <div className={styles.featureIconContainer}>{feature.icon}</div>
-    <h3 className={styles.featureTitle}>{feature.title}</h3>
-    <p className={styles.featureDescription}>{feature.description}</p>
-    <div className={styles.featureArrow}>→</div>
-  </Link>
-);
+  return isDisabled ? (
+    <div 
+      className={`${styles.featureCard} ${styles.featureCardDisabled}`} 
+      aria-disabled="true"
+    >
+      {content}
+    </div>
+  ) : (
+    <Link to={link} className={styles.featureCard}>
+      {content}
+    </Link>
+  );
+};
 
 const InfoSection = ({ title, icon, items, isList = true }) => (
   <div className={styles.instructionsCard}>
@@ -57,9 +44,7 @@ const InfoSection = ({ title, icon, items, isList = true }) => (
     </h2>
     {isList ? (
       <ul className={styles.instructionsList}>
-        {items.map((item, index) => (
-          <li key={index}>{item}</li>
-        ))}
+        {items.map((item, index) => <li key={index}>{item}</li>)}
       </ul>
     ) : (
       <div className={styles.tipsContainer}>
@@ -76,9 +61,51 @@ const InfoSection = ({ title, icon, items, isList = true }) => (
 
 const Shortlisting = () => {
   const currentPath = ['Admin', 'Admissions', 'Shortlisting'];
+  const { appliedConfig, loading, error } = useSystemConfig();
+
+  // Logic: Admissions must be started to generate shortlists
+  const isAdmissionsOpen = !loading && appliedConfig?.phase === "Admissions are started";
+
+  const features = useMemo(() => [
+    {
+      title: "Generate Shortlist",
+      icon: <ListChecks size={32} className={styles.featureIcon} />,
+      description: "Generate a shortlist of students based on the selected criteria.",
+      link: "/admin/admissions/generate-shortlist",
+      badge: "New",
+      requiresAdmissionsPhase: true // This flag triggers the lock
+    },
+    {
+      title: "View Shortlisted Info",
+      icon: <Info size={32} className={styles.featureIcon} />,
+      description: "View detailed information about shortlisted students.",
+      link: "/admin/admissions/shortlist-info",
+      badge: "Updated",
+      requiresAdmissionsPhase: false
+    }
+  ], []);
+
+  const guidelines = [
+    "Generate multiple shortlists but maintain only one active version per block",
+    "Use the freeze option to prevent further modifications",
+    "Download options include PDF, Excel, and CSV formats",
+    "Changes to frozen lists require administrator approval",
+    "No 2 shortlist batch can have same name"
+  ];
+
+  const tips = [
+    "Only one active shortlist per block is allowed",
+    "Changes made to frozen shortlists require admin approval",
+    "Use filters to refine your shortlisting criteria"
+  ];
+
+  if (loading) return <div className={styles.loader}>Loading configuration...</div>;
+  if (error) return <div className={styles.error}><AlertTriangle size={18} /> Error loading config.</div>;
+
   return (
     <div className={styles.dashboardContainer}>
       <Breadcrumbs path={currentPath} nonLinkSegments={['Admin', 'Admissions']} />
+      
       <header className={styles.header}>
         <div className={styles.titleWrapper}>
           <div className={styles.titleContainer}>
@@ -91,9 +118,21 @@ const Shortlisting = () => {
       <main className={styles.contentWrapper}>
         <section className={styles.featuresGrid}>
           {features.map((feature, index) => (
-            <FeatureCard key={index} feature={feature} />
+            <FeatureCard 
+              key={index} 
+              {...feature} 
+              isDisabled={feature.requiresAdmissionsPhase && !isAdmissionsOpen}
+            />
           ))}
         </section>
+
+        {/* Phase Restriction Notice */}
+        {!isAdmissionsOpen && (
+          <aside className={styles.disabledNotice}>
+            <AlertTriangle size={18} className={styles.disabledNoticeIcon} />
+           
+          </aside>
+        )}
 
         <section className={styles.infoSection}>
           <InfoSection

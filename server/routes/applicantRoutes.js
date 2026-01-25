@@ -16,7 +16,7 @@ router.get("/reg/:nmms_reg_number", applicantController.viewApplicantByRegNumber
 router.get("/:applicantId", applicantController.getApplicantById);
 
 // Update applicant by ID
-router.put("/:applicantId", authenticate, applicantController.updateApplicant);
+router.put("/:applicantId/update", authenticate, applicantController.updateApplicant);
 
 // Delete applicant by ID
 router.delete("/:applicantId", authenticate, applicantController.deleteApplicant);

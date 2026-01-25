@@ -69,7 +69,7 @@ const EventsDashboardPage = () => {
 
   const handleAddNewEventType = async (newType) => {
     try {
-      await axios.post(`${API_BASE_URL}/api/event-types`, { name: newType });
+      await axios.post(`${API_BASE_URL}/api/event-types`, { event_type_name: newType });
       
       setIsModalOpen(false);
       

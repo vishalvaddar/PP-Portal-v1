@@ -1,23 +1,19 @@
-/**
+/** 
  * @fileoverview Express controllers for handling API requests for student and interview tracking.
- */
-const path = require('path');
+ */ 
+const path = require('path'); 
 const fs = require('fs'); 
-const trackingModel = require('../models/trackingModel');
+const trackingModel = require('../models/trackingModel'); // Assuming correct path
 
-// --- Configuration ---
-const BASE_DATA_DIR = 'Data'; 
+const PC_STORAGE_ROOT = process.env.FILE_STORAGE_PATH; 
 const INTERVIEW_DOC_DIR = 'Interview-data';
 const HOME_VERIFICATION_DOC_DIR = 'home-verification-data';
 
-// --- Utility Function: Path Construction ---
+// --- Utility Function: Updated Path Construction ---
 const constructFilePath = (docTypeFolder, doc_name, cohortFolder) => {
-    // __dirname is inside /server/controllers. We assume the 'Data' folder is in the project root.
-    const PROJECT_ROOT = path.join(__dirname, '..', '..');
-
+    // 🔥 CHANGE: Instead of PROJECT_ROOT, we use the external PC_STORAGE_ROOT
     const filePath = path.join(
-        PROJECT_ROOT,
-        BASE_DATA_DIR, 
+        PC_STORAGE_ROOT,
         docTypeFolder, 
         String(cohortFolder), 
         doc_name
@@ -39,28 +35,40 @@ const trackingController = {
         }
     },
 
-    async getStudents(req, res) {
-        const page = parseInt(req.query.page) || 1;
-        const limit = 10;
-        
-        const statuses = req.query.statuses ? req.query.statuses.split(',').filter(s => s.trim() !== '') : [];
-        const results = req.query.results ? req.query.results.split(',').filter(s => s.trim() !== '') : [];
+async getStudents(req, res) {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    
+    const statuses = req.query.statuses ? req.query.statuses.split(',').filter(s => s.trim() !== '') : [];
+    const resultsRaw = req.query.results ? req.query.results.split(',').filter(s => s.trim() !== '') : [];
 
-        try {
-            const data = await trackingModel.getStudentsWithLatestStatus(page, limit, statuses, results);
+    // Identify if the special home verification filter is active
+    const homeVerificationSelected = resultsRaw.includes('HOME VERIFICATION REQUIRED');
+    
+    // Clean the results array so it only contains DB-stored values (like SELECTED, REJECTED)
+    const results = resultsRaw.filter(r => r !== 'HOME VERIFICATION REQUIRED');
 
-            res.json({
-                students: data.students,
-                currentPage: page,
-                totalPages: data.totalPages,
-                totalStudents: data.totalCount
-            });
+    try {
+        const data = await trackingModel.getStudentsWithLatestStatus(
+            page, 
+            limit, 
+            statuses, 
+            results, 
+            homeVerificationSelected // Explicitly pass this instruction
+        );
 
-        } catch (error) {
-            console.error("Error fetching students by status/result:", error.message);
-            res.status(500).json({ error: "Could not fetch student tracking data." });
-        }
-    },
+        res.json({
+            students: data.students,
+            currentPage: page,
+            totalPages: data.totalPages,
+            totalStudents: data.totalCount
+        });
+
+    } catch (error) {
+        console.error("Error fetching students:", error.message);
+        res.status(500).json({ error: "Could not fetch student tracking data." });
+    }
+},
 
     async getStudentsByInterviewer(req, res) {
         const interviewerId = parseInt(req.params.interviewerId);
@@ -100,8 +108,11 @@ const trackingController = {
         try {
             let rounds;
             if (isFilteredView) {
+                // Assuming getStudentdetailforFilter fetches the latest single round
                 rounds = await trackingModel.getStudentdetailforFilter(applicantId);
             } else { 
+                // Currently duplicates logic, assuming the intent is to get all rounds if not filtered, 
+                // but the FE uses dedicated /all routes now, so this is fine for legacy use.
                 rounds = await trackingModel.getStudentdetailforFilter(applicantId);
             }
             
@@ -130,39 +141,39 @@ const trackingController = {
         }
     },
 
-  // D:\latest_phase3\PP-Portal-v1\server\controllers\trackingController.js
+    async getAllHomeVerificationRounds(req, res) {
+        const applicantId = parseInt(req.params.applicantId);
+        if (isNaN(applicantId)) {
+            return res.status(400).json({ error: "Invalid Applicant ID." });
+        }
+        try {
+            const verifications = await trackingModel.getAllHomeVerificationRounds(applicantId);
+            
+            // Filter out any unused properties if necessary, though the model query should handle this.
+            const filteredVerifications = verifications.map(verification => {
+                 // Removed explicit destructuring for 'time'/'mode' as model shouldn't return them for HV, but left existing clean-up logic if needed.
+                 return verification;
+            });
 
-async getAllHomeVerificationRounds(req, res) {
-    const applicantId = parseInt(req.params.applicantId);
-    if (isNaN(applicantId)) {
-        return res.status(400).json({ error: "Invalid Applicant ID." });
-    }
-    try {
-        const verifications = await trackingModel.getAllHomeVerificationRounds(applicantId);
-        
-        // ✅ MODIFICATION: Filter out 'time' and 'mode' from each object
-        const filteredVerifications = verifications.map(verification => {
-            // Destructure 'time' and 'mode' to discard them, and collect the rest of the fields into 'rest'
-            const { time, mode, ...rest } = verification; 
-            return rest; // Return the object without 'time' and 'mode'
-        });
+            res.json(filteredVerifications); 
 
-        // Send the filtered array
-        res.json(filteredVerifications); 
+        } catch (error) {
+            console.error(`Error fetching all home verifications for ${applicantId}:`, error.message);
+            res.status(500).json({ error: "Could not fetch home verification records." });
+        }
+    },
 
-    } catch (error) {
-        console.error(`Error fetching all home verifications for ${applicantId}:`, error.message);
-        res.status(500).json({ error: "Could not fetch home verification records." });
-    }
-},
-
-
-  
+    // --- DOCUMENT DOWNLOAD FUNCTION (Cleaned and Confirmed) ---
+   /**
+ * Corrected downloadDocument controller
+ * Ensures files are retrieved from process.env.FILE_STORAGE_PATH
+ */
 async downloadDocument(req, res) {
     const applicantId = parseInt(req.params.applicantId);
     let cohortFolder = req.params.cohortId; 
     const docType = req.query.type; 
 
+    // 1. Validation
     if (isNaN(applicantId) || !cohortFolder || !['interview', 'home'].includes(docType)) {
         return res.status(400).send('Invalid Applicant ID, Cohort ID, or Type parameter.');
     }
@@ -170,49 +181,51 @@ async downloadDocument(req, res) {
     try {
         let docInfo;
         let dataFolder;
-        let urlFolderSegment; // Variable to hold the URL path segment (e.g., Interview-data)
 
+        // Determine folders based on document type
         if (docType === 'home') {
             docInfo = await trackingModel.getHomeVerificationDocument(applicantId);
-            dataFolder = HOME_VERIFICATION_DOC_DIR; 
-            // 🔥 Use the exact URL segment (must match physical folder casing for reliability)
-            urlFolderSegment = HOME_VERIFICATION_DOC_DIR; 
-        } else { // 'interview'
+            dataFolder = HOME_VERIFICATION_DOC_DIR; // 'home-verification-data'
+        } else { 
             docInfo = await trackingModel.getInterviewDocument(applicantId);
-            dataFolder = INTERVIEW_DOC_DIR; 
-            urlFolderSegment = INTERVIEW_DOC_DIR;
+            dataFolder = INTERVIEW_DOC_DIR; // 'Interview-data'
         }
 
+        // 2. Database Check
         if (!docInfo || !docInfo.doc_name) {
             return res.status(404).send(`Document metadata not found in database for ${docType}.`);
         }
 
         let { doc_name } = docInfo;
 
-        // Filename sanitation to get only the base name (no path segments)
+        // Filename sanitation: get only the base name (prevents path traversal)
         const pathSegments = doc_name.split(/\\|\//).filter(s => s); 
-        if (pathSegments.length > 1) {
+        if (pathSegments.length > 0) {
             doc_name = pathSegments.pop();
         }
 
-        // --- 1. Verify File Existence on Disk ---
-        // We use the local folder constant (dataFolder) for this check.
+        // --- 3. Verify File Existence on External Storage ---
+        // constructFilePath now uses process.env.FILE_STORAGE_PATH internally
         const absoluteFilePath = constructFilePath(dataFolder, doc_name, cohortFolder);
+        
+        console.log('--- Document Retrieval Debug ---');
+        console.log('Checking PC Path:', absoluteFilePath);
+
         if (!fs.existsSync(absoluteFilePath)) {
-            console.error(`[ERROR] File metadata exists, but file not found on disk at: ${absoluteFilePath}`);
-            return res.status(404).send(`File not found on the server in the expected folder.`);
+            console.error(`[ERROR] Metadata exists but file missing at: ${absoluteFilePath}`);
+            return res.status(404).send(`File not found on the physical storage.`);
         }
         
-        // --- 2. Construct the Public Redirect URL (CRITICAL FIX) ---
-        // This generates the absolute path from the server's root (e.g., /Data/Folder/Cohort/File.pdf)
+        // --- 4. Construct the Public Redirect URL ---
+        // IMPORTANT: Use '/Data' because server.js maps this to your external PC folder
         const publicUrlPath = path.posix.join(
-            '/', // Start from root
-            BASE_DATA_DIR, 
-            urlFolderSegment, // Use the correct folder segment for the URL
+            '/Data', 
+            dataFolder, 
             String(cohortFolder), 
             doc_name
         );
         
+        console.log('Success! Redirecting user to:', publicUrlPath);
         return res.redirect(publicUrlPath);
 
     } catch (err) {
@@ -220,29 +233,6 @@ async downloadDocument(req, res) {
         if (!res.headersSent) {
             res.status(500).send('Server Error retrieving document.');
         }
-    }
-    try {
-        // Add debug logging
-        console.log('Request params:', {
-            applicantId,
-            cohortFolder,
-            docType,
-            absoluteFilePath,
-            publicUrlPath
-        });
-        
-        // Verify file exists before redirect
-        if (!fs.existsSync(absoluteFilePath)) {
-            console.error(`File not found: ${absoluteFilePath}`);
-            return res.status(404).send('File not found');
-        }
-        
-        // Log the redirect path
-        console.log('Redirecting to:', publicUrlPath);
-        
-        return res.redirect(publicUrlPath);
-    } catch (err) {
-        // ...existing error handling...
     }
 }
 };

@@ -25,6 +25,7 @@
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",
+    "jwt-decode": "^4.0.0",
     "lucide-react": "^0.487.0",
     "papaparse": "^5.5.2",
     "react": "^18.3.1",
@@ -37,7 +38,7 @@
     "react-select": "^5.10.2",
     "react-toastify": "^11.0.5",
     "react-transition-group": "^4.4.5",
-    "recharts": "^3.5.0",
+    "recharts": "^3.5.1",
     "tailwind-merge": "^3.3.0",
     "web-vitals": "^2.1.4",
     "xlsx": "^0.18.5"

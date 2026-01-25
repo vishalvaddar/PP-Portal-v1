@@ -9,6 +9,7 @@ router.get("/districts-by-division/:divisionId", jurisdictionController.getDistr
 router.get("/blocks-by-district/:districtId", jurisdictionController.getBlocksByDistrict);
 router.get("/clusters-by-block/:blockId", jurisdictionController.getClustersByBlock);
 router.get("/institutes-by-cluster/:clusterId", jurisdictionController.getInstitutesByCluster);
+router.get("/juris-name/:juris_code", jurisdictionController.getJurisName);
 
 
 module.exports = router;

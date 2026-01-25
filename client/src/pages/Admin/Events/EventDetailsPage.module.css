@@ -1,218 +1,347 @@
-.detailsContainer {
-    max-width: 1200px;
-    margin: 30px auto;
-    padding: 0 20px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* EventDetailsPage.module.css */
+
+/* --- Page Wrapper --- */
+.pageWrapper {
+    background-color: #f1f5f9; /* Slightly darker grey for better contrast */
+    min-height: 100vh;
+    padding: 24px;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #1e293b;
 }
 
-/* --- Status Messages --- */
-.statusMessage {
-    text-align: center;
-    padding: 20px;
-    font-size: 1.1rem;
-    color: #495057;
+.container {
+    width: 100%;       /* Use full width */
+    max-width: 100%;   /* Remove the 1200px limit */
+    margin: 0 auto;
 }
 
-.errorMessage {
-    color: #dc3545;
-    font-weight: 600;
-}
-
-/* --- Back Link --- */
-.backLink {
-    display: inline-flex;
+/* --- Top Bar --- */
+.topBar {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
-    color: #007bff;
+    margin-bottom: 24px;
+}
+
+.backLink {
     text-decoration: none;
+    color: #64748b;
     font-weight: 500;
     transition: color 0.2s;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .backLink:hover {
-    color: #0056b3;
+    color: #0f172a;
 }
 
-/* --- Header --- */
+.editButton {
+    background-color: #2563eb;
+    color: white;
+    padding: 10px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.editButton:hover {
+    background-color: #1d4ed8;
+}
+
+/* --- Header Section --- */
 .header {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 24px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    gap: 15px;
+    align-items: flex-start;
 }
 
-.title {
-    font-size: 2rem;
-    color: #343a40;
-    margin: 0;
-    flex-grow: 1;
+.headerContent {
+    flex: 1;
 }
 
 .eventTypeTag {
-    background-color: #e9ecef;
-    color: #6c757d;
-    padding: 6px 15px;
+    display: inline-block;
+    background-color: #dbeafe;
+    color: #1e40af;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 6px 12px;
     border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 16px;
 }
 
-.separator {
-    border: 0;
-    height: 1px;
-    background: #e9ecef;
-    margin: 20px 0 30px 0;
+.title {
+    margin: 0 0 12px 0;
+    font-size: 2rem; /* Slightly smaller for better fit */
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
 }
 
-/* --- Grid Layout --- */
-.contentGrid {
+.metaRow {
+    display: flex;
+    gap: 24px;
+    color: #64748b;
+    font-size: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.metaItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+/* --- Grid Layout (The Fix for Whitespace) --- */
+.gridContainer {
     display: grid;
-    grid-template-columns: 3fr 1fr; /* Main content wider than sidebar */
-    gap: 30px;
+    /* This creates a responsive grid:
+       - On large screens: 2 equal columns
+       - On massive screens: You could change this to 'repeat(3, 1fr)' if you want 3 columns
+    */
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 24px;
+    width: 100%;
 }
 
-.mainContent {
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    height: 100%; /* Makes cards equal height in the same row */
     display: flex;
     flex-direction: column;
-    gap: 20px;
 }
 
-/* --- Cards --- */
-.card {
-    background: #ffffff;
-    border-radius: 10px;
-    padding: 25px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+.fullWidth {
+    grid-column: 1 / -1; /* Spans all columns */
 }
 
-.cardHeader {
-    font-size: 1.25rem;
-    color: #007bff;
-    margin-top: 0;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #f8f9fa;
-    padding-bottom: 10px;
+.cardTitle {
+    margin: 0 0 20px 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #334155;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-/* --- Detail Items --- */
-.detailItem,
-.attendanceItem {
+/* --- Info List --- */
+.infoList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.infoItem {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     padding: 8px 0;
-    border-bottom: 1px dashed #e9ecef;
+    border-bottom: 1px dashed #f1f5f9;
 }
 
-.detailItem:last-of-type,
-.attendanceItem:last-of-type {
+.infoItem:last-child {
     border-bottom: none;
 }
 
-.detailLabel {
-    color: #495057;
+.label {
+    color: #64748b;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.value {
+    color: #0f172a;
     font-weight: 600;
-    min-width: 100px; /* Aligns the data vertically */
-}
-
-.detailValue {
-    color: #212529;
     text-align: right;
+    font-size: 1rem;
 }
 
-.locationJurisdiction {
-    display: block;
-    font-size: 0.85em;
-    color: #6c757d;
-    font-weight: normal;
-}
-
-/* --- Description --- */
-.descriptionText {
-    color: #495057;
-    line-height: 1.6;
-    margin: 0;
-    white-space: pre-wrap; /* Preserve formatting if any */
-}
-
-/* --- Photo Grid --- */
-.photoGrid {
+/* --- Stats Grid --- */
+.statsGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 15px;
-    margin-top: 10px;
+    grid-template-columns: repeat(2, 1fr); /* 2x2 Grid for stats */
+    gap: 16px;
+    flex: 1; /* Pushes content to fill height */
 }
 
-.photoWrapper {
-    display: block;
-    overflow: hidden;
+.statBox {
+    background-color: #f8fafc;
     border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     transition: transform 0.2s;
 }
 
-.photoWrapper:hover {
-    transform: scale(1.02);
+.statBox:hover {
+    background-color: #f1f5f9;
+    transform: translateY(-2px);
 }
 
-.photo {
+.statNumber {
+    display: block;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1;
+    margin-bottom: 6px;
+}
+
+.statLabel {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.totalBox {
+    background-color: #eff6ff; /* Light Blue */
+    border-color: #dbeafe;
+}
+
+.totalBox .statNumber {
+    color: #2563eb;
+}
+
+.totalBox .statLabel {
+    color: #1e40af;
+}
+
+/* --- Description --- */
+.descriptionContent {
+    line-height: 1.7;
+    color: #475569;
+    font-size: 1rem;
+    white-space: pre-line;
+}
+
+.placeholderText {
+    font-style: italic;
+    color: #94a3b8;
+}
+
+/* --- Photo Gallery --- */
+.galleryGrid {
+    display: grid;
+    /* Responsive columns: fits as many 250px images as possible */
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.galleryItem {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: 8px;
+    overflow: hidden;
+    display: block;
+    border: 1px solid #e2e8f0;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.galleryItem:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.galleryItem img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
-    aspect-ratio: 16 / 9; /* Standard aspect ratio for photos */
 }
 
-/* --- Attendance Sidebar --- */
-.attendanceCard {
-    /* Special styling for the sidebar card */
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
+.overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    font-weight: 600;
+    font-size: 0.9rem;
 }
 
-.attendanceCount {
-    font-weight: 700;
-    color: #28a745; /* Green for positive count */
+.galleryItem:hover .overlay {
+    opacity: 1;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 60px;
+    color: #94a3b8;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    border: 1px dashed #cbd5e1;
+    font-size: 1rem;
+}
+
+/* --- Loading / Error --- */
+.loadingContainer, .errorContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    color: #64748b;
     font-size: 1.1rem;
 }
 
-.totalRow {
-    display: flex;
-    justify-content: space-between;
-    padding: 15px 0 5px 0;
-    margin-top: 15px;
-    border-top: 2px solid #dee2e6;
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #2563eb;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
 }
 
-.totalCount {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #007bff;
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
-/* --- Responsive Layout --- */
+/* --- Mobile Responsiveness --- */
 @media (max-width: 900px) {
-    .contentGrid {
-        grid-template-columns: 1fr; /* Stack main content and sidebar */
+    .gridContainer {
+        grid-template-columns: 1fr; /* Stack everything on tablet/mobile */
     }
-
-    .header {
-        flex-direction: column;
-        align-items: flex-start;
+    
+    .fullWidth {
+        grid-column: span 1;
     }
 
     .title {
         font-size: 1.75rem;
-        margin-bottom: 10px;
-    }
-}
-
-@media (max-width: 500px) {
-    .detailsContainer {
-        margin: 15px auto;
-        padding: 0 10px;
-    }
-
-    .photoGrid {
-        grid-template-columns: 1fr;
     }
 }

@@ -3,8 +3,8 @@
  * This file contains all SQL query functions to interact with the PostgreSQL database.
  */
 const pool = require("../config/db"); 
-
-const TrackingModel = {
+ 
+const TrackingModel = { 
     /**
      * Fetches all available interviewers.
      */
@@ -26,93 +26,96 @@ const TrackingModel = {
     /**
      * Fetches paginated students based on separate status and result filters.
      */
-    async getStudentsWithLatestStatus(page, limit, statuses, results) {
-        const offset = (page - 1) * limit;
+async getStudentsWithLatestStatus(page, limit, statuses, results, homeVerificationSelected) {
+    const offset = (page - 1) * limit;
 
-        let baseQuery = `
-            -- Get the latest interview record for each student
-            WITH RankedInterviews AS (
-                SELECT
-                    a.applicant_id, a.student_name, s.interview_round, s.status, s.interview_result AS interview_result, 
-                    s.home_verification_req_yn, ROW_NUMBER() OVER (PARTITION BY a.applicant_id ORDER BY s.interview_round DESC) as rn
-                FROM pp.student_interview s
-                JOIN pp.applicant_primary_info a ON a.applicant_id = s.applicant_id
-            ),
-            LatestInterviews AS (
-                SELECT * FROM RankedInterviews WHERE rn = 1
-            )
-        `;
+    let baseQuery = `
+        WITH RankedInterviews AS (
+            SELECT
+                a.applicant_id, 
+                a.student_name, 
+                s.interview_round, 
+                s.status, 
+                s.interview_result, 
+                -- CRITICAL FIX: Look for 'Y' across ALL rounds for this student
+                MAX(s.home_verification_req_yn) OVER (PARTITION BY a.applicant_id) as persistent_verification_req, 
+                ROW_NUMBER() OVER (PARTITION BY a.applicant_id ORDER BY s.interview_round DESC) as rn
+            FROM pp.student_interview s
+            JOIN pp.applicant_primary_info a ON a.applicant_id = s.applicant_id
+        ),
+        LatestInterviews AS (
+            -- We only take the most recent record, but it now "carries" the flag from earlier rounds
+            SELECT * FROM RankedInterviews WHERE rn = 1
+        )
+    `;
 
-        let filterConditions = '';
-        const filterParams = [];
-        let paramIndex = 1;
-        const allFilters = (statuses || []).length > 0 || (results || []).length > 0;
+    let filterConditions = '';
+    const filterParams = [];
+    let paramIndex = 1;
+    const conditions = [];
 
-        if (allFilters) {
-            const conditions = [];
-            
-            // 1. Status filters
-            if ((statuses || []).length > 0) {
-                 conditions.push(`status IN (${statuses.map(() => `$${paramIndex++}`).join(', ')})`);
-                 filterParams.push(...statuses);
-            }
+    // 1. Status Category (SCHEDULED, COMPLETED, etc.)
+    if (statuses && statuses.length > 0) {
+        conditions.push(`UPPER(TRIM(status)) IN (${statuses.map(() => `$${paramIndex++}`).join(', ')})`);
+        filterParams.push(...statuses.map(s => s.toUpperCase().trim()));
+    }
 
-            // 2. Result filters
-            if ((results || []).length > 0) {
-                const resultValues = results.filter(r => ['Accepted', 'Rejected'].includes(r));
-                const homeVerificationRequired = results.includes('Home Verification Required');
-                const homeVerificationSubmitted = results.includes('Home Verification Submitted');
-
-                if (resultValues.length > 0) {
-                    conditions.push(`interview_result IN (${resultValues.map(() => `$${paramIndex++}`).join(', ')})`);
-                    filterParams.push(...resultValues);
-                }
-
-                if (homeVerificationRequired) {
-                    conditions.push(`home_verification_req_yn = 'Y'`);
-                }
-                
-                if (homeVerificationSubmitted) {
-                    conditions.push(`EXISTS ( SELECT 1 FROM pp.home_verification hv WHERE hv.applicant_id = LatestInterviews.applicant_id)`);
-                }
-            }
-            
-            if (conditions.length > 0) {
-                filterConditions = ` WHERE (${conditions.join(' OR ')}) `;
-            }
+    // 2. Result Category (SELECTED, REJECTED, HOME VERIFICATION)
+    if ((results && results.length > 0) || homeVerificationSelected) {
+        const resultSubConditions = [];
+        
+        // Standard Text Results
+        if (results && results.length > 0) {
+            resultSubConditions.push(`UPPER(TRIM(interview_result)) IN (${results.map(() => `$${paramIndex++}`).join(', ')})`);
+            filterParams.push(...results.map(r => r.toUpperCase().trim()));
         }
 
-        const dataQuery = `${baseQuery}
-            SELECT applicant_id, student_name, interview_round, status, interview_result AS result
-            FROM LatestInterviews
-            ${filterConditions}
-            ORDER BY student_name ASC
-            LIMIT $${paramIndex++} OFFSET $${paramIndex++};
-        `;
-        filterParams.push(limit, offset);
-
-        const countQuery = `${baseQuery}
-            SELECT COUNT(applicant_id) AS total_count
-            FROM LatestInterviews
-            ${filterConditions};
-        `;
-        const countParams = filterParams.slice(0, filterParams.length - 2); 
-
-        try {
-            const dataResult = await pool.query(dataQuery, filterParams);
-            const countResult = await pool.query(countQuery, countParams);
-
-            return {
-                students: dataResult.rows,
-                totalPages: Math.ceil(parseInt(countResult.rows[0].total_count, 10) / limit),
-                currentPage: page,
-                totalCount: parseInt(countResult.rows[0].total_count, 10)
-            };
-        } catch (error) {
-            console.error("Error fetching students with latest status:", error);
-            throw new Error("Failed to retrieve student list.");
+        // Home Verification Flag (Checked against our persistent flag)
+        if (homeVerificationSelected) {
+            resultSubConditions.push(`UPPER(TRIM(persistent_verification_req)) = 'Y'`);
         }
-    },
+
+        // Join multiple results with OR inside parentheses
+        if (resultSubConditions.length > 0) {
+            conditions.push(`(${resultSubConditions.join(' OR ')})`);
+        }
+    }
+
+    // Combine Status and Results with AND
+    if (conditions.length > 0) {
+        filterConditions = ` WHERE ${conditions.join(' AND ')} `;
+    }
+
+    const dataQuery = `${baseQuery}
+        SELECT applicant_id, student_name, interview_round, status, 
+               interview_result AS result, persistent_verification_req as home_verification_req_yn
+        FROM LatestInterviews
+        ${filterConditions}
+        ORDER BY student_name ASC
+        LIMIT $${paramIndex++} OFFSET $${paramIndex++};
+    `;
+
+    const countQuery = `${baseQuery}
+        SELECT COUNT(*) AS total_count
+        FROM LatestInterviews
+        ${filterConditions};
+    `;
+
+    try {
+        const dataResult = await pool.query(dataQuery, [...filterParams, limit, offset]);
+        const countResult = await pool.query(countQuery, filterParams);
+        const totalCount = parseInt(countResult.rows[0].total_count, 10);
+
+        return {
+            students: dataResult.rows,
+            totalPages: Math.ceil(totalCount / limit),
+            totalCount: totalCount
+        };
+    } catch (error) {
+        console.error("Error in Model Logic:", error);
+        throw error;
+    }
+},
 
     async getStudentsByInterviewer(interviewerId, page, limit) {
         const offset = (page - 1) * limit;
@@ -193,8 +196,7 @@ const TrackingModel = {
                 h.verification_id, 
                 TO_CHAR(h.date_of_verification, 'YYYY-MM-DD') AS date_of_verification, -- DATE FORMATTING
                 h.status AS home_verification_status, h.verified_by, h.verification_type AS home_verification_type,
-                h.doc_name AS home_verification_doc_name, h.doc_type AS home_verification_doc_type, h.remarks,
-                TO_CHAR(h.next_verification_date, 'YYYY-MM-DD') AS next_verification_date -- DATE FORMATTING
+                h.doc_name AS home_verification_doc_name, h.doc_type AS home_verification_doc_type, h.remarks
             FROM pp.home_verification h
             WHERE h.applicant_id = $1
             ORDER BY h.date_of_verification ASC;

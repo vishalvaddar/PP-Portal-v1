@@ -1,19 +1,18 @@
-/**
- * @fileoverview Single-file React component for Interview and Home Verification Tracking.
+/** * @fileoverview Single-file React component for Interview and Home Verification Tracking.
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
+import Breadcrumbs from '../../../components/Breadcrumbs/Breadcrumbs';
 import './EvaluationTracking.css'; 
+import { useSystemConfig } from '../../../contexts/SystemConfigContext';
 
 // --- CONFIGURATION ---
-const API_BASE_URL = 'http://localhost:5000/api/tracking';
-const CURRENT_COHORT_FOLDER = 'cohort-2025'; 
+    const API_BASE_URL = `${process.env.REACT_APP_BACKEND_API_URL}/api/tracking`;
+
 
 // --- FILTER CONSTANTS (FIXED) ---
-const STATUS_OPTIONS = ['Scheduled', 'Rescheduled', 'Completed'];
-// FIX: Added 'Home Verification Submitted' back for filter functionality
-const RESULT_OPTIONS = ['Accepted', 'Rejected', 'Home Verification Required'];
-
+const STATUS_OPTIONS = ['SCHEDULED', 'RESCHEDULED', 'COMPLETED'];
+const RESULT_OPTIONS = ['SELECTED', 'REJECTED', 'HOME VERIFICATION REQUIRED'];
 
 // --- MAIN COMPONENT ---
 const EvaluationTracking = () => {
@@ -34,7 +33,18 @@ const EvaluationTracking = () => {
     const [selectedResults, setSelectedResults] = useState([]);    
 
     const isFilteredList = !!selectedInterviewerId || selectedStatuses.length > 0 || selectedResults.length > 0;
+   
+    const { appliedConfig } = useSystemConfig();
+    const cohortId = useMemo(() => {
+        return appliedConfig?.academic_year 
+            ? `cohort-${appliedConfig.academic_year.split('-')[0]}` 
+            : `cohort-${new Date().getFullYear()}`;
+    }, [appliedConfig]);
 
+    // 🚀 Added Path Logic
+    const currentPath = useMemo(() => {
+        return ['Admin', 'Admissions', 'Evaluation', 'Tracking'];
+    }, []);
 
     // --- Data Fetching ---
 
@@ -48,41 +58,41 @@ const EvaluationTracking = () => {
         }
     }, []);
 
-    const fetchStudents = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        let url = `${API_BASE_URL}/students?page=${currentPage}`;
+  const fetchStudents = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    let url = `${API_BASE_URL}/students?page=${currentPage}`;
 
-        if (selectedInterviewerId) {
-            url = `${API_BASE_URL}/students/interviewer/${selectedInterviewerId}?page=${currentPage}`;
-        } else if (selectedStatuses.length > 0 || selectedResults.length > 0) {
-            
-            if (selectedStatuses.length > 0) {
-                const statusParams = selectedStatuses.map(s => encodeURIComponent(s)).join(',');
-                url += `&statuses=${statusParams}`;
-            }
-            if (selectedResults.length > 0) {
-                const resultParams = selectedResults.map(r => encodeURIComponent(r)).join(',');
-                url += `&results=${resultParams}`;
-            }
-        }
-        
-        try {
-            const response = await axios.get(url);
-            setStudents(response.data.students);
-            setTotalPages(response.data.totalPages);
-            setCurrentPage(response.data.currentPage);
-        } catch (err) {
-            setError('Failed to fetch student list. Check API server/database.');
-        } finally {
-            setLoading(false);
-        }
-    }, [currentPage, selectedInterviewerId, selectedStatuses, selectedResults]);
+    if (selectedInterviewerId) {
+        url = `${API_BASE_URL}/students/interviewer/${selectedInterviewerId}?page=${currentPage}`;
+    } else {
+        // Build query string for multiple filters
+        const params = new URLSearchParams();
+        params.append('page', currentPage);
 
-    /**
-     * FIX: Always fetches ALL interviews and verifications for the detail view 
-     * to ensure documents and history are always visible.
-     */
+        if (selectedStatuses.length > 0) {
+            params.append('statuses', selectedStatuses.join(','));
+        }
+
+        if (selectedResults.length > 0) {
+            params.append('results', selectedResults.join(','));
+        }
+
+        url = `${API_BASE_URL}/students?${params.toString()}`;
+    }
+    
+    try {
+        const response = await axios.get(url);
+        setStudents(response.data.students);
+        setTotalPages(response.data.totalPages);
+        setCurrentPage(response.data.currentPage);
+    } catch (err) {
+        setError('Failed to fetch student list.');
+    } finally {
+        setLoading(false);
+    }
+}, [currentPage, selectedInterviewerId, selectedStatuses, selectedResults]);
+
     const fetchStudentDetails = useCallback(async (applicantId) => {
         setLoading(true);
         setError(null);
@@ -100,7 +110,9 @@ const EvaluationTracking = () => {
                 ...homeResponse.data.map(hv => ({ 
                     ...hv, 
                     is_home_verification: true, 
-                    interview_round: 999 
+                    interview_round: 999, 
+                    status: hv.home_verification_status || 'Submitted',
+                    interview_result: hv.home_verification_status || 'Verified',
                 })) 
             ];
             
@@ -137,7 +149,7 @@ const EvaluationTracking = () => {
         }
     }, [selectedInterviewerId, selectedStatuses, selectedResults, currentPage, fetchStudents]);
 
-    // --- Filter Handlers (Unchanged) ---
+    // --- Filter Handlers ---
     const handleInterviewerChange = (e) => {
         const id = e.target.value ? parseInt(e.target.value) : null;
         setSelectedInterviewerId(id);
@@ -166,8 +178,6 @@ const EvaluationTracking = () => {
     };
 
     const handleCardClick = (applicantId) => {
-        // FIX: Now always call fetchStudentDetails without the filtered flag, 
-        // ensuring ALL rounds are loaded for the detail view.
         fetchStudentDetails(applicantId); 
     };
 
@@ -182,44 +192,40 @@ const EvaluationTracking = () => {
              console.error('Missing parameters for document download.');
              return;
         }
-        
         const url = `${API_BASE_URL}/document/${applicantId}/${cohortId}?type=${roundType}`;
         window.open(url, '_blank');
     };
 
-    // --- Helper Components & Rendering (Unchanged) ---
+    // --- Helper Components & Rendering ---
 
-    const StatusBadge = ({ status, result }) => {
-        let color = 'bg-gray-200 text-gray-800';
-        let resultDisplay = '';
+   const StatusBadge = ({ status, result }) => {
+    let color = 'bg-gray-200 text-gray-800';
+    let resultDisplay = '';
 
-        if (result) {
-            resultDisplay = result;
-            if (result === 'Accepted' || result === 'Completed') {
-                color = 'bg-green-100 text-green-700';
-            } else if (result === 'Rejected') {
-                color = 'bg-red-100 text-red-700';
-            }
+    // 🔥 Check if result exists
+    if (result && result !== 'Not Submitted') {
+        resultDisplay = result;
+        // Standard success/fail colors for valid results
+        if (result === 'Accepted' || result === 'Completed' || result === 'SELECTED') {
+            color = 'bg-green-100 text-green-700 border border-green-400';
+        } else if (result === 'Rejected') {
+            color = 'bg-red-100 text-red-700 border border-red-400';
         } else {
-            resultDisplay = 'Not Submitted';
-            if (status === 'Scheduled' || status === 'Rescheduled') {
-                color = 'bg-yellow-100 text-yellow-700';
-            } else if (status === 'Home Verification Required' || status === 'Home Verification Submitted') {
-                color = 'bg-blue-100 text-blue-700';
-            } else if (status === 'Completed') {
-                color = 'bg-gray-100 text-gray-700';
-            }
+            color = 'bg-blue-100 text-blue-700 border border-blue-400';
         }
+    } else {
+        // 🔥 If result is null or empty, show "Not Submitted" in RED
+        resultDisplay = 'Not Submitted';
+        color = 'bg-red-100 text-red-700 border border-red-500 font-bold';
+    }
 
-        const statusLabel = status || 'N/A';
-        const finalLabel = `Status: ${statusLabel} | Result: ${resultDisplay}`;
-
-        return (
-            <span className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full ${color} whitespace-nowrap`}>
-                {finalLabel}
-            </span>
-        );
-    };
+    const statusLabel = status || 'N/A';
+    return (
+        <span className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full ${color} whitespace-nowrap`}>
+            Status: {statusLabel} | Result: {resultDisplay}
+        </span>
+    );
+};
 
     const StudentCard = ({ student }) => {
         const latestRound = student.interview_round || 'N/A';
@@ -248,16 +254,11 @@ const EvaluationTracking = () => {
 
     const RoundSelectorBox = ({ round, index, isActive, setActiveRoundIndex }) => {
         const isInterview = !round.is_home_verification;
-
-        const title = isInterview ? `Interview Round ${round.interview_round}` : `Home Verification `;
-        
-        const status = isInterview ? round.status : (round.home_verification_status || 'Pending');
-        const result = isInterview ? round.interview_result : (round.home_verification_status || 'Pending');
-        
+        const title = isInterview ? `Interview Round ${round.interview_round}` : `🏠 Home Verification`;
+        const result = round.interview_result || round.home_verification_status || 'Pending';
         const isSubmitted = isInterview ? !!round.interview_result : !!round.verification_id; 
         
         let statusClass = 'status-default';
-
         if (!isSubmitted) {
             statusClass = 'status-failure'; 
         } else {
@@ -265,13 +266,12 @@ const EvaluationTracking = () => {
                 statusClass = 'status-success'; 
             } else if (result === 'Rejected' || result === 'Failed') {
                 statusClass = 'status-failure'; 
-            } else if (status === 'Scheduled' || status === 'Rescheduled' || result === 'Pending') {
+            } else if (round.status === 'Scheduled' || round.status === 'Rescheduled' || result === 'Pending' || result === 'Submitted') {
                 statusClass = 'status-pending'; 
             }
         }
         
         const activeClass = isActive ? 'round-box-active' : statusClass;
-
         return (
             <button
                 onClick={() => setActiveRoundIndex(index)}
@@ -280,84 +280,90 @@ const EvaluationTracking = () => {
                 <span className="font-semibold flex items-center">
                     <span className="ml-2">{title}</span>
                 </span>
-                
             </button>
         );
     };
 
-const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload }) => {
+const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload, cohortId }) => {
     const isInterview = !round.is_home_verification;
     const isHomeVerification = !!round.is_home_verification;
 
-    const docName = isInterview ? round.doc_name : round.home_verification_doc_name;
-    const docType = isInterview ? round.doc_type : round.home_verification_doc_type;
+    const getCleanFileName = (fullPath) => {
+        if (!fullPath) return null;
+        const parts = fullPath.split(/[/\\]/);
+        return parts.pop();
+    };
+
+    let docNameRaw = isHomeVerification ? round.home_verification_doc_name : round.doc_name;
+    let docType = isHomeVerification ? round.home_verification_doc_type : round.doc_type;
+    const docName = getCleanFileName(docNameRaw);
     
-    // NOTE: The result variable is correctly determined here from interview_result or home_verification_status
-    const finalResult = isInterview ? round.interview_result : (round.home_verification_status || 'N/A');
-    const currentStatus = round.status || round.home_verification_status || 'N/A';
+    // Check if result exists
+    const finalResult = isInterview ? round.interview_result : (round.home_verification_status);
+    const isSubmitted = !!finalResult && finalResult !== 'Pending';
     
     const roundType = isInterview ? 'interview' : 'home';
-    const cohortId = CURRENT_COHORT_FOLDER; 
-    
-    // Document exists check
-    const documentExists = !!docName && !!docType; 
-    
-    // Determine the assignment/verifier details
     const assignedPerson = isInterview ? (round.interviewer || 'N/A') : (round.verified_by || 'N/A');
-    const assignmentLabel = isInterview ? 'Interviewer' : 'Verified By';
-
+    const documentExists = !!docNameRaw && !!docType;
 
     return (
         <div className="bg-white p-6 rounded-xl shadow-inner border border-gray-200 mt-4">
             <h3 className="text-xl font-bold text-gray-800 mb-3 border-b pb-2">
-                {isHomeVerification ? `Home Verification Details` : `Interview Evaluation (Round ${round.interview_round || 'N/A'})`}
+                {isHomeVerification ? `🏠 Home Verification Details` : `Interview Evaluation (Round ${round.interview_round || 'N/A'})`}
             </h3>
-            
-            {/* --- PRIMARY DETAILS SECTION --- */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-                {/* Col 1: Date, Time, Mode */}
-                <div>
-                    <p className="font-semibold text-gray-800 mb-2">Round Details</p>
-                    <p className="mb-1">Date: {round.interview_date || round.date_of_verification || 'N/A'}</p>
-                </div>
-                
-                {/* Col 2: Assignment, Status, Result */}
-                <div>
-                    <p className="mb-1"> Status: {currentStatus}</p>
-                    <p className="mb-1 font-bold">
-                        Final Result: <span className="text-blue-700">{finalResult || 'Not Submitted'}</span>
+
+            {!isSubmitted ? (
+                // 🔥 SHOW THIS IF NOT SUBMITTED
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-600 font-bold text-lg animate-pulse">
+                        ⚠️ Not yet submitted
                     </p>
-                    <p className="mb-1">
-                        {assignmentLabel}: {assignedPerson}
+                    <p className="text-sm text-gray-600 mt-1">
+                        Assigned to: <strong>{assignedPerson}</strong>
                     </p>
                 </div>
-            </div>
-
-            {/* --- HOME VERIFICATION SPECIFIC DETAILS --- */}
-            {isHomeVerification && (
-                <div className="mt-4 pt-3 border-t grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-                    <div>
-                        <p className="mb-1">Verification Type: {round.home_verification_type || 'N/A'}</p>
-                        <p className="mb-1">Remarks: {round.remarks || 'N/A'}</p>
+            ) : (
+                // 🔥 SHOW THIS ONLY IF SUBMITTED
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                        <div>
+                            <p className="font-semibold text-gray-800 mb-2">Round Details</p>
+                            <p className="mb-1">Date: {round.interview_date || round.date_of_verification || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p className="mb-1"> Status: {round.status || round.home_verification_status || 'N/A'}</p>
+                            <p className="mb-1 font-bold">
+                                Final Result: <span className="text-green-700">{finalResult}</span>
+                            </p>
+                            <p className="mb-1">
+                                {isInterview ? 'Interviewer' : 'Verified By'}: {assignedPerson}
+                            </p>
+                        </div>
                     </div>
-                </div>
+
+                    {isHomeVerification && (
+                        <div className="mt-4 pt-3 border-t grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                            <div>
+                                <p className="mb-1">Verification Type: {round.home_verification_type || 'N/A'}</p>
+                                <p className="mb-1">Remarks: {round.remarks || 'N/A'}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {isInterview && (
+                        <div className="mt-6 pt-3 border-t">
+                            <div className="grid grid-cols-2 gap-3 text-xs md:text-sm">
+                                <p>Life Goals & Zeal: {round.life_goals_and_zeal || 'N/A'}</p>
+                                <p>Commitment to Learning: {round.commitment_to_learning || 'N/A'}</p>
+                                <p>Integrity: {round.integrity || 'N/A'}</p>
+                                <p>Communication Skills: {round.communication_skills || 'N/A'}</p>
+                            </div>
+                        </div>
+                    )}
+                </>
             )}
 
-
-            {/* --- INTERVIEW SCORES --- */}
-            {isInterview && (
-                <div className="mt-6 pt-3 border-t">
-                    <div className="grid grid-cols-2 gap-3 text-xs md:text-sm">
-                        <p>Life Goals & Zeal: {round.life_goals_and_zeal || 'N/A'}</p>
-                        <p>Commitment to Learning: {round.commitment_to_learning || 'N/A'}</p>
-                        <p>Integrity: {round.integrity || 'N/A'}</p>
-                        <p>Communication Skills: {round.communication_skills || 'N/A'}</p>
-                    </div>
-                </div>
-            )}
-            
-            {/* --- DOCUMENT DOWNLOAD SECTION --- */}
-            {documentExists && (
+            {documentExists && isSubmitted && (
                 <div className="mt-6 pt-3 border-t flex items-center justify-between bg-blue-50 p-3 rounded-lg border border-blue-200">
                     <p className="text-sm font-medium text-blue-800 truncate mr-4">
                         Uploaded File: {docName} ({docType})
@@ -373,7 +379,6 @@ const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload }) => {
         </div>
     );
 };
-
     const DetailsView = ({ studentDetails, handleBackToList, error }) => {
         const [activeRoundIndex, setActiveRoundIndex] = useState(0);
         const rounds = studentDetails?.rounds || [];
@@ -385,32 +390,28 @@ const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload }) => {
 
         if (!studentDetails) return null;
         const selectedRound = rounds[activeRoundIndex];
-        
-        // --- HOME VERIFICATION ALERT LOGIC ---
-        const requiresHomeVerification = rounds.some(
-            r => r.home_verification_req_yn === 'Y'
-        );
-
-        const hasSubmittedVerification = rounds.some(
-             r => r.is_home_verification
-        );
-
+        const requiresHomeVerification = rounds.some(r => r.home_verification_req_yn === 'Y');
+        const hasSubmittedVerification = rounds.some(r => r.is_home_verification);
         const showAlert = requiresHomeVerification && !hasSubmittedVerification;
         
         let roundToShowOnAlert = null;
         if (showAlert) {
              const requestIndex = rounds.findIndex(r => r.home_verification_req_yn === 'Y');
-             if (requestIndex !== -1) {
-                 roundToShowOnAlert = rounds[requestIndex];
-             }
+             if (requestIndex !== -1) roundToShowOnAlert = rounds[requestIndex];
         }
-        // -------------------------------------
 
-        return (
+        return ( 
             <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
+                <Breadcrumbs 
+                    path={currentPath} 
+                    nonLinkSegments={['Admin', 'Admissions']} 
+                    onSegmentClick={(segment) => {
+                        if (segment === 'tracking') handleBackToList();
+                    }}
+                />
                 <button
                     onClick={handleBackToList}
-                    className="mb-6 text-blue-600 hover:text-blue-800 font-medium transition"
+                    className="mb-6 mt-4 text-blue-600 hover:text-blue-800 font-medium transition"
                 >
                     ← Back to Student List
                 </button>
@@ -421,26 +422,29 @@ const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload }) => {
                     <p className="text-sm text-gray-500 mt-1">Applicant ID: {studentDetails.applicantId}</p>
                 </div>
                 
-                {/* Home Verification Alert */}
                 {showAlert && roundToShowOnAlert && (
-                    <div className="p-4 mb-6 bg-red-100 text-red-800 border border-red-400 rounded-lg font-semibold">
-                        ⚠️ ACTION REQUIRED: Home Verification was requested during **Round {roundToShowOnAlert.interview_round}** by {roundToShowOnAlert.interviewer || 'N/A'}, but no verification record has been submitted yet. Please submit the data.
+                    <div className="action-required-alert">
+                        <span className="action-icon">⚠️</span>
+                        <div className="action-body">
+                            <strong className="action-title">ACTION REQUIRED</strong>
+                            <p>
+                                Home Verification was requested during 
+                                <span className="action-highlight"> Round {roundToShowOnAlert.interview_round}</span> 
+                                by {roundToShowOnAlert.interviewer || 'N/A'}. 
+                                No verification record has been submitted yet.
+                            </p>
+                        </div>
                     </div>
                 )}
-
-                {isLatestRoundView ? (
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Latest Evaluation Round (Filtered)</h2>
-                ) : (
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Evaluation Rounds</h2>
-                )}
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                    {isLatestRoundView ? 'Latest Evaluation Round (Filtered)' : 'Evaluation Rounds'}
+                </h2>
                 
-                {rounds.length === 0 && (
+                {rounds.length === 0 ? (
                     <div className="p-6 bg-yellow-100 text-yellow-700 border border-yellow-400 rounded-lg">
                         No interview or home verification rounds have been recorded for this student yet.
                     </div>
-                )}
-                
-                {rounds.length > 0 && (
+                ) : (
                     <div className={`grid gap-4 mb-6 ${isLatestRoundView ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
                         {rounds.map((round, index) => (
                             <RoundSelectorBox
@@ -459,6 +463,7 @@ const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload }) => {
                         round={selectedRound}
                         applicantId={studentDetails.applicantId}
                         handleDocumentDownload={handleDocumentDownload}
+                        cohortId={cohortId}
                     />
                 )}
                 {error && <div className="p-4 mt-8 bg-red-100 text-red-700 border border-red-400 rounded-lg">{error}</div>}
@@ -468,10 +473,13 @@ const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload }) => {
 
     const renderListView = () => (
         <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
-            <h1 className="text-3xl font-extrabold text-gray-900 mb-6 border-b pb-2">Interview & Home Verification Tracking</h1>
+            <Breadcrumbs 
+                path={currentPath} 
+                nonLinkSegments={['Admin', 'Admissions', 'Tracking']} 
+            />
+            <h1 className="text-3xl font-extrabold text-gray-900 mb-6 mt-4 border-b pb-2">Interview & Home Verification Tracking</h1>
             <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* 1. Interviewer Filter */}
                     <div>
                         <label htmlFor="interviewer-select" className="block text-sm font-medium text-gray-700 mb-2">
                             Filter by Interviewer:
@@ -491,60 +499,35 @@ const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload }) => {
                             ))}
                         </select>
                     </div>
-                    
-                    {/* 2. Status Filter (Interview Status) */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Filter by Status :
-                        </label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Status :</label>
                         <div className="flex flex-wrap gap-2">
                             {STATUS_OPTIONS.map(status => (
                                 <button
                                     key={status}
                                     onClick={() => handleStatusToggle(status)}
                                     disabled={!!selectedInterviewerId}
-                                    className={`
-                                        px-3 py-1.5 text-sm font-medium rounded-full transition duration-150 ease-in-out
-                                        ${selectedStatuses.includes(status)
-                                            ? 'bg-blue-600 text-white shadow-md'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        }
-                                        ${selectedInterviewerId ? 'opacity-50 cursor-not-allowed' : ''}
-                                    `}
+                                    className={`px-3 py-1.5 text-sm font-medium rounded-full transition duration-150 ease-in-out ${selectedStatuses.includes(status) ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} ${selectedInterviewerId ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
                                     {status}
                                 </button>
                             ))}
                         </div>
                     </div>
-
-                    {/* 3. Result Filter (Final Outcome) */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Filter by Result/Requirement:
-                        </label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Result/Requirement:</label>
                         <div className="flex flex-wrap gap-2">
                             {RESULT_OPTIONS.map(result => (
                                 <button
                                     key={result}
                                     onClick={() => handleResultToggle(result)}
                                     disabled={!!selectedInterviewerId}
-                                    className={`
-                                        px-3 py-1.5 text-sm font-medium rounded-full transition duration-150 ease-in-out
-                                        ${selectedResults.includes(result)
-                                            ? 'bg-blue-600 text-white shadow-md'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        }
-                                        ${selectedInterviewerId ? 'opacity-50 cursor-not-allowed' : ''}
-                                    `}
+                                    className={`px-3 py-1.5 text-sm font-medium rounded-full transition duration-150 ease-in-out ${selectedResults.includes(result) ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} ${selectedInterviewerId ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
                                     {result}
                                 </button>
                             ))}
                         </div>
-                        {!selectedInterviewerId && (
-                            <p className="text-xs text-gray-500 mt-2">Filters apply to the student's latest completed status OR required verification.</p>
-                        )}
                     </div>
                 </div>
             </div>
@@ -575,9 +558,7 @@ const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload }) => {
                         >
                             ← Previous
                         </button>
-                        <span className="text-gray-700 font-medium">
-                            Page {currentPage} of {totalPages}
-                        </span>
+                        <span className="text-gray-700 font-medium">Page {currentPage} of {totalPages}</span>
                         <button
                             onClick={() => handlePageChange(currentPage + 1)}
                             disabled={currentPage === totalPages}

@@ -63,7 +63,6 @@ const NewApplication = () => {
   const [formData, setFormData] = useState(initialFormData);
   const [secondaryData, setSecondaryData] = useState(initialSecondaryData);
   const [states, setStates] = useState([]);
-  const [divisions, setDivisions] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [blocks, setBlocks] = useState([]);
   const [clusters, setClusters] = useState([]);
@@ -124,10 +123,8 @@ useFetchInstitutes(formData.nmms_block, setInstitutes);
         current_institute_dise_code: "",
         previous_institute_dise_code: "",
       }));
-      setDivisions([]);
       setDistricts([]);
       setBlocks([]);
-      setClusters([]);
       setInstitutes([]);
       return;
     }
@@ -178,24 +175,6 @@ useFetchInstitutes(formData.nmms_block, setInstitutes);
     }
 
     setFormData((prev) => ({ ...prev, [name]: newValue }));
-  };
-
-  const handleSecondaryChange = (e) => {
-    const { name, value } = e.target;
-    let newValue = value;
-
-    if (["household_size", "distance_to_school", "num_two_wheelers", "num_four_wheelers", "irrigation_land"].includes(name)) {
-      if (!/^\d*\.?\d*$/.test(newValue)) return;
-    }
-
-    if (["neighbor_phone", "favorite_teacher_phone"].includes(name) && newValue.length > 10) return;
-
-    if (["own_house", "smart_phone_home", "internet_facility_home"].includes(name)) {
-      newValue = newValue.toUpperCase();
-      if (newValue !== "YES" && newValue !== "NO" && newValue !== "") return;
-    }
-
-    setSecondaryData((prev) => ({ ...prev, [name]: newValue }));
   };
 
   const handleSubmit = async (e) => {

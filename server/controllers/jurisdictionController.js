@@ -134,3 +134,25 @@ exports.getInstitutesByCluster = async (req, res) => {
     });
   }
 };
+
+exports.getJurisName = async (req, res) => {
+  try {
+    const { juris_code } = req.params;
+    if (!juris_code) {
+      return res.status(400).json({ success: false, message: "juris_code is required" });
+    }
+    const jurisName = await jurisdictionModel.getJurisName(juris_code);
+    res.status(200).json({
+      success: true,
+      message: "Jurisdiction name fetched successfully",
+      data: jurisName,
+    });
+  } catch (error) {
+    console.error("Error fetching jurisdiction name:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch jurisdiction name",
+      error: error.message,
+    });
+  }
+};

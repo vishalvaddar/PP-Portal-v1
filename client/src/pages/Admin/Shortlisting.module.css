@@ -183,3 +183,25 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* --- Blocked Mouse Cursor Logic --- */
+
+.featureCardDisabled {
+  /* This shows the red circle / slashed icon on hover */
+  cursor: not-allowed !important;
+  
+  /* This makes the card ignore clicks but still show the cursor */
+  pointer-events: auto !important;
+}
+
+/* Stop the hover animation and lifting effect for disabled cards */
+.featureCardDisabled:hover {
+  transform: none !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Ensure the arrow icon doesn't appear on hover when blocked */
+.featureCardDisabled:hover .featureArrow {
+  opacity: 0 !important;
+}

@@ -38,6 +38,7 @@ import Resultandrank from "./pages/Admin/Result/Resultandranking";
 // Events
 import Events from "./pages/Admin/Events/EventsDashboardPage";
 import EventDetailsPage from "./pages/Admin/Events/EventDetailsPage";
+import EventEditPage from "./pages/Admin/Events/EventEditPage";
 
 // --- Coordinator pages ---
 import CoordinatorDashboard from "./pages/Coordinator/CoordinatorDashboard";
@@ -128,6 +129,7 @@ export const appRouter = createBrowserRouter([
               // EVENTS
               { path: "events", element: <Events /> },
               { path: "events/:eventId", element: <EventDetailsPage /> },
+              { path: "events/:eventId/edit", element: <EventEditPage /> },
             ],
           },
 

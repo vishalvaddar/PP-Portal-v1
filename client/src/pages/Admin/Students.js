@@ -1,474 +1,434 @@
-import React, { useState, useCallback, useMemo, useRef, useEffect} from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import axios from "axios";
 import Select from "react-select";
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
-import { Link } from "react-router-dom";
 import autoTable from "jspdf-autotable";
-import {
-  Users,
-  Search,
-  Filter,
-  RotateCcw,
-  FileDown,
-  AlertTriangle,
-  Info,
-  ChevronDown,
+import { Link } from "react-router-dom";
+import { 
+  Users, Search, RotateCcw, FileDown, ChevronDown, 
+  Info, MapPin, GraduationCap, Loader2, FileSpreadsheet, FileText, AlertCircle 
 } from "lucide-react";
+
+import { useFetchStates, useFetchEducationDistricts, useFetchBlocks } from "../../hooks/useJurisData";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 import classes from "./Students.module.css";
 
-const downloadCSV = (data, filename) => {
-  if (!data.length) return;
-  const ws = XLSX.utils.json_to_sheet(
-    data.map(
-      ({
-        student_id,
-        student_name,
-        enr_id,
-        gender,
-        batch,
-        cohort_name,
-        nmms_year,
-      }) => ({
-        "Student ID": student_id,
-        Name: student_name,
-        "Enroll ID": enr_id,
-        Gender: gender,
-        Batch: batch,
-        Cohort: cohort_name,
-        "NMMS Year": nmms_year,
-      })
-    )
-  );
-  const csv = XLSX.utils.sheet_to_csv(ws);
-  saveAs(
-    new Blob([csv], { type: "text/csv;charset=utf-8;" }),
-    `${filename}.csv`
-  );
-};
-const downloadExcel = (data, filename) => {
-  if (!data.length) return;
-  const ws = XLSX.utils.json_to_sheet(
-    data.map(
-      ({
-        student_id,
-        student_name,
-        enr_id,
-        gender,
-        batch,
-        cohort_name,
-        nmms_year,
-      }) => ({
-        "Student ID": student_id,
-        Name: student_name,
-        "Enroll ID": enr_id,
-        Gender: gender,
-        Batch: batch,
-        Cohort: cohort_name,
-        "NMMS Year": nmms_year,
-      })
-    )
-  );
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Students");
-  XLSX.writeFile(wb, `${filename}.xlsx`);
-};
-const downloadPDF = (data, filename) => {
-  if (!data.length) return;
-  const doc = new jsPDF();
-  const tableColumns = [
-    "ID",
-    "Name",
-    "Enroll ID",
-    "Gender",
-    "Batch",
-    "Cohort",
-    "NMMS Year",
-  ];
-  const tableRows = data.map((s) => [
-    s.student_id,
-    s.student_name,
-    s.enr_id,
-    s.gender,
-    s.batch,
-    s.cohort_name,
-    s.nmms_year,
-  ]);
-  doc.setFontSize(18).text("Student Search Report", 14, 22);
-  doc
-    .setFontSize(11)
-    .setTextColor(100)
-    .text(
-      `Generated on: ${new Date().toLocaleDateString("en-IN", {
-        timeZone: "Asia/Kolkata",
-      })}`,
-      14,
-      29
-    );
-  autoTable(doc, {
-    startY: 35,
-    head: [tableColumns],
-    body: tableRows,
-    theme: "striped",
-    headStyles: { fillColor: [0, 86, 179] },
-  });
-  doc.save(`${filename}.pdf`);
-};
-
-const genderOptions = [
-  { value: "M", label: "Male" },
-  { value: "F", label: "Female" },
-  { value: "O", label: "Other" },
-];
+const API_BASE = process.env.REACT_APP_BACKEND_API_URL;
 
 const Students = () => {
   const currentPath = ["Admin", "Academics", "Students"];
-  const initialFilters = useMemo(
-    () => ({
-      name: "",
-      enr_id: "",
-      batch: "",
-      cohort: "",
-      gender: "",
-    }),
-    []
-  );
 
-  const [filters, setFilters] = useState(initialFilters);
+  const initialFormData = {
+    enr_id: "",
+    student_name: "",
+    batch_id: "",
+    cohort_id: "",
+    gender: "",
+    state_id: "",
+    district_id: "",
+    block_id: "",
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
+  const [options, setOptions] = useState({ batches: [], cohorts: [] });
+  const [states, setStates] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [blocks, setBlocks] = useState([]);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [searchMode, setSearchMode] = useState("quick");
-  const [isDownloadMenuOpen, setIsDownloadMenuOpen] = useState(false);
-  const downloadMenuRef = useRef(null);
+  const [isExportOpen, setIsExportOpen] = useState(false);
+  
+  // --- New Validation States ---
+  const [errors, setErrors] = useState({});
+  const [toastMessage, setToastMessage] = useState("");
 
-  const fetchStudents = useCallback(async (currentFilters = {}) => {
-    setLoading(true);
-    setError(null);
+  const exportRef = useRef(null);
+
+  // --- Jurisdictional Data Hooks ---
+  useFetchStates(setStates);
+  useFetchEducationDistricts(formData.state_id, setDistricts);
+  useFetchBlocks(formData.district_id, setBlocks);
+
+  // --- Fetch Initial Metadata (Cohorts Only) ---
+  useEffect(() => {
+    const fetchCohorts = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/api/cohorts`);
+        setOptions((prev) => ({
+          ...prev,
+          cohorts: (res.data.data || res.data).map((x) => ({
+            value: x.cohort_number,
+            label: x.cohort_name,
+          })),
+        }));
+      } catch (err) {
+        console.error("Cohort fetch error", err);
+      }
+    };
+    fetchCohorts();
+  }, []);
+
+  // --- Fetch Batches when Cohort is selected ---
+  const fetchBatchesByCohort = async (cohortNumber) => {
     try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_BACKEND_API_URL}/api/search-students`,
-        { params: currentFilters, timeout: 15000 }
-      );
-      setResults(data.data || []);
+      const res = await axios.get(`${API_BASE}/api/batches/cohort/${cohortNumber}`);
+      setOptions((prev) => ({
+        ...prev,
+        batches: (res.data.data || res.data).map((x) => ({
+          value: x.batch_id,
+          label: x.batch_name,
+          cohort_number: x.cohort_number,
+        })),
+      }));
     } catch (err) {
-      const message =
-        err.code === "ECONNABORTED"
-          ? "Search timed out. Please try again."
-          : err.response?.status >= 500
-          ? "A server error occurred. Please try again later."
-          : "Failed to fetch students. Please check your connection.";
-      setError(message);
-      setResults([]);
+      console.error("Batch fetch error", err);
+    }
+  };
+
+  // --- Filter Batches based on Cohort Selection ---
+  const filteredBatchOptions = useMemo(() => {
+    if (!formData.cohort_id) return []; 
+    return options.batches.filter(batch => Number(batch.cohort_number) === Number(formData.cohort_id));
+  }, [formData.cohort_id, options.batches]);
+
+  // --- Memoized Geo & Static Options ---
+  const geoOptions = useMemo(() => ({
+    states: states.map((s) => ({ value: s.id, label: s.name })),
+    districts: districts.map((d) => ({ value: d.id, label: d.name })),
+    blocks: blocks.map((b) => ({ value: b.id, label: b.name })),
+    gender: [
+      { value: "M", label: "Male" },
+      { value: "F", label: "Female" },
+      { value: "O", label: "Other" },
+    ],
+  }), [states, districts, blocks]);
+
+  // --- Export Logic ---
+  const downloadPDF = () => {
+    const doc = new jsPDF("l", "mm", "a4");
+    const tableColumns = ["ID", "Name", "Enroll ID", "Batch", "State", "District"];
+    const tableRows = results.map(s => [s.student_id, s.student_name, s.enr_id, s.batch_name, s.state, s.district]);
+
+    doc.setFontSize(18).text("Student Search Report", 14, 20);
+    autoTable(doc, {
+      startY: 30,
+      head: [tableColumns],
+      body: tableRows,
+      headStyles: { fillColor: [37, 99, 235] }
+    });
+    doc.save(`students_${Date.now()}.pdf`);
+    setIsExportOpen(false);
+  };
+
+  const downloadExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(results);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    saveAs(data, `students_${Date.now()}.xlsx`);
+    setIsExportOpen(false);
+  };
+
+  // --- Handlers ---
+  
+  // Generic Text Input Handler with Error Clearing
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    // Clear error for this field if user types
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: undefined }));
+    // Clear global toast if user interacts
+    if (toastMessage) setToastMessage("");
+    
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectChange = (selected, name) => {
+    const value = selected?.value || "";
+    
+    // Clear global toast if user interacts
+    if (toastMessage) setToastMessage("");
+
+    setFormData((prev) => {
+      const updates = { ...prev, [name]: value };
+      
+      if (name === "cohort_id") {
+        updates.batch_id = "";
+        if (value) {
+          fetchBatchesByCohort(value);
+        } else {
+          setOptions(prevOpt => ({ ...prevOpt, batches: [] }));
+        }
+      }
+      
+      if (name === "state_id") {
+        updates.district_id = "";
+        updates.block_id = "";
+      }
+      if (name === "district_id") {
+        updates.block_id = "";
+      }
+      return updates;
+    });
+  };
+
+  const handleReset = () => {
+    setFormData(initialFormData);
+    setResults([]);
+    setOptions(prev => ({ ...prev, batches: [] }));
+    setErrors({});
+    setToastMessage("");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrors({});
+    setToastMessage("");
+    
+    // --- VALIDATION START ---
+    
+    // 1. Check if ANY field has a value
+    const hasValues = Object.values(formData).some(val => val !== "" && val !== null && val !== undefined);
+    
+    if (!hasValues) {
+      setToastMessage("Please select at least one criteria to search.");
+      return; // STOP execution here
+    }
+
+    // 2. Length Checks (Optional but recommended)
+    const newErrors = {};
+    if (formData.enr_id && formData.enr_id.length < 3) {
+      newErrors.enr_id = "ID must be at least 3 characters";
+    }
+    if (formData.student_name && formData.student_name.length < 3) {
+      newErrors.student_name = "Name must be at least 3 characters";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return; // STOP execution if input is invalid
+    }
+    
+    // --- VALIDATION END ---
+
+    setLoading(true);
+
+    const apiPayload = {
+      enr_id: formData.enr_id,
+      name: formData.student_name,
+      cohort_number: formData.cohort_id,
+      batch_id: formData.batch_id,
+      gender: formData.gender,
+      state_id: formData.state_id, // Ensure backend handles this if you send it
+      district_id: formData.district_id,
+      block_id: formData.block_id
+    };
+
+    const params = Object.fromEntries(
+      Object.entries(apiPayload).filter(([_, v]) => v && v !== "")
+    );
+
+    try {
+      const res = await axios.get(`${API_BASE}/api/search-students`, { params });
+      
+      if (!res.data?.data?.length) {
+        setToastMessage("No students found matching your criteria.");
+        setResults([]);
+      } else {
+        setResults(res.data.data);
+      }
+    } catch (err) {
+      console.error("Search failed", err);
+      setToastMessage("An error occurred during search.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
+  // Close export menu on outside click
   useEffect(() => {
-    fetchStudents();
-  }, [fetchStudents]);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        downloadMenuRef.current &&
-        !downloadMenuRef.current.contains(event.target)
-      ) {
-        setIsDownloadMenuOpen(false);
+    const handler = (e) => {
+      if (exportRef.current && !exportRef.current.contains(e.target)) {
+        setIsExportOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // Auto-clear Toast after 3 seconds
   useEffect(() => {
-    setFilters(initialFilters);
-  }, [searchMode, initialFilters]);
+    if (toastMessage) {
+      const timer = setTimeout(() => setToastMessage(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
 
-  const handleChange = useCallback((e) => {
-    setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  }, []);
-
-  const handleSelectChange = useCallback((selectedOption, name) => {
-    setFilters((prev) => ({
-      ...prev,
-      [name]: selectedOption ? selectedOption.value : "",
-    }));
-  }, []);
-
-  const handleDownload = useCallback(
-    (format) => {
-      if (!results.length) return;
-      const filename = `student-report-${
-        new Date().toISOString().split("T")[0]
-      }`;
-      const exportFuncs = {
-        pdf: downloadPDF,
-        excel: downloadExcel,
-        csv: downloadCSV,
-      };
-      const selectedFunc = exportFuncs[format];
-      if (selectedFunc) selectedFunc(results, filename);
-      setIsDownloadMenuOpen(false);
-    },
-    [results]
-  );
-
-  const searchStudents = useCallback(() => {
-    const activeFilters = Object.fromEntries(
-      Object.entries(filters).filter(([, v]) => v)
-    );
-    fetchStudents(activeFilters);
-  }, [filters, fetchStudents]);
-
-  const clearAll = useCallback(() => {
-    setFilters(initialFilters);
-    fetchStudents();
-  }, [initialFilters, fetchStudents]);
-
-  const handleKeyPress = useCallback(
-    (e) => {
-      if (e.key === "Enter") searchStudents();
-    },
-    [searchStudents]
-  );
-
-  const resultsDisplay = useMemo(() => {
-    if (loading)
-      return (
-        <div className={`${classes.messageContainer} ${classes.loading}`}>
-          <div className={classes.spinner}></div>
-          <p>Loading student data...</p>
-        </div>
-      );
-    if (error)
-      return (
-        <div className={`${classes.messageContainer} ${classes.error}`}>
-          <AlertTriangle size={48} />
-          <h3>An Error Occurred</h3>
-          <p>{error}</p>
-        </div>
-      );
-    if (results.length === 0)
-      return (
-        <div className={`${classes.messageContainer} ${classes.noResults}`}>
-          <Search size={48} />
-          <h3>No Students Found</h3>
-          <p>
-            Your search or filter criteria did not match any student records.
-          </p>
-        </div>
-      );
-
-    return (
-      <div className={classes.tableContainer}>
-        <div className={classes.resultsHeader}>
-          <span className={classes.resultCount}>
-            Displaying <strong>{results.length}</strong> student
-            {results.length !== 1 && "s"}
-          </span>
-          <div className={classes.downloadContainer} ref={downloadMenuRef}>
-            <button
-              onClick={() => setIsDownloadMenuOpen((p) => !p)}
-              className={`${classes.btn} ${classes.btnIcon}`}
-            >
-              <FileDown size={16} /> Download Report
-              <ChevronDown
-                size={16}
-                className={`${classes.chevron} ${
-                  isDownloadMenuOpen && classes.chevronOpen
-                }`}
-              />
-            </button>
-            {isDownloadMenuOpen && (
-              <div className={classes.downloadDropdown}>
-                <button
-                  onClick={() => handleDownload("pdf")}
-                  className={classes.downloadOption}
-                >
-                  As PDF
-                </button>
-                <button
-                  onClick={() => handleDownload("excel")}
-                  className={classes.downloadOption}
-                >
-                  As Excel (.xlsx)
-                </button>
-                <button
-                  onClick={() => handleDownload("csv")}
-                  className={classes.downloadOption}
-                >
-                  As CSV
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className={classes.tableWrapper}>
-          <table className={classes.table}>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Enroll ID</th>
-                <th>Gender</th>
-                <th>Batch</th>
-                <th>Cohort</th>
-                <th>NMMS Year</th>
-              </tr>
-            </thead>
-            <tbody>
-              {results.map((student) => (
-                <tr key={student.student_id}>
-                  <td data-label="ID">{student.student_id}</td>
-                  <td data-label="Name">{student.student_name}</td>
-                  <td data-label="Enroll ID">
-                      <Link
-                          to={`/admin/academics/batches/view-student-info/${student.nmms_reg_number}`}
-                          className={classes.studentLink}
-                      >
-                          {student.enr_id}
-                      </Link>
-                  </td>
-                  <td data-label="Gender">{student.gender}</td>
-                  <td data-label="Batch">{student.batch_name}</td>
-                  <td data-label="Cohort">{student.cohort_name}</td>
-                  <td data-label="NMMS Year">{student.nmms_year}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
-  }, [loading, error, results, isDownloadMenuOpen, handleDownload]);
+  const isQuickSearch = !!formData.enr_id;
 
   return (
     <div className={classes.pageContainer}>
-      <Breadcrumbs
-        path={currentPath}
-        nonLinkSegments={["Admin", "Academics"]}
-      />
-      <div className={classes.searchCard}>
-        <div className={classes.header}>
-          <div className={classes.headerIcon}>
-            <Users size={28} />
-          </div>
-          <div>
-            <h1 className={classes.title}>Students</h1>
-            <p className={classes.subtitle}>
-              Search for students or browse the complete list below.
-            </p>
-          </div>
+      <Breadcrumbs path={currentPath} nonLinkSegments={["Admin", "Academics"]} />
+      
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className={classes.toast} style={{
+          position: 'fixed', top: '20px', right: '20px', zIndex: 1000,
+          background: '#1f2937', color: 'white', padding: '12px 20px', borderRadius: '8px',
+          display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+        }}>
+           <AlertCircle size={20} color="#f87171" />
+           {toastMessage}
         </div>
+      )}
 
-        <div className={classes.searchModeToggle}>
-          <button
-            onClick={() => setSearchMode("quick")}
-            className={`${classes.toggleButton} ${
-              searchMode === "quick" ? classes.active : ""
-            }`}
-          >
-            <Search size={16} /> Quick Search
-          </button>
-          <button
-            onClick={() => setSearchMode("advanced")}
-            className={`${classes.toggleButton} ${
-              searchMode === "advanced" ? classes.active : ""
-            }`}
-          >
-            <Filter size={16} /> Advanced Search
-          </button>
-        </div>
+      <div className={classes.searchGrid}>
+        <div className={classes.searchCard}>
+          <header className={classes.cardHeader}>
+            <Users size={24} color="#2563eb" />
+            <h1>Student</h1>
+          </header>
 
-        <div className={classes.filtersContainer}>
-          {searchMode === "quick" ? (
-            <div className={classes.filtersGrid}>
-              <input
-                name="name"
-                placeholder="Student Name"
-                className={classes.input}
-                value={filters.name}
-                onChange={handleChange}
-                onKeyPress={handleKeyPress}
-                disabled={loading}
-              />
-              <input
-                name="enr_id"
-                placeholder="Enroll ID"
-                className={classes.input}
-                value={filters.enr_id}
-                onChange={handleChange}
-                onKeyPress={handleKeyPress}
-                disabled={loading}
-              />
-            </div>
-          ) : (
-            <div className={classes.filtersGrid}>
-              <div className={classes.formGroup}>
-                <label className={classes.label}>Batch Name</label>
-                <input
-                  name="batch"
-                  placeholder="e.g., 1"
-                  className={classes.input}
-                  value={filters.batch}
+          <form onSubmit={handleSubmit} className={classes.form}>
+            <div className={classes.inputWrapper}>
+              <label className={classes.label}>Enrollment ID</label>
+              <div className={classes.searchField}>
+                <Search size={18} className={classes.innerIcon} />
+                <input 
+                  name="enr_id"
+                  placeholder="Enter ID (e.g., ENR-2024-001)" 
+                  value={formData.enr_id} 
                   onChange={handleChange}
-                  disabled={loading}
+                  style={errors.enr_id ? {borderColor: '#ef4444'} : {}}
                 />
               </div>
-              <div className={classes.formGroup}>
-                <label className={classes.label}>Cohort</label>
-                <input
-                  name="cohort"
-                  placeholder="e.g., Cohort-1"
-                  className={classes.input}
-                  value={filters.cohort}
-                  onChange={handleChange}
-                  disabled={loading}
-                />
-              </div>
-              <div className={classes.formGroup}>
-                <label className={classes.label}>Gender</label>
-                <Select
-                  options={genderOptions}
-                  value={genderOptions.find(
-                    (opt) => opt.value === filters.gender
-                  )}
-                  onChange={(s) => handleSelectChange(s, "gender")}
-                  placeholder="Any gender"
-                  isClearable
-                  isDisabled={loading}
-                  classNamePrefix="react-select"
-                />
-              </div>
+              {errors.enr_id && <span style={{color: '#ef4444', fontSize: '12px'}}>{errors.enr_id}</span>}
             </div>
-          )}
+
+            <div className={classes.divider}><span>OR FILTER BY</span></div>
+
+            <fieldset disabled={isQuickSearch} className={classes.filterGrid}>
+              <div className={classes.field}>
+                <label className={classes.label}>Student Name</label>
+                <input 
+                  name="student_name"
+                  className={classes.input}
+                  placeholder="Name"
+                  value={formData.student_name}
+                  onChange={handleChange}
+                  style={errors.student_name ? {borderColor: '#ef4444'} : {}}
+                />
+                {errors.student_name && <span style={{color: '#ef4444', fontSize: '12px'}}>{errors.student_name}</span>}
+              </div>
+              
+              <CustomSelect 
+                label="Cohort" 
+                options={options.cohorts} 
+                value={options.cohorts.find(o => o.value === formData.cohort_id)} 
+                onChange={(s) => handleSelectChange(s, "cohort_id")} 
+              />
+
+              <CustomSelect 
+                label="Batch" 
+                icon={<GraduationCap size={14}/>} 
+                options={filteredBatchOptions} 
+                value={filteredBatchOptions.find(o => o.value === formData.batch_id)} 
+                onChange={(s) => handleSelectChange(s, "batch_id")} 
+                isDisabled={!formData.cohort_id}
+                placeholder={!formData.cohort_id ? "Select Cohort First" : "Any Batch"}
+              />
+
+              <CustomSelect 
+                label="State" 
+                icon={<MapPin size={14}/>} 
+                options={geoOptions.states} 
+                value={geoOptions.states.find(o => o.value === formData.state_id)} 
+                onChange={(s) => handleSelectChange(s, "state_id")} 
+              />
+
+              <CustomSelect 
+                label="District" 
+                options={geoOptions.districts} 
+                value={geoOptions.districts.find(o => o.value === formData.district_id)} 
+                onChange={(s) => handleSelectChange(s, "district_id")} 
+                isDisabled={!formData.state_id} 
+              />
+            </fieldset>
+
+            <div className={classes.formActions}>
+              <button type="button" onClick={handleReset} className={classes.btnGhost}><RotateCcw size={16}/> Reset</button>
+              <button type="submit" className={classes.btnPrimary} disabled={loading}>
+                {loading ? <Loader2 className={classes.spinner} size={18}/> : <Search size={18}/>}
+                {loading ? "Searching..." : "Search Students"}
+              </button>
+            </div>
+          </form>
         </div>
 
-        <div className={classes.actions}>
-          <button
-            onClick={clearAll}
-            className={`${classes.btn} ${classes.btnSecondary}`}
-            disabled={loading}
-          >
-            <RotateCcw size={16} /> Reset
-          </button>
-          <button
-            onClick={searchStudents}
-            className={`${classes.btn} ${classes.btnPrimary}`}
-            disabled={loading}
-          >
-            <Search size={18} /> {loading ? "Searching..." : "Search"}
-          </button>
-        </div>
-
-        <div className={classes.resultsArea}>{resultsDisplay}</div>
+        {results.length === 0 && !loading && (
+          <aside className={classes.infoPanel}>
+            <Info className={classes.infoIcon} />
+            <h3>Quick Search Guide</h3>
+            <p>Enter a specific <strong>Enrollment ID</strong> for a direct result, or use the filters to narrow down by academic batch or location.</p>
+          </aside>
+        )}
       </div>
+
+      {results.length > 0 && (
+        <div className={classes.resultsContainer}>
+          <div className={classes.resultsToolbar}>
+            <h3>Results ({results.length})</h3>
+            <div className={classes.exportWrapper} ref={exportRef}>
+              <button onClick={() => setIsExportOpen(!isExportOpen)} className={classes.btnSecondary}>
+                <FileDown size={16} /> Export <ChevronDown size={14} />
+              </button>
+              {isExportOpen && (
+                <div className={classes.exportMenu}>
+                  <button onClick={downloadPDF}><FileText size={14} /> Save as PDF</button>
+                  <button onClick={downloadExcel}><FileSpreadsheet size={14} /> Save as Excel</button>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className={classes.tableWrapper}>
+            <table className={classes.table}>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Enroll ID</th>
+                  <th>Cohort</th>
+                  <th>Batch</th>
+                </tr>
+              </thead>
+              <tbody>
+                {results.map(s => (
+                  <tr key={s.student_id}>
+                    <td className={classes.boldText}>{s.student_name}</td>
+                    <td>
+                      <Link to={`/admin/admissions/view-student-info/${s.nmms_reg_number}`} className={classes.idBadge}>
+                        {s.enr_id}
+                      </Link>
+                    </td>
+                    <td>{s.cohort_name}</td>
+                    <td>{s.batch_name}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
+const CustomSelect = ({ label, icon, ...props }) => (
+  <div className={classes.field}>
+    <label className={classes.label}>{icon} {label}</label>
+    <Select {...props} classNamePrefix="react-select" isClearable placeholder={props.placeholder || `Any ${label}`} />
+  </div>
+);
 
 export default Students;
