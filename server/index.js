@@ -8,7 +8,7 @@ const pool = require("./config/db");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ───── Ensure Uploads Directory ─────
+/*// ───── Ensure Uploads Directory ─────
 const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
@@ -16,7 +16,26 @@ if (!fs.existsSync(uploadsDir)) {
 const interviewDataDir = path.join(__dirname, "Data", "Interview-data");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
+}*/
+
+
+// ───── Ensure Uploads Directory ─────
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
 }
+
+// ───── Ensure Interview Data Directory ─────
+const interviewDataDir = path.join(__dirname, "Data", "Interview-data");
+if (!fs.existsSync(interviewDataDir)) {
+  fs.mkdirSync(interviewDataDir, { recursive: true });
+}
+
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "uploads"))
+);
+
 
 // ───── Middleware ─────
 app.use(cors({ origin: "*" }));
@@ -35,8 +54,8 @@ app.use(
   express.static(path.join(__dirname, "Data", "Home-verification-data"))
 );
 app.use(
-  "/uploads/profile_photos",
-  express.static(path.join(__dirname, "uploads", "profile_photos"))
+  "/students",
+  express.static(path.join(process.env.PROFILE_PHOTOS_ROOT))
 );
 app.use("/logs", express.static(path.join(__dirname, "logs")));
 app.use(

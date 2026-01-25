@@ -218,7 +218,7 @@ async createShortlistBatch(shortlistName, description, criteriaId, selectedBlock
                   AND LOWER(TRIM(bj.juris_name)) = LOWER(TRIM($3))
                   AND percentile_rank <= 0.04;
             `;
-        } else if (processedCriteriaName.includes("top 8%")) {
+        } else if (processedCriteriaName.includes("top 6%")) {
             selectApplicantsQuery = `
                 WITH ApplicantRanked AS (
                   SELECT
@@ -238,7 +238,7 @@ async createShortlistBatch(shortlistName, description, criteriaId, selectedBlock
                 WHERE LOWER(TRIM(sj.juris_name)) = LOWER(TRIM($1))
                   AND LOWER(TRIM(dj.juris_name)) = LOWER(TRIM($2))
                   AND LOWER(TRIM(bj.juris_name)) = LOWER(TRIM($3))
-                  AND percentile_rank <= 0.08;
+                  AND percentile_rank <= 0.06;
             `;
         } 
         
