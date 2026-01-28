@@ -10,10 +10,9 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 const NODE_ENV = process.env.NODE_ENV || "development";
 
-const PROJECT_ROOT_DIR = path.join(__dirname, "..");
-const dataDir = path.join(PROJECT_ROOT_DIR, "Data");
-const interviewDataDir = path.join(dataDir, "Interview-data");
-const homeVerificationDataDir = path.join(dataDir, "Home-verification-data");
+const PROJECT_ROOT_DIR = process.env.FILE_STORAGE_PATH;
+const interviewDataDir = path.join(PROJECT_ROOT_DIR, "Interview-data");
+const homeVerificationDataDir = path.join(PROJECT_ROOT_DIR, "Home-verification-data");
 const uploadsDir = path.join(__dirname, "uploads");
 
 const EVENT_PHOTOS_DIR = process.env.EVENT_STORAGE_PATH || path.join(__dirname, "uploads", "events", "photos");
@@ -61,39 +60,53 @@ app.use(
 
 app.use(
   "/uploads",
-  express.static(uploadsDir)
+  express.static(path.join(__dirname, "uploads"))
 );
 
-app.use("/Data", express.static(dataDir));
+app.use("/Data", express.static(PROJECT_ROOT_DIR));
 app.use("/logs", express.static(path.join(__dirname, "logs")));
 app.use("/halltickets", express.static(path.join(__dirname, "public", "halltickets")));
 
 const dynamicUploadStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    let baseDir =
-      file.fieldname === "verificationDocument"
+    // 1. Determine the base directory based on the field name
+    // 'verificationDocument' goes to Home Verification, everything else (like 'file') goes to Interview
+    let baseDir = file.fieldname === "verificationDocument"
         ? homeVerificationDataDir
         : interviewDataDir;
 
-    const nmmsYear = req.body.nmmsYear || new Date().getFullYear();
-    const cohortFolderName = `cohort-${String(nmmsYear)}`;
+    // 2. Get the Year from the request body
+    // FALLBACK: If nmmsYear is missing, we extract the current year to prevent 'cohort-undefined'
+    const nmmsYear = req.body.nmmsYear || new Date().getFullYear().toString();
+    
+    // 3. Construct the Cohort folder path
+    const cohortFolderName = `cohort-${nmmsYear}`;
     const finalTargetDirectory = path.join(baseDir, cohortFolderName);
 
-    if (!fs.existsSync(finalTargetDirectory)) {
-      fs.mkdirSync(finalTargetDirectory, { recursive: true });
+    try {
+      // 4. Create the folder recursively if it doesn't exist
+      // This ensures that even if 'Interview-data' is missing, it creates the whole path
+      if (!fs.existsSync(finalTargetDirectory)) {
+        fs.mkdirSync(finalTargetDirectory, { recursive: true });
+      }
+      cb(null, finalTargetDirectory);
+    } catch (err) {
+      console.error("Error creating upload directory:", err);
+      cb(err, null);
     }
-
-    cb(null, finalTargetDirectory);
   },
 
   filename: (req, file, cb) => {
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(
-      null,
-      `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`
-    );
+    // 5. Generate a clean, unique filename
+    // Format: fieldname-applicantId-timestamp.extension
+    const applicantId = req.body.applicantId || "unknown";
+    const uniqueSuffix = Date.now();
+    const ext = path.extname(file.originalname);
+    
+    cb(null, `${file.fieldname}-${applicantId}-${uniqueSuffix}${ext}`);
   },
 });
+
 
 const upload = multer({
   storage: dynamicUploadStorage,

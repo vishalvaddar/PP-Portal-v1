@@ -777,3 +777,25 @@ Container
     /* Styles are already defined above, but here's the original cleanup */
     position: relative;
 }
+
+
+/* ===== FORCE ROUND STUDENT PHOTO (OVERRIDE EVERYTHING) ===== */
+.student-photo-circle {
+  width: 120px !important;
+  height: 120px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  margin: 0 auto 10px auto;
+  border: 3px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.student-photo-circle img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 50% !important;
+  max-width: none !important;
+}

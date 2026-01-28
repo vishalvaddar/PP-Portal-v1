@@ -1,0 +1,77 @@
+/* TimeTableManagement.css - Scoped to .timetable-page */
+.timetable-page {
+    --color-primary: #10b981;
+    --color-primary-dark: #059669;
+    --color-text-dark: #1f2937;
+    --color-text-light: #6b7280;
+    --color-border: #e2e8f0;
+    font-family: 'Inter', sans-serif;
+    padding: 0px;
+    background: #f8fafc;
+    min-height: 100vh;
+}
+
+.timetable-page .container { max-width: 1400px; margin: 0 auto; }
+
+.timetable-page .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 1.25rem 1.75rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border: 1px solid var(--color-border);
+    margin-bottom: 1.5rem;
+}
+
+.timetable-page .title { font-size: 1.8rem; font-weight: 700; color: #1a365d; margin: 0; }
+.timetable-page .subtitle { font-size: 0.95rem; color: #4a5568; margin-top: 0.25rem; }
+
+.timetable-page .filter-bar {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.timetable-page .filter-item select, 
+.timetable-page .filter-item input {
+    padding: 0.6rem 0.75rem;
+    padding-left: 2.2rem;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    min-width: 180px;
+}
+
+.timetable-page .filter-item { position: relative; }
+.timetable-page .input-icon { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); color: #718096; }
+
+.timetable-page .btn {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; border: none;
+}
+.timetable-page .btn.primary { background: var(--color-primary); color: white; }
+.timetable-page .btn.secondary { background: #edf2f7; color: #2d3748; }
+
+.timetable-page .table-wrapper { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid var(--color-border); }
+.timetable-page .students-table { width: 100%; border-collapse: collapse; }
+.timetable-page .students-table th { background: #f7fafc; padding: 1rem; text-align: left; font-size: 0.85rem; color: #4a5568; border-bottom: 1px solid var(--color-border); }
+.timetable-page .students-table td { padding: 1rem; border-bottom: 1px solid #edf2f7; font-size: 0.9rem; }
+
+.timetable-page .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+.timetable-page .modal-content { background: white; padding: 2rem; border-radius: 12px; width: 100%; max-width: 650px; }
+.timetable-page .grid-2-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+.timetable-page .form-group label { display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.85rem; }
+.timetable-page .form-input { width: 100%; padding: 0.6rem; border: 1px solid #cbd5e0; border-radius: 8px; }
+
+.timetable-page .export-menu-wrapper { position: relative; }
+.timetable-page .export-dropdown {
+    position: absolute; top: 110%; right: 0; background: white; border: 1px solid var(--color-border);
+    box-shadow: 0 10px 15px rgba(0,0,0,0.1); border-radius: 8px; padding: 0.5rem 0; z-index: 100; min-width: 160px;
+}
+.timetable-page .export-dropdown button { width: 100%; padding: 0.6rem 1rem; border: none; background: none; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+.timetable-page .export-dropdown button:hover { background: #f7fafc; color: var(--color-primary); }
+
+.timetable-page .badge-gray { background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; }

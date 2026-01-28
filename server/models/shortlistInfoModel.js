@@ -1,13 +1,12 @@
-
 const pool = require("../config/db");
 
 const shortlistInfoModel = {
+  // Fetches ALL names without checking for a year
   async getAllShortlistNames() {
     try {
       const { rows } = await pool.query(`
         SELECT shortlist_batch_name
-        FROM pp.shortlist_batch
-        WHERE EXTRACT(YEAR FROM created_on) = EXTRACT(YEAR FROM CURRENT_DATE); -- Corrected line
+        FROM pp.shortlist_batch;
       `);
       return rows.map(row => row.shortlist_batch_name);
     } catch (error) {
@@ -16,12 +15,13 @@ const shortlistInfoModel = {
     }
   },
 
+  // Fetches non-frozen names without checking for a year
   async getNonFrozenShortlistNames() {
     try {
       const { rows } = await pool.query(`
         SELECT shortlist_batch_name, shortlist_batch_id
         FROM pp.shortlist_batch
-        WHERE frozen_yn = 'N' and EXTRACT(YEAR FROM created_on) = EXTRACT(YEAR FROM CURRENT_DATE); -- Corrected line
+        WHERE frozen_yn = 'N';
       `);
       return rows.map(row => ({
         name: row.shortlist_batch_name,
@@ -33,8 +33,9 @@ const shortlistInfoModel = {
     }
   },
 
-  async getShortlistInfo(shortlistName) {
+  async getShortlistInfo(shortlistName, year) {
     try {
+      // Find batch info by name only
       const { rows } = await pool.query(
         `SELECT shortlist_batch_id, description, criteria_id, shortlist_batch_name, frozen_yn
           FROM pp.shortlist_batch
@@ -52,10 +53,6 @@ const shortlistInfoModel = {
         frozen_yn
       } = rows[0];
 
-      // Use the current year for NMMS data queries. Consider passing 'year' as a parameter
-      // if shortlists can span multiple NMMS years and you need historical data.
-      const year = new Date().getFullYear();
-
       const criteriaRes = await pool.query(
         `SELECT criteria FROM pp.shortlist_criteria WHERE criteria_id = $1;`,
         [criteria_id]
@@ -69,6 +66,7 @@ const shortlistInfoModel = {
         [id]
       );
 
+      // Student counts still require the year parameter to filter the correct student batch
       const totalStudentsRes = await pool.query(
         `SELECT COUNT(*) AS total_students
           FROM pp.applicant_primary_info
@@ -81,7 +79,6 @@ const shortlistInfoModel = {
         [year, id]
       );
 
-      // IMPORTANT: Added `AND asi.shortlisted_yn = 'Y'` for accuracy if applicant_shortlist_info can contain non-shortlisted entries
       const shortlistedRes = await pool.query(
         `SELECT COUNT(*) AS shortlisted_count
           FROM pp.applicant_shortlist_info asi
@@ -107,17 +104,16 @@ const shortlistInfoModel = {
         blocks: blocksRes.rows.map(row => row.juris_name),
         totalStudents: parseInt(totalStudentsRes.rows[0]?.total_students || "0", 10),
         shortlistedCount: parseInt(shortlistedRes.rows[0]?.shortlisted_count || "0", 10),
-        isFrozen: frozen_yn === 'Y'
+        isFrozen: frozen_yn === 'Y' ? 'Yes' : 'No' 
       };
     } catch (error) {
-      console.error(`Error fetching detailed shortlist info for ${shortlistName} in model:`, error);
+      console.error(`Error fetching detailed shortlist info in model:`, error);
       throw error;
     }
   },
 
-  async getTotalApplicantCount() {
+  async getTotalApplicantCount(year) {
     try {
-      const year = new Date().getFullYear();
       const { rows } = await pool.query(
         `SELECT COUNT(*) AS total_applicants
           FROM pp.applicant_primary_info
@@ -131,9 +127,8 @@ const shortlistInfoModel = {
     }
   },
 
-  async getTotalShortlistedCount() {
+  async getTotalShortlistedCount(year) {
     try {
-      const year = new Date().getFullYear();
       const { rows } = await pool.query(
         `SELECT COUNT(*) AS total_shortlisted
           FROM pp.applicant_shortlist_info asi
@@ -154,8 +149,7 @@ const shortlistInfoModel = {
       const { rowCount } = await pool.query(
         `UPDATE pp.shortlist_batch
           SET frozen_yn = 'Y'
-          WHERE shortlist_batch_id = $1 AND EXTRACT(YEAR FROM created_on) = EXTRACT(YEAR FROM CURRENT_DATE); -- Corrected line
-`,
+          WHERE shortlist_batch_id = $1;`,
         [shortlistBatchId]
       );
       return rowCount > 0;
@@ -165,15 +159,8 @@ const shortlistInfoModel = {
     }
   },
 
-  async deleteShortlist(shortlistBatchId) {
+  async deleteShortlist(shortlistBatchId, year) {
     try {
-      // Assuming 'shortlist_batch_created_year' from shortlist_batch table matches 'nmms_year' in applicant_primary_info for consistent deletion
-      // You might need to fetch the year from shortlist_batch first if that's not guaranteed.
-      // For now, retaining the current year assumption for deletion logic to match existing pattern.
-      const year = new Date().getFullYear();
-
-      // Delete from applicant_shortlist_info first (due to foreign key dependencies)
-      // This deletes entries for applicants who were part of this batch's blocks
       await pool.query(
         `DELETE FROM pp.applicant_shortlist_info
           WHERE applicant_id IN (
@@ -185,23 +172,18 @@ const shortlistInfoModel = {
           );`,
         [year, shortlistBatchId]
       );
-      // console.log(`Deleted applicant_shortlist_info for batch ${shortlistBatchId}`); // Optional: for debugging
 
-      // Then delete from shortlist_batch_jurisdiction
       await pool.query(
         `DELETE FROM pp.shortlist_batch_jurisdiction
           WHERE shortlist_batch_id = $1;`,
         [shortlistBatchId]
       );
-      // console.log(`Deleted shortlist_batch_jurisdiction for batch ${shortlistBatchId}`); // Optional: for debugging
 
-      // Finally delete from shortlist_batch
       const { rowCount } = await pool.query(
         `DELETE FROM pp.shortlist_batch
           WHERE shortlist_batch_id = $1;`,
         [shortlistBatchId]
       );
-      // console.log(`Deleted shortlist_batch for batch ${shortlistBatchId}, rows affected: ${rowCount}`); // Optional: for debugging
 
       return rowCount > 0;
     } catch (error) {
@@ -210,9 +192,8 @@ const shortlistInfoModel = {
     }
   },
 
-  async getShortlistedApplicantsForShow(shortlistBatchId) {
+  async getShortlistedApplicantsForShow(shortlistBatchId, year) {
     try {
-      const year = new Date().getFullYear();
       const { rows } = await pool.query(
         `SELECT
           api.applicant_id,
@@ -239,14 +220,13 @@ const shortlistInfoModel = {
       );
       return rows;
     } catch (error) {
-      console.error(`Error fetching shortlist display data for batch ${shortlistBatchId} in model:`, error);
+      console.error(`Error fetching shortlist display data in model:`, error);
       throw error;
     }
   },
 
-  async getShortlistedApplicantsForDownload(shortlistBatchId) {
+  async getShortlistedApplicantsForDownload(shortlistBatchId, year) {
     try {
-      const year = new Date().getFullYear();
       const { rows } = await pool.query(
         `SELECT
           api.nmms_reg_number AS "NMMS Registration No",
@@ -277,7 +257,7 @@ const shortlistInfoModel = {
       );
       return rows;
     } catch (error) {
-      console.error(`Error fetching shortlist download data for batch ${shortlistBatchId} in model:`, error);
+      console.error(`Error fetching shortlist download data in model:`, error);
       throw error;
     }
   }

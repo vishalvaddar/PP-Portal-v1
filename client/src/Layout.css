@@ -1,58 +1,59 @@
-/* Layout.css */
+/* 1. Global Reset */
+* {
+  box-sizing: border-box;
+}
 
 html, body {
   height: 100%;
   margin: 0;
   padding: 0;
+  overflow: hidden; /* Prevents double scrollbars; internal content will scroll */
 }
 
+/* 2. Wrapper: Takes full viewport height */
 .layout-wrapper {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh; 
+  width: 100vw;
 }
 
+/* 3. Main Section: Fills space between Header and Footer */
 .main-section {
   display: flex;
   flex: 1;
-  min-height: 0;
-  margin-top: 25px; /* Header height */
+  margin-top: 0;    /* Space below header removed */
+  overflow: hidden; /* Keeps sidebar and content isolated */
 }
 
+/* 4. Sidebar: Fixed width with smooth transition */
 .sidebar-container {
-  width: 120px;
+  width: 240px; 
+  flex-shrink: 0;
+  background-color: #f4f4f4; 
   transition: width 0.3s ease;
+  border-right: 1px solid #e5e7eb;
 }
 
 .sidebar-container.collapsed {
   width: 70px;
 }
 
+/* 5. Content Area: Fills remaining space and scrolls internally */
 .content {
   flex: 1;
-  padding: 1rem;
-  min-height: calc(100vh - 75px);
-  margin-left: 50px;
-  transition: margin-left 0.3s ease;
+  padding: 1.5rem; /* Fixed typo from 'adding' to 'padding' */
+  overflow-y: auto; /* Only this section scrolls */
+  background-color: #ffffff;
+  transition: all 0.3s ease;
 }
 
-.content-collapsed {
-  margin-left: 70px;
-}
-
+/* 6. Footer: Stays at the bottom */
 footer {
-  background-color: var(--primary-color);
-  color: var(--surface);
+  flex-shrink: 0; 
+  background-color: var(--primary-color, #1f2937);
+  color: white;
   padding: 1rem;
   text-align: center;
-  font-size: 0.9rem;
-}
-
-.sidebar-container.collapsed {
-  width: 70px; /* collapsed width */
-}
-
-.sidebar-container {
-  width: 240px; /* expanded width */
-  transition: width 0.3s ease;
+  z-index: 10;
 }
