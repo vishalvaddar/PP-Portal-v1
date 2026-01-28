@@ -497,7 +497,7 @@ async function generateStudentList(req, res) {
       const rowData = [
         row.pp_hall_ticket_no || '',
         row.student_name || '',
-        row.dise_code || '',
+        row.institute_name || '',
         row.contact_no1 || '',
         row.contact_no2 || ''
       ];
@@ -1094,18 +1094,8 @@ function cleanupTempFiles(files) {
   });
 }
 
-// Helper function for cleanup
-function cleanupTempFiles(files) {
-  files.forEach(file => {
-    if (fs.existsSync(file)) {
-      try {
-        fs.unlinkSync(file);
-      } catch (err) {
-        console.error('Error deleting temp file:', err);
-      }
-    }
-  });
-}
+
+
 
 // Date formatting function (redefined for the inner function scope)
 function formatDate(dateString) {
