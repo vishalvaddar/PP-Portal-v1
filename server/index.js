@@ -42,8 +42,9 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' })); 
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
 
 const actionLogger = require("./middleware/loggingMiddleware");
 app.use(actionLogger({ logBody: true, logQuery: true }));
@@ -140,7 +141,9 @@ const interviewRoutes = require("./routes/interviewRoutes");
 const resultandrankinkRoutes = require("./routes/resultandrankinkRoutes");
 const systemConfigRoutes = require("./routes/systemConfigRoutes");
 const eventRoutes = require("./routes/eventRoutes");
+
 const customListRoutes = require("./routes/customListRoutes");
+const selectionReportRoutes = require("./routes/selectionReportRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/system-config", systemConfigRoutes);
@@ -157,6 +160,7 @@ app.use("/api/districts", districtRoutes);
 
 app.use("/api", eventRoutes);
 app.use("/api/custom-list", customListRoutes);
+app.use("/api/selection-reports", selectionReportRoutes);
 
 app.use("/api/batches", batchRoutes);
 app.use("/api/timetable", timetableRoutes);
