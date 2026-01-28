@@ -5,6 +5,7 @@ const ExcelJS = require('exceljs');
 const multer = require('multer');
 const path = require('path');
 const pool = require('../config/db');
+const fs = require('fs');
 
 // insertBulkData
 const {getExamNames,getStudents,insertBulkData} = require('../models/evaluationModels');
@@ -39,59 +40,97 @@ const downloadStudentExcel = asyncHandler(async (req, res) => {
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Students');
 
-         const examNameRow = worksheet.addRow([`Exam Name: ${exam_name}`]);
-        examNameRow.font = {
-            name: 'Calibri',
-            family: 2,
-            size: 12,
-            bold: true,
-            color: { argb: 'FF000000' } // Black text
-        };
-        examNameRow.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FFFFFF00' } // Yellow background
-        };
-        examNameRow.alignment = { vertical: 'middle', horizontal: 'center' };
         
-        // Add headers with all columns
-        worksheet.columns = [
-             { header: 'Applicant ID', key: 'applicant_id', width: 15 },
-            { header: 'Student Name', key: 'student_name', width: 30 },
-            { header: 'Exam Score', key: 'pp_exam_score', width: 18 },
-            { header: 'Attendance', key: 'pp_exam_appeared_yn', width: 30 },
-            { header: 'Village', key: 'village', width: 20 },
-            { header: 'Father Occupation', key: 'father_occupation', width: 25 },
-            { header: 'Mother Occupation', key: 'mother_occupation', width: 25 },
-            { header: 'Father Education', key: 'father_education', width: 25 },
-            { header: 'Mother Education', key: 'mother_education', width: 25 },
-            { header: 'Household Size', key: 'household_size', width: 15 },
-            { header: 'Own House', key: 'own_house', width: 10 },
-            { header: 'Smart Phone at Home', key: 'smart_phone_home', width: 15 },
-            { header: 'Internet Facility at Home', key: 'internet_facility_home', width: 20 },
-            { header: 'Career Goals', key: 'career_goals', width: 30 },
-            { header: 'Subjects of Interest', key: 'subjects_of_interest', width: 30 },
-            { header: 'Transportation Mode', key: 'transportation_mode', width: 20 },
-            { header: 'Distance to School', key: 'distance_to_school', width: 15 },
-            { header: 'Number of Two Wheelers', key: 'num_two_wheelers', width: 20 },
-            { header: 'Number of Four Wheelers', key: 'num_four_wheelers', width: 20 },
-            { header: 'Irrigation Land', key: 'irrigation_land', width: 15 },
-            { header: 'Neighbor Name', key: 'neighbor_name', width: 20 },
-            { header: 'Neighbor Phone', key: 'neighbor_phone', width: 15 },
-            { header: 'Favorite Teacher Name', key: 'favorite_teacher_name', width: 25 },
-            { header: 'Favorite Teacher Phone', key: 'favorite_teacher_phone', width: 15 },
-            {header: 'Exam cleared Y/N', key: 'pp_exam_cleared', width: 15},
-            {header: 'Interview Required', key: 'interview_required_yn', width: 15}
+        // Define columns with custom color groups
+        const columns = [
+            // Group 1: Personal Info - Red (#FF0000)
+            { header: 'Applicant ID', key: 'applicant_id', width: 15, color: 'FFFFCC' },
+            { header: 'Student Name', key: 'student_name', width: 30, color: 'FFFFCC' },
+            { header: 'Father Name', key: 'father_name', width: 30, color: 'FFFFCC' },
+            { header: 'Mother Name', key: 'mother_name', width: 30, color: 'FFFFCC' },
+            { header: 'Village', key: 'village', width: 20, color: 'FFFFCC' },
+            { header: 'Gender(M,F)', key: 'gender', width: 15, color: 'FFFFCC' },
+            { header: 'Aadhaar', key: 'aadhaar', width: 20, color: 'FFFFCC' },
+            { header: 'Date of Birth', key: 'dob', width: 15, color: 'FFFFCC' },
+            { header: 'Medium', key: 'medium', width: 15, color: 'FFFFCC' },
+            { header: 'Home Address', key: 'home_address', width: 40, color: 'FFFFCC' },
+            { header: 'Family Income', key: 'family_income_total', width: 20, color: 'FFFFCC' },
+            
+            // Group 2: Secondary Info - Green (#CCFFCC)
+            { header: 'Father Occupation', key: 'father_occupation', width: 25, color: 'CCFFCC' },
+            { header: 'Mother Occupation', key: 'mother_occupation', width: 25, color: 'CCFFCC' },
+            { header: 'Father Education', key: 'father_education', width: 25, color: 'CCFFCC' },
+            { header: 'Mother Education', key: 'mother_education', width: 25, color: 'CCFFCC' },
+            { header: 'Household Size', key: 'household_size', width: 15, color: 'CCFFCC' },
+            { header: 'Own House(Y,N)', key: 'own_house', width: 15, color: 'CCFFCC' },
+            { header: 'Smart Phone at Home(Y,N)', key: 'smart_phone_home', width: 15, color: 'CCFFCC' },
+            { header: 'Internet Facility at Home(Y,N)', key: 'internet_facility_home', width: 20, color: 'CCFFCC' },
+            { header: 'Career Goals', key: 'career_goals', width: 30, color: 'CCFFCC' },
+            { header: 'Subjects of Interest', key: 'subjects_of_interest', width: 30, color: 'CCFFCC' },
+            { header: 'Transportation Mode', key: 'transportation_mode', width: 20, color: 'CCFFCC' },
+            { header: 'Distance to School', key: 'distance_to_school', width: 15, color: 'CCFFCC' },
+            { header: 'Number of Two Wheelers', key: 'num_two_wheelers', width: 20, color: 'CCFFCC' },
+            { header: 'Number of Four Wheelers', key: 'num_four_wheelers', width: 20, color: 'CCFFCC' },
+            { header: 'Irrigation Land', key: 'irrigation_land', width: 15, color: 'CCFFCC' },
+            { header: 'Neighbor Name', key: 'neighbor_name', width: 20, color: 'CCFFCC' },
+            { header: 'Neighbor Phone', key: 'neighbor_phone', width: 15, color: 'CCFFCC' },
+            { header: 'Favorite Teacher Name', key: 'favorite_teacher_name', width: 25, color: 'CCFFCC' },
+            { header: 'Favorite Teacher Phone', key: 'favorite_teacher_phone', width: 15, color: 'CCFFCC' },
+            
+            // Group 3: Exam Attendance - red (#FFFFCC)
+            { header: 'Exam Appeared Y/N', key: 'pp_exam_appeared_yn', width: 20, color: 'FFCCCC' },
+            
+            // Group 4: Exam Results - Blue (#0000FF)
+            { header: 'Exam Score', key: 'pp_exam_score', width: 18, color: 'CCFFFF' },
+            { header: 'Exam cleared Y/N', key: 'pp_exam_cleared', width: 15, color: 'CCFFFF' },
+            { header: 'Interview Required', key: 'interview_required_yn', width: 15, color: 'CCFFFF' }
         ];
         
-        // Add data
-        students.forEach(student => {
-            worksheet.addRow({
-                applicant_id:student.applicant_id,
+        // Set worksheet columns
+        worksheet.columns = columns.map(col => ({
+            header: col.header,
+            key: col.key,
+            width: col.width
+        }));
+        
+        // Add header row with colors
+        const headerRow = worksheet.getRow(1);
+        columns.forEach((col, index) => {
+            const cell = headerRow.getCell(index + 1);
+            cell.value = col.header;
+            cell.font = {
+                name: 'Calibri',
+                family: 2,
+                size: 11,
+                bold: true,
+                color: { argb: 'FF000000' }
+            };
+            cell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: col.color }
+            };
+            cell.alignment = { 
+                vertical: 'middle', 
+                horizontal: 'center',
+                wrapText: true 
+            };
+        });
+        
+        // Add data rows
+        students.forEach((student, rowIndex) => {
+            const row = worksheet.addRow({
+                applicant_id: student.applicant_id,
                 student_name: student.student_name,
-                pp_exam_score: student.pp_exam_score,
-                pp_exam_appeared_yn:student.pp_exam_appeared_yn,
+                father_name: student.father_name,
+                mother_name: student.mother_name,
                 village: student.village,
+                gender: student.gender,
+                aadhaar: student.aadhaar,
+                dob: student.dob ? formatDateForExcel(student.dob) : null,
+                medium: student.medium,
+                home_address: student.home_address,
+                family_income_total: student.family_income_total,
                 father_occupation: student.father_occupation,
                 mother_occupation: student.mother_occupation,
                 father_education: student.father_education,
@@ -111,16 +150,104 @@ const downloadStudentExcel = asyncHandler(async (req, res) => {
                 neighbor_phone: student.neighbor_phone,
                 favorite_teacher_name: student.favorite_teacher_name,
                 favorite_teacher_phone: student.favorite_teacher_phone,
-                pp_exam_cleared:student.pp_exam_cleared,
-                interview_required_yn:student.interview_required_yn
+                pp_exam_appeared_yn: student.pp_exam_appeared_yn,
+                pp_exam_score: student.pp_exam_score,
+                pp_exam_cleared: student.pp_exam_cleared,
+                interview_required_yn: student.interview_required_yn
+            });
+            
+            // Apply specific formatting to each cell
+            row.eachCell((cell, colNumber) => {
+                // Basic formatting for all cells
+                cell.font = {
+                    name: 'Calibri',
+                    size: 10
+                };
+                cell.alignment = {
+                    vertical: 'middle',
+                    wrapText: true
+                };
+                
+                // Apply date formatting to DOB column (column 8)
+                if (colNumber === 8 && cell.value) {
+                    cell.numFmt = 'dd-mm-yyyy'; // Date format for Excel
+                    cell.alignment = {
+                        vertical: 'middle',
+                        horizontal: 'center'
+                    };
+                }
+                
+                // Format Family Income as currency (column 11)
+                if (colNumber === 11 && cell.value !== null && cell.value !== undefined) {
+                    cell.numFmt = '₹#,##0.00';
+                    cell.alignment = {
+                        vertical: 'middle',
+                        horizontal: 'right'
+                    };
+                }
+                
+                // Format numeric columns (Exam Score, Distance, etc.)
+                const numericColumns = [32, 23, 24, 25, 26]; // Exam Score, Distance, Num Two Wheelers, etc.
+                if (numericColumns.includes(colNumber) && cell.value !== null && cell.value !== undefined) {
+                    cell.numFmt = '0.00';
+                    cell.alignment = {
+                        vertical: 'middle',
+                        horizontal: 'right'
+                    };
+                }
+                
+                // Format Y/N columns to be centered
+                const ynColumns = [6, 17, 18, 19, 31, 33, 34]; // Gender, Own House, Smart Phone, etc.
+                if (ynColumns.includes(colNumber) && cell.value !== null && cell.value !== undefined) {
+                    cell.alignment = {
+                        vertical: 'middle',
+                        horizontal: 'center'
+                    };
+                }
             });
         });
         
-        // Auto-fit columns (optional)
+        // Add data validation for specific columns
+        // Add dropdown for Gender column
+        worksheet.getColumn(6).eachCell((cell, rowNumber) => {
+            if (rowNumber > 1) { // Skip header row
+                cell.dataValidation = {
+                    type: 'list',
+                    allowBlank: true,
+                    formulae: ['"M,F"']
+                };
+            }
+        });
+        
+        // Add dropdown for Y/N columns
+        const ynColumns = [17, 18, 19, 31, 33, 34]; // Own House, Smart Phone, Internet, Exam Appeared, Exam Cleared, Interview Required
+        ynColumns.forEach(colNumber => {
+            worksheet.getColumn(colNumber).eachCell((cell, rowNumber) => {
+                if (rowNumber > 1) {
+                    cell.dataValidation = {
+                        type: 'list',
+                        allowBlank: true,
+                        formulae: ['"Y,N"']
+                    };
+                }
+            });
+        });
+        
+        // Add calendar date picker hint for DOB column
+        worksheet.getColumn(8).eachCell((cell, rowNumber) => {
+            if (rowNumber > 1) {
+                // Add a comment/hint about date format
+                if (!cell.comment) {
+                    cell.note = 'Double click for calendar or enter date as DD-MM-YYYY';
+                }
+            }
+        });
+        
+        // Auto-fit columns
         worksheet.columns.forEach(column => {
             if (column.values && column.values.length > 1) {
                 const lengths = column.values.map(v => v ? v.toString().length : 0);
-                column.width = Math.max(...lengths.filter(len => typeof len === 'number')) + 2;
+                column.width = Math.min(Math.max(...lengths.filter(len => typeof len === 'number')) + 2, 50);
             }
         });
         
@@ -143,19 +270,90 @@ const downloadStudentExcel = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Something went wrong while generating Excel file")
     }
 });
- 
+
+// Helper function to format date for Excel
+function formatDateForExcel(value) {
+  if (!value) return null;
+
+  try {
+    // ✅ Excel serial number (most common issue)
+    if (typeof value === 'number') {
+      const excelEpoch = new Date(1899, 11, 30);
+      const date = new Date(excelEpoch.getTime() + value * 86400000);
+      return date.toISOString().split('T')[0];
+    }
+
+    // ✅ JS Date object
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0];
+    }
+
+    // ✅ String date
+    if (typeof value === 'string') {
+      const parsed = new Date(value);
+      if (!isNaN(parsed)) {
+        return parsed.toISOString().split('T')[0];
+      }
+    }
+
+    return null;
+  } catch (err) {
+    console.error('Invalid DOB:', value);
+    return null;
+  }
+}
+
+
+// You'll need to install moment.js for date parsing:
+// npm install moment
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'public/uploadsinfo/');
+    const BASE_PATH = process.env.FILE_STORAGE_PATH;
+
+    if (!BASE_PATH) {
+      return cb(new Error("FILE_STORAGE_PATH not set"), null);
+    }
+
+    const uploadDir = path.join(
+      BASE_PATH,
+      "Admission",
+      "Evaluation"
+    );
+
+    // Ensure directory exists
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    cb(null, uploadDir);
   },
+
   filename: (req, file, cb) => {
-    cb(null, `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`);
+    const uniqueName = `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`;
+    cb(null, uniqueName);
   }
 });
 
-const upload = multer({ storage });
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB (optional)
+  },
+  fileFilter: (req, file, cb) => {
+    if (
+      file.mimetype === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+      file.mimetype === "application/vnd.ms-excel"
+    ) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only Excel files are allowed"), false);
+    }
+  }
+});
     
+
 const uploadBulkData = asyncHandler(async (req, res) => {
   if (!req.file) {
     throw new ApiError(400, 'No file uploaded');
@@ -164,228 +362,213 @@ const uploadBulkData = asyncHandler(async (req, res) => {
   try {
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.readFile(req.file.path);
-    const worksheet = workbook.getWorksheet(1);
+    const worksheet = workbook.getWorksheet('Students');
 
     const secondaryInfoData = [];
     const examResultsData = [];
-    const examAttendance = [];
-    const eligibleStudents = []; // New array for students eligible for student_master
+    const examAttendanceData = [];
+    const eligibleStudents = [];
+    const primaryInfoUpdates = [];
     const errors = [];
 
-    // Updated column mapping with 1-based indexing
-    const COLUMNS = {
-      APPLICANT_ID: 1,    // A
-      STUDENT_NAME: 2,     // B
-      EXAM_SCORE: 3,       // C
-      ATTENDANCE: 4,       // D
-      VILLAGE: 5,          // E
-      FATHER_OCCUPATION: 6, // F
-      MOTHER_OCCUPATION: 7, // G
-      FATHER_EDUCATION: 8,  // H
-      MOTHER_EDUCATION: 9,  // I
-      HOUSEHOLD_SIZE: 10,   // J
-      OWN_HOUSE: 11,        // K
-      SMART_PHONE_HOME: 12, // L
-      INTERNET_FACILITY_HOME: 13, // M
-      CAREER_GOALS: 14,     // N
-      SUBJECTS_OF_INTEREST: 15, // O
-      TRANSPORTATION_MODE: 16, // P
-      DISTANCE_TO_SCHOOL: 17, // Q
-      NUM_TWO_WHEELERS: 18,  // R
-      NUM_FOUR_WHEELERS: 19, // S
-      IRRIGATION_LAND: 20,   // T
-      NEIGHBOR_NAME: 21,     // U
-      NEIGHBOR_PHONE: 22,    // V
-      FAV_TEACHER_NAME: 23,  // W
-      FAV_TEACHER_PHONE: 24,
-      PP_EXAM_CLEARED: 25,   // X
-      INTERVIEW_REQUIRED: 26  // Y
-    };
-
     worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-      if (rowNumber > 1) { // Skip header row
-        try {
-          // Validate required fields
-          const applicantId = parseInt(row.getCell(COLUMNS.APPLICANT_ID).value);
-          if (isNaN(applicantId)) {
-            throw new Error(`Invalid Applicant ID at row ${rowNumber}`);
-          }
+      if (rowNumber === 1) return;
 
-          const studentName = row.getCell(COLUMNS.STUDENT_NAME).value?.toString();
-          if (!studentName) {
-            throw new Error(`Missing Student Name at row ${rowNumber}`);
-          }
+      try {
+        const applicantId = parseInt(row.getCell(1).value);
+        if (!Number.isFinite(applicantId)) {
+          throw new Error('Invalid Applicant ID');
+        }
 
-          // Get exam clearance and interview status
-          const ppExamCleared = safeYN(row, COLUMNS.PP_EXAM_CLEARED);
-          const interviewRequired = safeYN(row, COLUMNS.INTERVIEW_REQUIRED);
-          
-          // Prepare secondary info data with proper null handling
-          const secondaryInfo = {
+        const studentName = safeString(row, 2);
+        if (!studentName) {
+          throw new Error('Student Name missing');
+        }
+
+        // ---- Primary Info ----
+        primaryInfoUpdates.push({
+          applicant_id: applicantId,
+          father_name: safeString(row, 3),
+          mother_name: safeString(row, 4),
+          gender: safeString(row, 6),
+          medium: safeString(row, 9),
+          aadhaar: safeString(row, 7),
+          dob: safeDate(row, 8),
+          home_address: safeString(row, 10),
+          family_income_total: safeFloat(row, 11) ?? 0
+        });
+
+        // ---- Numeric Safety ----
+        const twoWheelers = Number(safeInt(row, 24));
+        const fourWheelers = Number(safeInt(row, 25));
+        const irrigation = Number(safeFloat(row, 26));
+        const household = Number(safeInt(row, 16));
+
+        // ---- Secondary Info ----
+        secondaryInfoData.push({
+          applicant_id: applicantId,
+          village: safeString(row, 5),
+          father_occupation: safeString(row, 12),
+          mother_occupation: safeString(row, 13),
+          father_education: safeString(row, 14),
+          mother_education: safeString(row, 15),
+          household_size: Number.isFinite(household) ? household : 0,
+          own_house: safeYN(row, 17),
+          smart_phone_home: safeYN(row, 18),
+          internet_facility_home: safeYN(row, 19),
+          career_goals: safeString(row, 20),
+          subjects_of_interest: safeString(row, 21),
+          transportation_mode: safeString(row, 22),
+          distance_to_school: safeFloat(row, 23) ?? 0,
+          num_two_wheelers: Number.isFinite(twoWheelers) ? twoWheelers : 0,
+          num_four_wheelers: Number.isFinite(fourWheelers) ? fourWheelers : 0,
+          irrigation_land: Number.isFinite(irrigation) ? irrigation : 0,
+          neighbor_name: safeString(row, 27),
+          neighbor_phone: safeString(row, 28),
+          favorite_teacher_name: safeString(row, 29),
+          favorite_teacher_phone: safeString(row, 30)
+        });
+
+        // ---- Exam ----
+        const ppExamCleared = safeYN(row, 33);
+        const interviewRequired = safeYN(row, 34);
+
+        examResultsData.push({
+          applicant_id: applicantId,
+          pp_exam_score: safeFloat(row, 32) ?? 0,
+          pp_exam_cleared: ppExamCleared,
+          interview_required_yn: interviewRequired
+        });
+
+        examAttendanceData.push({
+          applicant_id: applicantId,
+          pp_exam_appeared_yn: safeYN(row, 31)
+        });
+
+        if (ppExamCleared === 'Y' && interviewRequired === 'N') {
+          eligibleStudents.push({
             applicant_id: applicantId,
-            village: safeString(row, COLUMNS.VILLAGE),
-            father_occupation: safeString(row, COLUMNS.FATHER_OCCUPATION),
-            mother_occupation: safeString(row, COLUMNS.MOTHER_OCCUPATION),
-            father_education: safeString(row, COLUMNS.FATHER_EDUCATION),
-            mother_education: safeString(row, COLUMNS.MOTHER_EDUCATION),
-            household_size: safeInt(row, COLUMNS.HOUSEHOLD_SIZE),
-            own_house: safeYN(row, COLUMNS.OWN_HOUSE),
-            smart_phone_home: safeYN(row, COLUMNS.SMART_PHONE_HOME),
-            internet_facility_home: safeYN(row, COLUMNS.INTERNET_FACILITY_HOME),
-            career_goals: safeString(row, COLUMNS.CAREER_GOALS),
-            subjects_of_interest: safeString(row, COLUMNS.SUBJECTS_OF_INTEREST),
-            transportation_mode: safeString(row, COLUMNS.TRANSPORTATION_MODE),
-            distance_to_school: safeFloat(row, COLUMNS.DISTANCE_TO_SCHOOL),
-            num_two_wheelers: safeInt(row, COLUMNS.NUM_TWO_WHEELERS, 0),
-            num_four_wheelers: safeInt(row, COLUMNS.NUM_FOUR_WHEELERS, 0),
-            irrigation_land: safeFloat(row, COLUMNS.IRRIGATION_LAND, 0),
-            neighbor_name: safeString(row, COLUMNS.NEIGHBOR_NAME),
-            neighbor_phone: safeString(row, COLUMNS.NEIGHBOR_PHONE),
-            favorite_teacher_name: safeString(row, COLUMNS.FAV_TEACHER_NAME),
-            favorite_teacher_phone: safeString(row, COLUMNS.FAV_TEACHER_PHONE)
-          };
-
-          secondaryInfoData.push(secondaryInfo);
-
-          // Prepare exam results data
-          examResultsData.push({
-            applicant_id: applicantId,
-            pp_exam_score: safeFloat(row, COLUMNS.EXAM_SCORE, 0),
-            pp_exam_cleared: ppExamCleared,
-            interview_required_yn: interviewRequired
-          });
-
-          // Prepare exam attendance data
-          examAttendance.push({
-            applicant_id: applicantId,
-            pp_exam_appeared_yn: safeYN(row, COLUMNS.ATTENDANCE)
-          });
-
-          // Check if student is eligible for student_master insertion
-          if (ppExamCleared === 'Y' && interviewRequired === 'N') {
-            // Get additional parent info if needed
-            // For now, we'll store basic info. You may need to adjust based on available data
-            const eligibleStudent = {
-              applicant_id: applicantId,
-              student_name: studentName,
-              father_occupation: safeString(row, COLUMNS.FATHER_OCCUPATION),
-              mother_occupation: safeString(row, COLUMNS.MOTHER_OCCUPATION),
-              // Note: Other fields like father_name, mother_name, etc. might not be in the Excel
-              // You may need to get them from other tables or modify your Excel structure
-            };
-            eligibleStudents.push(eligibleStudent);
-          }
-
-        } catch (error) {
-          errors.push({
-            row: rowNumber,
-            error: error.message,
-            applicantId: row.getCell(COLUMNS.APPLICANT_ID).value,
-            studentName: row.getCell(COLUMNS.STUDENT_NAME).value
+            student_name: studentName,
+            father_name: safeString(row, 3),
+            mother_name: safeString(row, 4),
+            gender: safeString(row, 6),
+            home_address: safeString(row, 10),
+            father_occupation: safeString(row, 12),
+            mother_occupation: safeString(row, 13),
+            teacher_name: safeString(row, 29),
+            teacher_mobile_number: safeString(row, 30)
           });
         }
+
+      } catch (err) {
+        errors.push({
+          row: rowNumber,
+          error: err.message
+        });
       }
     });
 
-    if (errors.length > 0) {
-      console.error('Validation errors:', errors);
-      
-      // Generate error file content
-      const errorContent = generateErrorFileContent(errors);
-      
-      // Set headers for file download
-      res.setHeader('Content-Type', 'text/plain');
-      res.setHeader('Content-Disposition', 'attachment; filename="upload_errors.txt"');
-      res.setHeader('Content-Length', errorContent.length);
-      
-      // Send the error file
-      res.status(400).send(errorContent);
-      return;
+    if (errors.length) {
+      return res.status(400).json({ errors });
     }
 
-    // Insert data into database
-    await insertBulkData(secondaryInfoData, examResultsData, examAttendance, eligibleStudents);
+    const result = await insertBulkData(
+      primaryInfoUpdates,
+      secondaryInfoData,
+      examResultsData,
+      examAttendanceData,
+      eligibleStudents
+    );
 
-    res.status(200).json(new ApiResponse(200, {
-      totalRecords: secondaryInfoData.length,
-      failedRecords: errors.length,
-      successRecords: secondaryInfoData.length - errors.length,
-      eligibleStudents: eligibleStudents.length
-    }, 'Data uploaded successfully'));
+    res.status(200).json({
+      message: 'Bulk upload successful',
+      result
+    });
 
   } catch (error) {
-    console.error('Bulk upload error:', error);
-    
-    if (error instanceof ApiError) {
-      throw error;
-    }
-    
-    // Handle database errors and generate error file
-    const errorContent = `Database Error: ${error.message}\n\nStack Trace:\n${error.stack}`;
-    
-    res.setHeader('Content-Type', 'text/plain');
-    res.setHeader('Content-Disposition', 'attachment; filename="database_error.txt"');
-    res.setHeader('Content-Length', errorContent.length);
-    
-    res.status(500).send(errorContent);
+    console.error(error);
+    res.status(500).send(error.message);
   }
 });
 
-// Helper function to generate error file content
-function generateErrorFileContent(errors) {
-  let content = 'BULK UPLOAD ERROR REPORT\n';
-  content += '========================\n\n';
-  content += `Total Errors: ${errors.length}\n\n`;
-  content += 'ERROR DETAILS:\n';
-  content += '==============\n\n';
 
-  errors.forEach((error, index) => {
-    content += `Error ${index + 1}:\n`;
-    content += `- Row Number: ${error.row}\n`;
-    content += `- Applicant ID: ${error.applicantId || 'N/A'}\n`;
-    content += `- Student Name: ${error.studentName || 'N/A'}\n`;
-    content += `- Error Message: ${error.error}\n`;
-    content += '----------------------------------------\n\n';
-  });
+// Helper function to safely parse date
+function safeDate(row, index) {
+  const value = row.getCell(index).value;
 
-  content += 'SUGGESTIONS:\n';
-  content += '============\n';
-  content += '1. Check that Applicant ID is a valid number\n';
-  content += '2. Ensure Student Name is not empty\n';
-  content += '3. Verify numeric fields contain only numbers\n';
-  content += '4. Check that Y/N fields contain only "Y" or "N"\n';
-  content += '5. Review all required fields are filled\n\n';
-  content += 'Please correct these errors and try uploading again.';
+  if (!value) return null;
 
-  return content;
-}
+  // Excel native date
+  if (value instanceof Date) {
+    return value;
+  }
 
-// Helper functions for safe data extraction
-function safeString(row, colIndex) {
-  const cell = row.getCell(colIndex);
-  return cell.value ? cell.value.toString().trim() : null;
-}
+  // String date → convert safely
+  if (typeof value === 'string') {
+    const parts = value.split(/[-/]/);
+    if (parts.length === 3) {
+      const [dd, mm, yyyy] = parts;
+      return new Date(`${yyyy}-${mm}-${dd}`);
+    }
+  }
 
-function safeInt(row, colIndex, defaultValue = null) {
-  const cell = row.getCell(colIndex);
-  if (cell.value === null || cell.value === undefined) return defaultValue;
-  const num = parseInt(cell.value);
-  return isNaN(num) ? defaultValue : num;
-}
-
-function safeFloat(row, colIndex, defaultValue = null) {
-  const cell = row.getCell(colIndex);
-  if (cell.value === null || cell.value === undefined) return defaultValue;
-  const num = parseFloat(cell.value);
-  return isNaN(num) ? defaultValue : num;
-}
-
-function safeYN(row, colIndex) {
-  const val = safeString(row, colIndex);
-  return val && val.toUpperCase() === 'Y' ? 'Y' : 'N';
+  return null;
 }
 
 
+
+// Enhanced helper functions
+function safeString(row, columnIndex, defaultValue = null) {
+  try {
+    const cell = row.getCell(columnIndex);
+    if (!cell || cell.value === null || cell.value === undefined) {
+      return defaultValue;
+    }
+    const value = cell.value.toString().trim();
+    return value === '' ? defaultValue : value;
+  } catch (error) {
+    return defaultValue;
+  }
+}
+
+function safeInt(row, columnIndex, defaultValue = 0) {
+  try {
+    const cell = row.getCell(columnIndex);
+    if (!cell || cell.value === null || cell.value === undefined) {
+      return defaultValue;
+    }
+    const value = parseInt(cell.value);
+    return isNaN(value) ? defaultValue : value;
+  } catch (error) {
+    return defaultValue;
+  }
+}
+
+function safeFloat(row, columnIndex, defaultValue = 0) {
+  try {
+    const cell = row.getCell(columnIndex);
+    if (!cell || cell.value === null || cell.value === undefined) {
+      return defaultValue;
+    }
+    const value = parseFloat(cell.value);
+    return isNaN(value) ? defaultValue : value;
+  } catch (error) {
+    return defaultValue;
+  }
+}
+
+function safeYN(row, columnIndex, defaultValue = 'N') {
+  try {
+    const cell = row.getCell(columnIndex);
+    if (!cell || cell.value === null || cell.value === undefined) {
+      return defaultValue;
+    }
+    const value = cell.value.toString().trim().toUpperCase();
+    return (value === 'Y' || value === 'N') ? value : defaultValue;
+  } catch (error) {
+    return defaultValue;
+  }
+}
 
 module.exports ={
     fetchExamNames,
