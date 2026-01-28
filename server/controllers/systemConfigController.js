@@ -1,90 +1,73 @@
-const pool = require("../config/db");
+const systemConfigModel = require("../models/systemConfigModel");
 
-// ==============================
-// GET all configurations
-// ==============================
+/* ==============================
+   GET all configurations
+============================== */
 exports.getAllConfigs = async (req, res) => {
   try {
-    const result = await pool.query(
-      `SELECT system_config_id, academic_year, phase, is_active, created_at, updated_at
-       FROM pp.system_config
-       ORDER BY created_at DESC`
-    );
-    res.json(result.rows);
+    const configs = await systemConfigModel.getAllConfigs();
+    res.json(configs);
   } catch (err) {
     console.error("❌ Error fetching configs:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-// ==============================
-// CREATE a new configuration
-// ==============================
+/* ==============================
+   CREATE configuration
+============================== */
 exports.createConfig = async (req, res) => {
-  const { academic_year, phase, is_active } = req.body;
-
   try {
-    const result = await pool.query(
-      `INSERT INTO pp.system_config (academic_year, phase, is_active)
-       VALUES ($1, $2, COALESCE($3, false))
-       RETURNING *`,
-      [academic_year, phase, is_active]
-    );
-    res.json(result.rows[0]);
+    const config = await systemConfigModel.createConfig(req.body);
+    res.json(config);
   } catch (err) {
+    if (err.code === "23505") {
+      return res
+        .status(400)
+        .json({ error: `Academic year already exists.` });
+    }
     console.error("❌ Error creating config:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-// ==============================
-// UPDATE (Edit) a configuration
-// ==============================
+/* ==============================
+   UPDATE configuration
+============================== */
 exports.editConfig = async (req, res) => {
   const { id } = req.params;
-  const { academic_year, phase, is_active } = req.body;
 
-  if (!id || isNaN(parseInt(id))) {
+  if (!id || isNaN(Number(id))) {
     return res.status(400).json({ error: "Invalid or missing config ID" });
   }
 
   try {
-    const result = await pool.query(
-      `UPDATE pp.system_config
-       SET academic_year = $1, phase = $2, is_active = $3
-       WHERE system_config_id = $4 RETURNING *`,
-      [academic_year, phase, is_active, id]
-    );
+    const updated = await systemConfigModel.updateConfig(id, req.body);
 
-    if (!result.rows[0])
+    if (!updated) {
       return res.status(404).json({ error: "Configuration not found" });
+    }
 
-    res.json(result.rows[0]);
+    res.json(updated);
   } catch (err) {
     if (err.code === "23505") {
-      return res.status(400).json({ error: `Academic year '${academic_year}' already exists.` });
+      return res
+        .status(400)
+        .json({ error: `Academic year already exists.` });
     }
-    console.error("Error updating config:", err);
+    console.error("❌ Error updating config:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-
-// ==============================
-// DELETE a configuration
-// ==============================
+/* ==============================
+   DELETE configuration
+============================== */
 exports.deleteConfig = async (req, res) => {
-  const { id } = req.params; // system_config_id
-
   try {
-    const result = await pool.query(
-      `DELETE FROM pp.system_config
-       WHERE system_config_id = $1
-       RETURNING *`,
-      [id]
-    );
+    const deleted = await systemConfigModel.deleteConfig(req.params.id);
 
-    if (result.rowCount === 0) {
+    if (!deleted) {
       return res.status(404).json({ error: "Configuration not found" });
     }
 
@@ -95,45 +78,31 @@ exports.deleteConfig = async (req, res) => {
   }
 };
 
-// ==============================
-// ACTIVATE a configuration
-// (sets is_active = true for given row)
-// ==============================
+/* ==============================
+   ACTIVATE configuration
+============================== */
 exports.activateConfig = async (req, res) => {
-  const { id } = req.params; // system_config_id
-
   try {
-    const result = await pool.query(
-      `UPDATE pp.system_config
-       SET is_active = true
-       WHERE system_config_id = $1
-       RETURNING *`,
-      [id]
-    );
+    const activated = await systemConfigModel.activateConfig(req.params.id);
 
-    if (result.rowCount === 0) {
+    if (!activated) {
       return res.status(404).json({ error: "Configuration not found" });
     }
 
-    res.json(result.rows[0]);
+    res.json(activated);
   } catch (err) {
     console.error("❌ Error activating config:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-// ==============================
-// GET all active configurations
-// ==============================
+/* ==============================
+   GET active configurations
+============================== */
 exports.getActiveConfigs = async (req, res) => {
   try {
-    const result = await pool.query(
-      `SELECT system_config_id, academic_year, phase, is_active, created_at, updated_at
-       FROM pp.system_config
-       WHERE is_active = true
-       ORDER BY academic_year DESC`
-    );
-    res.json(result.rows);
+    const configs = await systemConfigModel.getActiveConfigs();
+    res.json(configs);
   } catch (err) {
     console.error("❌ Error fetching active configs:", err);
     res.status(500).json({ error: "Internal Server Error" });

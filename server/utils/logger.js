@@ -60,8 +60,33 @@ class Logger {
    */
   writeLog(logEntry) {
     try {
+      const dateString = format(new Date(), 'yyyy-MM-dd');
+      const logFilePath = path.join(logsDir, `activity-${dateString}.log`);
+      const humanLogFilePath = path.join(logsDir, `activity-human-${dateString}.log`);
+
       const logString = JSON.stringify(logEntry) + '\n';
-      fs.appendFileSync(this.logFilePath, logString);
+      fs.appendFileSync(logFilePath, logString);
+
+      // Also create a simple, human-readable summary line for non-technical users
+      const userDisplay = logEntry.user_name || logEntry.user_id || 'anonymous';
+      const userIdDisplay = logEntry.user_id ? `(${logEntry.user_id})` : '';
+      const actionDisplay = logEntry.action || `${logEntry.method || ''} ${logEntry.path || ''}`.trim();
+      const statusDisplay = logEntry.status ? `status=${logEntry.status}` : '';
+      const ipDisplay = logEntry.ip ? `ip=${logEntry.ip}` : '';
+      let detailsDisplay = '';
+      if (logEntry.details) {
+        try {
+          detailsDisplay = typeof logEntry.details === 'string' ? logEntry.details : JSON.stringify(logEntry.details);
+          // Keep human line short: truncate if too long
+          if (detailsDisplay.length > 300) detailsDisplay = detailsDisplay.slice(0, 297) + '...';
+          detailsDisplay = ` details=${detailsDisplay}`;
+        } catch (e) {
+          detailsDisplay = '';
+        }
+      }
+
+      const humanLine = `[${logEntry.timestamp || new Date().toISOString()}] ${logEntry.type || 'LOG'}: ${actionDisplay} by ${userDisplay} ${userIdDisplay} ${ipDisplay} ${statusDisplay}${detailsDisplay}\n`;
+      fs.appendFileSync(humanLogFilePath, humanLine);
     } catch (error) {
       console.error('Error writing to log file:', error);
     }

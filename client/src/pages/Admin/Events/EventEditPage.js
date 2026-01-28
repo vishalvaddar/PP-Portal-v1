@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import styles from "./EventEditPage.module.css";
 
-// Import your hooks
 import { 
   useFetchStates,
   useFetchEducationDistricts, 
@@ -15,21 +14,17 @@ const EventEditPage = () => {
     const navigate = useNavigate();
     const API_BASE_URL = process.env.REACT_APP_BACKEND_API_URL;
 
-    // --- State Management ---
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
 
-    // Dropdown Data
     const [eventTypes, setEventTypes] = useState([]);
     
-    // Jurisdiction States
     const [states, setStates] = useState([]);
     const [districts, setDistricts] = useState([]);
     const [blocks, setBlocks] = useState([]);
 
-    // Form Data
     const [formData, setFormData] = useState({
         event_type_id: "",
         event_title: "",
@@ -46,30 +41,34 @@ const EventEditPage = () => {
         parents_attended: 0,
     });
 
-    // File States
     const [existingPhotos, setExistingPhotos] = useState([]);
+    const [photosToDelete, setPhotosToDelete] = useState([]);
     const [newPhotos, setNewPhotos] = useState([]);
     const [newReports, setNewReports] = useState([]);
 
-    // --- Hooks ---
     useFetchStates(setStates);
     useFetchEducationDistricts(formData.event_state, setDistricts);
     useFetchBlocks(formData.event_district, setBlocks);
 
-    // --- Fetch Data ---
+    // --- HELPER TO FIX URLS ---
+    const getImageUrl = (filePath) => {
+        if (!filePath) return "";
+        // Extract filename from absolute path (handles Windows backslashes)
+        const filename = filePath.replace(/^.*[\\\/]/, '');
+        // Return the clean URL mapped in server.js
+        return `${API_BASE_URL}/uploads/events/photos/${filename}`;
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                // 1. Fetch Types
                 const typesRes = await axios.get(`${API_BASE_URL}/api/event-types`);
                 setEventTypes(typesRes.data.data || typesRes.data || []);
 
-                // 2. Fetch Event
                 const eventRes = await axios.get(`${API_BASE_URL}/api/events/${eventId}`);
                 const data = eventRes.data;
 
-                // 3. Format Dates
                 const startDate = data.event_start_date ? new Date(data.event_start_date).toISOString().split('T')[0] : "";
                 const endDate = data.event_end_date ? new Date(data.event_end_date).toISOString().split('T')[0] : "";
 
@@ -95,7 +94,7 @@ const EventEditPage = () => {
 
             } catch (err) {
                 console.error("Error loading data:", err);
-                setError("Failed to load event details. Please try again.");
+                setError("Failed to load event details.");
             } finally {
                 setLoading(false);
             }
@@ -104,7 +103,6 @@ const EventEditPage = () => {
         fetchData();
     }, [eventId, API_BASE_URL]);
 
-    // --- Handlers ---
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -120,10 +118,21 @@ const EventEditPage = () => {
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
         if (e.target.name === 'photos') {
-            setNewPhotos(files);
+            setNewPhotos(prev => [...prev, ...files]);
         } else if (e.target.name === 'reports') {
             setNewReports(files);
         }
+    };
+
+    const handleRemoveExistingPhoto = (photoId) => {
+        if (window.confirm("Delete this photo? It will be removed on save.")) {
+            setPhotosToDelete(prev => [...prev, photoId]);
+            setExistingPhotos(prev => prev.filter(p => (p.id || p.photo_id) !== photoId));
+        }
+    };
+
+    const handleRemoveNewPhoto = (index) => {
+        setNewPhotos(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleSubmit = async (e) => {
@@ -144,13 +153,15 @@ const EventEditPage = () => {
             newPhotos.forEach(file => data.append("photos", file));
             newReports.forEach(file => data.append("reports", file));
 
+            if (photosToDelete.length > 0) {
+                data.append("photos_to_delete", JSON.stringify(photosToDelete));
+            }
+
             const res = await axios.put(`${API_BASE_URL}/api/events/${eventId}`, data);
 
-            if (res.data.success) {
+            if (res.data.success || res.status === 200) {
                 setSuccess("Event updated successfully!");
-                setTimeout(() => {
-                    navigate(`/admin/academics/events/view/${eventId}`);
-                }, 1500);
+                setTimeout(() => navigate(`/admin/academics/events/${eventId}`), 1500);
             }
 
         } catch (err) {
@@ -167,105 +178,56 @@ const EventEditPage = () => {
     return (
         <div className={styles.pageWrapper}>
             <div className={styles.container}>
-                
                 <header className={styles.header}>
-                    <div>
-                        <h1 className={styles.pageTitle}>Edit Event</h1>
-                    </div>
-                    <button type="button" onClick={() => navigate(-1)} className={styles.backButton}>
-                        &larr; Cancel & Go Back
-                    </button>
+                    <div><h1 className={styles.pageTitle}>Edit Event</h1></div>
+                    <button type="button" onClick={() => navigate(-1)} className={styles.backButton}>&larr; Cancel & Go Back</button>
                 </header>
 
                 {error && <div className={styles.alertError}>{error}</div>}
                 {success && <div className={styles.alertSuccess}>{success}</div>}
 
                 <form onSubmit={handleSubmit} className={styles.formContent}>
-                    
+                    {/* ... Basic Info & Location sections ... */}
                     <section className={styles.card}>
-                        <div className={styles.cardHeader}>
-                            <h2 className={styles.cardTitle}>Basic Information</h2>
-                        </div>
+                        <div className={styles.cardHeader}><h2 className={styles.cardTitle}>Basic Information</h2></div>
                         <div className={styles.cardBody}>
                             <div className={styles.gridRow}>
                                 <div className={styles.formGroup}>
                                     <label className={styles.label}>Event Type <span className={styles.req}>*</span></label>
-                                    <select 
-                                        name="event_type_id" 
-                                        value={formData.event_type_id} 
-                                        onChange={handleChange}
-                                        className={styles.input}
-                                        required
-                                    >
+                                    <select name="event_type_id" value={formData.event_type_id} onChange={handleChange} className={styles.input} required>
                                         <option value="">-- Select Type --</option>
                                         {eventTypes.map(type => (
-                                            <option key={type.event_type_id} value={type.event_type_id}>
-                                                {type.event_type_name}
-                                            </option>
+                                            <option key={type.event_type_id} value={type.event_type_id}>{type.event_type_name}</option>
                                         ))}
                                     </select>
                                 </div>
                                 <div className={`${styles.formGroup} ${styles.colSpan2}`}>
                                     <label className={styles.label}>Event Title <span className={styles.req}>*</span></label>
-                                    <input 
-                                        type="text" 
-                                        name="event_title" 
-                                        value={formData.event_title} 
-                                        onChange={handleChange} 
-                                        className={styles.input}
-                                        placeholder="Enter event title"
-                                        required 
-                                    />
+                                    <input type="text" name="event_title" value={formData.event_title} onChange={handleChange} className={styles.input} required />
                                 </div>
                             </div>
-
                             <div className={styles.gridRow}>
                                 <div className={styles.formGroup}>
                                     <label className={styles.label}>Start Date <span className={styles.req}>*</span></label>
-                                    <input 
-                                        type="date" 
-                                        name="event_start_date" 
-                                        value={formData.event_start_date} 
-                                        onChange={handleChange} 
-                                        className={styles.input}
-                                        required 
-                                    />
+                                    <input type="date" name="event_start_date" value={formData.event_start_date} onChange={handleChange} className={styles.input} required />
                                 </div>
                                 <div className={styles.formGroup}>
                                     <label className={styles.label}>End Date <span className={styles.req}>*</span></label>
-                                    <input 
-                                        type="date" 
-                                        name="event_end_date" 
-                                        value={formData.event_end_date} 
-                                        onChange={handleChange} 
-                                        className={styles.input}
-                                        required 
-                                    />
+                                    <input type="date" name="event_end_date" value={formData.event_end_date} onChange={handleChange} className={styles.input} required />
                                 </div>
                             </div>
-
                             <div className={styles.formGroup}>
                                 <label className={styles.label}>Description</label>
-                                <textarea 
-                                    name="event_description" 
-                                    rows="4"
-                                    value={formData.event_description} 
-                                    onChange={handleChange} 
-                                    className={styles.textarea}
-                                    placeholder="Briefly describe the event highlights..."
-                                />
+                                <textarea name="event_description" rows="4" value={formData.event_description} onChange={handleChange} className={styles.textarea} />
                             </div>
                         </div>
                     </section>
 
-                    {/* SECTION: LOCATION */}
                     <section className={styles.card}>
-                        <div className={styles.cardHeader}>
-                            <h2 className={styles.cardTitle}>Location & Jurisdiction</h2>
-                        </div>
+                        <div className={styles.cardHeader}><h2 className={styles.cardTitle}>Location</h2></div>
                         <div className={styles.cardBody}>
                             <div className={styles.gridRow}>
-                                 <div className={styles.formGroup}>
+                                <div className={styles.formGroup}>
                                     <label className={styles.label}>State</label>
                                     <select name="event_state" value={formData.event_state} onChange={handleChange} className={styles.input}>
                                         <option value="">Select State</option>
@@ -288,23 +250,14 @@ const EventEditPage = () => {
                                 </div>
                             </div>
                             <div className={styles.formGroup}>
-                                <label className={styles.label}>Specific Venue / Address</label>
-                                <input 
-                                    type="text" 
-                                    name="event_location" 
-                                    value={formData.event_location} 
-                                    onChange={handleChange} 
-                                    className={styles.input}
-                                    placeholder="e.g. Govt High School Auditorium, Belagavi"
-                                />
+                                <label className={styles.label}>Specific Venue</label>
+                                <input type="text" name="event_location" value={formData.event_location} onChange={handleChange} className={styles.input} />
                             </div>
                         </div>
                     </section>
 
                     <section className={styles.card}>
-                        <div className={styles.cardHeader}>
-                            <h2 className={styles.cardTitle}>Attendance Records</h2>
-                        </div>
+                        <div className={styles.cardHeader}><h2 className={styles.cardTitle}>Attendance</h2></div>
                         <div className={styles.cardBody}>
                             <div className={styles.gridRow}>
                                 <div className={styles.formGroup}>
@@ -327,29 +280,74 @@ const EventEditPage = () => {
                         </div>
                     </section>
 
+                    {/* --- UPDATED MULTIMEDIA SECTION --- */}
                     <section className={styles.card}>
                         <div className={styles.cardHeader}>
                             <h2 className={styles.cardTitle}>Multimedia Uploads</h2>
                         </div>
                         <div className={styles.cardBody}>
                             
+                            {/* 1. Existing Photos */}
                             {existingPhotos.length > 0 && (
-                                <div className={styles.existingPhotosWrapper}>
-                                    <p className={styles.subLabel}>Currently Uploaded Photos:</p>
+                                <div className={styles.mediaSection}>
+                                    <p className={styles.subLabel}>Previously Uploaded Photos:</p>
                                     <div className={styles.photoGrid}>
-                                        {existingPhotos.map((photo, idx) => (
-                                            <div key={idx} className={styles.photoThumb}>
+                                        {existingPhotos.map((photo, idx) => {
+                                            // 🔴 USE THE HELPER HERE
+                                            const imgUrl = getImageUrl(photo.file_path);
+                                            return (
+                                                <div key={idx} className={styles.photoContainer}>
+                                                    <img 
+                                                        src={imgUrl} 
+                                                        alt="Existing" 
+                                                        className={styles.photoThumb}
+                                                        onError={(e) => e.target.style.display='none'}
+                                                    />
+                                                    <div className={styles.photoOverlay}>
+                                                        <a href={imgUrl} target="_blank" rel="noreferrer" className={styles.viewLink}>👁 View</a>
+                                                        <button 
+                                                            type="button" 
+                                                            className={styles.removeBtn} 
+                                                            onClick={() => handleRemoveExistingPhoto(photo.id || photo.photo_id)}
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 2. New Photos Preview */}
+                            {newPhotos.length > 0 && (
+                                <div className={styles.mediaSection}>
+                                    <p className={styles.subLabel}>New Photos to Upload:</p>
+                                    <div className={styles.photoGrid}>
+                                        {newPhotos.map((file, idx) => (
+                                            <div key={idx} className={styles.photoContainer}>
                                                 <img 
-                                                    src={`${API_BASE_URL}/${photo.file_path ? photo.file_path.replace(/\\/g, "/") : ""}`} 
-                                                    alt="Thumb" 
-                                                    onError={(e) => e.target.style.display='none'}
+                                                    src={URL.createObjectURL(file)} 
+                                                    alt="Preview" 
+                                                    className={styles.photoThumb} 
                                                 />
+                                                <div className={styles.photoOverlay}>
+                                                    <button 
+                                                        type="button" 
+                                                        className={styles.removeBtn} 
+                                                        onClick={() => handleRemoveNewPhoto(idx)}
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
                             )}
 
+                            {/* 3. Upload Input */}
                             <div className={styles.gridRow}>
                                 <div className={styles.formGroup}>
                                     <label className={styles.label}>Add Photos (Max 4)</label>
@@ -363,12 +361,12 @@ const EventEditPage = () => {
                                             className={styles.fileInput}
                                         />
                                         <div className={styles.fileDropText}>
-                                            {newPhotos.length > 0 ? `Selected ${newPhotos.length} image(s)` : "Click to Select Images"}
+                                            Click to Select Images
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
+
                         </div>
                     </section>
 

@@ -114,8 +114,7 @@ const Applications = () => {
             <AlertTriangle size={18} className={styles.disabledNoticeIcon} />
             <p>
               The <strong>New Application</strong> and{" "}
-              <strong>Bulk Upload</strong> options are currently unavailable
-              because the admissions phase has not yet started.
+              <strong>Bulk Upload</strong> These options are currently unavailable as the Classes Started phase has commenced.
             </p>
           </aside>
         )}

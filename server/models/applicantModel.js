@@ -1,5 +1,17 @@
 const pool = require("../config/db");
 
+// Clean empty strings to NULL (Prevents integer/date crashes)
+const clean = (val) => (val === "" || val === undefined ? null : val);
+
+const formatDate = (val) => {
+  if (!val) return null;
+  try {
+    return new Date(val).toISOString().split('T')[0];
+  } catch (e) {
+    return null;
+  }
+};
+
 // =========================================================
 // 1. CREATE APPLICANT (Primary + Secondary)
 // =========================================================
@@ -30,27 +42,27 @@ async function createApplicant(data) {
     `;
 
     const primaryValues = [
-      primaryData.nmms_year,
-      primaryData.nmms_reg_number,
-      primaryData.app_state,
-      primaryData.district,
-      primaryData.nmms_block,
-      primaryData.student_name,
-      primaryData.father_name,
-      primaryData.mother_name,
-      primaryData.gmat_score,
-      primaryData.sat_score,
-      primaryData.gender,
-      primaryData.medium,
-      primaryData.aadhaar,
-      primaryData.dob,
-      primaryData.home_address,
-      primaryData.family_income_total,
-      primaryData.contact_no1,
-      primaryData.contact_no2,
-      primaryData.current_institute_dise_code,
-      primaryData.previous_institute_dise_code,
-      primaryData.created_by // Assumes controller adds this to primaryData
+      clean(primaryData.nmms_year),
+      clean(primaryData.nmms_reg_number),
+      clean(primaryData.app_state),
+      clean(primaryData.district),
+      clean(primaryData.nmms_block),
+      clean(primaryData.student_name),
+      clean(primaryData.father_name),
+      clean(primaryData.mother_name),
+      clean(primaryData.gmat_score),
+      clean(primaryData.sat_score),
+      clean(primaryData.gender),
+      clean(primaryData.medium),
+      clean(primaryData.aadhaar),
+      formatDate(primaryData.dob),
+      clean(primaryData.home_address),
+      clean(primaryData.family_income_total),
+      clean(primaryData.contact_no1),
+      clean(primaryData.contact_no2),
+      clean(primaryData.current_institute_dise_code),
+      clean(primaryData.previous_institute_dise_code),
+      primaryData.created_by
     ];
 
     const { rows } = await client.query(insertPrimary, primaryValues);
@@ -59,7 +71,6 @@ async function createApplicant(data) {
     const applicantId = rows[0].applicant_id;
 
     // --- B. Insert Secondary Info ---
-    // Even if secondaryData is empty, we create a row to link the ID
     const insertSecondary = `
       INSERT INTO pp.applicant_secondary_info (
         applicant_id, village, father_occupation, mother_occupation,
@@ -79,30 +90,29 @@ async function createApplicant(data) {
       )
     `;
 
-    // Use default values if secondaryData fields are missing
     const sec = secondaryData || {};
     const secondaryValues = [
       applicantId,
-      sec.village || null,
-      sec.father_occupation || null,
-      sec.mother_occupation || null,
-      sec.father_education || null,
-      sec.mother_education || null,
-      sec.household_size || null,
-      sec.own_house || null,
-      sec.smart_phone_home || null,
-      sec.internet_facility_home || null,
-      sec.career_goals || null,
-      sec.subjects_of_interest || null,
-      sec.transportation_mode || null,
-      sec.distance_to_school || null,
+      clean(sec.village),
+      clean(sec.father_occupation),
+      clean(sec.mother_occupation),
+      clean(sec.father_education),
+      clean(sec.mother_education),
+      clean(sec.household_size),
+      clean(sec.own_house),
+      clean(sec.smart_phone_home),
+      clean(sec.internet_facility_home),
+      clean(sec.career_goals),
+      clean(sec.subjects_of_interest),
+      clean(sec.transportation_mode),
+      clean(sec.distance_to_school),
       sec.num_two_wheelers || 0,
       sec.num_four_wheelers || 0,
       sec.irrigation_land || 0,
-      sec.neighbor_name || null,
-      sec.neighbor_phone || null,
-      sec.favorite_teacher_name || null,
-      sec.favorite_teacher_phone || null,
+      clean(sec.neighbor_name),
+      clean(sec.neighbor_phone),
+      clean(sec.favorite_teacher_name),
+      clean(sec.favorite_teacher_phone),
       primaryData.created_by
     ];
 
@@ -135,109 +145,106 @@ async function updateApplicant(applicantId, data) {
       const updatePrimary = `
         UPDATE pp.applicant_primary_info
         SET
-          nmms_year = $1,
-          app_state = $2,
-          district = $3,
-          nmms_block = $4,
-          student_name = $5,
-          father_name = $6,
-          mother_name = $7,
-          gmat_score = $8,
-          sat_score = $9,
-          gender = $10,
-          medium = $11,
-          aadhaar = $12,
-          dob = $13,
-          home_address = $14,
-          family_income_total = $15,
-          contact_no1 = $16,
-          contact_no2 = $17,
-          current_institute_dise_code = $18,
-          previous_institute_dise_code = $19,
+          nmms_year = $1, app_state = $2, district = $3, nmms_block = $4,
+          student_name = $5, father_name = $6, mother_name = $7,
+          gmat_score = $8, sat_score = $9, gender = $10,
+          medium = $11, aadhaar = $12, dob = $13,
+          home_address = $14, family_income_total = $15,
+          contact_no1 = $16, contact_no2 = $17,
+          current_institute_dise_code = $18, previous_institute_dise_code = $19,
           updated_at = CURRENT_TIMESTAMP
         WHERE applicant_id = $20
       `;
 
       const primaryValues = [
-        primaryData.nmms_year,
-        primaryData.app_state,
-        primaryData.district,
-        primaryData.nmms_block,
-        primaryData.student_name,
-        primaryData.father_name,
-        primaryData.mother_name,
-        primaryData.gmat_score,
-        primaryData.sat_score,
-        primaryData.gender,
-        primaryData.medium,
-        primaryData.aadhaar,
-        primaryData.dob,
-        primaryData.home_address,
-        primaryData.family_income_total,
-        primaryData.contact_no1,
-        primaryData.contact_no2,
-        primaryData.current_institute_dise_code,
-        primaryData.previous_institute_dise_code,
+        clean(primaryData.nmms_year),
+        clean(primaryData.app_state),
+        clean(primaryData.district),
+        clean(primaryData.nmms_block),
+        clean(primaryData.student_name),
+        clean(primaryData.father_name),
+        clean(primaryData.mother_name),
+        clean(primaryData.gmat_score),
+        clean(primaryData.sat_score),
+        clean(primaryData.gender),
+        clean(primaryData.medium),
+        clean(primaryData.aadhaar),
+        formatDate(primaryData.dob),
+        clean(primaryData.home_address),
+        clean(primaryData.family_income_total),
+        clean(primaryData.contact_no1),
+        clean(primaryData.contact_no2),
+        clean(primaryData.current_institute_dise_code),
+        clean(primaryData.previous_institute_dise_code),
         applicantId
       ];
 
       await client.query(updatePrimary, primaryValues);
     }
 
-    // --- B. Update Secondary Info ---
+    // --- B. Upsert Secondary Info (Insert if new, Update if exists) ---
     if (secondaryData) {
-      const updateSecondary = `
-        UPDATE pp.applicant_secondary_info
-        SET
-          village = $1,
-          father_occupation = $2,
-          mother_occupation = $3,
-          father_education = $4,
-          mother_education = $5,
-          household_size = $6,
-          own_house = $7,
-          smart_phone_home = $8,
-          internet_facility_home = $9,
-          career_goals = $10,
-          subjects_of_interest = $11,
-          transportation_mode = $12,
-          distance_to_school = $13,
-          num_two_wheelers = $14,
-          num_four_wheelers = $15,
-          irrigation_land = $16,
-          neighbor_name = $17,
-          neighbor_phone = $18,
-          favorite_teacher_name = $19,
-          favorite_teacher_phone = $20,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE applicant_id = $21
+      const upsertSecondary = `
+        INSERT INTO pp.applicant_secondary_info (
+          village, father_occupation, mother_occupation, father_education, mother_education,
+          household_size, own_house, smart_phone_home, internet_facility_home,
+          career_goals, subjects_of_interest, transportation_mode, distance_to_school,
+          num_two_wheelers, num_four_wheelers, irrigation_land,
+          neighbor_name, neighbor_phone, favorite_teacher_name, favorite_teacher_phone,
+          applicant_id, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, CURRENT_TIMESTAMP
+        )
+        ON CONFLICT (applicant_id) 
+        DO UPDATE SET
+          village = EXCLUDED.village,
+          father_occupation = EXCLUDED.father_occupation,
+          mother_occupation = EXCLUDED.mother_occupation,
+          father_education = EXCLUDED.father_education,
+          mother_education = EXCLUDED.mother_education,
+          household_size = EXCLUDED.household_size,
+          own_house = EXCLUDED.own_house,
+          smart_phone_home = EXCLUDED.smart_phone_home,
+          internet_facility_home = EXCLUDED.internet_facility_home,
+          career_goals = EXCLUDED.career_goals,
+          subjects_of_interest = EXCLUDED.subjects_of_interest,
+          transportation_mode = EXCLUDED.transportation_mode,
+          distance_to_school = EXCLUDED.distance_to_school,
+          num_two_wheelers = EXCLUDED.num_two_wheelers,
+          num_four_wheelers = EXCLUDED.num_four_wheelers,
+          irrigation_land = EXCLUDED.irrigation_land,
+          neighbor_name = EXCLUDED.neighbor_name,
+          neighbor_phone = EXCLUDED.neighbor_phone,
+          favorite_teacher_name = EXCLUDED.favorite_teacher_name,
+          favorite_teacher_phone = EXCLUDED.favorite_teacher_phone,
+          updated_at = CURRENT_TIMESTAMP;
       `;
 
       const secondaryValues = [
-        secondaryData.village,
-        secondaryData.father_occupation,
-        secondaryData.mother_occupation,
-        secondaryData.father_education,
-        secondaryData.mother_education,
-        secondaryData.household_size,
-        secondaryData.own_house,
-        secondaryData.smart_phone_home,
-        secondaryData.internet_facility_home,
-        secondaryData.career_goals,
-        secondaryData.subjects_of_interest,
-        secondaryData.transportation_mode,
-        secondaryData.distance_to_school,
-        secondaryData.num_two_wheelers,
-        secondaryData.num_four_wheelers,
-        secondaryData.irrigation_land,
-        secondaryData.neighbor_name,
-        secondaryData.neighbor_phone,
-        secondaryData.favorite_teacher_name,
-        secondaryData.favorite_teacher_phone,
+        clean(secondaryData.village),
+        clean(secondaryData.father_occupation),
+        clean(secondaryData.mother_occupation),
+        clean(secondaryData.father_education),
+        clean(secondaryData.mother_education),
+        clean(secondaryData.household_size),
+        clean(secondaryData.own_house),
+        clean(secondaryData.smart_phone_home),
+        clean(secondaryData.internet_facility_home),
+        clean(secondaryData.career_goals),
+        clean(secondaryData.subjects_of_interest),
+        clean(secondaryData.transportation_mode),
+        clean(secondaryData.distance_to_school),
+        clean(secondaryData.num_two_wheelers),
+        clean(secondaryData.num_four_wheelers),
+        clean(secondaryData.irrigation_land),
+        clean(secondaryData.neighbor_name),
+        clean(secondaryData.neighbor_phone),
+        clean(secondaryData.favorite_teacher_name),
+        clean(secondaryData.favorite_teacher_phone),
         applicantId
       ];
 
-      await client.query(updateSecondary, secondaryValues);
+      await client.query(upsertSecondary, secondaryValues);
     }
 
     await client.query("COMMIT");
@@ -245,7 +252,7 @@ async function updateApplicant(applicantId, data) {
 
   } catch (err) {
     await client.query("ROLLBACK");
-    console.error("Error updating applicant:", err);
+    console.error("Error updating applicant:", err.message);
     throw err;
   } finally {
     client.release();
@@ -256,46 +263,22 @@ async function updateApplicant(applicantId, data) {
 // 3. READ: VIEW APPLICANT BY REG NUMBER (With JOINS)
 // =========================================================
 async function viewApplicantByRegNumber(nmms_reg_number) {
-  // We join with Jurisdiction and Institute tables to get Names instead of just IDs
-  // This helps the Frontend display "Karnataka" instead of "29"
   const query = `
     SELECT 
       p.*,
-      -- Jurisdiction Names
       state.juris_name AS state_name,
       dist.juris_name AS district_name,
       blk.juris_name AS block_name,
-      
-      -- Secondary Info
-      s.village,
-      s.father_occupation,
-      s.mother_occupation,
-      s.father_education,
-      s.mother_education,
-      s.household_size,
-      s.own_house,
-      s.smart_phone_home,
-      s.internet_facility_home,
-      s.career_goals,
-      s.subjects_of_interest,
-      s.transportation_mode,
-      s.distance_to_school,
-      s.num_two_wheelers,
-      s.num_four_wheelers,
-      s.irrigation_land,
-      s.neighbor_name,
-      s.neighbor_phone,
-      s.favorite_teacher_name,
-      s.favorite_teacher_phone
-
+      s.village, s.father_occupation, s.mother_occupation, s.father_education, s.mother_education,
+      s.household_size, s.own_house, s.smart_phone_home, s.internet_facility_home,
+      s.career_goals, s.subjects_of_interest, s.transportation_mode, s.distance_to_school,
+      s.num_two_wheelers, s.num_four_wheelers, s.irrigation_land,
+      s.neighbor_name, s.neighbor_phone, s.favorite_teacher_name, s.favorite_teacher_phone
     FROM pp.applicant_primary_info p
     LEFT JOIN pp.applicant_secondary_info s ON p.applicant_id = s.applicant_id
-    
-    -- Joins for Names
     LEFT JOIN pp.jurisdiction state ON p.app_state = state.juris_code
     LEFT JOIN pp.jurisdiction dist ON p.district = dist.juris_code
     LEFT JOIN pp.jurisdiction blk ON p.nmms_block = blk.juris_code
-    
     WHERE p.nmms_reg_number = $1
   `;
   const { rows } = await pool.query(query, [nmms_reg_number]);
@@ -303,7 +286,7 @@ async function viewApplicantByRegNumber(nmms_reg_number) {
 }
 
 // =========================================================
-// 4. GET APPLICANT BY ID (Matches View Structure)
+// 4. GET APPLICANT BY ID
 // =========================================================
 async function getApplicantById(applicantId) {
   const query = `

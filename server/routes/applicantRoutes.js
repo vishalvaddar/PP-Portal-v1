@@ -3,13 +3,13 @@ const router = express.Router();
 const authenticate = require("../middleware/authMiddleware");
 const applicantController = require("../controllers/applicantController");
 
-// Create a new applicant (primary info only)
+// Create a new applicant (primary info only
 router.post("/create", authenticate, applicantController.createApplicant);
 
 // Get all applicants
 router.get("/", applicantController.getAllApplicants);
 
-// View applicant by NMMS registration number (specific route first)
+// View applicant by NMMS registration number
 router.get("/reg/:nmms_reg_number", applicantController.viewApplicantByRegNumber);
 
 // Get a specific applicant by ID

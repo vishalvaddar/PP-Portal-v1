@@ -14,12 +14,12 @@ router.get("/cohorts", batchController.getAllCohorts);
 router.post("/cohorts", batchController.createCohort);
 router.get("/cohorts/active", batchController.getActiveCohorts);
 
-// ✅ Unassigned students (modal data)
+//  Unassigned students (modal data)
 router.get("/students/unassigned", batchController.getStudentsNotInAnyBatch);
 
 router.post("/:batchId/add-students", batchController.addStudentsToBatch);
 
-// ✅ Remove students from batch
+//  Remove students from batch
 router.post("/students/remove", batchController.removeStudentsFromBatch);
 
 // Student Info

@@ -1,41 +1,165 @@
-.dashboardContainer {
-  max-width: 1200px;
-  margin: 24px auto;
-  padding: 20px;
+/* Container for the table */
+.listContainer {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  overflow: hidden; /* Keeps border radius on children */
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
+.tableWrapper {
+  overflow-x: auto; /* Scroll horizontal on small screens */
+  width: 100%;
+}
+
+.eventTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+/* --- HEADERS --- */
+.eventTable thead {
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.eventTable th {
+  padding: 16px 24px;
+  font-weight: 600;
+  color: #64748b; /* Slate 500 */
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.thLeft {
+  text-align: left;
+}
+
+.thRight {
+  text-align: right;
+  padding-right: 32px; /* Add padding to align with buttons */
+}
+
+/* --- ROWS & CELLS --- */
+.tableRow {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 0.15s ease;
+}
+
+.tableRow:hover {
+  background-color: #f8fafc;
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.eventTable td {
+  padding: 16px 24px;
+  color: #334155; /* Slate 700 */
+  vertical-align: middle;
+}
+
+/* Event Title Column */
+.titleCell {
+  min-width: 200px;
+}
+
+.titleText {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 0.95rem;
+  margin-bottom: 2px;
+}
+
+.subText {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+/* Badge for Event Type */
+.typeBadge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background-color: #dbeafe; /* Light Blue */
+  color: #2563eb; /* Blue 600 */
+  white-space: nowrap;
+}
+
+/* Date & Location text */
+.dateCell, .locationCell {
+  white-space: nowrap;
+  font-weight: 500;
+  color: #475569;
+}
+
+.numberCell {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* --- ACTION BUTTONS (The Fix) --- */
+.actionCell {
+  text-align: right;
+  white-space: nowrap; /* Prevent wrapping */
+  /* This ensures buttons sit side-by-side */
+  display: flex;       
+  justify-content: flex-end;
+  gap: 12px;           /* Space between buttons */
   align-items: center;
-  border-bottom: 2px solid #eee;
-  padding-bottom: 16px;
-  margin-bottom: 24px;
 }
 
-.header h1 {
-  margin: 0;
-  color: #333;
-}
-
-.primaryButton {
-  padding: 10px 16px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
+/* Base button style */
+.viewButton, .deleteButton {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
   cursor: pointer;
-  font-size: 1em;
-  font-weight: bold;
-  transition: background-color 0.2s;
+  border: 1px solid transparent;
+  transition: all 0.2s;
 }
 
-.primaryButton:hover {
-  background-color: #0056b3;
+/* View Button - White/Gray style */
+.viewButton {
+  background-color: white;
+  border: 1px solid #cbd5e1;
+  color: #334155;
 }
 
-.content {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+.viewButton:hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+/* Delete Button - Light Red style */
+.deleteButton {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.deleteButton:hover {
+  background-color: #fca5a5;
+  color: #b91c1c;
+}
+
+/* Empty State */
+.emptyState {
+  padding: 48px;
+  text-align: center;
+  color: #64748b;
+}
+
+.emptyState p {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #0f172a;
 }

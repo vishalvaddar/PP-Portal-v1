@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
 import rcf_pp from "../assets/RCF-PP2.jpg";
@@ -24,16 +23,15 @@ const Header = () => {
           className={styles.headerLogo}
         />
         <div className={styles.headerText}>
-          <h3 className={styles.headerTitle}>Pratibha Poshak Portal</h3>
+          <h3 className={styles.headerTitle}>Pratibha Poshak</h3>
           <span className={styles.headerSubtitle}>
-            Integrated Management & Administration System
+            I.M.A.S
           </span>
         </div>
       </div>
 
       <div className={styles.systemStatus}>
         {loading && <span className={styles.statusText}>Loading Config...</span>}
-        {/* {error && <span className={styles.errorText}>Config Unavailable</span>} */}
         {!loading && !error && appliedConfig && (
           <span className={styles.statusText}>
             <strong>Phase:</strong> {appliedConfig.phase} (AY: {appliedConfig.academic_year})
