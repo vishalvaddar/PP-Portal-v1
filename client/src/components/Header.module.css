@@ -19,11 +19,13 @@
 }
 
 .headerLogo {
-  height: 60px;
-  width: auto;
+  height: 75px;       
+  width: auto;        
+  margin-left: 20px;  
+  margin-top: 10px;
   object-fit: contain;
-  /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
 }
+
 
 .headerText {
   display: flex;

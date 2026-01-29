@@ -8,7 +8,8 @@ import React, {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import axios from "axios";
-import logo from "../../assets/images.png";
+import rcf_pp from "../../assets/RCF-PP.jpg";
+import login_logo from "../../assets/login_page_logo.png";
 
 // UI Components
 import { Card, CardContent } from "../ui/card";
@@ -284,13 +285,10 @@ const LoginForm = () => {
     <div className={styles.pageBackground}>
       <Card className={styles.loginCard}>
         <div className={styles.headerSection}>
-          <h2 className={styles.orgTitle}>RAJALAKSHMI CHILDREN FOUNDATION</h2>
           <div className={styles.logoCircle}>
-            <img src={logo} alt="Logo" className={styles.logoImage} />
+            <img src={login_logo} alt="Logo" className={styles.logoImage} />
           </div>
-          <h1 className={styles.imasTitle}>I.M.A.S</h1>
         </div>
-
         <CardContent className={styles.formSection}>
           {formState.error && (
             <div className={styles.errorBanner}>⚠ {formState.error}</div>

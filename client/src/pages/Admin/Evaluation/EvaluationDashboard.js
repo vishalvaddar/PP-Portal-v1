@@ -1,214 +1,181 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { 
+  LayoutDashboard, 
+  ClipboardCheck, 
+  UserCheck, 
+  BarChart, 
+  ChevronRight, 
+  CheckCircle2, 
+  Clock,
+  SearchX 
+} from "lucide-react";
 import { useSystemConfig } from "../../../contexts/SystemConfigContext"; 
-import './EvaluationDashboard.css';  
 import Breadcrumbs from "../../../components/Breadcrumbs/Breadcrumbs";
+import styles from "./EvaluationDashboard.module.css";
+
+const NavCard = ({ title, icon, description, link, colorClass }) => (
+  <Link to={link} className={`${styles.navCard} ${styles[colorClass]}`}>
+    <div className={styles.navIcon}>{icon}</div>
+    <div className={styles.navContent}>
+      <h3 className={styles.navTitle}>{title}</h3>
+      <p className={styles.navDesc}>{description}</p>
+    </div>
+    <ChevronRight size={20} className={styles.navArrow} />
+  </Link>
+);
 
 const EvaluationDashboard = () => {
-    // Get the applied configuration from Context
-    const { appliedConfig } = useSystemConfig();
+  const { appliedConfig } = useSystemConfig();
+  const [overallData, setOverallData] = useState({});
+  const [jurisdictions, setJurisdictions] = useState([]);
+  const [overallProgress, setOverallProgress] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-       const currentPath = ['Admin', 'Admissions', 'Evaluation'];
+  const API_BASE_URL = `${process.env.REACT_APP_BACKEND_API_URL}/api/evaluation-dashboard`;
 
-    const [overallData, setOverallData] = useState({});
-    const [jurisdictions, setJurisdictions] = useState([]);
-    const [overallProgress, setOverallProgress] = useState(0);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const displayYear = useMemo(() => {
+    if (appliedConfig?.academic_year) {
+      return appliedConfig.academic_year.split('-')[0];
+    }
+    return new Date().getFullYear().toString();
+  }, [appliedConfig]);
 
-    const API_BASE_URL = `${process.env.REACT_APP_BACKEND_API_URL}/api/evaluation-dashboard`;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-    // Extract the 4-digit starting year (e.g., "2025" from "2025-26")
-    const displayYear = useMemo(() => {
-        if (appliedConfig && appliedConfig.academic_year) {
-            return appliedConfig.academic_year.split('-')[0];
-        }
-        return new Date().getFullYear().toString();
-    }, [appliedConfig]);
+        const [ovRes, jurRes, progRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/overall/${displayYear}`),
+          fetch(`${API_BASE_URL}/jurisdictions/${displayYear}`),
+          fetch(`${API_BASE_URL}/overall-progress/${displayYear}`)
+        ]);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-
-                // Fetch data using the specific displayYear parameter
-                const [
-                    overallResponse,
-                    jurisResponse,
-                    overallProgressResponse
-                ] = await Promise.all([
-                    fetch(`${API_BASE_URL}/overall/${displayYear}`),
-                    fetch(`${API_BASE_URL}/jurisdictions/${displayYear}`),
-                    fetch(`${API_BASE_URL}/overall-progress/${displayYear}`)
-                ]);
-
-                if (!overallResponse.ok || !jurisResponse.ok || !overallProgressResponse.ok) {
-                    throw new Error(`Failed to fetch data for year ${displayYear}`);
-                }
-
-                const overallDataRaw = await overallResponse.json();
-                const jurisDataRaw = await jurisResponse.json();
-                const overallProgressRaw = await overallProgressResponse.json();
-
-                // Initialize with zeros to trigger the entry animation
-                const zeroedOverall = Object.keys(overallDataRaw).reduce((acc, key) => {
-                    acc[key] = 0;
-                    return acc;
-                }, {});
-                
-                setOverallData(zeroedOverall);
-                setJurisdictions(jurisDataRaw.map(j => ({ ...j, progress: 0 })));
-                setOverallProgress(0);
-
-                // Delay to allow zeroed state to render before actual data pops in
-                setTimeout(() => {
-                    setOverallData(overallDataRaw);
-                    setJurisdictions(jurisDataRaw);
-                    setOverallProgress(overallProgressRaw.overallProgress || 0);
-                }, 50);
-
-            } catch (err) {
-                console.error("Dashboard Fetch Error:", err);
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
-    }, [displayYear, API_BASE_URL]);
-
-    const renderOverallProgress = () => {
-        if (loading) return <div className="spinner-lg"></div>;
-        if (error) return <p className="error-message">{error}</p>;
-        
-        const isComplete = overallProgress === 100;
-        const progressColor = isComplete ? "bg-green-500" : "bg-blue-500";
-        const progressTextColor = isComplete ? "text-green-600" : "text-blue-600";
-        
-        return (
-            <div className="overall-progress-container">
-                <div className="overall-progress-bar-background">
-                    <div
-                        className={`overall-progress-bar-fill ${progressColor}`}
-                        style={{ width: `${overallProgress}%` }}
-                    ></div>
-                </div>
-                <span className={`overall-progress-percentage ${progressTextColor}`}>
-                    {overallProgress}%
-                </span>
-            </div>
-        );
-    };
-
-    const renderProgress = (progress) => {
-        const isComplete = progress === 100;
-        const progressTextClass = isComplete ? "text-green-600" : "text-blue-600";
-        const progressBarColorClass = isComplete ? "bg-green-500" : "bg-blue-500";
-        
-        return (
-            <div className="progress-container">
-                <div className="progress-text-container">
-                    <span className="progress-label">Progress</span>
-                    <span className={`progress-percentage ${progressTextClass}`}>{progress}%</span>
-                </div>
-                <div className="progress-bar-background">
-                    <div
-                        className={`progress-bar-fill ${progressBarColorClass}`}
-                        style={{ width: `${progress}%` }}
-                    ></div>
-                </div>
-            </div>
-        );
-    };
-
-    const renderJurisdictionList = () => {
-        if (loading) return <div className="spinner"></div>;
-        if (error) return <p className="error-message">{error}</p>;
-        
-        // This will only show jurisdictions if the backend filters them based on active shortlists
-        if (jurisdictions.length === 0) {
-            return <p className="no-data-message">No active evaluation batches found for {displayYear}.</p>;
+        if (!ovRes.ok || !jurRes.ok || !progRes.ok) {
+          throw new Error("Data retrieval failed.");
         }
 
-        return (
-            <div className="jurisdiction-list">
-                {jurisdictions.map((jurisdiction) => (
-                    <div key={jurisdiction.juris_code} className="jurisdiction-item">
-                        <div className="item-details">
-                            <div className="checkbox-container">
-                                {jurisdiction.isComplete ? (
-                                    <svg className="checkmark-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                ) : (
-                                    <input type="checkbox" className="h-6 w-6" disabled />
-                                )}
-                            </div>
-                            <div className="text-content">
-                                <h3 className="item-title">
-                                    {jurisdiction.juris_name} ({jurisdiction.juris_code})
-                                </h3>
-                                <p className="item-subtitle">
-                                    <span className="font-bold">Pending Marks:</span> {jurisdiction.counts.pendingEvaluation} |{" "}
-                                    <span className="font-bold">Pending Interview:</span> {jurisdiction.counts.totalInterviewRequired - jurisdiction.counts.completedInterview} |{" "}
-                                    {/* 👈 UPDATED LABEL TO FULL FORM */}
-                                    <span className="font-bold">Pending Home Verification:</span> {jurisdiction.counts.totalHomeVerificationRequired - jurisdiction.counts.completedHomeVerification}
-                                </p>
-                            </div>
-                        </div>
-                        {renderProgress(jurisdiction.progress)}
-                    </div>
-                ))}
-            </div>
-        );
+        const ovData = await ovRes.json();
+        const jurData = await jurRes.json();
+        const progData = await progRes.json();
+
+        setOverallData(ovData);
+        setJurisdictions(jurData);
+        setOverallProgress(progData.overallProgress || 0);
+      } catch (err) {
+        console.error("Dashboard Error:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const renderOverallCounts = () => {
-        if (loading) return <div className="spinner-lg"></div>;
-        if (error) return <p className="error-message">{error}</p>;
-        
-        return (
-            <div className="counts-grid">
-                {Object.entries(overallData).map(([label, count]) => (
-                    <div key={label} className="count-box">
-                        <p className="box-label">{label}</p>
-                        <p className="box-count">{count}</p>
-                    </div>
-                ))}
-            </div>
-        );
-    };
+    fetchData();
+  }, [displayYear, API_BASE_URL]);
 
-    return (
-        <div className="evaluation-dashboard">
-            <Breadcrumbs path={currentPath} nonLinkSegments={['Admin', 'Admissions']} />
-            <div className="navigation-links">
-                <Link to="" className="nav-link active">Evaluation Dashboard</Link>
-                <Link to="marks-entry" className="nav-link">📝 Marks Entry</Link>
-                <Link to="interview" className="nav-link">🧑‍💼 Interview</Link>
-                <Link to="tracking" className="nav-link">📊 Evaluation Tracking</Link>
-            </div>
+  if (loading) return <div className={styles.loader}><span>Refining Dashboard View...</span></div>;
 
-            <div className="dashboard-content">
-                <div className="overall-progress-section">
-                    <h2 className="section-title">Overall Progress ({displayYear})</h2>
-                    {renderOverallProgress()}
-                </div>
+  return (
+    <main className={styles.container}>
+      <Breadcrumbs path={['Admin', 'Admissions', 'Evaluation']} nonLinkSegments={['Admin', 'Admissions']} />
 
-                <div className="overall-status-section">
-                    <h2 className="section-title">Overall Status</h2>
-                    {renderOverallCounts()}
-                </div>
-
-                <div className="jurisdictional-progress-section">
-                    <h2 className="section-title">Jurisdictional Progress ({displayYear})</h2>
-                    {renderJurisdictionList()}
-                </div>
-            </div>
+      <header className={styles.header}>
+        <div className={styles.welcome}>
+          <h1 className={styles.title}>Evaluation Overview</h1>
+          <p className={styles.subtitle}>System performance for the {displayYear} cycle</p>
         </div>
-    );
+        
+        <div className={styles.progressCard}>
+          <div className={styles.progressInfo}>
+            <span className={styles.progressLabel}>Total Completion</span>
+            <span className={styles.progressPercent}>{overallProgress}%</span>
+          </div>
+          <div className={styles.progressTrack}>
+            <div className={styles.progressFill} style={{ width: `${overallProgress}%` }} />
+          </div>
+        </div>
+      </header>
+
+      <section className={styles.gridSection}>
+        {/* Navigation Cards */}
+        <div className={styles.cardRow}>
+          <NavCard 
+            title="Marks Entry" 
+            icon={<ClipboardCheck size={28} />} 
+            description="Update academic scoring"
+            link="marks-entry"
+            colorClass="blueCard"
+          />
+          <NavCard 
+            title="Interviews" 
+            icon={<UserCheck size={28} />} 
+            description="Manage panel evaluations"
+            link="interview"
+            colorClass="purpleCard"
+          />
+          <NavCard 
+            title="Tracking" 
+            icon={<BarChart size={28} />} 
+            description="Live status reports"
+            link="tracking"
+            colorClass="orangeCard"
+          />
+        </div>
+
+        {/* Dynamic Stats Row */}
+        <div className={styles.statsGrid}>
+          {Object.entries(overallData).map(([label, count]) => (
+            <div key={label} className={styles.statTile}>
+              <span className={styles.statValue}>{count}</span>
+              <span className={styles.statName}>{label.replace(/([A-Z])/g, ' $1')}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Jurisdictions Section */}
+        <div className={styles.jurisdictionList}>
+          <h2 className={styles.sectionTitle}>Jurisdictional Status</h2>
+          <div className={styles.tableCard}>
+            {jurisdictions.length > 0 ? (
+              jurisdictions.map((j) => (
+                <div key={j.juris_code} className={styles.tableRow}>
+                  <div className={styles.jurisMain}>
+                    {j.progress === 100 ? 
+                      <CheckCircle2 size={18} className={styles.iconSuccess} /> : 
+                      <Clock size={18} className={styles.iconPending} />
+                    }
+                    <div className={styles.jurisText}>
+                      <span className={styles.jurisName}>{j.juris_name}</span>
+                      <span className={styles.jurisCode}>{j.juris_code}</span>
+                    </div>
+                  </div>
+                  <div className={styles.jurisMeta}>
+                     <div className={styles.metaInfo}>
+                        <span>Pending Marks Entry: <strong>{j.counts.pendingEvaluation}</strong></span>
+                        <span>Pending Interview: <strong>{j.counts.totalInterviewRequired - j.counts.completedInterview}</strong></span>
+                     </div>
+                     <div className={styles.miniBarContainer}>
+                        <div className={styles.miniBar}><div className={styles.miniFill} style={{width: `${j.progress}%`}} /></div>
+                        <span className={styles.miniLabel}>{j.progress}%</span>
+                     </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className={styles.emptyState}>
+                <SearchX size={48} strokeWidth={1.5} />
+                <h3>No Data Found</h3>
+                <p>No active evaluation batches found for the {displayYear} academic year.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+    </main>
+  );
 };
 
 export default EvaluationDashboard;

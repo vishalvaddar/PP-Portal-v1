@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
-import rcf_pp from "../assets/RCF-PP2.jpg";
+import imas_pp from "../assets/pp_imas1.jpeg";
 import { useSystemConfig } from "../contexts/SystemConfigContext";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -18,16 +18,16 @@ const Header = () => {
     <header className={styles.header}>
       <div className={styles.headerLeft}>
         <img
-          src={rcf_pp}
-          alt="RCF Pratibha Poshak Academy Logo"
+          src={imas_pp}
+          alt="RCF Pratibha Poshak Logo"
           className={styles.headerLogo}
         />
-        <div className={styles.headerText}>
+        {/* <div className={styles.headerText}>
           <h3 className={styles.headerTitle}>Pratibha Poshak</h3>
           <span className={styles.headerSubtitle}>
             I.M.A.S
           </span>
-        </div>
+        </div> */}
       </div>
 
       <div className={styles.systemStatus}>

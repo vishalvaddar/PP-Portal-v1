@@ -1,11 +1,9 @@
-// src/components/Footer.js
-import React from 'react';
-import './Footer.css'; // Import the CSS file for the footer
+import './Footer.css';
 
 const Footer = () => {
   return (
     <footer className="footer">
-      <p>&copy; 2025 RCF Pratibha Poshak Academy. All rights reserved.</p>
+      <p>&copy; 2026 RCF Pratibha Poshak. All rights reserved.</p>
     </footer>
   );
 };

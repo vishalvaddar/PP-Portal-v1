@@ -31,9 +31,9 @@ export const navConfig = {
       children: [
         { path: "/admin/admissions/applications", icon: <Description />, label: "Applications" },
         { path: "/admin/admissions/shortlisting", icon: <FactCheck />, label: "Shortlisting" },
-        { path: "/admin/admissions/exam-management", icon: <Event />, label: "Exam Centers & Scheduling" },
-        { path: "/admin/admissions/evaluation", icon: <Grading />, label: "Applications Evaluation" },
-        { path: "/admin/admissions/results", icon: <EmojiEvents />, label: "Final Results & Rankings" },
+        { path: "/admin/admissions/exam-management", icon: <Event />, label: "Selection Exams" },
+        { path: "/admin/admissions/evaluation", icon: <Grading />, label: "Evaluation" },
+        { path: "/admin/admissions/results", icon: <EmojiEvents />, label: "Final Results" }, 
       ],
     },
     {

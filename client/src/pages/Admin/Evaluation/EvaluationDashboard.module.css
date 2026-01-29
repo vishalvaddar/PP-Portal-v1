@@ -1,0 +1,143 @@
+.container {
+  padding: 2rem;
+  background-color: #fbfcfd;
+  min-height: 100vh;
+  color: #334155;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin: 1.5rem 0 3rem 0;
+}
+
+.title {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.subtitle {
+  color: #64748b;
+  margin: 0.25rem 0 0 0;
+}
+
+/* Progress Widget */
+.progressCard {
+  background: white;
+  padding: 1.25rem;
+  border-radius: 16px;
+  width: 320px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  border: 1px solid #f1f5f9;
+}
+
+.progressInfo {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.progressLabel { font-size: 0.8rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; }
+.progressPercent { font-size: 1.1rem; font-weight: 800; color: #3b82f6; }
+
+.progressTrack { height: 8px; background: #f1f5f9; border-radius: 10px; }
+.progressFill { height: 100%; background: #3b82f6; border-radius: 10px; transition: width 0.8s ease; }
+
+/* Nav Cards */
+.cardRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.navCard {
+  background: white;
+  padding: 1.25rem;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-decoration: none;
+  border: 1px solid #f1f5f9;
+  transition: all 0.2s;
+}
+
+.navCard:hover {
+  border-color: #3b82f6;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.05);
+}
+
+.navIcon { padding: 10px; border-radius: 12px; }
+.blueCard .navIcon { background: #eff6ff; color: #3b82f6; }
+.purpleCard .navIcon { background: #f5f3ff; color: #8b5cf6; }
+.orangeCard .navIcon { background: #fff7ed; color: #f97316; }
+
+.navTitle { font-size: 1rem; font-weight: 700; color: #1e293b; margin: 0; }
+.navDesc { font-size: 0.8rem; color: #94a3b8; margin: 0; }
+.navArrow { color: #cbd5e1; margin-left: auto; }
+
+/* Stats */
+.statsGrid { display: flex; gap: 1rem; margin-bottom: 3rem; }
+.statTile {
+  flex: 1;
+  background: #ffffff;
+  padding: 1.25rem;
+  border-radius: 16px;
+  border: 1px solid #f1f5f9;
+  text-align: center;
+}
+
+.statValue { display: block; font-size: 1.75rem; font-weight: 800; color: #1e293b; }
+.statName { font-size: 0.7rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; }
+
+/* Table Section */
+.sectionTitle { font-size: 1.2rem; font-weight: 700; margin-bottom: 1.25rem; }
+.tableCard { background: white; border-radius: 16px; border: 1px solid #f1f5f9; overflow: hidden; }
+
+.tableRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.jurisText { display: flex; flex-direction: column; }
+.jurisName { font-weight: 600; color: #334155; font-size: 0.95rem; }
+.jurisCode { color: #94a3b8; font-size: 0.75rem; }
+
+.jurisMeta { display: flex; align-items: center; gap: 3rem; }
+.metaInfo { display: flex; gap: 1.5rem; font-size: 0.8rem; color: #64748b; }
+.miniBarContainer { display: flex; align-items: center; gap: 1rem; }
+.miniBar { width: 100px; height: 6px; background: #f1f5f9; border-radius: 10px; overflow: hidden; }
+.miniFill { height: 100%; background: #3b82f6; border-radius: 10px; }
+.miniLabel { font-size: 0.8rem; font-weight: 700; color: #3b82f6; width: 35px; }
+
+.iconSuccess { color: #10b981; }
+.iconPending { color: #f59e0b; }
+
+.emptyState {
+  padding: 5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #94a3b8;
+}
+
+.emptyState h3 { color: #475569; margin-top: 1rem; }
+
+.loader {
+  height: 60vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #3b82f6;
+  font-weight: 600;
+}

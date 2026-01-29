@@ -1,4 +1,3 @@
-import React from "react";
 import { useSystemConfig } from "../contexts/SystemConfigContext";
 
 const SystemBanner = () => {
