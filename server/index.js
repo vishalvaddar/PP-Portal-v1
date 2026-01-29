@@ -189,5 +189,5 @@ app.listen(PORT, () => {
   console.log(
     `Server running in ${NODE_ENV.toUpperCase()} mode on http://localhost:${PORT}`
   );
-  console.log(`Event Photos serving from: ${EVENT_PHOTOS_DIR}`);
+  // console.log(`Event Photos serving from: ${EVENT_PHOTOS_DIR}`);
 });
