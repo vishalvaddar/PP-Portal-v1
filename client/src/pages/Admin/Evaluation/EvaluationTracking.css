@@ -168,7 +168,7 @@ select {
     border: 1px solid var(--border-soft) !important;
     border-radius: 8px !important;
     font-weight: 500;
-    padding: 10px !important;
+    /* padding: 10px !important; */
     background-color: var(--white);
     color: var(--slate-text);
 }

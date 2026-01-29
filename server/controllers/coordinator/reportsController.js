@@ -1351,7 +1351,7 @@ const requireAuth = (req, res, next) => {
 };
 
 /* ===========================================================
-   SECTION 1: ATTENDANCE & ABSENTEE REPORTS
+   SECTION 1: ATTENDANCE & ABSENTEE REPORTS //COUNT(DISTINCT (cs.classroom_id, cs.session_date)) AS conducted_classes
    =========================================================== */
 
 /**
@@ -1382,7 +1382,7 @@ const getAttendanceReport = async (req, res) => {
             ),
             subject_conducted AS (
                 SELECT subj.subject_code,
-                       COUNT(DISTINCT (cs.classroom_id, cs.session_date)) AS conducted_classes
+                       COUNT(DISTINCT cs.session_id) AS conducted_classes
                 FROM pp.class_session cs
                 JOIN batch_classrooms bc ON bc.classroom_id = cs.classroom_id
                 JOIN pp.classroom c ON c.classroom_id = cs.classroom_id
@@ -1538,15 +1538,45 @@ const getAbsenteesReport = async (req, res) => {
    SECTION 2: TEACHER PERFORMANCE & LOAD
    =========================================================== */
 
-/**
- * 3️⃣ getTeacherLoad
- * Summarizes the number of classes taken by each teacher.
- */
+// /**
+//  * 3️⃣ getTeacherLoad
+//  * Summarizes the number of classes taken by each teacher.
+//  */
+// const getTeacherLoad = async (req, res) => {
+//     try {
+//         const { fromDate, toDate } = req.query;
+//         let query = `
+//             SELECT t.teacher_name AS teacher, b.cohort_number AS cohort,
+//                    c.classroom_name AS classroom, s.subject_code AS subject,
+//                    COUNT(DISTINCT cs.session_id) AS total_classes_taken
+//             FROM pp.class_session cs
+//             JOIN pp.classroom c ON cs.classroom_id = c.classroom_id
+//             JOIN pp.classroom_batch cb ON c.classroom_id = cb.classroom_id
+//             JOIN pp.batch b ON cb.batch_id = b.batch_id
+//             JOIN pp.teacher t ON c.teacher_id = t.teacher_id
+//             JOIN pp.subject s ON c.subject_id = s.subject_id
+//         `;
+//         const params = [];
+//         if (fromDate && toDate) {
+//             query += ` WHERE cs.session_date BETWEEN $1::date AND $2::date `;
+//             params.push(fromDate, toDate);
+//         }
+//         query += ` GROUP BY t.teacher_name, b.cohort_number, c.classroom_name, s.subject_code
+//                    ORDER BY t.teacher_name, b.cohort_number, c.classroom_name `;
+//         const { rows } = await pool.query(query, params);
+//         res.status(200).json({ teacherClassCounts: rows });
+//     } catch (error) {
+//         res.status(500).json({ message: "Internal server error" });
+//     }
+// };
+
+
 const getTeacherLoad = async (req, res) => {
     try {
         const { fromDate, toDate } = req.query;
         let query = `
-            SELECT t.teacher_name AS teacher, b.cohort_number AS cohort,
+            SELECT DISTINCT 
+                   t.teacher_name AS teacher, b.cohort_number AS cohort,
                    c.classroom_name AS classroom, s.subject_code AS subject,
                    COUNT(DISTINCT cs.session_id) AS total_classes_taken
             FROM pp.class_session cs
@@ -1713,16 +1743,49 @@ const getTeacherSubjectMonthlyStats = async (req, res) => {
    SECTION 4: DETAILED CLASS REPORTS
    =========================================================== */
 
-/**
- * 7️⃣ getBatchClassDetails
- * Returns a list of all classes held for a specific batch.
- */
+// /**
+//  * 7️⃣ getBatchClassDetails
+//  * Returns a list of all classes held for a specific batch.
+//  */
+// const getBatchClassDetails = async (req, res) => {
+//     const { batchId, fromDate, toDate } = req.query;
+//     try {
+//         const query = `
+//             SELECT cs.session_date AS date, t.teacher_name, co.cohort_name,
+//                    b.batch_name, c.classroom_name
+//             FROM pp.class_session cs
+//             JOIN pp.classroom c ON cs.classroom_id = c.classroom_id
+//             JOIN pp.teacher t ON c.teacher_id = t.teacher_id
+//             JOIN pp.classroom_batch cb ON c.classroom_id = cb.classroom_id
+//             JOIN pp.batch b ON cb.batch_id = b.batch_id
+//             JOIN pp.cohort co ON b.cohort_number = co.cohort_number
+//             WHERE b.batch_id = $1 AND cs.session_date BETWEEN $2::date AND $3::date
+//             ORDER BY cs.session_date DESC;
+//         `;
+//         const { rows } = await pool.query(query, [batchId, fromDate, toDate]);
+//         res.json({ success: true, count: rows.length, classes: rows });
+//     } catch (err) {
+//         res.status(500).json({ error: "Internal Server Error" });
+//     }
+// };
+
+
 const getBatchClassDetails = async (req, res) => {
     const { batchId, fromDate, toDate } = req.query;
     try {
         const query = `
-            SELECT cs.session_date AS date, t.teacher_name, co.cohort_name,
-                   b.batch_name, c.classroom_name
+            SELECT 
+                cs.session_id,
+                cs.session_date AS date, 
+                t.teacher_name, 
+                co.cohort_name,
+                c.classroom_name,
+                -- 🔥 Check if THIS specific batch has marked attendance for this session
+                EXISTS (
+                    SELECT 1 FROM pp.student_attendance sa
+                    JOIN pp.student_master sm ON sa.student_id = sm.student_id
+                    WHERE sa.session_id = cs.session_id AND sm.batch_id = $1
+                ) AS attendance_marked
             FROM pp.class_session cs
             JOIN pp.classroom c ON cs.classroom_id = c.classroom_id
             JOIN pp.teacher t ON c.teacher_id = t.teacher_id
@@ -1735,21 +1798,48 @@ const getBatchClassDetails = async (req, res) => {
         const { rows } = await pool.query(query, [batchId, fromDate, toDate]);
         res.json({ success: true, count: rows.length, classes: rows });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
-/**
- * 8️⃣ getTeacherClassDetails
- * Returns a list of all classes held by a specific teacher.
- */
+// /**
+//  * 8️⃣ getTeacherClassDetails
+//  * Returns a list of all classes held by a specific teacher.
+//  */
+// const getTeacherClassDetails = async (req, res) => {
+//     const { teacherId, fromDate, toDate } = req.query;
+//     try {
+//         const isNumeric = /^\d+$/.test(teacherId);
+//         const filterColumn = isNumeric ? "t.teacher_id" : "t.teacher_name";
+//         const query = `
+//             SELECT cs.session_date AS date, t.teacher_name, co.cohort_name,
+//                    b.batch_name, c.classroom_name
+//             FROM pp.class_session cs
+//             JOIN pp.classroom c ON cs.classroom_id = c.classroom_id
+//             JOIN pp.teacher t ON c.teacher_id = t.teacher_id
+//             JOIN pp.classroom_batch cb ON c.classroom_id = cb.classroom_id
+//             JOIN pp.batch b ON cb.batch_id = b.batch_id
+//             JOIN pp.cohort co ON b.cohort_number = co.cohort_number
+//             WHERE ${filterColumn} = $1 AND cs.session_date BETWEEN $2::date AND $3::date
+//             ORDER BY cs.session_date DESC;
+//         `;
+//         const { rows } = await pool.query(query, [teacherId, fromDate, toDate]);
+//         res.json({ success: true, count: rows.length, classes: rows });
+//     } catch (err) {
+//         res.status(500).json({ error: "Internal Server Error" });
+//     }
+// };
+
+
 const getTeacherClassDetails = async (req, res) => {
     const { teacherId, fromDate, toDate } = req.query;
     try {
         const isNumeric = /^\d+$/.test(teacherId);
         const filterColumn = isNumeric ? "t.teacher_id" : "t.teacher_name";
         const query = `
-            SELECT cs.session_date AS date, t.teacher_name, co.cohort_name,
+            SELECT DISTINCT ON (cs.session_id) 
+                   cs.session_date AS date, t.teacher_name, co.cohort_name,
                    b.batch_name, c.classroom_name
             FROM pp.class_session cs
             JOIN pp.classroom c ON cs.classroom_id = c.classroom_id
@@ -1758,7 +1848,7 @@ const getTeacherClassDetails = async (req, res) => {
             JOIN pp.batch b ON cb.batch_id = b.batch_id
             JOIN pp.cohort co ON b.cohort_number = co.cohort_number
             WHERE ${filterColumn} = $1 AND cs.session_date BETWEEN $2::date AND $3::date
-            ORDER BY cs.session_date DESC;
+            ORDER BY cs.session_id, cs.session_date DESC;
         `;
         const { rows } = await pool.query(query, [teacherId, fromDate, toDate]);
         res.json({ success: true, count: rows.length, classes: rows });
