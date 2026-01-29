@@ -8,7 +8,9 @@ import autoTable from "jspdf-autotable";
 import { Link } from "react-router-dom";
 import { 
   Users, Search, RotateCcw, FileDown, ChevronDown, 
-  Info, MapPin, GraduationCap, Loader2, FileSpreadsheet, FileText, AlertCircle 
+  Info, MapPin, GraduationCap, Loader2, FileSpreadsheet, FileText, AlertCircle,
+  // NEW: Import chevron icons for pagination
+  ChevronLeft, ChevronRight 
 } from "lucide-react";
 
 import { useFetchStates, useFetchEducationDistricts, useFetchBlocks } from "../../hooks/useJurisData";
@@ -43,6 +45,10 @@ const Students = () => {
   // --- New Validation States ---
   const [errors, setErrors] = useState({});
   const [toastMessage, setToastMessage] = useState("");
+
+  // --- NEW: Pagination States ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10); // Change this to 20 or 50 if needed
 
   const exportRef = useRef(null);
 
@@ -109,6 +115,7 @@ const Students = () => {
   const downloadPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
     const tableColumns = ["ID", "Name", "Enroll ID", "Batch", "State", "District"];
+    // Note: We use 'results' here (not currentItems) to export ALL data, not just the current page
     const tableRows = results.map(s => [s.student_id, s.student_name, s.enr_id, s.batch_name, s.state, s.district]);
 
     doc.setFontSize(18).text("Student Search Report", 14, 20);
@@ -123,6 +130,7 @@ const Students = () => {
   };
 
   const downloadExcel = () => {
+    // Export ALL results
     const worksheet = XLSX.utils.json_to_sheet(results);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
@@ -134,35 +142,24 @@ const Students = () => {
 
   // --- Handlers ---
   
-  // Generic Text Input Handler with Error Clearing
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // Clear error for this field if user types
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: undefined }));
-    // Clear global toast if user interacts
     if (toastMessage) setToastMessage("");
-    
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSelectChange = (selected, name) => {
     const value = selected?.value || "";
-    
-    // Clear global toast if user interacts
     if (toastMessage) setToastMessage("");
 
     setFormData((prev) => {
       const updates = { ...prev, [name]: value };
-      
       if (name === "cohort_id") {
         updates.batch_id = "";
-        if (value) {
-          fetchBatchesByCohort(value);
-        } else {
-          setOptions(prevOpt => ({ ...prevOpt, batches: [] }));
-        }
+        if (value) fetchBatchesByCohort(value);
+        else setOptions(prevOpt => ({ ...prevOpt, batches: [] }));
       }
-      
       if (name === "state_id") {
         updates.district_id = "";
         updates.block_id = "";
@@ -177,6 +174,7 @@ const Students = () => {
   const handleReset = () => {
     setFormData(initialFormData);
     setResults([]);
+    setCurrentPage(1); // Reset page on clear
     setOptions(prev => ({ ...prev, batches: [] }));
     setErrors({});
     setToastMessage("");
@@ -187,32 +185,17 @@ const Students = () => {
     setErrors({});
     setToastMessage("");
     
-    // --- VALIDATION START ---
-    
-    // 1. Check if ANY field has a value
+    // Validation
     const hasValues = Object.values(formData).some(val => val !== "" && val !== null && val !== undefined);
-    
-    if (!hasValues) {
-      setToastMessage("Please select at least one criteria to search.");
-      return; // STOP execution here
-    }
-
-    // 2. Length Checks (Optional but recommended)
     const newErrors = {};
-    if (formData.enr_id && formData.enr_id.length < 3) {
-      newErrors.enr_id = "ID must be at least 3 characters";
-    }
-    if (formData.student_name && formData.student_name.length < 3) {
-      newErrors.student_name = "Name must be at least 3 characters";
-    }
+    if (formData.enr_id && formData.enr_id.length < 3) newErrors.enr_id = "ID must be at least 3 characters";
+    if (formData.student_name && formData.student_name.length < 3) newErrors.student_name = "Name must be at least 3 characters";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      return; // STOP execution if input is invalid
+      return;
     }
     
-    // --- VALIDATION END ---
-
     setLoading(true);
 
     const apiPayload = {
@@ -221,14 +204,12 @@ const Students = () => {
       cohort_number: formData.cohort_id,
       batch_id: formData.batch_id,
       gender: formData.gender,
-      state_id: formData.state_id, // Ensure backend handles this if you send it
+      state_id: formData.state_id,
       district_id: formData.district_id,
       block_id: formData.block_id
     };
 
-    const params = Object.fromEntries(
-      Object.entries(apiPayload).filter(([_, v]) => v && v !== "")
-    );
+    const params = Object.fromEntries(Object.entries(apiPayload).filter(([_, v]) => v && v !== ""));
 
     try {
       const res = await axios.get(`${API_BASE}/api/search-students`, { params });
@@ -238,6 +219,7 @@ const Students = () => {
         setResults([]);
       } else {
         setResults(res.data.data);
+        setCurrentPage(1); // Reset to page 1 on new search
       }
     } catch (err) {
       console.error("Search failed", err);
@@ -245,6 +227,20 @@ const Students = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // --- NEW: Pagination Logic ---
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = results.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(results.length / itemsPerPage);
+
+  const nextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) setCurrentPage(prev => prev - 1);
   };
 
   // Close export menu on outside click
@@ -258,7 +254,7 @@ const Students = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Auto-clear Toast after 3 seconds
+  // Auto-clear Toast
   useEffect(() => {
     if (toastMessage) {
       const timer = setTimeout(() => setToastMessage(""), 3000);
@@ -272,7 +268,6 @@ const Students = () => {
     <div className={classes.pageContainer}>
       <Breadcrumbs path={currentPath} nonLinkSegments={["Admin", "Academics"]} />
       
-      {/* Toast Notification */}
       {toastMessage && (
         <div className={classes.toast} style={{
           position: 'fixed', top: '20px', right: '20px', zIndex: 1000,
@@ -292,6 +287,7 @@ const Students = () => {
           </header>
 
           <form onSubmit={handleSubmit} className={classes.form}>
+            {/* ... (Existing Form Inputs - No Changes Here) ... */}
             <div className={classes.inputWrapper}>
               <label className={classes.label}>Enrollment ID</label>
               <div className={classes.searchField}>
@@ -379,6 +375,7 @@ const Students = () => {
       {results.length > 0 && (
         <div className={classes.resultsContainer}>
           <div className={classes.resultsToolbar}>
+            {/* Updated Header to show total results count */}
             <h3>Results ({results.length})</h3>
             <div className={classes.exportWrapper} ref={exportRef}>
               <button onClick={() => setIsExportOpen(!isExportOpen)} className={classes.btnSecondary}>
@@ -392,6 +389,7 @@ const Students = () => {
               )}
             </div>
           </div>
+          
           <div className={classes.tableWrapper}>
             <table className={classes.table}>
               <thead>
@@ -403,7 +401,8 @@ const Students = () => {
                 </tr>
               </thead>
               <tbody>
-                {results.map(s => (
+                {/* NEW: Map currentItems instead of all results */}
+                {currentItems.map(s => (
                   <tr key={s.student_id}>
                     <td className={classes.boldText}>{s.student_name}</td>
                     <td>
@@ -418,6 +417,31 @@ const Students = () => {
               </tbody>
             </table>
           </div>
+
+          {/* NEW: Pagination Controls */}
+          {totalPages > 1 && (
+            <div className={classes.paginationContainer}>
+               <span className={classes.pageInfo}>
+                 Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
+               </span>
+               <div className={classes.paginationControls}>
+                 <button 
+                   onClick={prevPage} 
+                   disabled={currentPage === 1}
+                   className={classes.pageBtn}
+                 >
+                   <ChevronLeft size={16} /> Previous
+                 </button>
+                 <button 
+                   onClick={nextPage} 
+                   disabled={currentPage === totalPages}
+                   className={classes.pageBtn}
+                 >
+                   Next <ChevronRight size={16} />
+                 </button>
+               </div>
+            </div>
+          )}
         </div>
       )}
     </div>

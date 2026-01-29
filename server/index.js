@@ -10,31 +10,29 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 const NODE_ENV = process.env.NODE_ENV || "development";
 
-// ────────────────────────────────
-// PATHS & DIRECTORIES
-// ────────────────────────────────
 const PROJECT_ROOT_DIR = process.env.FILE_STORAGE_PATH;
-
 const interviewDataDir = path.join(PROJECT_ROOT_DIR, "Interview-data");
 const homeVerificationDataDir = path.join(PROJECT_ROOT_DIR, "Home-verification-data");
-
 const uploadsDir = path.join(__dirname, "uploads");
 
-// Ensure the PC folders exist
-[interviewDataDir, homeVerificationDataDir, uploadsDir].forEach((dir) => {
+const EVENT_PHOTOS_DIR = process.env.EVENT_STORAGE_PATH || path.join(__dirname, "uploads", "events", "photos");
+
+[
+  uploadsDir, 
+  interviewDataDir, 
+  homeVerificationDataDir,
+  path.join(uploadsDir, "profile_photos"),
+  EVENT_PHOTOS_DIR
+].forEach((dir) => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 });
 
-// ────────────────────────────────
-// MIDDLEWARE
-// ────────────────────────────────
 const allowedOrigins =
   NODE_ENV === "production"
     ? [process.env.FRONTEND_URL]
     : ["http://localhost:3000"];
-
 
 app.use(
   cors({
@@ -44,41 +42,32 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' })); 
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Logging Middleware
+
 const actionLogger = require("./middleware/loggingMiddleware");
 app.use(actionLogger({ logBody: true, logQuery: true }));
 
-// ───── Static Files ─────
-// Serve the root Data directory for public access.
-// Serve files from the external PC storage path
-app.use("/Data", express.static(PROJECT_ROOT_DIR));
+app.use(
+  "/uploads/events/photos",
+  express.static(EVENT_PHOTOS_DIR)
+);
+
+app.use(
+  "/uploads/profile_photos",
+  express.static(path.join(__dirname, "uploads", "profile_photos"))
+);
 
 app.use(
   "/uploads",
   express.static(path.join(__dirname, "uploads"))
 );
- 
-app.use(
-  "/students",
-  express.static(path.join(process.env.PROFILE_PHOTOS_ROOT))
-);
 
+app.use("/Data", express.static(PROJECT_ROOT_DIR));
 app.use("/logs", express.static(path.join(__dirname, "logs")));
+app.use("/halltickets", express.static(path.join(__dirname, "public", "halltickets")));
 
-app.use(
-  "/halltickets",
-  express.static(path.join(__dirname, "public", "halltickets"))
-);
-
-// ────────────────────────────────
-// DYNAMIC MULTER STORAGE
-// ────────────────────────────────
-// ────────────────────────────────
-// DYNAMIC MULTER STORAGE
-// ────────────────────────────────
 const dynamicUploadStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     // 1. Determine the base directory based on the field name
@@ -122,14 +111,11 @@ const dynamicUploadStorage = multer.diskStorage({
 
 const upload = multer({
   storage: dynamicUploadStorage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  limits: { fileSize: 10 * 1024 * 1024 },
 });
 
 app.set("multerUpload", upload);
 
-// ────────────────────────────────
-// ROUTES IMPORT
-// ────────────────────────────────
 const authRoutes = require("./routes/authRoutes");
 const adminDashboardRoutes = require("./routes/adminDashboardRoutes");
 const coordinatorRoutes = require("./routes/coordinatorRoutes");
@@ -140,7 +126,7 @@ const searchRoutes = require("./routes/searchRoutes");
 const jurisdictionRoutes = require("./routes/jurisdictionRoutes");
 const districtRoutes = require("./routes/districtRoutes");
 const institutesRoutes = require("./routes/institutesRoutes");
-const jurisNamesRoutes = require("./routes/jurisNames");
+const jurisNamesRoutes = require("./routes/jurisNameRoutes");
 const generateShortlistRoutes = require("./routes/generateShortlistRoutes");
 const shortlistInfoRoutes = require("./routes/shortlistInfoRoutes");
 const batchRoutes = require("./routes/batchRoutes");
@@ -155,70 +141,51 @@ const interviewRoutes = require("./routes/interviewRoutes");
 const resultandrankinkRoutes = require("./routes/resultandrankinkRoutes");
 const systemConfigRoutes = require("./routes/systemConfigRoutes");
 const eventRoutes = require("./routes/eventRoutes");
+
 const customListRoutes = require("./routes/customListRoutes");
+const selectionReportRoutes = require("./routes/selectionReportRoutes");
 
-// ────────────────────────────────
-// ROUTE MOUNTING
-// ────────────────────────────────
-
-// Bulk Upload
-app.use("/api/bulk-upload", bulkUploadRoutes);
-
-// Auth & System Config
 app.use("/api/auth", authRoutes);
 app.use("/api/system-config", systemConfigRoutes);
+app.use("/api/bulk-upload", bulkUploadRoutes);
 
-// Applicants
 app.use("/api/applicants", applicantRoutes);
+app.use("/api/student", studentRoutes);
+app.use("/api", studentSearchRoutes);
 
-// Data & Utilities
-app.use("/api/batches", batchRoutes);
-app.use("/api", userRoleRoutes);
-app.use("/api", searchRoutes);
 app.use("/api", jurisdictionRoutes);
 app.use("/api/juris-names", jurisNamesRoutes);
 app.use("/api/institutes", institutesRoutes);
 app.use("/api/districts", districtRoutes);
-app.use("/api", studentSearchRoutes);
+
 app.use("/api", eventRoutes);
 app.use("/api/custom-list", customListRoutes);
+app.use("/api/selection-reports", selectionReportRoutes);
 
-// Shortlisting
+app.use("/api/batches", batchRoutes);
+app.use("/api/timetable", timetableRoutes);
+app.use("/api/tracking", trackingRoutes);
+
 app.use("/api/shortlist/generate", generateShortlistRoutes);
 app.use("/api/shortlist-info", shortlistInfoRoutes);
-
-// Dashboards & Roles
-app.use("/api/admin-dashboard", adminDashboardRoutes);
-app.use("/api/coordinator", coordinatorRoutes);
-app.use("/api/student", studentRoutes);
-
-// Exams & Evaluation
 app.use("/api/exams", examRoutes);
 app.use("/api/evaluation", evaluationRoutes);
 app.use("/api/evaluation-dashboard", evaluationDashboardRoutes);
-app.use("/api/tracking", trackingRoutes);
-
-// Interview
 app.use("/api/interview", interviewRoutes);
-
-// Results & Ranking
 app.use("/api/results", resultandrankinkRoutes);
 
-// Timetable
-app.use("/api/timetable", timetableRoutes);
+app.use("/api", userRoleRoutes);
+app.use("/api/admin-dashboard", adminDashboardRoutes);
+app.use("/api/coordinator", coordinatorRoutes);
+app.use("/api", searchRoutes);
 
-// ────────────────────────────────
-// 404 HANDLER
-// ────────────────────────────────
 app.use((req, res) => {
-  res.status(404).json({ error: "Route not found" });
+  res.status(404).json({ error: "Route not found" });
 });
 
-// ────────────────────────────────
-// START SERVER
-// ────────────────────────────────
-app.listen(PORT,  () => {
+app.listen(PORT, () => {
   console.log(
     `Server running in ${NODE_ENV.toUpperCase()} mode on http://localhost:${PORT}`
   );
+  console.log(`Event Photos serving from: ${EVENT_PHOTOS_DIR}`);
 });

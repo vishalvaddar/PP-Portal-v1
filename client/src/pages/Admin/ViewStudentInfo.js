@@ -5,13 +5,7 @@ import ProfileSection from "../../components/ProfileSection";
 import ProfileField from "../../components/ProfileField";
 import classes from "./ViewStudentInfo.module.css";
 
-// 1. Import the Hooks
-import { 
-  useFetchStates, 
-  useFetchEducationDistricts, 
-  useFetchBlocks, 
-  useFetchInstitutes 
-} from "../../hooks/useJurisData";
+import {  useFetchStates,  useFetchEducationDistricts,  useFetchBlocks,  useFetchInstitutes } from "../../hooks/useJurisData";
 
 const ViewStudentInfo = () => {
   const { nmms_reg_number } = useParams();
@@ -24,7 +18,6 @@ const ViewStudentInfo = () => {
   const [error, setError] = useState("");
   const [photoPreview, setPhotoPreview] = useState("");
   
-  // 2. Local state to store Jurisdiction Lists (Names)
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [blocks, setBlocks] = useState([]);
@@ -35,7 +28,6 @@ const ViewStudentInfo = () => {
   const isFromBatches = location.pathname.includes("/batches/view-student-info/");
   const pageTitle = isFromBatches ? "Student Profile" : "Applicant Profile";
 
-  // 3. Call Hooks to fetch lists based on Student Data
   useFetchStates(setStates);
   useFetchEducationDistricts(formData?.app_state, setDistricts);
   useFetchBlocks(formData?.district, setBlocks);
@@ -135,7 +127,6 @@ const ViewStudentInfo = () => {
     }
   ];
 
-  // Fetch applicant data
   useEffect(() => {
     const fetchStudentDetails = async () => {
       try {
@@ -219,40 +210,31 @@ const ViewStudentInfo = () => {
     setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // 4. Update Format Value Logic to lookup Names from IDs
   const formatValue = (key, value) => {
     if (!value) return "Not specified";
 
-    // Date
     if (key === "dob") return new Date(value).toLocaleDateString("en-IN");
 
-    // Money
     if (key === "family_income_total") return `₹${Number(value).toLocaleString("en-IN")}`;
 
-    // --- Name Lookups ---
     
-    // State Name
     if (key === "app_state") {
       const state = states.find(s => String(s.id) === String(value));
-      return state ? state.name : value; // Return name if found, else ID
+      return state ? state.name : value;
     }
 
-    // District Name
     if (key === "district") {
       const dist = districts.find(d => String(d.id) === String(value));
       return dist ? dist.name : value;
     }
 
-    // Block Name
     if (key === "nmms_block") {
       const blk = blocks.find(b => String(b.id) === String(value));
       return blk ? blk.name : value;
     }
 
-    // School Name (Current & Previous)
     if (key === "current_institute_dise_code" || key === "previous_institute_dise_code") {
       const inst = institutes.find(i => String(i.dise_code) === String(value));
-      // Returns: "Govt High School (123456)"
       return inst ? `${inst.institute_name} (${value})` : value;
     }
 

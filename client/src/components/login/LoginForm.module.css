@@ -1,210 +1,349 @@
-/* LoginForm.module.css */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap');
 
-/* Overall container for the login form */
-.loginFormContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+:root {
+  --primary-color: #0d47a1;
+  --secondary-color: #64748b;
+  --error-color: #dc3545;
+  --background-color: #f8f9fa;
+  --header-bg: #1e293b;
+  --border-radius: 8px;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* ---------------- Page Background ---------------- */
+.pageBackground {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f0f2f5 0%, #e0e6ed 100%);
-  font-family: 'Inter', sans-serif;
-  padding: 20px;
-  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  padding: 1.5rem;
 }
 
-/* Styling for the main Card component */
-.card {
+/* ---------------- Main Card ---------------- */
+.loginCard {
   width: 100%;
-  max-width: 450px;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  max-width: 950px;
+  height: 620px;
+  display: flex;
+  background: #ffffff;
+  border-radius: 24px;
   overflow: hidden;
-  padding: 30px;
-  box-sizing: border-box;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   border: none;
 }
 
-/* Card Header styles */
-.cardHeader {
-  text-align: center;
-  margin-bottom: 25px;
-  padding-bottom: 0;
-}
-
-/* Card Title */
-.cardTitle {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 8px;
-  letter-spacing: -0.02em;
-}
-
-/* Card Description */
-.cardDescription {
-  font-size: 1rem;
-  color: #6c757d;
-  line-height: 1.5;
-}
-
-/* Error message styling */
-.errorMessage {
-  background-color: #ffebeb;
-  color: #d9534f;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 0.95rem;
-  text-align: center;
-}
-
-/* Form spacing */
-.formSpaceY4 > *:not(:last-child) {
-  margin-bottom: 20px;
-}
-
-/* Label styling */
-.label {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #495057;
-  margin-bottom: 8px;
-  display: block;
-}
-
-/* Input field styling */
-.inputField {
-  width: 100%;
-  padding: 12px 15px;
-  border: 1px solid #ced4da;
-  border-radius: 8px;
-  font-size: 1rem;
-  color: #343a40;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  box-sizing: border-box;
-}
-
-.inputField:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
-  outline: none;
-}
-
-/* Button styling */
-.button {
-  width: 100%;
-  padding: 14px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.05rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.button:hover {
-  background-color: #0056b3;
-  transform: translateY(-2px);
-}
-
-.button:active {
-  transform: translateY(0);
-}
-
-.button:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Role selection radio group */
-.roleRadioGroup {
+/* ---------------- Header Section (Left Side) ---------------- */
+.headerSection {
+  width: 45%;
+  background: var(--header-bg);
+  color: #ffffff;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
 }
 
-.roleOption {
+.logoCircle {
+  width: 110px;
+  height: 110px;
+  background: #ffffff;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  padding: 12px 16px;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  justify-content: center;
+  margin-bottom: 24px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.logoImage {
+  width: 85%;
+  height: auto;
+  object-fit: contain;
+}
+
+.orgTitle {
+  font-family: 'Playfair Display', serif;
   font-size: 1rem;
-  color: #495057;
-  background-color: #f8f9fa;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  line-height: 1.4;
+  margin-bottom: 60px;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.imasTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: 6px;
+  margin: 0;
+  color: #fff;
+}
+
+/* ---------------- Form Section (Right Side) ---------------- */
+.formSection {
+  width: 55%;
+  padding: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  background: #fff;
+}
+
+.formStack {
+  max-width: 360px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ---------------- Inputs ---------------- */
+.inputWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #374151;
+}
+
+.inputContainer {
   position: relative;
 }
 
-.roleOption:hover {
-  background-color: #e2e6ea;
-  border-color: #c1d8ee;
-}
-
-/* Style for when a role option is checked */
-.roleOption[data-checked="true"] {
-  background-color: #e0f2fe;
-  border-color: #90cdf4;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
-  font-weight: 600;
-  color: #007bff;
-}
-
-/* Hide default radio input */
-.roleRadioGroupItem {
+.inputIcon {
   position: absolute;
-  opacity: 0;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: #9ca3af;
+  z-index: 10;
+}
+
+.inputField {
+  width: 100% !important;
+  height: 48px !important;
+  padding-left: 44px !important;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #fcfcfc;
+  transition: all 0.2s ease;
+}
+
+.inputField:focus {
+  border-color: var(--primary-color);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.1);
+  outline: none;
+}
+
+/* ---------------- CAPTCHA ---------------- */
+.captchaRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.captchaCanvas {
+  flex: 1;
+  height: 48px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  background: #f3f4f6;
+}
+
+.refreshBtn {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+}
+
+.refreshBtn:hover {
+  background: #e5e7eb;
+}
+
+.refreshBtn svg {
+  width: 20px;
+  height: 20px;
+  color: #4b5563;
+}
+
+/* ---------------- Buttons ---------------- */
+.continueButton {
+  width: 100%;
+  height: 50px;
+  border-radius: 8px;
+  background: var(--primary-color);
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: opacity 0.2s, transform 0.1s;
+  margin-top: 10px;
+}
+
+.continueButton:hover:not(:disabled) {
+  opacity: 0.95;
+}
+
+.continueButton:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.continueButton:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Spinner */
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---------------- Roles (Step 2) ---------------- */
+.roleContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.roleCard {
+  padding: 14px 18px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  color: #4b5563;
+  transition: all 0.2s;
+}
+
+.roleCard:hover {
+  border-color: var(--primary-color);
+  background: #f8fafc;
+}
+
+.activeRole {
+  border-color: var(--primary-color);
+  background: #eff6ff;
+  color: var(--primary-color);
+  font-weight: 600;
+  box-shadow: 0 0 0 1px var(--primary-color);
+}
+
+.hiddenRadio {
+  display: none;
+}
+
+/* ---------------- Miscellaneous ---------------- */
+.errorBanner {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fee2e2;
+  padding: 12px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.textLink {
+  background: none;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  color: #6b7280;
+  cursor: pointer;
+  margin-top: 15px;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.textLink:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+.footerText {
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  color: #9ca3af;
   pointer-events: none;
 }
 
-/* Custom radio indicator */
-.roleOption::before {
-  content: '';
-  display: inline-block;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 2px solid #adb5bd;
-  margin-right: 12px;
-  background-color: #fff;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-/* Custom radio indicator when checked */
-.roleOption[data-checked="true"]::before {
-  background-color: #007bff;
-  border-color: #007bff;
-  box-shadow: inset 0 0 0 4px #fff;
-}
-
-/* Responsive adjustments */
-@media (max-width: 600px) {
-  .card {
-    padding: 25px;
-    margin: 15px;
+/* ---------------- Responsive ---------------- */
+@media (max-width: 900px) {
+  .loginCard {
+    flex-direction: column;
+    height: auto;
+    max-width: 420px;
+    border-radius: 16px;
   }
 
-  .cardTitle {
-    font-size: 1.6rem;
+  .headerSection {
+    width: 100%;
+    padding: 30px 20px;
+  }
+  
+  .orgTitle {
+    margin-bottom: 20px;
   }
 
-  .button {
-    font-size: 1rem;
-    padding: 12px 18px;
+  .formSection {
+    width: 100%;
+    padding: 40px 24px;
   }
 
-  .inputField {
-    padding: 10px 12px;
-  }
-
-  .formSpaceY4 > *:not(:last-child) {
-    margin-bottom: 15px;
+  .footerText {
+    position: static;
+    margin-top: 40px;
+    padding-bottom: 20px;
   }
 }

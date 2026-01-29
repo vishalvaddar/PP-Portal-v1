@@ -1,3 +1,4 @@
+const { file } = require("pdfkit");
 const pool = require("../config/db");
 const EventModel = require("../models/eventModel");
 
@@ -17,7 +18,7 @@ exports.createEventType = async (req, res) => {
     res.status(201).json(data);
 
   } catch (err) {
-    console.error("Error creating event type:", err);
+    console.error("Create Event Type Error:", err);
     res.status(500).json({ message: "Failed to create event type" });
   }
 };
@@ -36,7 +37,7 @@ exports.updateEventType = async (req, res) => {
     res.json(data);
 
   } catch (err) {
-    console.error("Error updating event type:", err);
+    console.error("Update Event Type Error:", err);
     res.status(500).json({ message: "Failed to update event type" });
   }
 };
@@ -47,7 +48,7 @@ exports.getEventTypes = async (req, res) => {
     const data = await EventModel.getEventTypes();
     res.json(data);
   } catch (err) {
-    console.error("Error fetching event types:", err);
+    console.error("Get Event Types Error:", err);
     res.status(500).json({ message: "Failed to fetch event types" });
   }
 };
@@ -98,7 +99,7 @@ exports.createEvent = async (req, res) => {
       created_by
     ]);
 
-    // Photos upload
+    /* ---------- SAVE PHOTOS ---------- */
     if (req.files?.photos) {
       for (const file of req.files.photos) {
         await EventModel.insertPhoto(client, [
@@ -110,19 +111,45 @@ exports.createEvent = async (req, res) => {
       }
     }
 
+    /* ---------- SAVE REPORTS (if any) ---------- */
+    if (req.files?.reports) {
+      for (const file of req.files.reports) {
+        await EventModel.insertEventReport(client, [
+          eventId,
+          file.mimetype,
+          file.path,
+          file.originalname,
+          created_by
+        ]);
+      }
+    }
+
     await client.query("COMMIT");
-    res.status(201).json({ message: "Event created", event_id: eventId });
+
+    res.status(201).json({
+      success: true,
+      message: "Event created successfully",
+      event_id: eventId
+    });
 
   } catch (err) {
     await client.query("ROLLBACK");
-    console.error("Error creating event:", err);
-    res.status(500).json({ message: "Failed to create event" });
+    console.error("Create Event Error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to create event"
+    });
 
   } finally {
     client.release();
   }
 };
 
+
+/* =========================================================
+   UPDATE EVENT
+========================================================= */
 
 exports.updateEvent = async (req, res) => {
   const client = await pool.connect();
@@ -154,6 +181,7 @@ exports.updateEvent = async (req, res) => {
 
     const updated_by = req.user?.user_id || null;
 
+    /* ---------- UPDATE EVENT MASTER ---------- */
     await EventModel.updateEvent(client, [
       event_type_id,
       event_title,
@@ -168,23 +196,96 @@ exports.updateEvent = async (req, res) => {
       boys_attended,
       girls_attended,
       parents_attended,
+      photos_to_delete,
       updated_by,
       id
     ]);
 
+    if (photos_to_delete) {
+      let idsToDelete = [];
+      try {
+        idsToDelete = JSON.parse(photos_to_delete);
+      } catch(e) {
+        console.error("Invalid photos_to_delete format:", e);
+      }
+      if (Array.isArray(idsToDelete) && idsToDelete.length > 0) {
+      const fetchFilesQuery = `SELECT file_path FROM event_photos WHERE photo_id = ANY($1::int[])`;
+      const { rows: filesToRemove } = await client.query(fetchFilesQuery, [idsToDelete]);
+
+      filesToRemove.forEach(file => {
+        if (file.file_path && fs.existsSync(file.file_path)) {
+          try {
+            fs.unlinkSync(file.file_path);
+            console.log(`Deleted file: ${file.file_path}`);
+          } catch(error) {
+            console.error(`Failed to delete file from disk: ${file.file_path}`, error);
+          }
+        }
+      });
+      
+    const deletePhotosQuery = `DELETE FROM event_photos WHERE photo_id = ANY($1::int[])`;
+    await client.query(deletePhotosQuery, [idsToDelete]);
+    }
+    }
+
+    
+
+
+
+    if (req.files?.photos && req.files.photos.length > 0) {
+
+      for (const file of req.files.photos) {
+        await EventModel.insertPhoto(client, [
+          id,
+          file.path,
+          file.originalname,
+          updated_by
+        ]);
+      }
+    }
+
+    /* ==================================================
+       ADD NEW REPORTS (OPTIONAL)
+    ================================================== */
+
+    if (req.files?.reports && req.files.reports.length > 0) {
+
+      for (const file of req.files.reports) {
+        await EventModel.insertEventReport(client, [
+          id,
+          file.mimetype,
+          file.path,
+          file.originalname,
+          updated_by
+        ]);
+      }
+    }
+
     await client.query("COMMIT");
-    res.json({ message: "Event updated successfully" });
+
+    res.json({
+      success: true,
+      message: "Event updated successfully (old photos preserved)"
+    });
 
   } catch (err) {
+
     await client.query("ROLLBACK");
-    console.error("Error updating event:", err);
-    res.status(500).json({ message: "Failed to update event" });
+    console.error("Update Event Error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to update event"
+    });
 
   } finally {
     client.release();
   }
 };
 
+/* =========================================================
+   DELETE EVENT
+========================================================= */
 
 exports.deleteEvent = async (req, res) => {
   try {
@@ -195,11 +296,19 @@ exports.deleteEvent = async (req, res) => {
     }
 
     await EventModel.deleteEvent(id);
-    res.json({ message: "Event deleted successfully" });
+
+    res.json({
+      success: true,
+      message: "Event deleted successfully"
+    });
 
   } catch (err) {
-    console.error("Error deleting event:", err);
-    res.status(500).json({ message: "Failed to delete event" });
+    console.error("Delete Event Error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete event"
+    });
   }
 };
 
@@ -212,9 +321,14 @@ exports.getAllEvents = async (req, res) => {
   try {
     const data = await EventModel.getAllEvents();
     res.json(data);
+
   } catch (err) {
-    console.error("Error fetching events:", err);
-    res.status(500).json({ message: "Failed to fetch events" });
+    console.error("Get All Events Error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch events"
+    });
   }
 };
 
@@ -236,10 +350,18 @@ exports.getEventById = async (req, res) => {
     const photos = await EventModel.getEventPhotos(id);
     const reports = await EventModel.getEventReports(id);
 
-    res.json({ ...event, photos, reports });
+    res.json({
+      ...event,
+      photos,
+      reports
+    });
 
   } catch (err) {
-    console.error("Error getEventById:", err);
-    res.status(500).json({ message: "Failed to fetch event" });
+    console.error("Get Event By Id Error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch event"
+    });
   }
 };

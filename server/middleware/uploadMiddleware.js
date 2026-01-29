@@ -36,7 +36,7 @@ const limits = {
 };
 
 const upload = multer({ storage, fileFilter, limits });
-const multerSingle = upload.single("file"); // must match client FormData key
+const multerSingle = upload.single("file");
 
 const handleUploadErrors = (err, req, res, next) => {
   if (!err) return next();

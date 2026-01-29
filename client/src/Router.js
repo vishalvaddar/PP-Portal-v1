@@ -26,6 +26,13 @@ import MyProfile from "./pages/Admin/MyProfile";
 import CreateExam from "./pages/Admin/Exam/CreateExam";
 import TimeTableDashboard from "./pages/Admin/TimeTableDashboard";
 import ClassroomManager from "./pages/Admin/ClassroomManager";
+
+
+//Reports
+import ReportsDashboard from "./pages/Admin/Reports/ReportsDashboard";
+import SelectionReports from "./pages/Admin/Reports/SelectionReports";
+import AcademicReports from "./pages/Admin/Reports/AcademicReports";
+import SammelanReports from "./pages/Admin/Reports/SammelanReports";
 import CustomList from "./pages/Admin/Reports/CustomList";
 
 // Admin Evaluation
@@ -123,9 +130,19 @@ export const appRouter = createBrowserRouter([
               { path: "batches/view-student-info/:nmms_reg_number", element: <ViewStudentInfo /> },
               { path: "time-table-dashboard", element: <TimeTableDashboard /> },
               { path: "reports", element: <Reports /> },
-              { path: "reports/custom-lists", element: <CustomList /> },
               { path: "classrooms", element: <ClassroomManager /> },
+                {
+                path: "reports",
+                children: [
+                  { index: true, element: <ReportsDashboard /> },
+                  { path: "selection", element: <SelectionReports /> },
+                  { path: "academic", element: <AcademicReports /> },
+                  { path: "sammelan", element: <SammelanReports /> },
 
+                  // 3. Your existing custom list (keep this if you still need it)
+                  { path: "custom-lists", element: <CustomList /> },
+                ],
+              },
               // EVENTS
               { path: "events", element: <Events /> },
               { path: "events/:eventId", element: <EventDetailsPage /> },

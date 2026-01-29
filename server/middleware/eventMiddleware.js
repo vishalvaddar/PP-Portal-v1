@@ -3,31 +3,26 @@ const path = require("path");
 const fs = require("fs");
 
 /* =========================================================
-   BASE DIRECTORY CONFIGURATION
-   ---------------------------------------------------------
-   process.cwd() → Project root
-   This ensures files are always stored in:
-   server/uploads/events/...
+  BASE DIRECTORY CONFIGURATION
 ========================================================= */
-const DATA_EVENT_DIR = path.join(__dirname, "..", "uploads", "events");
-const PHOTOS_DIR = path.join(DATA_EVENT_DIR, "photos");
-const REPORTS_DIR = path.join(DATA_EVENT_DIR, "reports");
+
+const PHOTOS_DIR = process.env.EVENT_STORAGE_PATH
+  ? path.resolve(process.env.EVENT_STORAGE_PATH)
+  : path.join(__dirname, "..", "uploads", "events", "photos");
 
 
 /* =========================================================
-   ENSURE DIRECTORIES EXIST
+   ENSURE DIRECTORY EXISTS
 ========================================================= */
 
 const ensureDir = (dirPath) => {
-  const resolvedPath = path.resolve(dirPath);
-
-  if (!fs.existsSync(resolvedPath)) {
-    fs.mkdirSync(resolvedPath, { recursive: true });
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
   }
 };
 
 ensureDir(PHOTOS_DIR);
-ensureDir(REPORTS_DIR);
+
 
 /* =========================================================
    MULTER STORAGE CONFIGURATION
@@ -37,68 +32,53 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     if (file.fieldname === "photos") {
       cb(null, PHOTOS_DIR);
-    } else if (file.fieldname === "reports") {
-      cb(null, REPORTS_DIR);
     } else {
-      cb(new Error("Invalid file field"), false);
+      cb(new Error("Invalid upload field"), null);
     }
   },
 
   filename: (req, file, cb) => {
-    const timestamp = Date.now();
-    const random = Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
+    const uniqueName =
+      Date.now() +
+      "-" +
+      Math.round(Math.random() * 1e9) +
+      path.extname(file.originalname).toLowerCase();
 
-    cb(null, `${timestamp}-${random}${ext}`);
+    cb(null, uniqueName);
   }
 });
 
+
 /* =========================================================
-   FILE TYPE VALIDATION
+   FILE FILTER (IMAGES ONLY)
 ========================================================= */
 
 const fileFilter = (req, file, cb) => {
-  const imageMimeTypes = [
-    "image/jpeg",
-    "image/png",
-    "image/jpg"
-  ];
+  const allowed = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
 
-  const reportMimeTypes = [
-    "application/pdf",
-    "application/vnd.ms-excel",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-  ];
-
-  if (
-    file.fieldname === "photos" &&
-    imageMimeTypes.includes(file.mimetype)
-  ) {
-    cb(null, true);
-  } else if (
-    file.fieldname === "reports" &&
-    reportMimeTypes.includes(file.mimetype)
-  ) {
+  if (allowed.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("Invalid file type"), false);
+    cb(
+      new Error("Only JPG, PNG, WEBP images are allowed"),
+      false
+    );
   }
 };
 
+
 /* =========================================================
-   UPLOAD MIDDLEWARE (EXPORT)
+   UPLOAD MIDDLEWARE
 ========================================================= */
 
 exports.uploadEventFiles = multer({
   storage,
   fileFilter,
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5 MB per file
-  }
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB
 }).fields([
-  { name: "photos", maxCount: 10 },
-  { name: "reports", maxCount: 5 }
+  { name: "photos", maxCount: 10 }
 ]);
+
 
 /* =========================================================
    VALIDATE EVENT BODY
@@ -126,25 +106,26 @@ exports.validateEventBody = (req, res, next) => {
 
   if (!event_start_date || !event_end_date) {
     return res.status(400).json({
-      message: "Event start and end dates are required"
+      message: "Start and end dates are required"
     });
   }
 
   if (new Date(event_start_date) > new Date(event_end_date)) {
     return res.status(400).json({
-      message: "Event end date cannot be before start date"
+      message: "End date must be after start date"
     });
   }
 
   next();
 };
 
+
 /* =========================================================
-   VALIDATE EVENT ID PARAM
+   VALIDATE EVENT ID
 ========================================================= */
 
 exports.validateEventId = (req, res, next) => {
-  const { id } = req.params;
+  const id = Number(req.params.id);
 
   if (!id || isNaN(id)) {
     return res.status(400).json({
@@ -152,12 +133,13 @@ exports.validateEventId = (req, res, next) => {
     });
   }
 
-  req.params.id = Number(id);
+  req.params.id = id;
   next();
 };
 
+
 /* =========================================================
-   SANITIZE NUMERIC FIELDS
+   SANITIZE NUMBERS
 ========================================================= */
 
 exports.sanitizeEventNumbers = (req, res, next) => {
@@ -167,7 +149,8 @@ exports.sanitizeEventNumbers = (req, res, next) => {
     "cohort_number",
     "boys_attended",
     "girls_attended",
-    "parents_attended"
+    "parents_attended",
+    "pincode"
   ];
 
   numericFields.forEach((field) => {

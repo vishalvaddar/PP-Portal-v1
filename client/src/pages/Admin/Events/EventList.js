@@ -1,87 +1,109 @@
 import React from 'react';
 import styles from './EventList.module.css';
 
-const EventList = ({ events, onViewDetails }) => {
-
-  const calculateTotal = (e) => {
-    // Ensure we handle both snake_case (API) or camelCase if your prop names vary
+const EventList = ({ events, onViewDetails, onDelete }) => {
+  const calculateTotalAttendees = (event) => {
     return (
-      (Number(e.boys_attended || e.boys_count) || 0) +
-      (Number(e.girls_attended || e.girls_count) || 0) +
-      (Number(e.parents_attended || e.parents_count) || 0)
+      Number(event.boys_attended || event.boys_count || 0) +
+      Number(event.girls_attended || event.girls_count || 0) +
+      Number(event.parents_attended || event.parents_count || 0)
     );
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("en-IN", {
+    if (!dateString) return '—';
+    return new Date(dateString).toLocaleDateString('en-IN', {
       day: '2-digit',
       month: 'short',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
+  const handleDelete = (e, eventId) => {
+    e.stopPropagation();
+    if (window.confirm('Delete this event permanently?')) {
+      onDelete(eventId);
+    }
+  };
+
+  if (!events?.length) {
+    return (
+      <div className={styles.emptyState}>
+        <p className={styles.emptyTitle}>No events found</p>
+        <p className={styles.emptySubtitle}>
+          Click "Add New Event" to create your first event.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className={styles.listContainer}>
-      {events.length === 0 ? (
-        <div className={styles.emptyState}>
-          <p>No events found.</p>
-          <span>Click "Add New Event" above to create one.</span>
-        </div>
-      ) : (
-        <div className={styles.tableWrapper}>
-          <table className={styles.eventTable}>
-            <thead>
-              <tr>
-                <th className={styles.thLeft}>Event Title</th>
-                <th>Type</th>
-                <th>Start Date</th>
-                <th>Location</th>
-                <th>Attendees</th>
-                <th className={styles.thRight}>Action</th>
-              </tr>
-            </thead>
+    <div className={styles.container}>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th className={styles.th}>Event</th>
+              <th className={styles.th}>Type</th>
+              <th className={styles.th}>Date</th>
+              <th className={styles.th}>Location</th>
+              <th className={styles.th}>Attendees</th>
+              <th className={`${styles.th} ${styles.thActions}`}>Actions</th>
+            </tr>
+          </thead>
 
-            <tbody>
-              {events.map((event) => (
-                <tr key={event.event_id} className={styles.tableRow}>
-                  <td className={styles.titleCell}>
-                    <div className={styles.titleText}>{event.event_title}</div>
-                    <div className={styles.subText}>{event.cohort_number ? `Cohort ${event.cohort_number}` : ''}</div>
-                  </td>
-                  
-                  <td>
-                    <span className={styles.typeBadge}>
-                      {event.event_type_name || event.event_type || 'Event'}
-                    </span>
-                  </td>
-                  
-                  <td className={styles.dateCell}>
-                    {formatDate(event.event_start_date || event.start_date)}
-                  </td>
-                  
-                  <td className={styles.locationCell}>
-                    {event.event_location || event.location || "N/A"}
-                  </td>
-                  
-                  <td className={styles.numberCell}>
-                    {calculateTotal(event)}
-                  </td>
+          <tbody>
+            {events.map((event) => (
+              <tr key={event.event_id} className={styles.row}>
+                <td className={styles.cell}>
+                  <div className={styles.eventTitle}>{event.event_title}</div>
+                  {event.cohort_number && (
+                    <div className={styles.eventSubtitle}>
+                      Cohort {event.cohort_number}
+                    </div>
+                  )}
+                </td>
 
-                  <td className={styles.actionCell}>
+                <td className={styles.cell}>
+                  <span className={`${styles.badge} ${styles[event.event_type_name?.toLowerCase()] || styles.badgeDefault}`}>
+                    {event.event_type_name || event.event_type || 'Event'}
+                  </span>
+                </td>
+
+                <td className={styles.cell}>{formatDate(event.event_start_date || event.start_date)}</td>
+
+                <td className={styles.cell}>
+                  {event.event_location || event.location || '—'}
+                </td>
+
+                <td className={`${styles.cell} ${styles.numberCell}`}>
+                  {calculateTotalAttendees(event)}
+                </td>
+
+                <td className={`${styles.cell} ${styles.actionsCell}`}>
+                  <div className={styles.actionButtons}>
                     <button
-                      className={styles.viewButton}
+                      type="button"
+                      className={`${styles.btn} ${styles.btnView}`}
                       onClick={() => onViewDetails(event.event_id)}
                     >
                       View
                     </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+
+                    <button
+                      type="button"
+                      className={`${styles.btn} ${styles.btnDelete}`}
+                      onClick={(e) => handleDelete(e, event.event_id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

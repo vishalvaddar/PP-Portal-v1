@@ -20,9 +20,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 0px;
+  padding: 25px 30px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e0e6ef;
 }
 
 .headerTop h1 {
