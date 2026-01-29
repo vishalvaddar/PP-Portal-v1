@@ -54,12 +54,16 @@ app.use(
   express.static(EVENT_PHOTOS_DIR)
 );
 
-const PROFILE_PHOTOS_ROOT = process.env.PROFILE_PHOTOS_ROOT;
+const PROFILE_PHOTOS_ROOT =
+  process.env.PROFILE_PHOTOS_ROOT || path.join(__dirname, "uploads", "profile_photos");
 
-app.use(
-  "/students",
-  express.static(PROFILE_PHOTOS_ROOT)
-);
+// Ensure folder exists
+if (!fs.existsSync(PROFILE_PHOTOS_ROOT)) {
+  fs.mkdirSync(PROFILE_PHOTOS_ROOT, { recursive: true });
+}
+
+// Serve static profile photos
+app.use("/students", express.static(PROFILE_PHOTOS_ROOT));
 
 app.use(
   "/uploads",
