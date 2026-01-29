@@ -1,0 +1,164 @@
+.container {
+  padding: 40px;
+  background: #ffffff; /* Pure white background */
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+}
+
+.headerArea {
+  margin-bottom: 25px;
+}
+
+.pageTitle {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #1e40af; /* Deep blue heading */
+  margin: 0;
+}
+
+.actionBar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: #ffffff;
+  padding: 14px 24px;
+  border-radius: 12px;
+  gap: 20px;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05);
+  margin-bottom: 40px;
+  border: 1px solid #e2e8f0;
+  width: fit-content;
+}
+
+.brandBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #3b82f6;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.fieldItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+}
+
+.fieldItem select, .fieldItem input {
+  border: none;
+  background: transparent;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #1e3a8a;
+  outline: none;
+}
+
+.exportBtnGreen {
+  background: #10b981 !important;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 8px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.floatCard {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 30px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+}
+
+.cardHeader h3 { 
+  margin: 0; 
+  font-size: 1.5rem; 
+  font-weight: 900; 
+  color: #1e3a8a; 
+}
+
+.dateRangeBadge {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: #f8fafc;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    margin-top: 15px;
+}
+
+.dateSub { display: flex; flex-direction: column; }
+.dateLabel { font-size: 0.7rem; font-weight: 800; color: #64748b; }
+.dateValue { font-size: 0.9rem; font-weight: 700; color: #1e40af; }
+
+.regionStrip {
+  background: #f8fafc;
+  padding: 10px 15px;
+  border-radius: 10px;
+  font-weight: 700;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.visualBar {
+  height: 14px;
+  width: 100%;
+  background: #f1f5f9;
+  border-radius: 7px;
+  display: flex;
+  overflow: hidden;
+  margin: 25px 0;
+}
+
+.boySegment { background: #3b82f6; }
+.girlSegment { background: #f472b6; }
+
+.statsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.3fr;
+  gap: 15px;
+}
+
+.statBox {
+  background: #ffffff;
+  padding: 15px;
+  border-radius: 15px;
+  text-align: center;
+  border: 1px solid #f1f5f9;
+}
+
+.totalHighlight { 
+    background: #10b981; /* Changed from Blue to Emerald Green */
+    color: white; 
+    border: none;
+}
+
+.totalHighlight label {
+    color: #ecfdf5;
+}
+
+.val { font-size: 1.8rem; font-weight: 900; display: block; }
+.loader { text-align: center; padding: 100px; font-weight: 700; color: #64748b; }

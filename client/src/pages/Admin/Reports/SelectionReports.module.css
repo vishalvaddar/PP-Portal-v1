@@ -1,0 +1,324 @@
+/* --- MAIN CONTAINER --- */
+.container {
+    padding: 2rem;
+    background-color: #f8fafc;
+    min-height: 100vh;
+}
+
+/* --- HEADER SECTION --- */
+.mainHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.titleWrapper { 
+    display: flex; 
+    align-items: center; 
+    gap: 15px; 
+}
+
+.title { 
+    font-size: 1.8rem; 
+    color: #2c3e50; 
+    font-weight: 800; 
+}
+
+.iconBtn {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.iconBtn:hover {
+    background-color: #f8fafc;
+    color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.downloadBtn {
+    background-color: #10b981;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+/* --- NAVIGATION TABS --- */
+.reportNav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.reportNav button {
+    background: none;
+    border: none;
+    padding: 12px 24px;
+    cursor: pointer;
+    font-weight: 700;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.navActive {
+    color: #3b82f6 !important;
+    border-bottom: 3px solid #3b82f6 !important;
+}
+
+/* --- UPDATED FILTER BAR --- */
+.filterBar {
+    display: flex;
+    gap: 2rem;
+    background: white;
+    padding: 1.5rem 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.yearSelectorGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.yearLabel {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.bigSelect {
+    padding: 10px 16px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    background-color: #f8fafc;
+    cursor: pointer;
+    min-width: 160px;
+    transition: all 0.2s;
+}
+
+.bigSelect:focus {
+    border-color: #3b82f6;
+    outline: none;
+    background-color: #fff;
+}
+
+.toggleGroup { 
+    display: flex; 
+    background: #f1f5f9; 
+    padding: 6px; 
+    border-radius: 12px; 
+}
+
+.toggleGroup button { 
+    padding: 10px 20px; 
+    border: none; 
+    border-radius: 8px; 
+    background: transparent; 
+    cursor: pointer; 
+    color: #64748b; 
+    font-weight: 600; 
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.active { 
+    background: white !important; 
+    color: #3b82f6 !important; 
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
+}
+
+.searchWrapperExpanded { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    background: #f1f5f9; 
+    padding: 12px 20px; 
+    border-radius: 12px; 
+    flex-grow: 1;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.searchWrapperExpanded:focus-within {
+    background: white;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.searchWrapperExpanded input { 
+    border: none; 
+    background: transparent; 
+    outline: none; 
+    width: 100%; 
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* --- DASHBOARD LAYOUTS --- */
+.singleColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.twoColumnGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+    .twoColumnGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.reportSection {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.groupHeading {
+    font-size: 1.4rem;
+    color: #1e293b;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.totalBadge {
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 600;
+    background: #f1f5f9;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+/* --- CHART HEADINGS --- */
+.topHeaderWrapper {
+    width: 100%;
+    margin-bottom: 1.5rem;
+    padding: 1rem 2rem;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0;
+}
+
+.mainGraphTitle {
+    font-size: 1.6rem;
+    color: #1e293b;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+/* --- NESTED RAINBOW CHART --- */
+.rainbowConsolidatedWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.largeChartContainer {
+    width: 100%;
+    max-width: 450px;
+    height: 250px;
+    position: relative;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.rainbowStripGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    width: 100%;
+    margin-top: 1.5rem;
+}
+
+.rainbowStripItem {
+    display: flex;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 12px;
+    padding: 1rem;
+    gap: 1rem;
+    transition: transform 0.2s;
+}
+
+.stripColorBar {
+    width: 8px;
+    height: 40px;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.stripLabel {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.pctBadge {
+    font-weight: 800;
+    color: #3b82f6;
+    font-size: 0.85rem;
+}
+
+.countRatio {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-left: 8px;
+}
+
+/* --- BAR VIEW --- */
+.chartCard { 
+    height: 400px; 
+    padding: 1rem; 
+}
+
+.loader { 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    min-height: 400px; 
+    color: #3b82f6; 
+}

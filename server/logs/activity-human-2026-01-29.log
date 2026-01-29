@@ -1,0 +1,61 @@
+[2026-01-29T09:35:14.303Z] LOGIN:  by admin@rajalakshmifoundation.in  ip=::1 status=success_pre_auth
+[2026-01-29T09:35:14.353Z] ACTION: login_complete by admin@rajalakshmiFoundation.in  ip=::1 status=success
+[2026-01-29T09:35:14.456Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:14.496Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:26.021Z] ACTION: GET /api/exams/assigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:26.038Z] ACTION: GET /api/exams/exam-centres by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:26.046Z] ACTION: GET /api/exams/notassigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:26.055Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:26.064Z] ACTION: GET /api/exams/used-blocks by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:26.134Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:26.152Z] ACTION: GET /api/exams/used-blocks by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:26.220Z] ACTION: GET /api/exams/exam-centres by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:26.230Z] ACTION: GET /api/exams/notassigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:26.234Z] ACTION: GET /api/exams/assigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:26.239Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:26.252Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:26.812Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:26.816Z] ACTION: GET /api/results/all-exams by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:26.829Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:26.833Z] ACTION: GET /api/results/all-exams by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:28.454Z] ACTION: GET /api/exams/assigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:28.461Z] ACTION: GET /api/exams/exam-centres by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:28.465Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:28.472Z] ACTION: GET /api/exams/used-blocks by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:28.477Z] ACTION: GET /api/exams/notassigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:28.494Z] ACTION: GET /api/exams/assigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:28.501Z] ACTION: GET /api/exams/exam-centres by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:28.505Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:28.510Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:28.523Z] ACTION: GET /api/exams/used-blocks by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:28.532Z] ACTION: GET /api/exams/notassigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:28.536Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:30.956Z] ACTION: GET /api/shortlist/generate/allstates by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:30.962Z] ACTION: GET /api/shortlist/generate/criteria by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:30.971Z] ACTION: GET /api/shortlist/generate/allstates by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:30.978Z] ACTION: GET /api/shortlist/generate/criteria by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:32.764Z] ACTION: GET /api/shortlist-info/names by anonymous (anonymous) ip=::1  details={"query":{"year":"2025"}}
+[2026-01-29T09:35:32.772Z] ACTION: GET /api/shortlist-info/non-frozen-names by anonymous (anonymous) ip=::1  details={"query":{"year":"2025"}}
+[2026-01-29T09:35:32.776Z] ACTION: GET /api/shortlist-info/counts by anonymous (anonymous) ip=::1  details={"query":{"year":"2025"}}
+[2026-01-29T09:35:32.791Z] ACTION: GET /api/shortlist-info/names by anonymous (anonymous) ip=::1  details={"query":{"year":"2025"}}
+[2026-01-29T09:35:32.797Z] ACTION: GET /api/shortlist-info/non-frozen-names by anonymous (anonymous) ip=::1  details={"query":{"year":"2025"}}
+[2026-01-29T09:35:33.057Z] ACTION: GET /api/shortlist-info/counts by anonymous (anonymous) ip=::1  details={"query":{"year":"2025"}}
+[2026-01-29T09:35:39.003Z] ACTION: GET /api/evaluation-dashboard/overall/2025 by anonymous (anonymous) ip=::1 
+[2026-01-29T09:35:39.014Z] ACTION: GET /api/evaluation-dashboard/jurisdictions/2025 by anonymous (anonymous) ip=::1 
+[2026-01-29T09:35:39.021Z] ACTION: GET /api/evaluation-dashboard/overall-progress/2025 by anonymous (anonymous) ip=::1 
+[2026-01-29T09:35:39.034Z] ACTION: GET /api/evaluation-dashboard/jurisdictions/2025 by anonymous (anonymous) ip=::1 
+[2026-01-29T09:35:39.049Z] ACTION: GET /api/evaluation-dashboard/overall-progress/2025 by anonymous (anonymous) ip=::1 
+[2026-01-29T09:35:39.084Z] ACTION: GET /api/evaluation-dashboard/overall/2025 by anonymous (anonymous) ip=::1 
+[2026-01-29T09:35:41.324Z] ACTION: GET /api/exams/assigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:41.328Z] ACTION: GET /api/exams/exam-centres by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:41.331Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:41.335Z] ACTION: GET /api/exams/used-blocks by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:41.341Z] ACTION: GET /api/exams/notassigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:41.353Z] ACTION: GET /api/exams/assigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:41.358Z] ACTION: GET /api/exams/exam-centres by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:41.366Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:41.379Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:41.385Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:41.411Z] ACTION: GET /api/exams/used-blocks by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:35:41.417Z] ACTION: GET /api/exams/notassigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-01-29T09:36:23.916Z] ACTION: PUT /api/exams/2/freeze by anonymous (anonymous) ip=::1 

@@ -1,13 +1,11 @@
-
-
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import {
-  Filter, Calendar, Users, Layers, BarChart3, Loader2, Download, 
-  ChevronDown, FileText, Package, Play, Clock, ClipboardList, User
+  Calendar, Users, Layers, BarChart3, Loader2, Download, 
+  ChevronDown, FileText, Package, Play, ClipboardList, User
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import Logo from "../../assets/RCF-PP.jpg";
@@ -17,11 +15,10 @@ import StudentReportView from "./StudentReportView";
 import TeacherClassCountsView from "./TeacherClassCountsView";
 
 // ===================================================
-// INTERNAL VIEW COMPONENT (ASCENDING SORT + DD/MM/YYYY)
+// INTERNAL VIEW COMPONENT (ASCENDING SORT + CONDITIONAL STYLING)
 // ===================================================
-const ClassSessionListView = ({ reportData }) => {
+const ClassSessionListView = ({ reportData, reportType }) => {
   const sessions = useMemo(() => {
-    // SORTED BY DATE ASCENDING
     return (reportData?.classes || []).sort((a, b) => new Date(a.date) - new Date(b.date));
   }, [reportData]);
 
@@ -33,6 +30,9 @@ const ClassSessionListView = ({ reportData }) => {
 
   if (sessions.length === 0) return <p className="text-center py-10 text-gray-400">No sessions found.</p>;
 
+  // Check if we should hide batch column
+  const isBatchReport = reportType === "batch_class_details";
+
   return (
     <div className="report-data-output">
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -42,23 +42,34 @@ const ClassSessionListView = ({ reportData }) => {
             <th style={{ border: '1px solid #e2e8f0', padding: '12px', textAlign: 'center' }}>Date</th>
             <th style={{ border: '1px solid #e2e8f0', padding: '12px', textAlign: 'center' }}>Teacher</th>
             <th style={{ border: '1px solid #e2e8f0', padding: '12px', textAlign: 'center' }}>Cohort</th>
-            <th style={{ border: '1px solid #e2e8f0', padding: '12px', textAlign: 'center' }}>Batch</th>
+            {!isBatchReport && <th style={{ border: '1px solid #e2e8f0', padding: '12px', textAlign: 'center' }}>Batch</th>}
             <th style={{ border: '1px solid #e2e8f0', padding: '12px', textAlign: 'center' }}>Classroom</th>
           </tr>
         </thead>
         <tbody>
-          {sessions.map((s, i) => (
-            <tr key={i} style={{ textAlign: 'center' }}>
-              <td style={{ border: '1px solid #f1f5f9', padding: '10px' }}>{i + 1}</td>
-              <td style={{ border: '1px solid #f1f5f9', padding: '10px' }}>{formatDate(s.date)}</td>
-              <td style={{ border: '1px solid #f1f5f9', padding: '10px', fontWeight: '600' }}>{s.teacher_name}</td>
-              <td style={{ border: '1px solid #f1f5f9', padding: '10px' }}>{s.cohort_name}</td>
-              <td style={{ border: '1px solid #f1f5f9', padding: '10px' }}>{s.batch_name}</td>
-              <td style={{ border: '1px solid #f1f5f9', padding: '10px', color: '#0369a1' }}>{s.classroom_name}</td>
-            </tr>
-          ))}
+          {sessions.map((s, i) => {
+            const isMissingAttendance = isBatchReport && s.attendance_marked === false;
+            return (
+              <tr key={i} style={{ 
+                textAlign: 'center', 
+                background: isMissingAttendance ? '#fee2e2' : 'transparent' 
+              }}>
+                <td style={{ border: '1px solid #f1f5f9', padding: '10px' }}>{i + 1}</td>
+                <td style={{ border: '1px solid #f1f5f9', padding: '10px' }}>{formatDate(s.date)}</td>
+                <td style={{ border: '1px solid #f1f5f9', padding: '10px', fontWeight: '600' }}>{s.teacher_name}</td>
+                <td style={{ border: '1px solid #f1f5f9', padding: '10px' }}>{s.cohort_name}</td>
+                {!isBatchReport && <td style={{ border: '1px solid #f1f5f9', padding: '10px' }}>{s.batch_name}</td>}
+                <td style={{ border: '1px solid #f1f5f9', padding: '10px', color: '#0369a1' }}>{s.classroom_name}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
+      {isBatchReport && (
+        <div style={{ marginTop: '15px', padding: '10px', borderLeft: '4px solid #ef4444', background: '#fef2f2', fontSize: '13px', color: '#b91c1c' }}>
+          <strong>* Note:</strong> Rows highlighted in <strong>Red</strong> indicate class sessions where attendance has not yet been marked for this batch.
+        </div>
+      )}
     </div>
   );
 };
@@ -136,15 +147,23 @@ export default function BatchReports() {
   useEffect(() => {
     if (!token) return;
     setMetaLoading(true);
+
     axios.get(`${COORDINATOR_BASE}/cohorts`, { headers: authHeaders, params: userId ? { userId } : {} })
       .then(res => setCohorts((res.data || []).map(r => ({ cohort_number: r.cohort_number, cohort_name: r.cohort_name }))))
       .catch(() => setApiError("Failed to load cohorts."));
 
     axios.get(`${API_BASE}/coordinator-teachers`, { headers: authHeaders, params: { user_id: userId, fromDate: "1970-01-01", toDate: "2100-01-01" } })
-      .then(res => setTeacherOptions(res.data || []))
+      .then(res => {
+        const rawTeachers = res.data || [];
+        const uniqueTeachers = Array.from(
+          new Map(rawTeachers.map(t => [t.teacher_id, t])).values()
+        );
+        setTeacherOptions(uniqueTeachers);
+      })
+      .catch(() => setApiError("Failed to load teachers."))
       .finally(() => setMetaLoading(false));
   }, [token, userId, authHeaders]);
-
+  
   useEffect(() => {
     if (!token || !formData.cohort) { setBatches([]); return; }
     axios.get(`${COORDINATOR_BASE}/batches?cohort_number=${encodeURIComponent(formData.cohort)}`, { headers: authHeaders })
@@ -180,7 +199,18 @@ export default function BatchReports() {
       const workbook = XLSX.utils.book_new();
       let rows = [[reportTitleText], [`From: ${formatDateLabel(formData.fromDate)}  To: ${formatDateLabel(formData.toDate)}`], []];
       
-      if (formData.reportType.includes("_details")) {
+      if (formData.reportType === "batch_class_details") {
+          const sorted = (reportData.classes || []).sort((a, b) => new Date(a.date) - new Date(b.date));
+          rows.push(["Sl No", "Date", "Teacher", "Cohort", "Classroom", "Attendance Status"]);
+          sorted.forEach((r, idx) => rows.push([
+              idx+1, 
+              formatDateLabel(r.date.split('T')[0]), 
+              r.teacher_name, 
+              r.cohort_name, 
+              r.classroom_name,
+              r.attendance_marked ? "Marked" : "PENDING"
+          ]));
+      } else if (formData.reportType === "teacher_class_details") {
           const sorted = (reportData.classes || []).sort((a, b) => new Date(a.date) - new Date(b.date));
           rows.push(["Sl No", "Date", "Teacher", "Cohort", "Batch", "Classroom"]);
           sorted.forEach((r, idx) => rows.push([idx+1, formatDateLabel(r.date.split('T')[0]), r.teacher_name, r.cohort_name, r.batch_name, r.classroom_name]));
@@ -210,7 +240,6 @@ export default function BatchReports() {
       doc.setFontSize(11); doc.setFont("helvetica", "bold");
       doc.text(reportTitleText, (pageWidth - doc.getTextWidth(reportTitleText)) / 2, 45);
       
-      // LOGO POSITIONED TO PREVENT OVERLAP
       if (logoDataUrl) { doc.addImage(logoDataUrl, "JPEG", pageWidth - 80, 15, 45, 45); }
 
       doc.setFontSize(9);
@@ -218,22 +247,41 @@ export default function BatchReports() {
       doc.text(`To: ${formatDateLabel(formData.toDate)}`, pageWidth - 120, 75);
       
       let columns = [], body = [];
-      if (formData.reportType.includes("_details")) {
+      const isBatchDetails = formData.reportType === "batch_class_details";
+
+      if (isBatchDetails) {
+          const sorted = (reportData.classes || []).sort((a, b) => new Date(a.date) - new Date(b.date));
+          columns = ["Sl No", "Date", "Teacher", "Cohort", "Classroom"];
+          body = sorted.map((r, i) => [i + 1, formatDateLabel(r.date.split('T')[0]), r.teacher_name, r.cohort_name, r.classroom_name]);
+          
+          autoTable(doc, { 
+              startY: 90, head: [columns], body: body, theme: "grid", 
+              headStyles: { fillColor: [16, 185, 129] }, 
+              styles: { fontSize: 7, halign: 'center' },
+              didDrawCell: (data) => {
+                  if (data.section === 'body' && sorted[data.row.index]?.attendance_marked === false) {
+                      doc.setFillColor(255, 226, 226); // Light Red
+                      doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+                      doc.setTextColor(0, 0, 0);
+                      doc.text(data.cell.text, data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2, { align: 'center' });
+                  }
+              }
+          });
+      } else if (formData.reportType === "teacher_class_details") {
           const sorted = (reportData.classes || []).sort((a, b) => new Date(a.date) - new Date(b.date));
           columns = ["Sl No", "Date", "Teacher", "Cohort", "Batch", "Classroom"];
           body = sorted.map((r, i) => [i + 1, formatDateLabel(r.date.split('T')[0]), r.teacher_name, r.cohort_name, r.batch_name, r.classroom_name]);
+          autoTable(doc, { startY: 90, head: [columns], body: body, theme: "grid", headStyles: { fillColor: [16, 185, 129] }, styles: { fontSize: 7, halign: 'center' } });
       } else if (formData.reportType === "student_attendance") {
           const allSubjects = Object.keys(reportData?.totalConductedBySubject || {});
           columns = ["Sl No", "Student", ...allSubjects, "Attended", "%"];
           body = (reportData.students || []).map((st, i) => [i+1, st.name || "-", ...allSubjects.map(s => st.attended?.[s] ?? 0), st.attended_classes, `${st.attendance_percent}%`]);
+          autoTable(doc, { startY: 90, head: [columns], body: body, theme: "grid", headStyles: { fillColor: [16, 185, 129] }, styles: { fontSize: 7, halign: 'center' } });
       } else {
           columns = ["Sl No", "Teacher", "Cohort", "Classroom", "Subject", "Classes"];
           body = (reportData.teacherClassCounts || []).map((r, i) => [i+1, r.teacher, r.cohort, r.classroom, r.subject_code || r.subject, r.total_classes_taken]);
+          autoTable(doc, { startY: 90, head: [columns], body: body, theme: "grid", headStyles: { fillColor: [16, 185, 129] }, styles: { fontSize: 7, halign: 'center' } });
       }
-      autoTable(doc, { 
-          startY: 90, head: [columns], body: body, theme: "grid", 
-          headStyles: { fillColor: [16, 185, 129] }, styles: { fontSize: 7, halign: 'center' } 
-      });
       doc.save(`${reportTitleText}.pdf`);
     }
   };
@@ -307,7 +355,7 @@ export default function BatchReports() {
               <div className="report-data-output">
                 {formData.reportType === "student_attendance" && <StudentReportView reportData={reportData} fromDate={formData.fromDate} toDate={formData.toDate} hideHeader={true} />}
                 {formData.reportType === "teacher_class_counts" && <TeacherClassCountsView reportData={reportData} fromDate={formData.fromDate} toDate={formData.toDate} hideHeader={true} />}
-                {(formData.reportType === "batch_class_details" || formData.reportType === "teacher_class_details") && <ClassSessionListView reportData={reportData} />}
+                {(formData.reportType === "batch_class_details" || formData.reportType === "teacher_class_details") && <ClassSessionListView reportData={reportData} reportType={formData.reportType} />}
               </div>
             </div>
           )}
