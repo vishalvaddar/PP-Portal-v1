@@ -54,9 +54,11 @@ app.use(
   express.static(EVENT_PHOTOS_DIR)
 );
 
+const PROFILE_PHOTOS_ROOT = process.env.PROFILE_PHOTOS_ROOT;
+
 app.use(
-  "/uploads/profile_photos",
-  express.static(path.join(__dirname, "uploads", "profile_photos"))
+  "/students",
+  express.static(PROFILE_PHOTOS_ROOT)
 );
 
 app.use(

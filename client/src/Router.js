@@ -52,6 +52,8 @@ import CoordinatorDashboard from "./pages/Coordinator/CoordinatorDashboard";
 import ViewApplication from "./pages/Coordinator/ViewApplication";
 import BatchManagement from "./pages/Coordinator/BatchManagement";
 import BatchReports from "./pages/Coordinator/BatchReports";
+// In Router.js
+
 import AttendanceTracker from "./pages/Coordinator/AttendanceTracker";
 import CoordinatorTimeTable from "./pages/Coordinator/TimeTableManagement";
 

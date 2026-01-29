@@ -1,0 +1,211 @@
+[2026-01-29T08:22:27.866Z] LOGIN:  by pradeepa@rajalakshmiFoundation.in  ip=::1 status=success_pre_auth
+[2026-01-29T08:22:33.474Z] ACTION: login_complete by pradeepa@rajalakshmiFoundation.in  ip=::1 status=success
+[2026-01-29T08:22:33.598Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:22:33.612Z] ACTION: GET /api/coordinator/attendance/batch-weekly-avg by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:22:33.625Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:22:33.632Z] ACTION: GET /api/coordinator/reports/global-attendance by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:22:33.644Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:22:33.662Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:22:33.676Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"26"}}
+[2026-01-29T08:22:33.681Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:22:33.710Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"15"}}
+[2026-01-29T08:22:33.735Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:22:33.741Z] ACTION: GET /api/coordinator/attendance/batch-weekly-avg by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:22:33.765Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:22:33.781Z] ACTION: GET /api/coordinator/reports/global-attendance by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:22:33.795Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:22:33.933Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"26"}}
+[2026-01-29T08:22:33.954Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"26"}}
+[2026-01-29T08:22:33.963Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"15"}}
+[2026-01-29T08:22:35.964Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:22:35.971Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T08:22:35.978Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:22:35.998Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T08:23:41.018Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T08:23:41.048Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:23:41.062Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:23:41.147Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T08:23:41.153Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:23:41.163Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:24:02.522Z] ACTION: GET /api/coordinator/students/1874/inactive-history by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:25:31.274Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T08:25:31.283Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:25:31.292Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:25:31.401Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:25:31.407Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:25:31.413Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T08:25:33.498Z] ACTION: GET /api/coordinator/students/1877/inactive-history by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:32:53.969Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T08:32:54.000Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:32:54.013Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:32:54.111Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:32:54.119Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T08:32:54.125Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:33:55.163Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:33:55.168Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:33:55.244Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:33:55.249Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:34:00.856Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"userId":"2"}}
+[2026-01-29T08:34:00.863Z] ACTION: GET /api/coordinator/reports/coordinator-teachers by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"user_id":"2","fromDate":"1970-01-01","toDate":"2100-01-01"}}
+[2026-01-29T08:34:00.875Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"userId":"2"}}
+[2026-01-29T08:34:00.889Z] ACTION: GET /api/coordinator/reports/coordinator-teachers by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"user_id":"2","fromDate":"1970-01-01","toDate":"2100-01-01"}}
+[2026-01-29T08:34:01.784Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:34:01.799Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:34:04.147Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohort_number":"3"}}
+[2026-01-29T08:34:05.957Z] ACTION: GET /api/coordinator/classrooms/15 by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:37:07.194Z] LOGIN:  by pradeepa@rajalakshmiFoundation.in  ip=::1 status=success_pre_auth
+[2026-01-29T08:37:10.030Z] ACTION: login_complete by pradeepa@rajalakshmiFoundation.in  ip=::1 status=success
+[2026-01-29T08:37:10.146Z] ACTION: GET /api/coordinator/attendance/batch-weekly-avg by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:37:10.155Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:37:10.162Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:37:10.170Z] ACTION: GET /api/coordinator/reports/global-attendance by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:37:10.179Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:37:10.200Z] ACTION: GET /api/coordinator/attendance/batch-weekly-avg by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:37:10.247Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:37:10.255Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:37:10.265Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:37:10.300Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:37:10.327Z] ACTION: GET /api/coordinator/reports/global-attendance by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:37:10.376Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:37:10.434Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"26"}}
+[2026-01-29T08:37:10.455Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"26"}}
+[2026-01-29T08:37:10.462Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"15"}}
+[2026-01-29T08:37:11.726Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"userId":"2"}}
+[2026-01-29T08:37:11.732Z] ACTION: GET /api/coordinator/reports/coordinator-teachers by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"user_id":"2","fromDate":"1970-01-01","toDate":"2100-01-01"}}
+[2026-01-29T08:37:11.742Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"userId":"2"}}
+[2026-01-29T08:37:11.753Z] ACTION: GET /api/coordinator/reports/coordinator-teachers by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"user_id":"2","fromDate":"1970-01-01","toDate":"2100-01-01"}}
+[2026-01-29T08:37:12.553Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T08:37:12.558Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:37:12.571Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:37:12.583Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T08:42:03.479Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T08:42:03.484Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:42:03.489Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:42:03.564Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:42:03.567Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:42:03.576Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T08:43:01.805Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"userId":"2"}}
+[2026-01-29T08:43:01.811Z] ACTION: GET /api/coordinator/reports/coordinator-teachers by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"user_id":"2","fromDate":"1970-01-01","toDate":"2100-01-01"}}
+[2026-01-29T08:43:01.904Z] ACTION: GET /api/coordinator/reports/coordinator-teachers by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"user_id":"2","fromDate":"1970-01-01","toDate":"2100-01-01"}}
+[2026-01-29T08:43:01.985Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"userId":"2"}}
+[2026-01-29T08:43:05.763Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohort_number":"4"}}
+[2026-01-29T08:43:07.573Z] ACTION: GET /api/coordinator/reports/batch-class-details by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"26","teacherId":"","fromDate":"2026-01-23","toDate":"2026-01-29"}}
+[2026-01-29T08:43:11.186Z] ACTION: GET /api/coordinator/reports/batch-class-details by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"26","teacherId":"","fromDate":"2026-01-01","toDate":"2026-01-29"}}
+[2026-01-29T08:43:12.413Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T08:43:12.420Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:43:12.450Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T08:43:12.521Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:43:12.797Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:43:12.807Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:43:14.697Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohort_number":"4"}}
+[2026-01-29T08:43:15.442Z] ACTION: GET /api/coordinator/classrooms/26 by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:43:16.518Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"26"}}
+[2026-01-29T08:43:16.547Z] ACTION: GET /api/coordinator/attendance/session by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"classroom_id":"21","session_date":"2026-01-29","start_time":"06:15:00"}}
+[2026-01-29T08:43:16.553Z] ACTION: GET /api/coordinator/attendance by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"26"}}
+[2026-01-29T08:43:18.958Z] ACTION: POST /api/coordinator/attendance/csv/commit by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"body":{"previewData":[{"student_id":"1874","status":"PRESENT"},{"student_id":"1875","status":"PRESENT"},{"student_id":"1876","status":"PRESENT"},{"student_id":"1877","status":"PRESENT"},{"student_id":"1878","status":"PRESENT"},{"student_id":"1879","status":"PRESENT"},{"student_id":"1880","statu...
+[2026-01-29T08:43:20.546Z] ACTION: GET /api/coordinator/attendance by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"26"}}
+[2026-01-29T08:43:22.716Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"userId":"2"}}
+[2026-01-29T08:43:22.720Z] ACTION: GET /api/coordinator/reports/coordinator-teachers by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"user_id":"2","fromDate":"1970-01-01","toDate":"2100-01-01"}}
+[2026-01-29T08:43:22.728Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"userId":"2"}}
+[2026-01-29T08:43:22.739Z] ACTION: GET /api/coordinator/reports/coordinator-teachers by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"user_id":"2","fromDate":"1970-01-01","toDate":"2100-01-01"}}
+[2026-01-29T08:43:25.420Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohort_number":"4"}}
+[2026-01-29T08:43:30.395Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T08:43:30.399Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:43:30.418Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:43:30.425Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T08:43:51.457Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T08:43:51.462Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:43:51.466Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:43:51.535Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:43:51.543Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T08:43:51.545Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T08:44:47.927Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"userId":"2"}}
+[2026-01-29T08:44:47.932Z] ACTION: GET /api/coordinator/reports/coordinator-teachers by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"user_id":"2","fromDate":"1970-01-01","toDate":"2100-01-01"}}
+[2026-01-29T08:44:48.008Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"userId":"2"}}
+[2026-01-29T08:44:48.015Z] ACTION: GET /api/coordinator/reports/coordinator-teachers by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"user_id":"2","fromDate":"1970-01-01","toDate":"2100-01-01"}}
+[2026-01-29T08:44:50.318Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohort_number":"4"}}
+[2026-01-29T08:44:59.148Z] ACTION: GET /api/coordinator/reports/teacher-class-details by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"","teacherId":"14","fromDate":"2026-01-01","toDate":"2026-01-29"}}
+[2026-01-29T09:03:01.350Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:01.369Z] ACTION: GET /api/batches/19 by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:01.379Z] ACTION: GET /api/batches/19/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:01.459Z] ACTION: GET /api/batches/19 by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:01.466Z] ACTION: GET /api/batches/19/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:01.540Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:02.412Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T09:03:02.425Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:02.440Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:02.464Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T09:03:04.090Z] ACTION: GET /api/coordinator/attendance/batch-weekly-avg by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:04.101Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:04.107Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:04.112Z] ACTION: GET /api/coordinator/reports/global-attendance by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:04.158Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:04.169Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:04.178Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"26"}}
+[2026-01-29T09:03:04.185Z] ACTION: GET /api/coordinator/attendance/batch-weekly-avg by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:04.193Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:04.281Z] ACTION: GET /api/coordinator/reports/global-attendance by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:04.288Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:04.351Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"15"}}
+[2026-01-29T09:03:04.399Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"26"}}
+[2026-01-29T09:03:04.408Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"26"}}
+[2026-01-29T09:03:04.413Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"15"}}
+[2026-01-29T09:03:04.502Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T09:03:04.507Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:04.520Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:04.534Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T09:03:09.254Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T09:03:09.258Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:09.264Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:09.279Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:09.285Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T09:03:09.290Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:41.174Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T09:03:41.207Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:41.219Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:41.305Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:41.313Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T09:03:41.325Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:03:59.348Z] LOGIN:  by pradeepa@rajalakshmiFoundation.in  ip=::1 status=success_pre_auth
+[2026-01-29T09:04:00.963Z] ACTION: login_complete by pradeepa@rajalakshmiFoundation.in  ip=::1 status=success
+[2026-01-29T09:04:01.035Z] ACTION: GET /api/coordinator/attendance/batch-weekly-avg by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:01.045Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:01.050Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:01.056Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:01.062Z] ACTION: GET /api/coordinator/reports/global-attendance by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:01.091Z] ACTION: GET /api/coordinator/attendance/batch-weekly-avg by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:01.142Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:01.173Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:01.190Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:01.197Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:01.209Z] ACTION: GET /api/coordinator/batches by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:01.218Z] ACTION: GET /api/coordinator/reports/global-attendance by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:01.254Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"26"}}
+[2026-01-29T09:04:01.284Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"26"}}
+[2026-01-29T09:04:01.295Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"26"}}
+[2026-01-29T09:04:01.303Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"15"}}
+[2026-01-29T09:04:01.321Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"26"}}
+[2026-01-29T09:04:01.325Z] ACTION: GET /api/coordinator/timetable by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"batchId":"15"}}
+[2026-01-29T09:04:01.828Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T09:04:01.833Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:01.842Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:01.847Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T09:04:12.047Z] ACTION: GET /api/coordinator/students/2546/inactive-history by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:41.728Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T09:04:41.741Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:41.750Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:41.843Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:41.849Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T09:04:41.999Z] ACTION: GET /api/system-config/active by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:46.802Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"userId":"2"}}
+[2026-01-29T09:04:46.809Z] ACTION: GET /api/coordinator/reports/coordinator-teachers by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"user_id":"2","fromDate":"1970-01-01","toDate":"2100-01-01"}}
+[2026-01-29T09:04:46.822Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"userId":"2"}}
+[2026-01-29T09:04:46.833Z] ACTION: GET /api/coordinator/reports/coordinator-teachers by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"user_id":"2","fromDate":"1970-01-01","toDate":"2100-01-01"}}
+[2026-01-29T09:04:47.249Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T09:04:47.254Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:47.261Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1 
+[2026-01-29T09:04:47.274Z] ACTION: GET /api/coordinator/students by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"cohortNumber":"","batchId":""}}
+[2026-01-29T09:05:04.296Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"userId":"2"}}
+[2026-01-29T09:05:04.301Z] ACTION: GET /api/coordinator/reports/coordinator-teachers by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"user_id":"2","fromDate":"1970-01-01","toDate":"2100-01-01"}}
+[2026-01-29T09:05:04.372Z] ACTION: GET /api/coordinator/cohorts by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"userId":"2"}}
+[2026-01-29T09:05:04.380Z] ACTION: GET /api/coordinator/reports/coordinator-teachers by pradeepa@rajalakshmiFoundation.in (2) ip=::1  details={"query":{"user_id":"2","fromDate":"1970-01-01","toDate":"2100-01-01"}}
