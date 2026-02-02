@@ -7,3 +7,6 @@ logs
 uploads
 .env
 Dockerfile*
+README.md
+tests
+coverage

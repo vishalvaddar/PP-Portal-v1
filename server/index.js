@@ -56,10 +56,19 @@ app.use(
 
 const PROFILE_PHOTOS_ROOT = process.env.PROFILE_PHOTOS_ROOT;
 
-app.use(
-  "/students",
-  express.static(PROFILE_PHOTOS_ROOT)
-);
+if (!PROFILE_PHOTOS_ROOT) {
+  console.error("❌ PROFILE_PHOTOS_ROOT is not defined");
+  process.exit(1);
+}
+
+
+// Ensure folder exists
+if (!fs.existsSync(PROFILE_PHOTOS_ROOT)) {
+  fs.mkdirSync(PROFILE_PHOTOS_ROOT, { recursive: true });
+}
+
+// Serve static profile photos
+app.use("/students", express.static(PROFILE_PHOTOS_ROOT));
 
 app.use(
   "/uploads",

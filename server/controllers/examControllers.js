@@ -815,7 +815,7 @@ function generateStudentPDF(student, ticketPath, assets) {
       const studentDetailsY = 210;
       
       // Main rectangle for student details - with border only
-      doc.rect(50, studentDetailsY, 360, 120)
+      doc.rect(50, studentDetailsY, 360, 100)
          .stroke(primaryColor)
          .lineWidth(2);
 
@@ -825,10 +825,10 @@ function generateStudentPDF(student, ticketPath, assets) {
          .text("STUDENT DETAILS", 60, studentDetailsY + 10);
 
       // Photo placeholder
-      const photoWidth = 3.5 * 28.35;
-      const photoHeight = 4.5 * 28.35;
-      const photoX = 50 + 510 - photoWidth - 20;
-      const photoY = studentDetailsY + 1;
+      const photoWidth = 4.0 * 28.35;
+      const photoHeight = 5.0 * 28.35;
+      const photoX = 50 + 510 - photoWidth - 10;
+      const photoY = studentDetailsY + 20;
 
       // Highlighted border for photo area
       doc.rect(photoX - 5, photoY - 5, photoWidth + 10, photoHeight + 10)
@@ -860,42 +860,89 @@ function generateStudentPDF(student, ticketPath, assets) {
          .text("Hall Ticket No:", 60, studentDetailsY + 65)
          .text(student.pp_hall_ticket_no || 'N/A', 160, studentDetailsY + 65);
 
-      // Exam Center with address details and Google Maps link
-      const examCenterX = 150;
-      const examCenterY = studentDetailsY + 90;
-      const maxTextWidth = 220;
 
-      doc.font('Helvetica-Bold').fontSize(10).fillColor(primaryColor).text('Exam Center:', 60, examCenterY); // Changed to Bold
+       
+        // --------------------------------------------------------------------
+        // Exam Center Box Container
+const examCenterBoxX = 50;
+const examCenterBoxY = studentDetailsY + 120;
+const examCenterBoxWidth = 360;
+const examCenterBoxHeight = 60;
 
-      // Create address string from components
-      const addressComponents = [];
-      if (student.pp_exam_centre_name) addressComponents.push(student.pp_exam_centre_name);
-      if (student.address) addressComponents.push(student.address);
-      if (student.village) addressComponents.push(student.village);
-      if (student.pincode) addressComponents.push(`${student.pincode}`);
+// Draw the box
+doc.rect(examCenterBoxX, examCenterBoxY, examCenterBoxWidth, examCenterBoxHeight)
+   .strokeColor('#000000')
+   .stroke();
 
-      const fullAddress = addressComponents.length > 0 ? addressComponents.join(', ') : 'Address not available';
+// Add box title
+doc.font('Helvetica-Bold').fontSize(10).fillColor(primaryColor);
+const examCenterTitle = 'Exam Center Details:';
+const titleWidth = doc.widthOfString(examCenterTitle);
+doc.text(examCenterTitle, examCenterBoxX + 10, examCenterBoxY -12);
 
-      // Display full address on one line with Google Maps link (if coordinates exist)
-      if (student.latitude && student.longitude) {
-          const googleMapsUrl = `https://www.google.com/maps?q=${student.latitude},${student.longitude}`;
-          
-          doc.font('Helvetica-Bold').fontSize(10).fillColor('blue').text(fullAddress, examCenterX, examCenterY, {
-              width: maxTextWidth,
-              underline: true
-          });
+// Add a small divider line under the title
+// doc.moveTo(examCenterBoxX + 10, examCenterBoxY + 5)
+//    .lineTo(examCenterBoxX + titleWidth + 10, examCenterBoxY + 5)
+//    .strokeColor('#E0E0E0')
+//    .stroke();
 
-          const textWidth = doc.widthOfString(fullAddress);
-          const textHeight = doc.currentLineHeight();
-          doc.link(examCenterX, examCenterY, textWidth, textHeight, googleMapsUrl);
-      } else {
-          doc.font('Helvetica-Bold').fontSize(10).fillColor(primaryColor).text(fullAddress, examCenterX, examCenterY, {
-              width: maxTextWidth
-          });
-      }
+// Exam Center content position inside the box
+const examCenterContentX = examCenterBoxX + 15;
+const examCenterContentY = examCenterBoxY + 18;
+const maxTextWidth = examCenterBoxWidth - 30;
 
+// Create address string from components
+const addressComponents = [];
+// if (student.pp_exam_centre_name) addressComponents.push(student.pp_exam_centre_name);
+if (student.address) addressComponents.push(student.address);
+if (student.village) addressComponents.push(student.village);
+if (student.pincode) addressComponents.push(`${student.pincode}`);
+
+const fullAddress = addressComponents.length > 0 ? addressComponents.join(', ') : 'Address not available';
+
+// Display full address with Google Maps link (if coordinates exist)
+if (student.latitude && student.longitude) {
+    const googleMapsUrl = `https://www.google.com/maps?q=${student.latitude},${student.longitude}`;
+    
+    // Center name in bold
+    const centerName = student.pp_exam_centre_name || 'Exam Center';
+    doc.font('Helvetica-Bold').fontSize(10).fillColor(primaryColor)
+       .text(centerName, examCenterContentX, examCenterContentY, {
+           width: maxTextWidth
+       });
+    
+    // Address with Google Maps link on next line
+    const addressY = examCenterContentY + 15;
+    doc.font('Helvetica').fontSize(9).fillColor('blue').text(fullAddress, examCenterContentX, addressY, {
+        width: maxTextWidth,
+        underline: true
+    });
+
+    const textWidth = doc.widthOfString(fullAddress);
+    const textHeight = doc.currentLineHeight();
+    doc.link(examCenterContentX, addressY, textWidth, textHeight, googleMapsUrl);
+    
+    // Google Maps icon/text
+    // doc.font('Helvetica').fontSize(8).fillColor('#666666')
+    //    .text('📍 Click address for directions', examCenterContentX, addressY + textHeight + 2);
+} else {
+    // Center name
+    const centerName = student.pp_exam_centre_name || 'Exam Center';
+    doc.font('Helvetica-Bold').fontSize(10).fillColor(primaryColor)
+       .text(centerName, examCenterContentX, examCenterContentY, {
+           width: maxTextWidth
+       });
+    
+    // Address without link
+    const addressY = examCenterContentY + 15;
+    doc.font('Helvetica').fontSize(9).fillColor(primaryColor)
+       .text(fullAddress, examCenterContentX, addressY, {
+           width: maxTextWidth
+       });
+}
+// ------------------------------------------------------------------------
       // Exam info section
-      const examInfoY = studentDetailsY + 140;
+      const examInfoY = studentDetailsY + 190;
       
       // Format exam date and time
       const formattedExamDate = `${formatDate(student.exam_date)}, ${formatTimeManual(student.exam_start_time)} to ${formatTimeManual(student.exam_end_time)}`;
@@ -1060,13 +1107,13 @@ function generateStudentPDF(student, ticketPath, assets) {
          .stroke(primaryColor).lineWidth(0.5);
 
       // "ALL THE BEST!" text
-      doc.fontSize(14)
-         .fillColor(primaryColor)
-         .font('Helvetica-Bold')
-         .text("***** ALL THE BEST FOR YOUR EXAMINATION *****", 50, footerY + 10, {
-           width: 500,
-           align: 'center'
-         });
+      // doc.fontSize(14)
+      //    .fillColor(primaryColor)
+      //    .font('Helvetica-Bold')
+      //    .text("***** ALL THE BEST FOR YOUR EXAMINATION *****", 50, footerY + 10, {
+      //      width: 500,
+      //      align: 'center'
+      //    });
 
       // Finalize PDF
       doc.end();

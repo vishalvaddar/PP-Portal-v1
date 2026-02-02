@@ -59,3 +59,7 @@
 {"timestamp":"2026-01-29T09:35:41.411Z","type":"ACTION","user_id":"1","user_name":"admin@rajalakshmiFoundation.in","role_name":"ADMIN","method":"GET","path":"/api/exams/used-blocks","action":"GET /api/exams/used-blocks","ip":"::1"}
 {"timestamp":"2026-01-29T09:35:41.417Z","type":"ACTION","user_id":"1","user_name":"admin@rajalakshmiFoundation.in","role_name":"ADMIN","method":"GET","path":"/api/exams/notassigned","action":"GET /api/exams/notassigned","ip":"::1"}
 {"timestamp":"2026-01-29T09:36:23.916Z","type":"ACTION","user_id":"anonymous","user_name":"anonymous","role_name":"anonymous","method":"PUT","path":"/api/exams/2/freeze","action":"PUT /api/exams/2/freeze","ip":"::1"}
+{"timestamp":"2026-01-29T11:21:48.149Z","type":"LOGIN","user_name":"admin@rajalakshmifoundation.in","status":"success_pre_auth","ip":"::1"}
+{"timestamp":"2026-01-29T11:21:48.274Z","type":"ACTION","user_name":"admin@rajalakshmiFoundation.in","role":"ADMIN","action":"login_complete","status":"success","ip":"::1"}
+{"timestamp":"2026-01-29T11:21:48.477Z","type":"ACTION","user_id":"1","user_name":"admin@rajalakshmiFoundation.in","role_name":"ADMIN","method":"GET","path":"/api/system-config/active","action":"GET /api/system-config/active","ip":"::1"}
+{"timestamp":"2026-01-29T11:21:48.513Z","type":"ACTION","user_id":"1","user_name":"admin@rajalakshmiFoundation.in","role_name":"ADMIN","method":"GET","path":"/api/system-config/active","action":"GET /api/system-config/active","ip":"::1"}

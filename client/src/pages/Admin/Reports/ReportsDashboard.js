@@ -2,12 +2,12 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { FileText, GraduationCap, Users, LayoutGrid, ChevronRight } from "lucide-react";
 import Breadcrumbs from "../../../components/Breadcrumbs/Breadcrumbs"; 
-import "./ReportsDashboard.module.css";
+import "./ReportsDashboard.css"; 
 
 const ReportsDashboard = () => {
   // Define the path for the breadcrumbs
   const currentPath = ['Admin', 'Academics', 'Reports'];
-
+ 
   const categories = [
     { title: "1. Selection Reports", link: "selection", icon: <FileText size={32} /> },
     { title: "2. Academic Reports", link: "academic", icon: <GraduationCap size={32} /> },
