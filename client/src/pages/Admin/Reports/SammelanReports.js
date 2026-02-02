@@ -54,7 +54,7 @@ const SammelanReports = () => {
       link.click();
     } catch (err) { console.error("Download Error:", err); }
   };
-
+ 
   const formatDate = (dateStr) => {
     if (!dateStr) return "--";
     const d = new Date(dateStr);
@@ -72,7 +72,7 @@ const SammelanReports = () => {
       <header className={styles.mainHeader}>
         <div className={styles.titleWrapper}>
           <button className={styles.iconBtn} onClick={() => navigate("/admin/academics/reports")}>
-            <ChevronLeft size={24} />
+            <ChevronLeft size={20} strokeWidth={2.5} />
           </button>
           <h1 className={styles.pageTitle}>Sammelan Reports</h1>
         </div>
