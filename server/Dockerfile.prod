@@ -4,7 +4,7 @@ FROM node:18-alpine AS build
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev && npm cache clean --force
 
 COPY . .
 
@@ -13,11 +13,17 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy only needed files
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app .
-
 ENV NODE_ENV=production
+
+# Copy only what is needed
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/index.js ./index.js
+COPY --from=build /app/controllers ./controllers
+COPY --from=build /app/routes ./routes
+COPY --from=build /app/models ./models
+COPY --from=build /app/utils ./utils
+COPY --from=build /app/config ./config
+
 EXPOSE 4000
 
 CMD ["node", "index.js"]
