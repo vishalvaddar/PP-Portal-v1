@@ -54,8 +54,13 @@ app.use(
   express.static(EVENT_PHOTOS_DIR)
 );
 
-const PROFILE_PHOTOS_ROOT =
-  process.env.PROFILE_PHOTOS_ROOT;
+const PROFILE_PHOTOS_ROOT = process.env.PROFILE_PHOTOS_ROOT;
+
+if (!PROFILE_PHOTOS_ROOT) {
+  console.error("❌ PROFILE_PHOTOS_ROOT is not defined");
+  process.exit(1);
+}
+
 
 // Ensure folder exists
 if (!fs.existsSync(PROFILE_PHOTOS_ROOT)) {
