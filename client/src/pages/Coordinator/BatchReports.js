@@ -74,7 +74,7 @@ const ClassSessionListView = ({ reportData, reportType }) => {
   );
 };
 
-const BACKEND_BASE = process.env.REACT_APP_BACKEND_API_URL || "http://localhost:5000";
+const BACKEND_BASE = process.env.REACT_APP_BACKEND_API_URL;
 const COORDINATOR_BASE = `${BACKEND_BASE}/api/coordinator`;
 const API_BASE = `${BACKEND_BASE}/api/coordinator/reports`;
 

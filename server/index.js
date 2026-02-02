@@ -55,7 +55,7 @@ app.use(
 );
 
 const PROFILE_PHOTOS_ROOT =
-  process.env.PROFILE_PHOTOS_ROOT || path.join(__dirname, "uploads", "profile_photos");
+  process.env.PROFILE_PHOTOS_ROOT;
 
 // Ensure folder exists
 if (!fs.existsSync(PROFILE_PHOTOS_ROOT)) {
