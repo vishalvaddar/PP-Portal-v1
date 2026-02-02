@@ -2302,3 +2302,248 @@
 [2026-02-02T14:44:45.832Z] ACTION: login_complete by admin@rajalakshmiFoundation.in  ip=::1 status=success
 [2026-02-02T14:44:45.904Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
 [2026-02-02T14:44:45.925Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:09:50.749Z] LOGIN:  by admin@rajalakshmifoundation.in  ip=::1 status=success_pre_auth
+[2026-02-02T18:09:50.777Z] ACTION: login_complete by admin@rajalakshmiFoundation.in  ip=::1 status=success
+[2026-02-02T18:09:50.891Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:09:50.910Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:09:50.954Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:09:50.966Z] ACTION: GET /api/applicants/today-classes-count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:09:51.078Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:09:51.115Z] ACTION: GET /api/applicants/today-classes-count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:09:58.664Z] ACTION: GET /api/system-config/all by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:09:58.682Z] ACTION: GET /api/system-config/all by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:10:08.382Z] ACTION: PUT /api/system-config/1 by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"academic_year":"2025-26","phase":"Admissions are started","is_active":true}}
+[2026-02-02T18:10:08.410Z] ACTION: GET /api/system-config/all by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:10:08.424Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:10:10.750Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:10:10.754Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:10:10.759Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:10:10.938Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:10:10.944Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:10:10.995Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:21.314Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:21.319Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:21.322Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:21.476Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:21.532Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:21.539Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:28.072Z] ACTION: GET /api/states by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:12:28.092Z] ACTION: GET /api/states by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:12:29.476Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:29.483Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:29.486Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:29.499Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:29.560Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:29.590Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:30.979Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:31.003Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:31.006Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:31.035Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:31.090Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:31.113Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:31.892Z] ACTION: GET /api/states by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:12:31.898Z] ACTION: GET /api/states by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:12:32.529Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:32.565Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:32.576Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:32.609Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:32.661Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:32.692Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:33.493Z] ACTION: GET /api/shortlist/generate/allstates by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:12:33.502Z] ACTION: GET /api/shortlist/generate/criteria by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:12:33.509Z] ACTION: GET /api/shortlist/generate/allstates by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:12:33.515Z] ACTION: GET /api/shortlist/generate/criteria by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:12:34.798Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:34.803Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:34.827Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:34.845Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:34.895Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:34.929Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:12:55.352Z] ACTION: GET /api/system-config/all by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:12:55.451Z] ACTION: GET /api/system-config/all by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:13:02.514Z] ACTION: PUT /api/system-config/1 by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"academic_year":"2025-26","phase":"Classes are started","is_active":true}}
+[2026-02-02T18:13:02.537Z] ACTION: GET /api/system-config/all by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:13:02.549Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:13:04.878Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:13:04.905Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:13:04.915Z] ACTION: GET /api/applicants/today-classes-count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:13:05.020Z] ACTION: GET /api/applicants/today-classes-count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:13:11.761Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:13:11.765Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:13:11.772Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:13:11.806Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:13:11.838Z] ACTION: GET /api/applicants/today-classes-count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:13:11.846Z] ACTION: GET /api/applicants/today-classes-count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:14:59.016Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:14:59.021Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:14:59.124Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:14:59.139Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:14:59.147Z] ACTION: GET /api/applicants/today-classes-count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:14:59.172Z] ACTION: GET /api/applicants/today-classes-count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:16:46.397Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:16:46.403Z] ACTION: GET /api/applicants/today-classes-count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:16:46.408Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:16:46.514Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:16:46.519Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:16:46.524Z] ACTION: GET /api/applicants/today-classes-count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:17:00.709Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:17:00.714Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:17:00.830Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:17:00.835Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:17:00.852Z] ACTION: GET /api/applicants/today-classes-count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:17:00.877Z] ACTION: GET /api/applicants/today-classes-count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:18:19.292Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:18:19.403Z] ACTION: GET /api/applicants/today-classes-count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:19:24.273Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:19:24.390Z] ACTION: GET /api/applicants/today-classes-count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:21:13.232Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:21:13.344Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:21:20.365Z] ACTION: GET /api/states by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:21:20.370Z] ACTION: GET /api/cohorts by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:21:20.382Z] ACTION: GET /api/states by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:21:20.497Z] ACTION: GET /api/cohorts by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:21:23.694Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:21:23.724Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:21:26.451Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:21:26.466Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:21:28.534Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:21:28.552Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:21:30.736Z] ACTION: GET /api/states by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:21:30.739Z] ACTION: GET /api/cohorts by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:21:30.750Z] ACTION: GET /api/states by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:21:30.844Z] ACTION: GET /api/cohorts by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:21:33.667Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:21:33.704Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:21:51.478Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:22:09.991Z] ACTION: GET /api/applicants/cohortstudentcount by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:22:26.681Z] ACTION: GET /api/exams/assigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.686Z] ACTION: GET /api/exams/exam-centres by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.690Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.694Z] ACTION: GET /api/exams/used-blocks by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.698Z] ACTION: GET /api/exams/notassigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.791Z] ACTION: GET /api/exams/exam-centres by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.801Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.818Z] ACTION: GET /api/exams/notassigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.858Z] ACTION: GET /api/exams/used-blocks by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.886Z] ACTION: GET /api/exams/assigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.933Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.939Z] ACTION: GET /api/exams/blocks-by-district/2914 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.943Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.946Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.949Z] ACTION: GET /api/exams/blocks-by-district/2908 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.953Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.957Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.960Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.964Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.967Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.970Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.973Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.976Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.983Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.987Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.990Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.993Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.996Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:26.998Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.005Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.008Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.012Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.015Z] ACTION: GET /api/exams/blocks-by-district/2914 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.018Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.026Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.029Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.032Z] ACTION: GET /api/exams/blocks-by-district/2908 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.035Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.038Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.043Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.046Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.049Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.052Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.055Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.059Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.063Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.066Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.069Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.072Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.077Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.080Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.084Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.088Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.092Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.096Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.101Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.105Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.109Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.122Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.128Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.133Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.139Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.144Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:27.149Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:31.580Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:31.591Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:31.602Z] ACTION: GET /api/results/all-exams by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:31.619Z] ACTION: GET /api/results/all-exams by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:35.860Z] ACTION: GET /api/states by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:35.864Z] ACTION: GET /api/cohorts by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:35.875Z] ACTION: GET /api/states by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:35.884Z] ACTION: GET /api/cohorts by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:36.999Z] ACTION: GET /api/batches/coordinators by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:37.004Z] ACTION: GET /api/batches/names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:37.006Z] ACTION: GET /api/batches/cohorts by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:37.009Z] ACTION: GET /api/batches by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:37.020Z] ACTION: GET /api/batches/cohorts by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:37.023Z] ACTION: GET /api/batches/names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:37.038Z] ACTION: GET /api/batches/coordinators by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:37.056Z] ACTION: GET /api/batches by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:38.304Z] ACTION: GET /api/timetable/cohorts/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:38.318Z] ACTION: GET /api/timetable/data/subjects by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:38.322Z] ACTION: GET /api/timetable/data/teachers by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:38.325Z] ACTION: GET /api/timetable/data/platforms by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:38.334Z] ACTION: GET /api/timetable/cohorts/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:38.340Z] ACTION: GET /api/timetable/data/platforms by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:38.347Z] ACTION: GET /api/timetable/data/subjects by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:38.351Z] ACTION: GET /api/timetable/data/teachers by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:41.373Z] ACTION: GET /api/batches/cohorts by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:41.377Z] ACTION: GET /api/batches by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:41.383Z] ACTION: GET /api/batches/cohorts by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:41.388Z] ACTION: GET /api/coordinator/subjects by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:41.395Z] ACTION: GET /api/coordinator/teachers by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:41.399Z] ACTION: GET /api/coordinator/platforms by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:41.404Z] ACTION: GET /api/coordinator/classrooms by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:41.411Z] ACTION: GET /api/batches by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:41.415Z] ACTION: GET /api/coordinator/subjects by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:41.421Z] ACTION: GET /api/coordinator/teachers by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:41.425Z] ACTION: GET /api/coordinator/platforms by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:41.430Z] ACTION: GET /api/coordinator/classrooms by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:42.678Z] ACTION: GET /api/events by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:42.702Z] ACTION: GET /api/events by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:47.816Z] ACTION: GET /api/users by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:47.821Z] ACTION: GET /api/roles by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:47.831Z] ACTION: GET /api/roles by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:47.836Z] ACTION: GET /api/users by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:49.013Z] ACTION: GET /api/system-config/all by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:22:49.020Z] ACTION: GET /api/system-config/all by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:23:02.462Z] ACTION: PUT /api/system-config/1 by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"academic_year":"2025-26","phase":"Admissions are started","is_active":true}}
+[2026-02-02T18:23:02.566Z] ACTION: GET /api/system-config/all by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:23:02.585Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:23:04.388Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:23:04.392Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:23:04.398Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:23:04.539Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:23:04.559Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:23:04.596Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:23:50.271Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:23:50.275Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:23:50.279Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:24:08.717Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:24:08.721Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:24:08.724Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:24:24.700Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:24:24.710Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:24:24.717Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:24:24.723Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:24:24.893Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:24:24.914Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:24:24.968Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:24:24.979Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}

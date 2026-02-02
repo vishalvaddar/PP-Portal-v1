@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import styles from "../Admin/AdminDashboard.module.css";
-import { Users, FileText, CalendarDays, BookOpen, ClipboardList } from "lucide-react";
+import { 
+  Users, FileText, CalendarDays, Plus, Upload, Search, BookOpen, ClipboardList 
+} from "lucide-react";
 import { useSystemConfig } from "../../contexts/SystemConfigContext";
 
 const AdminDashboard = () => {
   const { appliedConfig, loading: configLoading } = useSystemConfig();
   const [dataLoading, setDataLoading] = useState(false);
+  
+  // Cleaned up state
   const [stats, setStats] = useState({
     applicantCount: 0,
     shortlistedCount: 0,
     selectedCount: 0,
-    cohort: { current: 0, previous: 0 }
+    cohort: { counts: { current_count: 0, previous_count: 0 } }
   });
 
   const phase = appliedConfig?.phase;
@@ -38,12 +43,12 @@ const AdminDashboard = () => {
           }));
         } 
         else if (phase === "Classes are started") {
-          const res = await axios.get(`${api}/cohortstudentcount`, { params: { year } });
-          const classcount = await axios.get(`${api}/today-classes-count`, { params: { year } });
-          setStats(s => ({ ...s, cohort: res.data.data, todayClasses: classcount.data.count }));
+          // Only fetch Cohort data now
+          const resCohort = await axios.get(`${api}/cohortstudentcount`, { params: { year } });
+          setStats(s => ({ ...s, cohort: resCohort.data.data }));
         }
       } catch (err) {
-        console.error("Data Fetch Error:", err);
+        console.error("Dashboard Fetch Error:", err);
       } finally {
         setDataLoading(false);
       }
@@ -57,6 +62,7 @@ const AdminDashboard = () => {
   return (
     <div className={styles.container}>
       <h1 className={styles.heading}>Dashboard ({year})</h1>
+      <p>Welcome to Pratibha Poshak IMAS</p>
 
       <div className={styles.statsGrid}>
         {phase === "Admissions are started" ? (
@@ -75,32 +81,54 @@ const AdminDashboard = () => {
                 { label: "10th (Prev)", val: "..." }
               ] : [
                 { 
-                  label: "9th ", 
+                  label: "9th (Current)", 
                   val: stats.cohort.counts?.current_count?.toLocaleString() || 0 
                 },
                 { 
-                  label: "10th", 
+                  label: "10th (Prev)", 
                   val: stats.cohort.counts?.previous_count?.toLocaleString() || 0 
                 }
               ]} 
             />
-            <StatCard title="Today's Classes" value="12" icon={<BookOpen />} />
-            <StatCard title="Attendance" value="92%" icon={<ClipboardList />} />
+            {/* <StatCard title="Attendance Today" value="92%" icon={<ClipboardList />} /> */}
           </>
         )}
+      </div>
+
+      {/* ================= QUICK ACTIONS ================= */}
+      <div className={styles.mainGrid}>
+        <div className={styles.quickActions}>
+          <h2 className={styles.sectionTitle}>Quick Actions</h2>
+          <div className={styles.actionsGrid}>
+            {phase === "Admissions are started" ? (
+              <>
+                <ActionLink to="/admin/admissions/new-application" title="New Application" icon={<Plus size={18} />} colorClass={styles.blue} />
+                <ActionLink to="/admin/admissions/bulk-upload-applications" title="Bulk Upload" icon={<Upload size={18} />} colorClass={styles.green} />
+                <ActionLink to="/admin/admissions/search-applications" title="Search Applications" icon={<Search size={18} />} colorClass={styles.purple} />
+                <ActionLink to="/admin/admissions/generate-shortlist" title="Generate Shortlist" icon={<Users size={18} />} colorClass={styles.orange} />
+              </>
+            ) : (
+              <>
+                <ActionLink to="/admin/academics/students" title="Manage Students" icon={<Users size={18} />} colorClass={styles.blue} />
+                {/* <ActionLink to="/admin/academics/classes" title="Manage Classes" icon={<BookOpen size={18} />} colorClass={styles.green} />
+                <ActionLink to="/admin/academics/attendance" title="Attendance" icon={<ClipboardList size={18} />} colorClass={styles.purple} /> */}
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-// --- Simple Helper Components ---
+/* ================= HELPERS ================= */
 
 const StatCard = ({ title, value, icon, details }) => (
   <div className={styles.statCard}>
     <div className={styles.iconContainer}>{icon}</div>
     <div className={styles.statInfo}>
       <p className={styles.cardTitle}>{title}</p>
-      {value ? (
+      {value !== undefined ? (
         <p className={styles.cardValue}>{value}</p>
       ) : (
         <div className={styles.detailsList}>
@@ -113,6 +141,15 @@ const StatCard = ({ title, value, icon, details }) => (
       )}
     </div>
   </div>
+);
+
+const ActionLink = ({ to, title, icon, colorClass }) => (
+  <Link to={to} className={styles.actionLink}>
+    <button className={`${styles.actionButton} ${colorClass}`}>
+      {icon}
+      <span>{title}</span>
+    </button>
+  </Link>
 );
 
 export default AdminDashboard;
