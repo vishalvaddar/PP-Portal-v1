@@ -287,7 +287,6 @@ const Students = () => {
           </header>
 
           <form onSubmit={handleSubmit} className={classes.form}>
-            {/* ... (Existing Form Inputs - No Changes Here) ... */}
             <div className={classes.inputWrapper}>
               <label className={classes.label}>Enrollment ID</label>
               <div className={classes.searchField}>
@@ -306,51 +305,60 @@ const Students = () => {
             <div className={classes.divider}><span>OR FILTER BY</span></div>
 
             <fieldset disabled={isQuickSearch} className={classes.filterGrid}>
-              <div className={classes.field}>
+              <div className={classes.fullWidthField}>
                 <label className={classes.label}>Student Name</label>
-                <input 
-                  name="student_name"
-                  className={classes.input}
-                  placeholder="Name"
-                  value={formData.student_name}
-                  onChange={handleChange}
-                  style={errors.student_name ? {borderColor: '#ef4444'} : {}}
-                />
-                {errors.student_name && <span style={{color: '#ef4444', fontSize: '12px'}}>{errors.student_name}</span>}
+                <div className={classes.searchField}>
+                  <Users size={16} className={classes.innerIcon} />
+                  <input 
+                    name="student_name"
+                    className={classes.input}
+                    placeholder="Enter student name to search..."
+                    value={formData.student_name}
+                    onChange={handleChange}
+                    style={errors.student_name ? {borderColor: '#ef4444'} : {}}
+                  />
+                </div>
+                {errors.student_name && (
+                  <span style={{color: '#ef4444', fontSize: '12px', marginTop: '4px', display: 'block'}}>
+                    {errors.student_name}
+                  </span>
+                )}
               </div>
-              
-              <CustomSelect 
-                label="Cohort" 
-                options={options.cohorts} 
-                value={options.cohorts.find(o => o.value === formData.cohort_id)} 
-                onChange={(s) => handleSelectChange(s, "cohort_id")} 
-              />
 
-              <CustomSelect 
-                label="Batch" 
-                icon={<GraduationCap size={14}/>} 
-                options={filteredBatchOptions} 
-                value={filteredBatchOptions.find(o => o.value === formData.batch_id)} 
-                onChange={(s) => handleSelectChange(s, "batch_id")} 
-                isDisabled={!formData.cohort_id}
-                placeholder={!formData.cohort_id ? "Select Cohort First" : "Any Batch"}
-              />
+              <div className={classes.dropdownGrid}>
+                <CustomSelect 
+                  label="Cohort" 
+                  options={options.cohorts} 
+                  value={options.cohorts.find(o => o.value === formData.cohort_id)} 
+                  onChange={(s) => handleSelectChange(s, "cohort_id")} 
+                />
 
-              <CustomSelect 
-                label="State" 
-                icon={<MapPin size={14}/>} 
-                options={geoOptions.states} 
-                value={geoOptions.states.find(o => o.value === formData.state_id)} 
-                onChange={(s) => handleSelectChange(s, "state_id")} 
-              />
+                <CustomSelect 
+                  label="Batch" 
+                  icon={<GraduationCap size={14}/>} 
+                  options={filteredBatchOptions} 
+                  value={filteredBatchOptions.find(o => o.value === formData.batch_id)} 
+                  onChange={(s) => handleSelectChange(s, "batch_id")} 
+                  isDisabled={!formData.cohort_id}
+                  placeholder={!formData.cohort_id ? "Select Cohort First" : "Any Batch"}
+                />
 
-              <CustomSelect 
-                label="District" 
-                options={geoOptions.districts} 
-                value={geoOptions.districts.find(o => o.value === formData.district_id)} 
-                onChange={(s) => handleSelectChange(s, "district_id")} 
-                isDisabled={!formData.state_id} 
-              />
+                <CustomSelect 
+                  label="State" 
+                  icon={<MapPin size={14}/>} 
+                  options={geoOptions.states} 
+                  value={geoOptions.states.find(o => o.value === formData.state_id)} 
+                  onChange={(s) => handleSelectChange(s, "state_id")} 
+                />
+
+                <CustomSelect 
+                  label="District" 
+                  options={geoOptions.districts} 
+                  value={geoOptions.districts.find(o => o.value === formData.district_id)} 
+                  onChange={(s) => handleSelectChange(s, "district_id")} 
+                  isDisabled={!formData.state_id} 
+                />
+              </div>
             </fieldset>
 
             <div className={classes.formActions}>
@@ -375,7 +383,6 @@ const Students = () => {
       {results.length > 0 && (
         <div className={classes.resultsContainer}>
           <div className={classes.resultsToolbar}>
-            {/* Updated Header to show total results count */}
             <h3>Results ({results.length})</h3>
             <div className={classes.exportWrapper} ref={exportRef}>
               <button onClick={() => setIsExportOpen(!isExportOpen)} className={classes.btnSecondary}>
@@ -401,7 +408,6 @@ const Students = () => {
                 </tr>
               </thead>
               <tbody>
-                {/* NEW: Map currentItems instead of all results */}
                 {currentItems.map(s => (
                   <tr key={s.student_id}>
                     <td className={classes.boldText}>{s.student_name}</td>

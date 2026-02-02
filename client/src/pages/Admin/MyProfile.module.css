@@ -1,530 +1,213 @@
-:root {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: 'Fira Code', 'JetBrains Mono', monospace;
-
-  /* Page & Card General Style */
-  --page-bg: #f8fafc;
-  /* Background color of the entire page */
-  --card-bg: #ffffff;
-  /* Background of cards on the main page */
-  --card-border-color: #e2e8f0;
-
-  /* Modal Style */
-  --modal-bg: #ffffff;
-  --modal-backdrop-bg: rgba(15, 23, 42, 0.85);
-  /* The dark overlay */
-  --modal-header-bg: #f8fafc;
-  /* Set to var(--modal-bg) for a flat look */
-  --modal-footer-bg: #f8fafc;
-  /* Set to var(--modal-bg) for a flat look */
-  --modal-border-radius: 0.75rem;
-  --modal-border-color: #e2e8f0;
-  --modal-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-
-  /* Text Colors */
-  --text-title: #1e293b;
-  --text-body: #334155;
-  --text-muted: #64748b;
-  --text-on-accent: #ffffff;
-
-  /* Input Fields Style */
-  --input-bg: #ffffff;
-  --input-border-color: #cbd5e1;
-  --input-focus-border-color: #4f46e5;
-  --input-focus-shadow-color: rgba(79, 70, 229, 0.2);
-  --input-text-color: #1e293b;
-  --input-placeholder-color: #94a3b8;
-
-  /* Buttons Style */
-  --button-primary-bg: linear-gradient(135deg, #6366f1, #4f46e5);
-  /* Gradient for primary button */
-  --button-primary-hover-brightness: 1.1;
-  --button-secondary-bg: #e2e8f0;
-  --button-secondary-text: #475569;
-  --button-secondary-hover-bg: #cbd5e1;
-
-  /* Status Colors */
-  --color-error: #dc2626;
-  --color-success: #16a34a;
-
-  /* Sizing & Effects */
-  --transition: 200ms ease-in-out;
-}
-
-/*
-========================================
-  2. CORE STRUCTURE & LAYOUT
-  -- (Generally no need to edit below this line) --
-========================================
-*/
-.loadingContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  gap: 1rem;
-  color: var(--text-muted);
-  background-color: var(--page-bg);
-  font-family: var(--font-sans);
-}
-
-.spinner {
-  animation: spin 1s linear infinite;
-}
-
-.pageContainer {
-  background-color: var(--page-bg);
+.page {
+  padding: 1.5rem 2rem;
+  background: #f8fafc;
   min-height: 100vh;
-  /* padding: 2.5rem; */
-  font-family: var(--font-sans);
 }
 
-.pageLayout {
+.layout {
   display: grid;
-  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
-  gap: 2rem;
-  max-width: 1280px;
-  margin: 0 auto;
-}
-
-.leftColumn,
-.rightColumn {
-  display: flex;
-  flex-direction: column;
+  grid-template-columns: 320px 1fr;
   gap: 1.5rem;
+  margin-top: 1rem;
 }
 
-
-/*
-========================================
-  3. PAGE CARDS & PROFILE INFO
-========================================
-*/
-:global(.Card) {
-  background-color: var(--card-bg);
-  border-radius: var(--modal-border-radius);
-  border: 1px solid var(--card-border-color);
-  box-shadow: none;
-}
-
-.profileTitle {
-  color: #4f46e5;
-  font-size: 26px;
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 .profileHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  padding: 2rem;
-  background-color: #d1d3d5;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-}
-
-.avatarWrapper {
-  position: relative;
-  display: inline-block;
-  margin-bottom: 1rem;
-}
-
-.avatar {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  background: var(--button-primary-bg);
-  color: var(--text-on-accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.profileName {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-title);
-}
-
-.profileContent {
-  padding: 1.5rem;
-  padding-top: 0;
-  background-color: #d1d3d5;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-}
-
-.profileStats {
-  border-top: 1px solid var(--card-border-color);
-  padding-top: 1.5rem;
-  text-align: center;
-}
-
-.statValue {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-title);
-}
-
-.statLabel {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: 0.25rem;
-}
-
-.infoSection {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem 0;
-  border-bottom: 1px solid var(--card-border-color);
-}
-
-.infoSection:first-of-type {
-  padding-top: 0;
-}
-
-.infoSection:last-of-type {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.infoLabel {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  margin: 0 0 0.1rem 0;
-}
-
-.infoValue {
-  font-size: 1rem;
-  font-family: var(--font-mono);
-  color: var(--text-body);
-}
-
-.editIcon {
-  margin-right: 0.5rem;
-}
-
-.infoButton {
-  border-radius: 4px;
-  background: rgb(103, 239, 223);
-  margin-right: 12px;
-  /* <-- move button left (adjust value as needed) */
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-  
-/*
-========================================
-  4. MODAL STYLES
-========================================
-*/
-.modalBackdrop {
-  position: fixed;
-  inset: 0;
-  background-color: var(--modal-backdrop-bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  padding: 1rem;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  animation: fadeIn 200ms ease-out;
-}
-
-.modalCard {
-  position: relative;
-  width: 100%;
-  max-width: 520px;
-  background-color: var(--modal-bg);
-  border-radius: var(--modal-border-radius);
-  box-shadow: var(--modal-shadow);
-  animation: scaleUp 250ms ease-out;
-  border: 1px solid var(--modal-border-color);
-}
-
-.closeButton {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  background-color: var(--button-secondary-bg);
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-  color: var(--button-secondary-text);
-  transition: all var(--transition);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.closeButton:hover {
-  background-color: var(--button-secondary-hover-bg);
-  transform: rotate(90deg);
-}
-
-.modalHeader {
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid var(--modal-border-color);
-  background-color: var(--modal-header-bg);
-  border-top-left-radius: var(--modal-border-radius);
-  border-top-right-radius: var(--modal-border-radius);
-}
-
-.modalTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-title);
-}
-
-.modalDesc {
-  margin-top: 0.25rem;
-  font-size: 0.875rem;
-  color: var(--text-muted);
-}
-
-.modalBody {
-  padding: 1.5rem 2rem;
-}
-
-.modalFooter {
-  padding: 1rem 2rem;
-  background-color: var(--modal-footer-bg);
-  border-top: 1px solid var(--modal-border-color);
-  border-bottom-left-radius: var(--modal-border-radius);
-  border-bottom-right-radius: var(--modal-border-radius);
-  display: flex;
-  justify-content: flex-end;
   gap: 0.75rem;
 }
 
-/*
-========================================
-  5. FORM ELEMENT STYLES
-========================================
-*/
-.formGroup {
-  margin-bottom: 1.5rem;
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  color: #fff;
+  display: grid;
+  place-items: center;
 }
 
-.formGroup:last-child {
-  margin-bottom: 0;
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.label {
+.infoRow:last-child {
+  border-bottom: none;
+}
+
+.infoLabel {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.infoValue {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.formField label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
+  gap: 0.4rem;
+  font-size: 0.8rem;
   font-weight: 500;
-  color: var(--text-body);
-  margin-bottom: 0.5rem;
+  color: #334155;
 }
 
-.input {
-  width: 100%;
-  font-size: 1rem;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--input-border-color);
-  border-radius: var(--modal-border-radius);
-  transition: all var(--transition);
-  background-color: var(--input-bg);
-  color: var(--input-text-color);
+.formError {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: #dc2626;
 }
 
-.input:focus {
-  outline: none;
-  border-color: var(--input-focus-border-color);
-  box-shadow: 0 0 0 3px var(--input-focus-shadow-color);
-}
-
-.input::placeholder {
-  color: var(--input-placeholder-color);
-}
-
-.passwordInputWrapper {
+.passwordWrapper {
   position: relative;
 }
 
-.passwordInput {
-  padding-right: 3rem;
-}
-
-.togglePasswordButton {
+.passwordWrapper button {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0.5rem;
-  margin: auto 0;
-  background: none;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
   border: none;
+  color: #64748b;
   cursor: pointer;
-  padding: 0.25rem;
-  color: var(--text-muted);
-  border-radius: 50%;
+}
+
+.passwordWrapper button:hover {
+  color: #0f172a;
+}
+
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #ffffff;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 420px;
+  padding: 1.5rem;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  animation: modalFade 0.25s ease-out;
+}
+
+@keyframes modalFade {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.close:hover {
+  color: #0f172a;
+}
+
+
+.notification {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
   display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.errorInput,
-.errorInput:focus {
-  border-color: var(--color-error);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error) 15%, transparent);
-}
-
-.errorMessage {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  color: var(--color-error);
-  font-size: 0.875rem;
-  margin-top: 0.5rem;
-}
-
-:global(.Button[variant="ghost"]) {
-  background-color: var(--button-secondary-bg);
-  color: var(--button-secondary-text);
-  font-weight: 500;
-}
-
-:global(.Button[variant="ghost"]:hover) {
-  background-color: var(--button-secondary-hover-bg);
-}
-
-.submitButton {
-  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: var(--button-primary-bg);
-  color: var(--text-on-accent);
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
   font-weight: 500;
-  border: none;
+  z-index: 1100;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
-.submitButton:hover {
-  filter: brightness(var(--button-primary-hover-brightness));
+.success {
+  background: #dcfce7;
+  color: #166534;
 }
 
-.submitButton:disabled {
-  opacity: 0.6;
-  filter: none;
-  cursor: not-allowed;
+.error {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
-/*
-========================================
-  6. NOTIFICATIONS & ANIMATIONS
-========================================
-*/
-.globalNotification {
-  position: fixed;
-  top: 1.5rem;
-  right: 1.5rem;
-  width: 100%;
-  max-width: 380px;
-  border-radius: var(--modal-border-radius);
-  z-index: 100;
-  display: flex;
-  align-items: stretch;
-  overflow: hidden;
-  animation: slideIn 300ms ease-out;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border-color);
-}
-
-.notificationIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  color: var(--text-on-accent);
-}
-
-.globalNotification.success .notificationIcon {
-  background-color: var(--color-success);
-}
-
-.globalNotification.error .notificationIcon {
-  background-color: var(--color-error);
-}
-
-.notificationText {
-  padding: 1rem;
-  flex-grow: 1;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-body);
-  background-color: var(--card-bg);
-}
-
-.dismissButton {
-  background: none;
+.notification button {
+  background: transparent;
   border: none;
   cursor: pointer;
-  color: var(--text-muted);
-  padding: 1rem;
-  transition: color var(--transition);
-  background-color: var(--card-bg);
+  color: inherit;
 }
 
-.dismissButton:hover {
-  color: var(--text-body);
+
+.centered {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  color: #475569;
+}
+
+.spinner {
+  animation: spin 0.9s linear infinite;
 }
 
 @keyframes spin {
   to {
     transform: rotate(360deg);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes scaleUp {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(calc(100% + 2rem));
-  }
-
-  to {
-    transform: translateX(0);
-  }
-}
-
-/*
-========================================
-  7. RESPONSIVE DESIGN
-========================================
-*/
-@media (max-width: 768px) {
-  .pageContainer {
-    padding: 1rem;
-  }
-
-  .pageLayout {
-    grid-template-columns: 1fr;
   }
 }

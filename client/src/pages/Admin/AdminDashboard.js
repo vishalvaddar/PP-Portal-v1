@@ -1,129 +1,118 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import styles from "../Admin/AdminDashboard.module.css";
-import {
-  UserCheck,
-  FileText,
-  CalendarDays,
-  Plus,
-  Upload,
-  Search,
-  Users,
-  BookOpen,
-  ClipboardList
-} from "lucide-react";
-
+import { Users, FileText, CalendarDays, BookOpen, ClipboardList } from "lucide-react";
 import { useSystemConfig } from "../../contexts/SystemConfigContext";
 
 const AdminDashboard = () => {
-
-  const { appliedConfig, loading } = useSystemConfig();
+  const { appliedConfig, loading: configLoading } = useSystemConfig();
+  const [dataLoading, setDataLoading] = useState(false);
+  const [stats, setStats] = useState({
+    applicantCount: 0,
+    shortlistedCount: 0,
+    selectedCount: 0,
+    cohort: { current: 0, previous: 0 }
+  });
 
   const phase = appliedConfig?.phase;
+  const year = appliedConfig?.academic_year?.split("-")[0];
 
-  if (loading) {
-    return <div className={styles.loading}>Loading system configuration...</div>;
-  }
+  useEffect(() => {
+    if (!year) return;
+
+    const fetchDashboardData = async () => {
+      setDataLoading(true);
+      const api = `${process.env.REACT_APP_BACKEND_API_URL}/api/applicants`;
+      
+      try {
+        if (phase === "Admissions are started") {
+          const [resApp, resShort, resSel] = await Promise.all([
+            axios.get(`${api}/count`, { params: { year } }),
+            axios.get(`${api}/shortlisted/count`, { params: { year } }),
+            axios.get(`${api}/selected/count`, { params: { year } })
+          ]);
+          setStats(s => ({ ...s, 
+            applicantCount: resApp.data.count, 
+            shortlistedCount: resShort.data.count, 
+            selectedCount: resSel.data.count 
+          }));
+        } 
+        else if (phase === "Classes are started") {
+          const res = await axios.get(`${api}/cohortstudentcount`, { params: { year } });
+          const classcount = await axios.get(`${api}/today-classes-count`, { params: { year } });
+          setStats(s => ({ ...s, cohort: res.data.data, todayClasses: classcount.data.count }));
+        }
+      } catch (err) {
+        console.error("Data Fetch Error:", err);
+      } finally {
+        setDataLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [year, phase]);
+
+  if (configLoading) return <div className={styles.loading}>Loading...</div>;
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.heading}>Dashboard</h1>
-      <p className={styles.subheading}>
-        Welcome to RCF-Pratibha Poshak - IMAS Portal
-      </p>
+      <h1 className={styles.heading}>Dashboard ({year})</h1>
 
-      {/* ================= STATS ================= */}
-
-      {phase === "Admissions are started" && (
-        <div className={styles.statsGrid}>
-          <StatCard title="Total Applications" value="2,847" icon={<FileText size={24} />} />
-          <StatCard title="Active Students" value="1,245" icon={<UserCheck size={24} />} />
-          <StatCard title="Shortlisted" value="456" icon={<Users size={24} />} />
-          <StatCard title="Upcoming Exams" value="3" icon={<CalendarDays size={24} />} />
-        </div>
-      )}
-
-      {phase === "Classes are started" && (
-        <div className={styles.statsGrid}>
-          <StatCard title="Total Students" value="1,245" icon={<Users size={24} />} />
-          <StatCard title="Active Classes" value="12" icon={<BookOpen size={24} />} />
-          <StatCard title="Attendance Today" value="92%" icon={<ClipboardList size={24} />} />
-        </div>
-      )}
-
-      {/* ================= QUICK ACTIONS ================= */}
-
-      <div className={styles.mainGrid}>
-        <div className={styles.quickActions}>
-          <h2 className={styles.sectionTitle}>Quick Actions</h2>
-
-          <div className={styles.actionsGrid}>
-
-            {/* ===== ADMISSIONS PHASE ===== */}
-
-            {phase === "Admissions are started" && (
-              <>
-                <Link to="/admin/admissions/new-application" className={styles.actionLink}>
-                  <ActionButton title="New Application" icon={<Plus size={18} />} className={styles.blue} />
-                </Link>
-
-                <Link to="/admin/admissions/bulk-upload-applications" className={styles.actionLink}>
-                  <ActionButton title="Bulk Upload" icon={<Upload size={18} />} className={styles.green} />
-                </Link>
-
-                <Link to="/admin/admissions/search-applications" className={styles.actionLink}>
-                  <ActionButton title="Search Applications" icon={<Search size={18} />} className={styles.purple} />
-                </Link>
-
-                <Link to="/admin/admissions/generate-shortlist" className={styles.actionLink}>
-                  <ActionButton title="Generate Shortlist" icon={<Users size={18} />} className={styles.orange} />
-                </Link>
-              </>
-            )}
-
-            {/* ===== CLASSES PHASE ===== */}
-
-            {phase === "Classes are started" && (
-              <>
-                <Link to="/admin/students" className={styles.actionLink}>
-                  <ActionButton title="Manage Students" icon={<Users size={18} />} className={styles.blue} />
-                </Link>
-
-                <Link to="/admin/classes" className={styles.actionLink}>
-                  <ActionButton title="Manage Classes" icon={<BookOpen size={18} />} className={styles.green} />
-                </Link>
-
-                <Link to="/admin/attendance" className={styles.actionLink}>
-                  <ActionButton title="Attendance" icon={<ClipboardList size={18} />} className={styles.purple} />
-                </Link>
-              </>
-            )}
-
-          </div>
-        </div>
+      <div className={styles.statsGrid}>
+        {phase === "Admissions are started" ? (
+          <>
+            <StatCard title="Total Applications" value={dataLoading ? "..." : stats.applicantCount} icon={<FileText />} />
+            <StatCard title="Shortlisted" value={dataLoading ? "..." : stats.shortlistedCount} icon={<Users />} />
+            <StatCard title="Selected" value={dataLoading ? "..." : stats.selectedCount} icon={<CalendarDays />} />
+          </>
+        ) : (
+          <>
+            <StatCard 
+              title="Cohort Students" 
+              icon={<Users size={24} />} 
+              details={dataLoading ? [
+                { label: "9th (Current)", val: "..." },
+                { label: "10th (Prev)", val: "..." }
+              ] : [
+                { 
+                  label: "9th ", 
+                  val: stats.cohort.counts?.current_count?.toLocaleString() || 0 
+                },
+                { 
+                  label: "10th", 
+                  val: stats.cohort.counts?.previous_count?.toLocaleString() || 0 
+                }
+              ]} 
+            />
+            <StatCard title="Today's Classes" value="12" icon={<BookOpen />} />
+            <StatCard title="Attendance" value="92%" icon={<ClipboardList />} />
+          </>
+        )}
       </div>
     </div>
   );
 };
 
+// --- Simple Helper Components ---
 
-/* ================= SMALL COMPONENTS ================= */
-
-const StatCard = ({ title, value, icon }) => (
+const StatCard = ({ title, value, icon, details }) => (
   <div className={styles.statCard}>
     <div className={styles.iconContainer}>{icon}</div>
-    <div>
+    <div className={styles.statInfo}>
       <p className={styles.cardTitle}>{title}</p>
-      <p className={styles.cardValue}>{value}</p>
+      {value ? (
+        <p className={styles.cardValue}>{value}</p>
+      ) : (
+        <div className={styles.detailsList}>
+          {details?.map((d, i) => (
+            <div key={i} className={styles.detailItem}>
+              <span>{d.label}:</span> <strong>{d.val}</strong>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   </div>
-);
-
-const ActionButton = ({ title, icon, className }) => (
-  <button className={`${styles.actionButton} ${className}`}>
-    {icon}
-    <span>{title}</span>
-  </button>
 );
 
 export default AdminDashboard;

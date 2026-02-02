@@ -221,7 +221,6 @@ button {
   text-transform: uppercase;
   color: var(--text-secondary);
   letter-spacing: 0.05em;
-  user-select: none;
 }
 
 .sortable {
@@ -229,7 +228,7 @@ button {
 }
 .sortable:hover { color: var(--text-main); }
 
-.thContent {
+.thContent {  
   display: flex;
   align-items: center;
   gap: 0.5rem;

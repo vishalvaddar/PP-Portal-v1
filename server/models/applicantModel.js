@@ -1,6 +1,6 @@
-const pool = require("../config/db");
+// 1. Change require to import
+import pool from "../config/db.js"; 
 
-// Clean empty strings to NULL (Prevents integer/date crashes)
 const clean = (val) => (val === "" || val === undefined ? null : val);
 
 const formatDate = (val) => {
@@ -12,17 +12,12 @@ const formatDate = (val) => {
   }
 };
 
-// =========================================================
-// 1. CREATE APPLICANT (Primary + Secondary)
-// =========================================================
-async function createApplicant(data) {
+export async function createApplicant(data) {
   const { primaryData, secondaryData } = data;
   const client = await pool.connect();
   
   try {
     await client.query("BEGIN");
-
-    // --- A. Insert Primary Info ---
     const insertPrimary = `
       INSERT INTO pp.applicant_primary_info (
         nmms_year, nmms_reg_number, app_state, district, nmms_block,
@@ -31,46 +26,27 @@ async function createApplicant(data) {
         contact_no1, contact_no2, current_institute_dise_code, previous_institute_dise_code,
         created_by, updated_by
       )
-      VALUES (
-        $1,$2,$3,$4,$5,
-        $6,$7,$8,$9,$10,
-        $11,$12,$13,$14,$15,$16,
-        $17,$18,$19,$20,
-        $21,$21
-      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$21)
       RETURNING applicant_id
     `;
 
     const primaryValues = [
-      clean(primaryData.nmms_year),
-      clean(primaryData.nmms_reg_number),
-      clean(primaryData.app_state),
-      clean(primaryData.district),
-      clean(primaryData.nmms_block),
-      clean(primaryData.student_name),
-      clean(primaryData.father_name),
-      clean(primaryData.mother_name),
-      clean(primaryData.gmat_score),
-      clean(primaryData.sat_score),
-      clean(primaryData.gender),
-      clean(primaryData.medium),
-      clean(primaryData.aadhaar),
-      formatDate(primaryData.dob),
-      clean(primaryData.home_address),
-      clean(primaryData.family_income_total),
-      clean(primaryData.contact_no1),
-      clean(primaryData.contact_no2),
-      clean(primaryData.current_institute_dise_code),
-      clean(primaryData.previous_institute_dise_code),
+      clean(primaryData.nmms_year), clean(primaryData.nmms_reg_number),
+      clean(primaryData.app_state), clean(primaryData.district),
+      clean(primaryData.nmms_block), clean(primaryData.student_name),
+      clean(primaryData.father_name), clean(primaryData.mother_name),
+      clean(primaryData.gmat_score), clean(primaryData.sat_score),
+      clean(primaryData.gender), clean(primaryData.medium),
+      clean(primaryData.aadhaar), formatDate(primaryData.dob),
+      clean(primaryData.home_address), clean(primaryData.family_income_total),
+      clean(primaryData.contact_no1), clean(primaryData.contact_no2),
+      clean(primaryData.current_institute_dise_code), clean(primaryData.previous_institute_dise_code),
       primaryData.created_by
     ];
 
     const { rows } = await client.query(insertPrimary, primaryValues);
-    if (!rows.length) throw new Error("Failed to insert primary info");
-    
     const applicantId = rows[0].applicant_id;
 
-    // --- B. Insert Secondary Info ---
     const insertSecondary = `
       INSERT INTO pp.applicant_secondary_info (
         applicant_id, village, father_occupation, mother_occupation,
@@ -80,60 +56,32 @@ async function createApplicant(data) {
         irrigation_land, neighbor_name, neighbor_phone, favorite_teacher_name, favorite_teacher_phone,
         created_by, updated_by
       )
-      VALUES (
-        $1, $2, $3, $4, 
-        $5, $6, $7, $8, 
-        $9, $10, $11, $12, 
-        $13, $14, $15, $16, 
-        $17, $18, $19, $20, $21,
-        $22, $22
-      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $22)
     `;
 
     const sec = secondaryData || {};
     const secondaryValues = [
-      applicantId,
-      clean(sec.village),
-      clean(sec.father_occupation),
-      clean(sec.mother_occupation),
-      clean(sec.father_education),
-      clean(sec.mother_education),
-      clean(sec.household_size),
-      clean(sec.own_house),
-      clean(sec.smart_phone_home),
-      clean(sec.internet_facility_home),
-      clean(sec.career_goals),
-      clean(sec.subjects_of_interest),
-      clean(sec.transportation_mode),
-      clean(sec.distance_to_school),
-      sec.num_two_wheelers || 0,
-      sec.num_four_wheelers || 0,
-      sec.irrigation_land || 0,
-      clean(sec.neighbor_name),
-      clean(sec.neighbor_phone),
-      clean(sec.favorite_teacher_name),
-      clean(sec.favorite_teacher_phone),
-      primaryData.created_by
+      applicantId, clean(sec.village), clean(sec.father_occupation), clean(sec.mother_occupation),
+      clean(sec.father_education), clean(sec.mother_education), clean(sec.household_size),
+      clean(sec.own_house), clean(sec.smart_phone_home), clean(sec.internet_facility_home),
+      clean(sec.career_goals), clean(sec.subjects_of_interest), clean(sec.transportation_mode),
+      clean(sec.distance_to_school), sec.num_two_wheelers || 0, sec.num_four_wheelers || 0,
+      sec.irrigation_land || 0, clean(sec.neighbor_name), clean(sec.neighbor_phone),
+      clean(sec.favorite_teacher_name), clean(sec.favorite_teacher_phone), primaryData.created_by
     ];
 
     await client.query(insertSecondary, secondaryValues);
-
     await client.query("COMMIT");
     return { applicant_id: applicantId };
-
   } catch (err) {
     await client.query("ROLLBACK");
-    console.error("Error creating applicant:", err);
     throw err;
   } finally {
     client.release();
   }
 }
 
-// =========================================================
-// 2. UPDATE APPLICANT (Primary + Secondary)
-// =========================================================
-async function updateApplicant(applicantId, data) {
+export async function updateApplicant(applicantId, data) {
   const { primaryData, secondaryData } = data;
   const client = await pool.connect();
 
@@ -259,21 +207,9 @@ async function updateApplicant(applicantId, data) {
   }
 }
 
-// =========================================================
-// 3. READ: VIEW APPLICANT BY REG NUMBER (With JOINS)
-// =========================================================
-async function viewApplicantByRegNumber(nmms_reg_number) {
+export async function viewApplicantByRegNumber(nmms_reg_number) {
   const query = `
-    SELECT 
-      p.*,
-      state.juris_name AS state_name,
-      dist.juris_name AS district_name,
-      blk.juris_name AS block_name,
-      s.village, s.father_occupation, s.mother_occupation, s.father_education, s.mother_education,
-      s.household_size, s.own_house, s.smart_phone_home, s.internet_facility_home,
-      s.career_goals, s.subjects_of_interest, s.transportation_mode, s.distance_to_school,
-      s.num_two_wheelers, s.num_four_wheelers, s.irrigation_land,
-      s.neighbor_name, s.neighbor_phone, s.favorite_teacher_name, s.favorite_teacher_phone
+    SELECT p.*, s.*, state.juris_name AS state_name, dist.juris_name AS district_name, blk.juris_name AS block_name
     FROM pp.applicant_primary_info p
     LEFT JOIN pp.applicant_secondary_info s ON p.applicant_id = s.applicant_id
     LEFT JOIN pp.jurisdiction state ON p.app_state = state.juris_code
@@ -285,13 +221,9 @@ async function viewApplicantByRegNumber(nmms_reg_number) {
   return rows[0] || null;
 }
 
-// =========================================================
-// 4. GET APPLICANT BY ID
-// =========================================================
-async function getApplicantById(applicantId) {
+export async function getApplicantById(applicantId) {
   const query = `
-    SELECT p.*, s.*
-    FROM pp.applicant_primary_info p
+    SELECT p.*, s.* FROM pp.applicant_primary_info p
     LEFT JOIN pp.applicant_secondary_info s ON p.applicant_id = s.applicant_id
     WHERE p.applicant_id = $1
   `;
@@ -299,10 +231,7 @@ async function getApplicantById(applicantId) {
   return rows[0] || null;
 }
 
-// =========================================================
-// 5. DELETE
-// =========================================================
-async function deleteApplicant(applicantId) {
+export async function deleteApplicant(applicantId) {
   const { rows } = await pool.query(
     `DELETE FROM pp.applicant_primary_info WHERE applicant_id = $1 RETURNING applicant_id`,
     [applicantId]
@@ -310,21 +239,10 @@ async function deleteApplicant(applicantId) {
   return rows[0];
 }
 
-// =========================================================
-// 6. GET ALL (Summary View)
-// =========================================================
-async function getAllApplicants() {
+export async function getAllApplicants() {
   const query = `
-    SELECT 
-      p.applicant_id,
-      p.nmms_year,
-      p.nmms_reg_number,
-      p.student_name,
-      p.father_name,
-      p.gender,
-      dist.juris_name as district_name,
-      p.contact_no1,
-      p.created_at
+    SELECT p.applicant_id, p.nmms_year, p.nmms_reg_number, p.student_name, p.father_name, p.gender, 
+           dist.juris_name as district_name, p.contact_no1, p.created_at
     FROM pp.applicant_primary_info p
     LEFT JOIN pp.jurisdiction dist ON p.district = dist.juris_code
     ORDER BY p.created_at DESC
@@ -333,11 +251,75 @@ async function getAllApplicants() {
   return rows;
 }
 
-module.exports = {
-  createApplicant,
-  getApplicantById,
-  updateApplicant,
-  deleteApplicant,
-  viewApplicantByRegNumber,
-  getAllApplicants
-};
+export async function getApplicantsCount(year) {
+  const query = `SELECT COUNT(*) AS count FROM pp.applicant_primary_info WHERE nmms_year = $1`;
+  const { rows } = await pool.query(query, [year]);
+  return parseInt(rows[0].count, 10);
+}
+
+export async function shortlistedApplicants(year) {
+  const query = `
+    SELECT COUNT(*) AS count
+    FROM pp.applicant_primary_info as ap
+    JOIN PP.applicant_shortlist_info as asi ON ap.applicant_id = asi.applicant_id
+    WHERE ap.nmms_year = $1
+  `;
+  const { rows } = await pool.query(query, [year]);
+  return parseInt(rows[0].count, 10);
+}
+
+export async function selectedStudents(year) {
+  const query = `
+    SELECT COUNT(*) AS count
+    FROM pp.applicant_primary_info as ap
+    JOIN pp.student_master sm ON ap.applicant_id = sm.applicant_id
+    WHERE ap.nmms_year = $1
+  `;
+  const { rows } = await pool.query(query, [year]);
+  return parseInt(rows[0].count, 10);
+}
+
+export async function getCohortStudentCount(currentYear) {
+  const previousYear = parseInt(currentYear, 10) - 1;
+  
+  const query = `
+    SELECT 
+      COUNT(CASE WHEN AP.NMMS_YEAR = $1 THEN 1 END)::INT AS current_count,
+      COUNT(CASE WHEN AP.NMMS_YEAR = $2 THEN 1 END)::INT AS previous_count
+    FROM PP.STUDENT_MASTER AS SM
+    JOIN PP.APPLICANT_PRIMARY_INFO AS AP
+      ON SM.APPLICANT_ID = AP.APPLICANT_ID
+    WHERE AP.NMMS_YEAR IN ($1, $2)
+  `;
+
+  const { rows } = await pool.query(query, [currentYear, previousYear]);
+  return rows[0];
+}
+
+export async function getTodayClassesCount(year) {
+  const cohortNumber = year - 2021;
+
+  const query = `
+    SELECT 
+        c.cohort_name,
+        COUNT(DISTINCT t.timetable_id) AS classes_count
+    FROM pp.timetable t
+    JOIN pp.classroom cl 
+        ON t.classroom_id = cl.classroom_id
+    JOIN pp.classroom_batch cb 
+        ON cl.classroom_id = cb.classroom_id
+    JOIN pp.batch b 
+        ON cb.batch_id = b.batch_id
+    JOIN pp.cohort c 
+        ON b.cohort_number = c.cohort_number
+    WHERE 
+        t.day_of_week = TRIM(UPPER(TO_CHAR(CURRENT_DATE, 'Day')))
+        AND b.cohort_number = $1
+    GROUP BY c.cohort_name
+    ORDER BY c.cohort_name
+  `;
+
+  const { rows } = await pool.query(query, [cohortNumber]);
+  return rows;
+}
+

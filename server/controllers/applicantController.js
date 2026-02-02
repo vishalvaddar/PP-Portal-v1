@@ -1,5 +1,7 @@
-const applicantModel = require("../models/applicantModel");
-const moment = require("moment");
+import * as applicantModel from "../models/applicantModel.js";
+import moment from "moment";
+
+// --- HELPERS ---
 
 const sanitizeValue = (value) => {
   if (value === undefined || value === null || value === "") return null;
@@ -15,7 +17,6 @@ const sanitizeDate = (dateStr) => {
 
 const formatResponse = (data) => {
   if (!data) return null;
-  
   const obj = { ...data };
 
   if (obj.dob) {
@@ -67,23 +68,22 @@ const buildPrimaryData = (sourceData, userId, isUpdate = false) => {
   return data;
 };
 
+// --- CONTROLLER ACTIONS ---
 
 // CREATE Applicant
-exports.createApplicant = async (req, res) => {
+export const createApplicant = async (req, res) => {
   try {
     const userId = req.user?.user_id;
-
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized: User ID missing" });
     }
 
-    let { primaryData, secondaryData } = req.body;
+    let { primaryData, secondaryData = {} } = req.body;
 
     if (!primaryData) {
       primaryData = { ...req.body };
       if (primaryData.secondaryData) delete primaryData.secondaryData;
     }
-    if (!secondaryData) secondaryData = {};
 
     const requiredFields = [
       "nmms_year", "nmms_reg_number", "student_name", 
@@ -100,10 +100,7 @@ exports.createApplicant = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid contact_no1 (10 digits required)" });
 
     const sanitizedPrimary = buildPrimaryData(primaryData, userId, false);
-
-    const sanitizedSecondary = { ...secondaryData };
-    sanitizedSecondary.created_by = userId;
-    sanitizedSecondary.updated_by = userId;
+    const sanitizedSecondary = { ...secondaryData, created_by: userId, updated_by: userId };
 
     const applicant = await applicantModel.createApplicant({
       primaryData: sanitizedPrimary,
@@ -126,7 +123,7 @@ exports.createApplicant = async (req, res) => {
 };
 
 // UPDATE Applicant
-exports.updateApplicant = async (req, res) => {
+export const updateApplicant = async (req, res) => {
   try {
     const { applicantId } = req.params;
     const userId = req.user?.user_id;
@@ -166,7 +163,7 @@ exports.updateApplicant = async (req, res) => {
 };
 
 // GET Applicant by ID
-exports.getApplicantById = async (req, res) => {
+export const getApplicantById = async (req, res) => {
   try {
     const { applicantId } = req.params;
     if (!applicantId) return res.status(400).json({ success: false, message: "applicantId is required" });
@@ -187,7 +184,7 @@ exports.getApplicantById = async (req, res) => {
 };
 
 // DELETE Applicant
-exports.deleteApplicant = async (req, res) => {
+export const deleteApplicant = async (req, res) => {
   try {
     const { applicantId } = req.params;
     if (!applicantId) return res.status(400).json({ success: false, message: "applicantId is required" });
@@ -204,12 +201,10 @@ exports.deleteApplicant = async (req, res) => {
 };
 
 // GET All Applicants
-exports.getAllApplicants = async (req, res) => {
+export const getAllApplicants = async (req, res) => {
   try {
     const applicants = await applicantModel.getAllApplicants(req.query);
-    
     const formattedApplicants = applicants.map(app => formatResponse(app));
-
     res.status(200).json({ success: true, data: formattedApplicants });
   } catch (error) {
     console.error("Error fetching applicants:", error);
@@ -218,7 +213,7 @@ exports.getAllApplicants = async (req, res) => {
 };
 
 // GET by Reg Number
-exports.viewApplicantByRegNumber = async (req, res) => {
+export const viewApplicantByRegNumber = async (req, res) => {
   try {
     let { nmms_reg_number } = req.params;
 
@@ -246,3 +241,97 @@ exports.viewApplicantByRegNumber = async (req, res) => {
     return res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }
 };
+
+// GET Total Count
+export const applicantsCount = async (req, res) => {
+  try {
+    const { year } = req.query;
+    if (!year || isNaN(year)) {
+      return res.status(400).json({ success: false, message: "Valid year required" });
+    }
+    const count = await applicantModel.getApplicantsCount(year);
+    return res.status(200).json({ success: true, count: parseInt(count, 10) || 0 });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// GET Shortlisted Count
+export const shortlistedCount = async (req, res) => {
+  try {
+    const { year } = req.query;
+    if (!year || isNaN(year)) {
+      return res.status(400).json({ success: false, message: "Valid year required" });
+    }
+    const count = await applicantModel.shortlistedApplicants(year);
+    return res.status(200).json({ success: true, count: parseInt(count, 10) || 0 });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// GET Selected Students Count
+export const selectedStudentsCount = async (req, res) => {
+  try {
+    const { year } = req.query;
+    if (!year || isNaN(year)) {
+      return res.status(400).json({ success: false, message: "Valid year required" });
+    }
+    const count = await applicantModel.selectedStudents(year);
+    return res.status(200).json({ success: true, count: parseInt(count, 10) || 0 });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const studentCohortCount = async (req, res) => {
+  try {
+    const { year } = req.query;
+    
+    if (!year || isNaN(year)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Valid current academic year is required" 
+      });
+    }
+
+    const counts = await applicantModel.getCohortStudentCount(year);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        currentYear: parseInt(year, 10),
+        previousYear: parseInt(year, 10) - 1,
+        counts: counts
+      }
+    });
+  } catch (error) {
+    console.error("Comparison Count Error:", error);
+    return res.status(500).json({ 
+      success: false, 
+      message: "Internal Server Error", 
+      error: error.message 
+    });
+  }
+};
+
+export async function todayClassesCount(req, res) {
+  try {
+    const { year } = req.query;
+
+    if (!year) {
+      return res.status(400).json({ message: "Year is required" });
+    }
+
+    const count = await applicantModel.getTodayClassesCount(Number(year));
+
+    res.status(200).json({
+      count: count
+    });
+
+  } catch (error) {
+    console.error("Today's Classes Count Error:", error);
+    res.status(500).json({ message: "Failed to fetch today's classes count" });
+  }
+}
+

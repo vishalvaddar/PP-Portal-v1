@@ -8,8 +8,7 @@ import React, {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import axios from "axios";
-import rcf_pp from "../../assets/RCF-PP.jpg";
-import login_logo from "../../assets/login_page_logo.png";
+import login_logo from "../../assets/LOGO_PP.png";
 
 // UI Components
 import { Card, CardContent } from "../ui/card";
