@@ -44,7 +44,13 @@ exports.getAvailableFields = async (req, res) => {
     try { res.json(await model.getAvailableFields()); } catch (e) { res.status(500).json({ error: e.message }); }
 };
 exports.getAllBatches = async (req, res) => {
-    try { res.json(await model.getAllBatches()); } catch (e) { res.status(500).json({ error: e.message }); }
+    try {
+        const { cohortId } = req.query; // Get from ?cohortId=1
+        const batches = await model.getAllBatches(cohortId);
+        res.json(batches);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 };
 exports.getStudentsByListId = async (req, res) => {
     try { res.json(await model.getStudentsByListId(req.params.listId)); } catch (e) { res.status(500).json({ error: e.message }); }
@@ -59,19 +65,17 @@ exports.deleteList = async (req, res) => {
     try { await model.deleteList(req.params.id); res.json({ success: true }); } catch (e) { res.status(500).json({ error: e.message }); }
 };
 
-// --- Fix in controllers/customListController.js ---
+
 
 exports.getStudentsByCohort = async (req, res) => {
     try {
         const { cohortId } = req.params;
-        const { batchId, stateId, divisionId, districtId, blockId } = req.query;
+        const { batchId, stateId, districtId, blockId } = req.query; 
 
-        // 🔥 CALL THE MODEL instead of using pool.query here
         const data = await model.getStudentsByCohort(
             cohortId, 
             batchId, 
             stateId, 
-            divisionId, 
             districtId, 
             blockId
         );
@@ -82,7 +86,7 @@ exports.getStudentsByCohort = async (req, res) => {
         res.status(500).json({ error: e.message });
     }
 };
-// --- PDF DOWNLOAD ---
+
 exports.downloadListPDF = async (req, res) => {
     const { listId } = req.params;
     try {
@@ -98,7 +102,6 @@ exports.downloadListPDF = async (req, res) => {
         const renderHeader = (pdfDoc, isFirst) => {
             const nextY = drawReportHeader(pdfDoc, isFirst, "2025");
             pdfDoc.y = nextY + 10;
-            // 🔥 BIG BLUE CENTERED LIST NAME
             pdfDoc.fillColor('#0000FF').font('Times-Bold').fontSize(22).text(listName.toUpperCase(), { align: 'center' });
             pdfDoc.moveDown(1); 
         };
@@ -106,15 +109,16 @@ exports.downloadListPDF = async (req, res) => {
         renderHeader(doc, true);
         doc.on('pageAdded', () => renderHeader(doc, false));
 
-        // 🔥 Mapping IDs to Names
         const tableRows = students.map(s => {
             let row = { student_id: String(s.student_id), student_name: s.student_name };
             fields.forEach(f => {
                 let val = '-';
+                // Use the same logic as your SQL CASE statement here
                 if (f.col_name === 'batch_id') val = s.batch_name;
                 else if (f.col_name === 'current_institute_dise_code') val = s.current_institute_name;
                 else if (f.col_name === 'previous_institute_dise_code') val = s.previous_institute_name;
-                else val = s[f.col_name];
+                else val = s[f.col_name]; 
+                
                 row[f.col_name] = String(val ?? '-');
             });
             return row;
@@ -124,6 +128,7 @@ exports.downloadListPDF = async (req, res) => {
             headers: [
                 { label: "ID", property: 'student_id', width: 50 },
                 { label: "Name", property: 'student_name', width: 150 },
+                // f.display_name here will now be "Active Status", "Enrollment Id", etc.
                 ...fields.map(f => ({ label: f.display_name, property: f.col_name, width: 100 }))
             ],
             datas: tableRows
@@ -137,7 +142,6 @@ exports.downloadListPDF = async (req, res) => {
     } catch (e) { res.status(500).send(e.message); }
 };
 
-// --- XLS DOWNLOAD ---
 exports.downloadListXLS = async (req, res) => {
     const { listId } = req.params;
     try {
@@ -151,6 +155,7 @@ exports.downloadListXLS = async (req, res) => {
         const columns = [
             { header: 'Student ID', key: 'student_id', width: 15 },
             { header: 'Student Name', key: 'student_name', width: 30 },
+            // Uses the updated display_name from your SQL query
             ...fields.map(f => ({ header: f.display_name, key: f.col_name, width: 25 }))
         ];
         worksheet.columns = columns;
@@ -163,6 +168,7 @@ exports.downloadListXLS = async (req, res) => {
                 else if (f.col_name === 'current_institute_dise_code') val = s.current_institute_name;
                 else if (f.col_name === 'previous_institute_dise_code') val = s.previous_institute_name;
                 else val = s[f.col_name];
+                
                 rowData[f.col_name] = val ?? '-';
             });
             worksheet.addRow(rowData);

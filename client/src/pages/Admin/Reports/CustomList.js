@@ -108,7 +108,6 @@ const StudentSelectorModal = ({
           </div>
         </div>
 
-        {/* CREATIVE SEARCH BAR SECTION */}
         <div className={styles.modalSearchContainer}>
           <div className={styles.searchWrapper}>
             <Search size={18} className={styles.searchIcon} />
@@ -133,7 +132,7 @@ const StudentSelectorModal = ({
                 const isSel = selected.includes(String(s.student_id));
                 return (
                   <div
-                    key={s.student_id}
+                    key={`modal-student-${s.student_id}`}
                     className={`${styles.modalListItem} ${isSel ? styles.selectedItem : styles.notSelectedItem}`}
                     onClick={() => toggleSelect(s.student_id)}
                   >
@@ -239,10 +238,20 @@ const ListManager = () => {
   }, [view, API_URL, ENDPOINT, fetchLists]);
 
   useEffect(() => {
-    if (selectedCohort)
+    if (selectedCohort && selectedCohort !== "" && selectedCohort !== "null") {
       axios
-        .get(`${ENDPOINT}/batches?cohortId=${selectedCohort}`)
-        .then((res) => setBatches(res.data));
+        .get(`${ENDPOINT}/batches`, {
+          params: { cohortId: selectedCohort },
+        })
+        .then((res) => {
+          setBatches(Array.isArray(res.data) ? res.data : []);
+          setSelectedBatch(""); 
+        })
+        .catch((err) => console.error("Error fetching batches:", err));
+    } else {
+      setBatches([]);
+      setSelectedBatch("");
+    }
   }, [selectedCohort, ENDPOINT]);
 
   useEffect(() => {
@@ -344,15 +353,19 @@ const ListManager = () => {
     setSelectedBlock("");
   };
 
-const moveField = (field, toSelected) => {
-  if (toSelected) {
-    setSelectedFields([...selectedFields, field]);
-    setAvailableFields(availableFields.filter(f => f.col_name !== field.col_name));
-  } else {
-    setAvailableFields([...availableFields, field]);
-    setSelectedFields(selectedFields.filter(f => f.col_name !== field.col_name));
-  }
-};
+  const moveField = (field, toSelected) => {
+    if (toSelected) {
+      setSelectedFields([...selectedFields, field]);
+      setAvailableFields(
+        availableFields.filter((f) => f.col_name !== field.col_name),
+      );
+    } else {
+      setAvailableFields([...availableFields, field]);
+      setSelectedFields(
+        selectedFields.filter((f) => f.col_name !== field.col_name),
+      );
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -394,9 +407,7 @@ const moveField = (field, toSelected) => {
               placeholder="List Name"
             />
           </div>
-          {/* DUAL BOX ATTRIBUTE SELECTION */}
           <div className={styles.dualBoxContainer}>
-            {/* Left Box: Available */}
             <div className={styles.attributeBox}>
               <div className={styles.boxHeader}>Available Attributes</div>
               <div className={styles.boxList}>
@@ -405,7 +416,7 @@ const moveField = (field, toSelected) => {
                 )}
                 {availableFields.map((f) => (
                   <div
-                    key={f.col_name}
+                    key={`avail-${f.col_name}`}
                     className={styles.attributeItem}
                     onClick={() => moveField(f, true)}
                   >
@@ -416,7 +427,6 @@ const moveField = (field, toSelected) => {
               </div>
             </div>
 
-            {/* Right Box: Selected */}
             <div className={styles.attributeBox}>
               <div className={styles.boxHeader}>Selected Attributes</div>
               <div className={styles.boxList}>
@@ -425,7 +435,7 @@ const moveField = (field, toSelected) => {
                 )}
                 {selectedFields.map((f) => (
                   <div
-                    key={f.col_name}
+                    key={`sel-${f.col_name}`}
                     className={`${styles.attributeItem} ${styles.attributeItemSelected}`}
                     onClick={() => moveField(f, false)}
                   >
@@ -444,8 +454,8 @@ const moveField = (field, toSelected) => {
             >
               <option value="">-- Cohort --</option>
               {cohorts.map((c) => (
-                <option key={c.cohort_number} value={c.cohort_number}>
-                  {c.cohort_name}
+                <option key={`cohort-${c.cohort_number}`} value={c.cohort_number}>
+                  {c.cohort_name || c.cohort_number}
                 </option>
               ))}
             </select>
@@ -455,9 +465,11 @@ const moveField = (field, toSelected) => {
               onChange={(e) => setSelectedBatch(e.target.value)}
               disabled={!selectedCohort}
             >
-              <option value="">-- Batch --</option>
+              <option value="">
+                {!selectedCohort ? "Select Cohort First" : "-- Batch --"}
+              </option>
               {batches.map((b) => (
-                <option key={b.batch_id} value={b.batch_id}>
+                <option key={`batch-${b.batch_id}`} value={b.batch_id}>
                   {b.batch_name}
                 </option>
               ))}
@@ -472,12 +484,11 @@ const moveField = (field, toSelected) => {
             >
               <option value="">-- State --</option>
               {states.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
+                <option key={`state-${s.juris_code}`} value={s.juris_code}>
+                  {s.juris_name}
                 </option>
               ))}
             </select>
-            {/* ADDED MISSING DROPDOWNS BELOW */}
             <select
               className={styles.select}
               value={selectedDivision}
@@ -489,8 +500,8 @@ const moveField = (field, toSelected) => {
             >
               <option value="">-- Division --</option>
               {divisions.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
+                <option key={`div-${d.juris_code}`} value={d.juris_code}>
+                  {d.juris_name}
                 </option>
               ))}
             </select>
@@ -505,8 +516,8 @@ const moveField = (field, toSelected) => {
             >
               <option value="">-- District --</option>
               {districts.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
+                <option key={`dist-${d.juris_code}`} value={d.juris_code}>
+                  {d.juris_name}
                 </option>
               ))}
             </select>
@@ -518,8 +529,8 @@ const moveField = (field, toSelected) => {
             >
               <option value="">-- Block --</option>
               {blocks.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
+                <option key={`block-${b.juris_code}`} value={b.juris_code}>
+                  {b.juris_name}
                 </option>
               ))}
             </select>
@@ -566,7 +577,7 @@ const moveField = (field, toSelected) => {
       ) : (
         <div className={styles.listsGrid}>
           {lists.map((l) => (
-            <div key={l.list_id} className={styles.listCardItem}>
+            <div key={`list-card-${l.list_id}`} className={styles.listCardItem}>
               <div className={styles.cardHeader}>
                 <div className={styles.studentInfo}>
                   <h3 className={styles.listNameTitle}>{l.list_name}</h3>

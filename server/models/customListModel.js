@@ -45,8 +45,22 @@ exports.getStudentsByListId = async (listId) => {
         WHERE cls.list_id = $1 
         ORDER BY sm.student_name;
     `;
+
+    // Updated this query to include the CASE statement for custom naming
     const fieldsQuery = `
-        SELECT fm.col_name, fm.field_id, INITCAP(REPLACE(fm.col_name, '_', ' ')) as display_name
+        SELECT 
+            fm.col_name, 
+            fm.field_id, 
+            CASE 
+                WHEN fm.col_name = 'batch_id' THEN 'Batch Name'
+                WHEN fm.col_name = 'current_institute_dise_code' THEN 'Current School Name'
+                WHEN fm.col_name = 'previous_institute_dise_code' THEN 'Previous School Name'
+                WHEN fm.col_name = 'active_yn' THEN 'Active Status'
+                WHEN fm.col_name = 'contact_no1' THEN 'Contact Number 1'
+                WHEN fm.col_name = 'contact_no2' THEN 'Contact Number 2'
+                WHEN fm.col_name = 'enr_id' THEN 'Enrollment Id'
+                ELSE INITCAP(REPLACE(fm.col_name, '_', ' ')) 
+            END as display_name
         FROM pp.custom_list_fields clf
         JOIN pp.field_master fm ON clf.field_id = fm.field_id
         WHERE clf.list_id = $1;
@@ -104,12 +118,23 @@ exports.getAvailableFields = async () => {
                 WHEN column_name = 'batch_id' THEN 'Batch Name'
                 WHEN column_name = 'current_institute_dise_code' THEN 'Current School Name'
                 WHEN column_name = 'previous_institute_dise_code' THEN 'Previous School Name'
+                WHEN column_name = 'active_yn' THEN 'Active Status'
+                WHEN column_name = 'contact_no1' THEN 'Contact Number 1'
+                WHEN column_name = 'contact_no2' THEN 'Contact Number 2'
+                WHEN column_name = 'enr_id' THEN 'Enrollment Id'
                 ELSE INITCAP(REPLACE(column_name, '_', ' ')) 
             END as display_name
         FROM information_schema.columns 
         WHERE table_schema = 'pp' 
           AND table_name = 'student_master'
-          AND column_name NOT IN ('created_at', 'updated_at', 'created_by', 'updated_by') 
+          AND column_name NOT IN (
+              'created_at', 
+              'updated_at', 
+              'created_by', 
+              'updated_by', 
+              'applicant_id', 
+              'photo_link'
+          ) 
         ORDER BY display_name ASC;
     `;
     const { rows } = await pool.query(query);
@@ -121,8 +146,31 @@ exports.getListHeader = async (listId) => {
     return rows[0];
 };
 
-exports.getAllBatches = async () => {
-    const { rows } = await pool.query(`SELECT batch_id, batch_name FROM pp.batch ORDER BY batch_name;`);
+ 
+exports.getAllBatches = async (cohortId) => {
+    let query = `
+        SELECT 
+            b.batch_id, 
+            b.batch_name, 
+            c.cohort_name 
+        FROM pp.batch b
+        JOIN pp.cohort c ON b.cohort_number = c.cohort_number
+    `;
+    
+    const params = [];
+
+    // Force the filter if cohortId exists
+    if (cohortId && cohortId !== 'null' && cohortId !== 'undefined') {
+        query += ` WHERE b.cohort_number = $1`;
+        params.push(cohortId);
+    }
+
+    query += ` ORDER BY b.batch_name;`;
+
+    // DEBUG: This will show in your terminal/command prompt
+   // console.log("Running Query:", query, "with Params:", params);
+
+    const { rows } = await pool.query(query, params);
     return rows;
 };
 

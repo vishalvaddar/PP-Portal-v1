@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import Breadcrumbs from '../../../components/Breadcrumbs/Breadcrumbs';
-import './EvaluationTracking.css'; 
+import styles from './EvaluationTracking.module.css';
 import { useSystemConfig } from '../../../contexts/SystemConfigContext';
 
 // --- CONFIGURATION ---
@@ -22,7 +22,7 @@ const EvaluationTracking = () => {
     const [interviewers, setInterviewers] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [selectedStudentId, setSelectedStudentId] = useState(null);
     const [studentDetails, setStudentDetails] = useState(null);
@@ -31,16 +31,19 @@ const EvaluationTracking = () => {
     const [selectedInterviewerId, setSelectedInterviewerId] = useState(null);
     const [selectedStatuses, setSelectedStatuses] = useState([]);  
     const [selectedResults, setSelectedResults] = useState([]);    
-
-    const isFilteredList = !!selectedInterviewerId || selectedStatuses.length > 0 || selectedResults.length > 0;
    
-    const { appliedConfig } = useSystemConfig();
-    const cohortId = useMemo(() => {
+   const { appliedConfig, loading: configLoading } = useSystemConfig();
+    
+   const isAdmissionsOpen = !configLoading && appliedConfig?.phase === "Admissions are started";
+    const isClassesStarted = !configLoading && appliedConfig?.phase === "Classes are started";
+
+        const isFilteredList = !!selectedInterviewerId || selectedStatuses.length > 0 || selectedResults.length > 0;
+
+   const cohortId = useMemo(() => {
         return appliedConfig?.academic_year 
             ? `cohort-${appliedConfig.academic_year.split('-')[0]}` 
             : `cohort-${new Date().getFullYear()}`;
     }, [appliedConfig]);
-
     // 🚀 Added Path Logic
     const currentPath = useMemo(() => {
         return ['Admin', 'Admissions', 'Evaluation', 'Tracking'];
@@ -48,106 +51,117 @@ const EvaluationTracking = () => {
 
     // --- Data Fetching ---
 
-    const fetchInterviewers = useCallback(async () => {
-        try {
-            const response = await axios.get(`${API_BASE_URL}/interviewers`);
-            setInterviewers(response.data);
-        } catch (err) {
-            setError('Could not load interviewer list. Ensure the backend server is running and reachable.');
-            console.error(err);
-        }
-    }, []);
+// 1. Extract the year from the context (e.g., "2025-26" -> "2025")
+const nmmsYear = useMemo(() => {
+    return appliedConfig?.academic_year 
+        ? appliedConfig.academic_year.split('-')[0] 
+        : null;
+}, [appliedConfig]);
 
-  const fetchStudents = useCallback(async () => {
+// 2. Fetch Interviewers (Static list, usually doesn't need year)
+const fetchInterviewers = useCallback(async () => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/interviewers`);
+        setInterviewers(response.data);
+    } catch (err) {
+        setError('Could not load interviewer list.');
+        console.error(err);
+    }
+}, []);
+
+// 3. Fetch Students (Dynamic list based on Year and Filters)
+const fetchStudents = useCallback(async () => {
+    // 🔥 Guard: Don't fetch if year isn't ready yet
+     if (!nmmsYear || !isAdmissionsOpen) return;
     setLoading(true);
     setError(null);
-    let url = `${API_BASE_URL}/students?page=${currentPage}`;
+
+    const params = new URLSearchParams();
+    params.append('page', currentPage);
+    params.append('nmms_year', nmmsYear); // 🔥 Pass the dynamic year
+
+    let url = `${API_BASE_URL}/students`;
 
     if (selectedInterviewerId) {
-        url = `${API_BASE_URL}/students/interviewer/${selectedInterviewerId}?page=${currentPage}`;
+        // For interviewer specific route
+        url = `${API_BASE_URL}/students/interviewer/${selectedInterviewerId}`;
     } else {
-        // Build query string for multiple filters
-        const params = new URLSearchParams();
-        params.append('page', currentPage);
-
         if (selectedStatuses.length > 0) {
             params.append('statuses', selectedStatuses.join(','));
         }
-
         if (selectedResults.length > 0) {
             params.append('results', selectedResults.join(','));
         }
-
-        url = `${API_BASE_URL}/students?${params.toString()}`;
     }
-    
+
     try {
-        const response = await axios.get(url);
+        const response = await axios.get(`${url}?${params.toString()}`);
         setStudents(response.data.students);
         setTotalPages(response.data.totalPages);
-        setCurrentPage(response.data.currentPage);
+        // Note: We don't setCurrentPage(response.data.currentPage) here 
+        // because it causes an infinite loop with the useEffect dependency
     } catch (err) {
         setError('Failed to fetch student list.');
+        console.error(err);
     } finally {
         setLoading(false);
     }
-}, [currentPage, selectedInterviewerId, selectedStatuses, selectedResults]);
+}, [currentPage, selectedInterviewerId, selectedStatuses, selectedResults, nmmsYear, isAdmissionsOpen]);
 
-    const fetchStudentDetails = useCallback(async (applicantId) => {
-        setLoading(true);
-        setError(null);
+// 4. Fetch Details (All rounds for a specific student in that year)
+const fetchStudentDetails = useCallback(async (applicantId) => {
+    if (!nmmsYear || !isAdmissionsOpen) return;
+
+    setLoading(true);
+    setError(null);
+    
+    try {
+        const [interviewResponse, homeResponse] = await Promise.all([
+            axios.get(`${API_BASE_URL}/students/${applicantId}/interviews/all?nmms_year=${nmmsYear}`),
+            axios.get(`${API_BASE_URL}/students/${applicantId}/home/all?nmms_year=${nmmsYear}`)
+        ]);
+
+        let roundsData = [
+            ...interviewResponse.data, 
+            ...homeResponse.data.map(hv => ({ 
+                ...hv, 
+                is_home_verification: true, 
+                interview_round: 999, 
+                status: hv.home_verification_status || 'Submitted',
+                interview_result: hv.home_verification_status || 'Verified',
+            })) 
+        ];
         
-        try {
-            let studentName = 'N/A';
-            
-            const [interviewResponse, homeResponse] = await Promise.all([
-                axios.get(`${API_BASE_URL}/students/${applicantId}/interviews/all`),
-                axios.get(`${API_BASE_URL}/students/${applicantId}/home/all`)
-            ]);
+        roundsData.sort((a, b) => (a.interview_round || 0) - (b.interview_round || 0));
+        
+        const studentName = roundsData.length > 0 ? (roundsData[0].student_name || 'N/A') : 'N/A';
+        
+        setStudentDetails({
+            applicantId,
+            studentName,
+            rounds: roundsData 
+        });
+        setSelectedStudentId(applicantId);
+        setView('details');
+    } catch (err) {
+        console.error('Fetch student details error:', err);
+        setError('Failed to load student details.');
+    } finally {
+        setLoading(false);
+    }
+}, [nmmsYear, isAdmissionsOpen]);
 
-            let roundsData = [
-                ...interviewResponse.data, 
-                ...homeResponse.data.map(hv => ({ 
-                    ...hv, 
-                    is_home_verification: true, 
-                    interview_round: 999, 
-                    status: hv.home_verification_status || 'Submitted',
-                    interview_result: hv.home_verification_status || 'Verified',
-                })) 
-            ];
-            
-            roundsData.sort((a, b) => (a.interview_round || 0) - (b.interview_round || 0));
-            
-            studentName = roundsData.length > 0 ? (roundsData[0].student_name || 'N/A') : 'N/A';
-            
-            const details = {
-                applicantId,
-                studentName,
-                rounds: roundsData 
-            };
-            
-            setStudentDetails(details);
-            setSelectedStudentId(applicantId);
-            setView('details');
-        } catch (err) {
-            console.error('Fetch student details error:', err);
-            setError('Failed to load student details.');
-        } finally {
-            setLoading(false);
+useEffect(() => {
+        if (isAdmissionsOpen) {
+            fetchInterviewers();
         }
-    }, []);
+    }, [fetchInterviewers, isAdmissionsOpen]);
 
-    useEffect(() => {
-        fetchInterviewers();
-    }, [fetchInterviewers]);
-
-    useEffect(() => {
-        if (currentPage !== 1 && !isFilteredList) {
-            setCurrentPage(1);
-        } else {
+useEffect(() => {
+        if (nmmsYear && isAdmissionsOpen) {
             fetchStudents();
         }
-    }, [selectedInterviewerId, selectedStatuses, selectedResults, currentPage, fetchStudents]);
+    }, [fetchStudents, nmmsYear, isAdmissionsOpen]);
 
     // --- Filter Handlers ---
     const handleInterviewerChange = (e) => {
@@ -198,31 +212,28 @@ const EvaluationTracking = () => {
 
     // --- Helper Components & Rendering ---
 
-   const StatusBadge = ({ status, result }) => {
-    let color = 'bg-gray-200 text-gray-800';
-    let resultDisplay = '';
+ const StatusBadge = ({ status, result }) => {
+    let statusColor = 'text-blue-700 bg-blue-50 border-blue-200';
+    let resultColor = styles.notSubmitted; // Default to red
+    let resultDisplay = result || 'Not Submitted';
 
-    // 🔥 Check if result exists
+    // 🔥 Check if result exists and color accordingly
     if (result && result !== 'Not Submitted') {
+        resultColor = styles.submitted; // Green
         resultDisplay = result;
-        // Standard success/fail colors for valid results
-        if (result === 'Accepted' || result === 'Completed' || result === 'SELECTED') {
-            color = 'bg-green-100 text-green-700 border border-green-400';
-        } else if (result === 'Rejected') {
-            color = 'bg-red-100 text-red-700 border border-red-400';
-        } else {
-            color = 'bg-blue-100 text-blue-700 border border-blue-400';
-        }
-    } else {
-        // 🔥 If result is null or empty, show "Not Submitted" in RED
-        resultDisplay = 'Not Submitted';
-        color = 'bg-red-100 text-red-700 border border-red-500 font-bold';
     }
 
     const statusLabel = status || 'N/A';
+    
     return (
-        <span className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full ${color} whitespace-nowrap`}>
-            Status: {statusLabel} | Result: {resultDisplay}
+        <span className="inline-flex items-center gap-1 text-xs font-semibold">
+            <span className={`px-2 py-1 rounded border ${statusColor}`}>
+                Status: {statusLabel}
+            </span>
+            <span className={styles.statusDivider}>|</span>
+            <span className={resultColor}>
+                Result: {resultDisplay}
+            </span>
         </span>
     );
 };
@@ -298,81 +309,72 @@ const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload, cohortId
     let docType = isHomeVerification ? round.home_verification_doc_type : round.doc_type;
     const docName = getCleanFileName(docNameRaw);
     
-    // Check if result exists
-    const finalResult = isInterview ? round.interview_result : (round.home_verification_status);
+    const finalResult = isInterview ? round.interview_result : round.home_verification_status;
     const isSubmitted = !!finalResult && finalResult !== 'Pending';
     
     const roundType = isInterview ? 'interview' : 'home';
     const assignedPerson = isInterview ? (round.interviewer || 'N/A') : (round.verified_by || 'N/A');
     const documentExists = !!docNameRaw && !!docType;
 
+    const getStatusColor = (res) => {
+        if (!res) return '';
+        const r = res.toUpperCase();
+        if (['SELECTED', 'VERIFIED', 'ACCEPTED', 'COMPLETED'].includes(r)) return 'text-green-700';
+        if (['REJECTED', 'FAILED'].includes(r)) return 'text-red-700';
+        return 'text-blue-700';
+    };
+
     return (
-        <div className="bg-white p-6 rounded-xl shadow-inner border border-gray-200 mt-4">
-            <h3 className="text-xl font-bold text-gray-800 mb-3 border-b pb-2">
+        <div className={styles.detailPanel}>
+            <h3 className={styles.panelTitle}>
                 {isHomeVerification ? `🏠 Home Verification Details` : `Interview Evaluation (Round ${round.interview_round || 'N/A'})`}
             </h3>
 
             {!isSubmitted ? (
-                // 🔥 SHOW THIS IF NOT SUBMITTED
                 <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-red-600 font-bold text-lg animate-pulse">
-                        ⚠️ Not yet submitted
-                    </p>
-                    <p className="text-sm text-gray-600 mt-1">
-                        Assigned to: <strong>{assignedPerson}</strong>
-                    </p>
+                    <p className="text-red-600 font-bold text-lg animate-pulse">⚠️ Not yet submitted</p>
+                    <p className="text-sm text-gray-600 mt-1">Assigned to: <strong>{assignedPerson}</strong></p>
                 </div>
             ) : (
-                // 🔥 SHOW THIS ONLY IF SUBMITTED
-                <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-                        <div>
-                            <p className="font-semibold text-gray-800 mb-2">Round Details</p>
-                            <p className="mb-1">Date: {round.interview_date || round.date_of_verification || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="mb-1"> Status: {round.status || round.home_verification_status || 'N/A'}</p>
-                            <p className="mb-1 font-bold">
-                                Final Result: <span className="text-green-700">{finalResult}</span>
-                            </p>
-                            <p className="mb-1">
-                                {isInterview ? 'Interviewer' : 'Verified By'}: {assignedPerson}
-                            </p>
-                        </div>
+                <div className="space-y-6"> {/* Main gap between sections */}
+                    
+                    {/* Top Details Section */}
+                    <div className="space-y-1">
+                        <p className="text-sm"><strong>Date:</strong> {round.interview_date || round.date_of_verification || 'N/A'}</p>
+                        <p className="text-sm"><strong>Status:</strong> {round.status || round.home_verification_status || 'N/A'}</p>
+                        <p className="text-sm"><strong>Final Result:</strong> <span className={`font-bold ${getStatusColor(finalResult)}`}>{finalResult}</span></p>
+                        <p className="text-sm"><strong>{isInterview ? 'Interviewer' : 'Verified By'}:</strong> {assignedPerson}</p>
                     </div>
 
                     {isHomeVerification && (
-                        <div className="mt-4 pt-3 border-t grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-                            <div>
-                                <p className="mb-1">Verification Type: {round.home_verification_type || 'N/A'}</p>
-                                <p className="mb-1">Remarks: {round.remarks || 'N/A'}</p>
-                            </div>
+                        <div className="pt-4 border-t space-y-1">
+                            <p className="text-sm"><strong>Verification Type:</strong> {round.home_verification_type || 'N/A'}</p>
+                            <p className="text-sm"><strong>Remarks:</strong> {round.remarks || 'N/A'}</p>
                         </div>
                     )}
 
                     {isInterview && (
-                        <div className="mt-6 pt-3 border-t">
-                            <div className="grid grid-cols-2 gap-3 text-xs md:text-sm">
-                                <p>Life Goals & Zeal: {round.life_goals_and_zeal || 'N/A'}</p>
-                                <p>Commitment to Learning: {round.commitment_to_learning || 'N/A'}</p>
-                                <p>Integrity: {round.integrity || 'N/A'}</p>
-                                <p>Communication Skills: {round.communication_skills || 'N/A'}</p>
-                            </div>
+                        <div className="pt-4 border-t space-y-1">
+                            <p className="text-sm"><strong>Goals & Zeal:</strong> {round.life_goals_and_zeal || 'N/A'}</p>
+                            <p className="text-sm"><strong>Learning:</strong> {round.commitment_to_learning || 'N/A'}</p>
+                            <p className="text-sm"><strong>Integrity:</strong> {round.integrity || 'N/A'}</p>
+                            <p className="text-sm"><strong>Communication:</strong> {round.communication_skills || 'N/A'}</p>
                         </div>
                     )}
-                </>
+                </div>
             )}
 
             {documentExists && isSubmitted && (
-                <div className="mt-6 pt-3 border-t flex items-center justify-between bg-blue-50 p-3 rounded-lg border border-blue-200">
-                    <p className="text-sm font-medium text-blue-800 truncate mr-4">
-                        Uploaded File: {docName} ({docType})
-                    </p>
+                <div className="mt-8 pt-4 border-t flex items-center justify-between">
+                    <div>
+                        <p className="text-xs font-bold text-gray-500 uppercase">Uploaded File</p>
+                        <p className="text-sm font-semibold text-blue-900">{docName} ({docType})</p>
+                    </div>
                     <button
                         onClick={() => handleDocumentDownload(applicantId, roundType, cohortId)}
-                        className="flex items-center text-xs font-semibold px-3 py-1 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition shadow-md"
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-all"
                     >
-                        View
+                        View Document
                     </button>
                 </div>
             )}
@@ -380,198 +382,290 @@ const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload, cohortId
     );
 };
     const DetailsView = ({ studentDetails, handleBackToList, error }) => {
-        const [activeRoundIndex, setActiveRoundIndex] = useState(0);
-        const rounds = studentDetails?.rounds || [];
-        const isLatestRoundView = rounds.length === 1 && isFilteredList;
+    const [activeRoundIndex, setActiveRoundIndex] = useState(0);
+    const rounds = studentDetails?.rounds || [];
+    const isLatestRoundView = rounds.length === 1 && isFilteredList;
 
-        useEffect(() => {
-            if (rounds.length > 0) setActiveRoundIndex(0);
-        }, [rounds.length]);
+    useEffect(() => {
+        if (rounds.length > 0) setActiveRoundIndex(0);
+    }, [rounds.length]);
 
-        if (!studentDetails) return null;
-        const selectedRound = rounds[activeRoundIndex];
-        const requiresHomeVerification = rounds.some(r => r.home_verification_req_yn === 'Y');
-        const hasSubmittedVerification = rounds.some(r => r.is_home_verification);
-        const showAlert = requiresHomeVerification && !hasSubmittedVerification;
-        
-        let roundToShowOnAlert = null;
-        if (showAlert) {
-             const requestIndex = rounds.findIndex(r => r.home_verification_req_yn === 'Y');
-             if (requestIndex !== -1) roundToShowOnAlert = rounds[requestIndex];
-        }
+    if (!studentDetails) return null;
+    const selectedRound = rounds[activeRoundIndex];
+    const requiresHomeVerification = rounds.some(r => r.home_verification_req_yn === 'Y');
+    const hasSubmittedVerification = rounds.some(r => r.is_home_verification);
+    const showAlert = requiresHomeVerification && !hasSubmittedVerification;
+    
+    let roundToShowOnAlert = null;
+    if (showAlert) {
+         const requestIndex = rounds.findIndex(r => r.home_verification_req_yn === 'Y');
+         if (requestIndex !== -1) roundToShowOnAlert = rounds[requestIndex];
+    }
 
-        return ( 
-            <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
-                <Breadcrumbs 
-                    path={currentPath} 
-                    nonLinkSegments={['Admin', 'Admissions']} 
-                    onSegmentClick={(segment) => {
-                        if (segment === 'tracking') handleBackToList();
-                    }}
-                />
-                <button
-                    onClick={handleBackToList}
-                    className="mb-6 mt-4 text-blue-600 hover:text-blue-800 font-medium transition"
-                >
-                    ← Back to Student List
-                </button>
-                <div className="bg-white p-6 rounded-xl shadow-lg mb-8 border-t-4 border-blue-500">
-                    <h1 className="text-3xl font-extrabold text-gray-900">
-                        {studentDetails.studentName}
-                    </h1>
-                    <p className="text-sm text-gray-500 mt-1">Applicant ID: {studentDetails.applicantId}</p>
-                </div>
-                
-                {showAlert && roundToShowOnAlert && (
-                    <div className="action-required-alert">
-                        <span className="action-icon">⚠️</span>
-                        <div className="action-body">
-                            <strong className="action-title">ACTION REQUIRED</strong>
-                            <p>
-                                Home Verification was requested during 
-                                <span className="action-highlight"> Round {roundToShowOnAlert.interview_round}</span> 
-                                by {roundToShowOnAlert.interviewer || 'N/A'}. 
-                                No verification record has been submitted yet.
-                            </p>
-                        </div>
-                    </div>
-                )}
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                    {isLatestRoundView ? 'Latest Evaluation Round (Filtered)' : 'Evaluation Rounds'}
-                </h2>
-                
-                {rounds.length === 0 ? (
-                    <div className="p-6 bg-yellow-100 text-yellow-700 border border-yellow-400 rounded-lg">
-                        No interview or home verification rounds have been recorded for this student yet.
-                    </div>
-                ) : (
-                    <div className={`grid gap-4 mb-6 ${isLatestRoundView ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
-                        {rounds.map((round, index) => (
-                            <RoundSelectorBox
-                                key={index}
-                                round={round}
-                                index={index}
-                                isActive={index === activeRoundIndex}
-                                setActiveRoundIndex={setActiveRoundIndex}
-                            />
-                        ))}
-                    </div>
-                )}
-                
-                {selectedRound && (
-                    <RoundDetailPanel
-                        round={selectedRound}
-                        applicantId={studentDetails.applicantId}
-                        handleDocumentDownload={handleDocumentDownload}
-                        cohortId={cohortId}
-                    />
-                )}
-                {error && <div className="p-4 mt-8 bg-red-100 text-red-700 border border-red-400 rounded-lg">{error}</div>}
-            </div>
-        );
-    };
-
-    const renderListView = () => (
-        <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
+    return ( 
+        <div className={styles.container}>
             <Breadcrumbs 
                 path={currentPath} 
-                nonLinkSegments={['Admin', 'Admissions', 'Tracking']} 
+                nonLinkSegments={['Admin', 'Admissions']} 
+                onSegmentClick={(segment) => {
+                    if (segment === 'tracking') handleBackToList();
+                }}
             />
-            <h1 className="text-3xl font-extrabold text-gray-900 mb-6 mt-4 border-b pb-2">Interview & Home Verification Tracking</h1>
-            <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label htmlFor="interviewer-select" className="block text-sm font-medium text-gray-700 mb-2">
-                            Filter by Interviewer:
-                        </label>
-                        <select
-                            id="interviewer-select"
-                            value={selectedInterviewerId || ''}
-                            onChange={handleInterviewerChange}
-                            disabled={selectedStatuses.length > 0 || selectedResults.length > 0}
-                            className={`w-full p-2.5 border rounded-lg focus:ring-blue-500 focus:border-blue-500 transition ${selectedInterviewerId ? 'bg-blue-50 border-blue-500' : 'bg-white border-gray-300'}`}
-                        >
-                            <option value="">-- Select Interviewer --</option>
-                            {interviewers.map(i => (
-                                <option key={i.interviewer_id} value={i.interviewer_id}>
-                                    {i.interviewer_name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Status :</label>
-                        <div className="flex flex-wrap gap-2">
-                            {STATUS_OPTIONS.map(status => (
-                                <button
-                                    key={status}
-                                    onClick={() => handleStatusToggle(status)}
-                                    disabled={!!selectedInterviewerId}
-                                    className={`px-3 py-1.5 text-sm font-medium rounded-full transition duration-150 ease-in-out ${selectedStatuses.includes(status) ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} ${selectedInterviewerId ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                >
-                                    {status}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Result/Requirement:</label>
-                        <div className="flex flex-wrap gap-2">
-                            {RESULT_OPTIONS.map(result => (
-                                <button
-                                    key={result}
-                                    onClick={() => handleResultToggle(result)}
-                                    disabled={!!selectedInterviewerId}
-                                    className={`px-3 py-1.5 text-sm font-medium rounded-full transition duration-150 ease-in-out ${selectedResults.includes(result) ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} ${selectedInterviewerId ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                >
-                                    {result}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
+            <button
+                onClick={handleBackToList}
+                className="mb-6 mt-4 text-blue-600 hover:text-blue-800 font-medium transition"
+            >
+                ← Back to Student List
+            </button>
+
+            {/* Student Header Box */}
+            <div className="bg-white p-6 rounded-xl shadow-lg mb-8 border-t-4 border-blue-500">
+                <h1 className="text-3xl font-extrabold text-gray-900">
+                    {studentDetails.studentName}
+                </h1>
+                <p className="text-sm text-gray-500 mt-1">Applicant ID: {studentDetails.applicantId}</p>
             </div>
-            {loading && (
-                <div className="text-center py-10">
-                    <div className="animate-spin inline-block w-8 h-8 border-4 border-t-4 border-blue-600 border-opacity-25 rounded-full"></div>
-                    <p className="mt-2 text-blue-600">Loading student data...</p>
+            
+            {showAlert && roundToShowOnAlert && (
+                <div className="action-required-alert mb-6">
+                    <span className="action-icon">⚠️</span>
+                    <div className="action-body">
+                        <strong className="action-title">ACTION REQUIRED</strong>
+                        <p>
+                            Home Verification was requested during 
+                            <span className="action-highlight"> Round {roundToShowOnAlert.interview_round}</span> 
+                            by {roundToShowOnAlert.interviewer || 'N/A'}. 
+                            No verification record has been submitted yet.
+                        </p>
+                    </div>
                 </div>
             )}
-            {error && <div className="p-4 bg-red-100 text-red-700 border border-red-400 rounded-lg">{error}</div>}
-            {!loading && students.length === 0 && (
-                <div className="text-center py-10 bg-white rounded-xl shadow-lg">
-                    <p className="text-gray-500 text-lg">No students found matching the criteria.</p>
+
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                {isLatestRoundView ? 'Latest Evaluation Round (Filtered)' : 'Evaluation Rounds'}
+            </h2>
+            
+            {rounds.length === 0 ? (
+                <div className="p-6 bg-yellow-100 text-yellow-700 border border-yellow-400 rounded-lg">
+                    No interview or home verification rounds have been recorded for this student yet.
+                </div>
+            ) : (
+                /* Round Selection Grid */
+                <div className={styles.roundGrid}>
+                    {rounds.map((round, index) => (
+                        <button
+                            key={index}
+                            onClick={() => setActiveRoundIndex(index)}
+                            className={`${styles.roundBox} ${index === activeRoundIndex ? styles.activeRound : ''}`}
+                        >
+                            <span className="font-bold">
+                                {!round.is_home_verification 
+                                    ? `Interview Round ${round.interview_round}` 
+                                    : `🏠 Home Verification`}
+                            </span>
+                            {/* Subtext for the box showing status */}
+                            <span className="text-xs mt-1 block opacity-75">
+                                {round.interview_result || round.home_verification_status || 'Pending'}
+                            </span>
+                        </button>
+                    ))}
                 </div>
             )}
-            {!loading && students.length > 0 && (
-                <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {students.map(student => (
-                            <StudentCard key={student.applicant_id} student={student} />
-                        ))}
-                    </div>
-                    <div className="mt-8 flex justify-center items-center space-x-4">
-                        <button
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                            className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
-                        >
-                            ← Previous
-                        </button>
-                        <span className="text-gray-700 font-medium">Page {currentPage} of {totalPages}</span>
-                        <button
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                            className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
-                        >
-                            Next →
-                        </button>
-                    </div>
-                </>
+            
+            {/* Detailed Info Panel for Selected Round */}
+            {selectedRound && (
+                <RoundDetailPanel
+                    round={selectedRound}
+                    applicantId={studentDetails.applicantId}
+                    handleDocumentDownload={handleDocumentDownload}
+                    cohortId={cohortId}
+                />
+            )}
+
+            {error && (
+                <div className="p-4 mt-8 bg-red-100 text-red-700 border border-red-400 rounded-lg">
+                    {error}
+                </div>
             )}
         </div>
     );
+};
 
+
+ const renderListView = () => (
+    <div className={styles.container}>
+        <Breadcrumbs 
+            path={currentPath} 
+            nonLinkSegments={['Admin', 'Admissions', 'Tracking']} 
+        />
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-6 mt-4 border-b pb-2">
+            Interview & Home Verification Tracking
+        </h1>
+
+        <div className={styles.filterSection}>
+            {/* Line 1: Interviewer Dropdown */}
+            <div className={styles.filterGroup}>
+                <label htmlFor="interviewer-select" className={styles.filterLabel}>
+                    Filter by Interviewer:
+                </label>
+                <select
+                    id="interviewer-select"
+                    value={selectedInterviewerId || ''}
+                    onChange={handleInterviewerChange}
+                    disabled={selectedStatuses.length > 0 || selectedResults.length > 0}
+                    className={styles.selectInput}
+                >
+                    <option value="">-- Select Interviewer --</option>
+                    {interviewers.map(i => (
+                        <option key={i.interviewer_id} value={i.interviewer_id}>
+                            {i.interviewer_name}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            {/* Line 2: Status Buttons side-by-side */}
+            <div className={styles.filterGroup}>
+                <label className={styles.filterLabel}>Filter by Status:</label>
+                <div className={styles.filterActionsRow}>
+                    {STATUS_OPTIONS.map(status => (
+                        <button
+                            key={status}
+                            type="button"
+                            onClick={() => handleStatusToggle(status)}
+                            disabled={!!selectedInterviewerId}
+                            className={`${styles.filterButton} ${
+                                selectedStatuses.includes(status) ? styles.activeFilter : ''
+                            } ${selectedInterviewerId ? styles.optionBoxDisabled : ''}`}
+                        >
+                            {status}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Line 3: Result Buttons side-by-side */}
+            <div className={styles.filterGroup}>
+                <label className={styles.filterLabel}>Filter by Result/Requirement:</label>
+                <div className={styles.filterActionsRow}>
+                    {RESULT_OPTIONS.map(result => (
+                        <button
+                            key={result}
+                            type="button"
+                            onClick={() => handleResultToggle(result)}
+                            disabled={!!selectedInterviewerId}
+                            className={`${styles.filterButton} ${
+                                selectedResults.includes(result) ? styles.activeFilter : ''
+                            } ${selectedInterviewerId ? styles.optionBoxDisabled : ''}`}
+                        >
+                            {result}
+                        </button>
+                    ))}
+                </div>
+            </div>
+        </div>
+
+        {loading && (
+            <div className="text-center py-10">
+                <div className="animate-spin inline-block w-8 h-8 border-4 border-t-4 border-blue-600 border-opacity-25 rounded-full"></div>
+                <p className="mt-2 text-blue-600">Loading student data...</p>
+            </div>
+        )}
+
+        {error && <div className="p-4 bg-red-100 text-red-700 border border-red-400 rounded-lg">{error}</div>}
+
+        {!loading && students.length === 0 && (
+            <div className="text-center py-10 bg-white rounded-xl shadow-lg border border-gray-200">
+                <p className="text-gray-500 text-lg">No students found matching the criteria.</p>
+            </div>
+        )}
+
+        {!loading && students.length > 0 && (
+            <>
+                {/* Clean Floating Rectangle Grid */}
+                <div className={styles.studentGrid}>
+                    {students.map(student => (
+                        <div key={student.applicant_id} className={styles.studentCard} onClick={() => handleCardClick(student.applicant_id)}>
+                            <div>
+                                <div className="font-bold text-lg text-blue-700">
+                                    {student.student_name}
+                                </div>
+                                <div className="text-sm text-gray-500 mt-1">
+                                    Latest Round: {student.interview_round || 'N/A'}
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-xs font-semibold text-gray-600 mb-1">
+                                    Latest Evaluation
+                                </div>
+                                <StatusBadge status={student.status} result={student.result} />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* 🔥 NEW MODERN PAGINATION FORMAT 🔥 */}
+                <div className={styles.paginationContainer}>
+                    <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className={styles.paginationBtn}
+                    >
+                        ← Previous
+                    </button>
+                    
+                    <span className={styles.pageInfo}>
+                        Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
+                    </span>
+                    
+                    <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className={styles.paginationBtn}
+                    >
+                        Next →
+                    </button>
+                </div>
+            </>
+        )}
+    </div>
+);
+
+/* --- ALL YOUR OTHER CODE ABOVE --- */
+
+    // 1. Define the Blocked View helper
+    const renderPhaseBlocked = () => (
+    <div className={styles.container}>
+        <Breadcrumbs path={currentPath} nonLinkSegments={['Admin', 'Admissions']} />
+        
+        <div className={styles.blockedCard}>
+            <span className={styles.blockedIcon}>🚫</span>
+            <h2 className={styles.blockedTitle}>Evaluation Tracking Unavailable</h2>
+            <p className={styles.blockedText}>
+                This module is currently disabled because the 
+                <span className="font-bold text-red-600"> {appliedConfig?.phase} </span> 
+                phase has commenced.
+            </p>
+            <div className={styles.phaseLabel}>
+                Current Status: {appliedConfig?.phase || 'N/A'}
+            </div>
+        </div>
+    </div>
+);
+
+    /* --- THE GATEKEEPERS (This is what stops the "No students found" message) --- */
+    
+    // Check loading first
+    if (configLoading) {
+        return <div className="p-10 text-center font-bold">Checking system status...</div>;
+    }
+
+    // Check blocking phase second
+    if (isClassesStarted) {
+        return renderPhaseBlocked();
+    }
+
+    /* --- THE FINAL RETURN (Only runs if phase is NOT Classes Started) --- */
     return (
         <div className="font-sans">
             {view === 'list' ? renderListView() : (
@@ -579,10 +673,11 @@ const RoundDetailPanel = ({ round, applicantId, handleDocumentDownload, cohortId
                     studentDetails={studentDetails}
                     handleBackToList={handleBackToList}
                     error={error}
+                    cohortId={cohortId}
                 />
             )}
         </div>
-    ); 
-};
+    );
+}; // Component End
 
 export default EvaluationTracking;
