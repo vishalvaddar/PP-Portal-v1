@@ -23,19 +23,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  background: #f1f5f9;
-  border: none;
-  border-radius: 10px;
-  color: #1e40af;
+  width: 40px;           /* Fixed size for a perfect square */
+  height: 40px;
+  background: #ffffff;   /* Pure white background */
+  border: 1px solid #e2e8f0; /* The thin light-grey border */
+  border-radius: 8px;    /* Slightly rounded corners */
+  color: #64748b;        /* Slate grey for the arrow icon */
   cursor: pointer;
-  transition: all 0.2s;
+  padding: 0;            /* Ensures icon stays centered */
+  transition: all 0.2s ease;
 }
 
 .iconBtn:hover {
-  background: #1e40af;
-  color: white;
+  background: #f8fafc;   /* Very subtle grey on hover */
+  border-color: #cbd5e1; /* Darken border slightly on hover */
 }
 
 .pageTitle {
