@@ -893,34 +893,17 @@
   background: #f8f9fa;
 }
 
-/* Badges */
-.badgePending {
-  background: #f39c12;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-}
 
-.badgeActive {
+.badgeActive, .badgeFrozen, .badgePending {
   background: #2ecc71;
   color: white;
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: 500;
+  white-space: nowrap; /* Keep badge on one line */
+  flex-shrink: 0; /* Prevent badge from shrinking */
 }
-
-.badgeFrozen {
-  background: #7f8c8d;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
 /* Exam Grid */
 .examGrid {
   display: grid;
@@ -957,15 +940,19 @@
 .cardHeader {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: flex-start; /* Change from center to flex-start */
   margin-bottom: 15px;
+  flex-wrap: wrap; /* Add this to allow wrapping */
+  gap: 10px; /* Add gap between items */
 }
-
 .cardHeader h4 {
   margin: 0;
   color: #2c3e50;
   font-size: 18px;
   flex: 1;
+  min-width: 0; /* Important: allows text to wrap properly */
+  word-break: break-word; /* Breaks long words */
+  overflow-wrap: break-word; /* Alternative for better browser support */
 }
 
 .cardBody {
