@@ -28,13 +28,23 @@ jobs:
             cd ${{ secrets.VPS_PATH }}
 
             if [ ! -d "PP-Portal-v1/.git" ]; then
-             git clone https://github.com/vishalvaddar/PP-Portal-v1.git
-            fi 
+              git clone https://github.com/vishalvaddar/PP-Portal-v1.git
+            fi
 
             cd PP-Portal-v1
             git pull origin main
 
+            echo "Stopping old containers..."
             docker compose -f docker-compose.prod.yml down
-            docker compose -f docker-compose.prod.yml build
+
+            echo "Building fresh images (no cache)..."
+            docker compose -f docker-compose.prod.yml build --no-cache
+
+            echo "Starting containers..."
             docker compose -f docker-compose.prod.yml up -d
+
+            echo "Cleaning unused Docker images..."
+            docker image prune -f
+
+            echo "Deployment completed successfully 🚀"
           EOF
