@@ -1,45 +1,83 @@
 .container {
   padding: 40px;
-  background: #ffffff; /* Pure white background */
+  background: #ffffff;
   min-height: 100vh;
   font-family: 'Inter', sans-serif;
 }
 
-.headerArea {
-  margin-bottom: 25px;
+/* Header Area (Refere Dashboard Style) */
+.mainHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.titleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;           /* Fixed size for a perfect square */
+  height: 40px;
+  background: #ffffff;   /* Pure white background */
+  border: 1px solid #e2e8f0; /* The thin light-grey border */
+  border-radius: 8px;    /* Slightly rounded corners */
+  color: #64748b;        /* Slate grey for the arrow icon */
+  cursor: pointer;
+  padding: 0;            /* Ensures icon stays centered */
+  transition: all 0.2s ease;
+}
+
+.iconBtn:hover {
+  background: #f8fafc;   /* Very subtle grey on hover */
+  border-color: #cbd5e1; /* Darken border slightly on hover */
 }
 
 .pageTitle {
   font-size: 2.2rem;
   font-weight: 800;
-  color: #1e40af; /* Deep blue heading */
+  color: #1e40af;
   margin: 0;
 }
 
+.downloadBtn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.downloadBtn:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-2px);
+}
+
+.downloadBtn:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+
+/* Action Bar in one line */
 .actionBar {
   display: flex;
   flex-direction: row;
   align-items: center;
-  background: #ffffff;
-  padding: 14px 24px;
-  border-radius: 12px;
-  gap: 20px;
-  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05);
+  gap: 15px;
   margin-bottom: 40px;
-  border: 1px solid #e2e8f0;
-  width: fit-content;
-}
-
-.brandBadge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #3b82f6;
-  color: white;
-  padding: 10px 18px;
-  border-radius: 8px;
-  font-weight: 800;
-  white-space: nowrap;
+  width: 100%;
 }
 
 .fieldItem {
@@ -47,9 +85,11 @@
   align-items: center;
   gap: 10px;
   background: #ffffff;
-  padding: 8px 16px;
-  border-radius: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
   border: 1px solid #cbd5e1;
+  height: 48px;
+  box-sizing: border-box;
 }
 
 .fieldItem select, .fieldItem input {
@@ -59,22 +99,17 @@
   font-size: 0.95rem;
   color: #1e3a8a;
   outline: none;
-}
-
-.exportBtnGreen {
-  background: #10b981 !important;
-  color: white;
-  border: none;
-  padding: 12px 30px;
-  border-radius: 8px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  gap: 8px;
   cursor: pointer;
-  white-space: nowrap;
 }
 
+.sep {
+  font-weight: 800;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  padding: 0 5px;
+}
+
+/* Grid and Cards */
 .grid2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -87,6 +122,13 @@
   padding: 30px;
   border: 1px solid #f1f5f9;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
 }
 
 .cardHeader h3 { 
@@ -104,7 +146,6 @@
     padding: 12px 16px;
     border-radius: 12px;
     border: 1px solid #e2e8f0;
-    margin-top: 15px;
 }
 
 .dateSub { display: flex; flex-direction: column; }
@@ -120,7 +161,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 15px 0;
+  margin: 15px 0 25px 0;
 }
 
 .visualBar {
@@ -130,7 +171,7 @@
   border-radius: 7px;
   display: flex;
   overflow: hidden;
-  margin: 25px 0;
+  margin-bottom: 25px;
 }
 
 .boySegment { background: #3b82f6; }
@@ -150,15 +191,28 @@
   border: 1px solid #f1f5f9;
 }
 
+.statBox label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-top: 5px;
+}
+
 .totalHighlight { 
-    background: #10b981; /* Changed from Blue to Emerald Green */
+    background: #10b981;
     color: white; 
     border: none;
 }
 
-.totalHighlight label {
-    color: #ecfdf5;
-}
+.totalHighlight label { color: #ecfdf5; }
 
 .val { font-size: 1.8rem; font-weight: 900; display: block; }
-.loader { text-align: center; padding: 100px; font-weight: 700; color: #64748b; }
+
+.loader { 
+  text-align: center; 
+  padding: 100px; 
+  font-weight: 700; 
+  color: #64748b; 
+}

@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; 
 import axios from "axios";
-import { Download, MapPin, Users, Calendar, ChevronRight, Award, Navigation, ArrowRight } from "lucide-react";
+import { Download, MapPin, Users, Calendar, ChevronRight, Navigation, ArrowRight, ChevronLeft } from "lucide-react";
+import Breadcrumbs from "../../../components/Breadcrumbs/Breadcrumbs"; 
 import styles from "./SammelanReports.module.css"; 
 
 const SammelanReports = () => {
+  const navigate = useNavigate();
   const [cohorts, setCohorts] = useState([]);
   const [selectedCohort, setSelectedCohort] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // Path for breadcrumbs
+  const currentPath = ["Admin", "Academics", "Reports", "Sammelan Reports"];
 
   useEffect(() => {
     axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/selection-reports/cohorts`)
@@ -29,7 +35,6 @@ const SammelanReports = () => {
       });
       setData(res.data || []);
     } catch (err) { 
-      console.error("Data Fetch Error:", err);
       setData([]); 
     } finally { 
       setLoading(false); 
@@ -49,7 +54,7 @@ const SammelanReports = () => {
       link.click();
     } catch (err) { console.error("Download Error:", err); }
   };
-
+ 
   const formatDate = (dateStr) => {
     if (!dateStr) return "--";
     const d = new Date(dateStr);
@@ -58,66 +63,67 @@ const SammelanReports = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.headerArea}>
-        <h1 className={styles.pageTitle}>Sammelan Reports</h1>
-      </div>
+      {/* breadcrumb "Reports" is now a link because it's removed from nonLinkSegments */}
+      <Breadcrumbs 
+        path={currentPath} 
+        nonLinkSegments={['Admin', 'Academics']} 
+      />
+
+      <header className={styles.mainHeader}>
+        <div className={styles.titleWrapper}>
+          <button className={styles.iconBtn} onClick={() => navigate("/admin/academics/reports")}>
+            <ChevronLeft size={20} strokeWidth={2.5} />
+          </button>
+          <h1 className={styles.pageTitle}>Sammelan Reports</h1>
+        </div>
+        <button className={styles.downloadBtn} onClick={handleDownload} disabled={loading || data.length === 0}>
+          {loading ? "Generating..." : <><Download size={18} /> Download Report</>}
+        </button>
+      </header>
 
       <div className={styles.actionBar}>
-        <div className={styles.brandBadge}>
-          <Award size={18} />
-          <span>Sammelan Portal</span>
-        </div>
-
         <div className={styles.fieldItem}>
-          <Users size={16} className={styles.icon} />
+          <Users size={16} color="#1e3a8a" />
           <select value={selectedCohort} onChange={e => setSelectedCohort(e.target.value)}>
             {cohorts.map(c => <option key={c.cohort_name} value={c.cohort_name}>{c.cohort_name}</option>)}
           </select>
         </div>
 
         <div className={styles.fieldItem}>
-          <Calendar size={16} className={styles.icon} />
+          <Calendar size={16} color="#1e3a8a" />
           <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} />
-          <span className={styles.sep}>to</span>
+          <span className={styles.sep}>TO</span>
           <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} />
         </div>
-
-        <button className={styles.exportBtnGreen} onClick={handleDownload} disabled={loading || data.length === 0}>
-          <Download size={18}/> <span>Export Report</span>
-        </button>
       </div>
 
       {loading ? (
-        <div className={styles.loader}>Loading...</div>
+        <div className={styles.loader}>Syncing with server...</div>
       ) : (
         <div className={styles.grid2}>
           {data.map((item, idx) => {
             const total = (item.boys_sel || 0) + (item.girls_sel || 0);
             const boyPct = total > 0 ? (item.boys_sel / total) * 100 : 0;
-            
             return (
               <div key={idx} className={styles.floatCard}>
                 <div className={styles.cardHeader}>
-                  <div className={styles.titleInfo}>
-                    <h3>{item.label}</h3>
-                    <div className={styles.locTag}><MapPin size={14}/> {item.event_location}</div>
-                  </div>
+                  <h3>{item.label}</h3>
                   <div className={styles.dateRangeBadge}>
                     <div className={styles.dateSub}>
-                        <span className={styles.dateLabel}>START</span>
-                        <span className={styles.dateValue}>{formatDate(item.from_date)}</span>
+                      <span className={styles.dateLabel}>START</span>
+                      <span className={styles.dateValue}>{formatDate(item.from_date)}</span>
                     </div>
-                    <ArrowRight size={14} className={styles.dateArrow} />
+                    <ArrowRight size={14} color="#cbd5e1" />
                     <div className={styles.dateSub}>
-                        <span className={styles.dateLabel}>END</span>
-                        <span className={styles.dateValue}>{formatDate(item.to_date)}</span>
+                      <span className={styles.dateLabel}>END</span>
+                      <span className={styles.dateValue}>{formatDate(item.to_date)}</span>
                     </div>
                   </div>
                 </div>
 
                 <div className={styles.cardBody}>
                   <div className={styles.regionStrip}>
-                    <Navigation size={14} /> {item.district_name} <ChevronRight size={12}/> {item.block_name}
+                    <MapPin size={14} /> {item.event_location} | {item.district_name} <ChevronRight size={12}/> {item.block_name}
                   </div>
                   
                   <div className={styles.visualBar}>
@@ -127,12 +133,10 @@ const SammelanReports = () => {
 
                   <div className={styles.statsRow}>
                     <div className={styles.statBox}>
-                      <span className={styles.emoji}>👦</span>
                       <span className={styles.val}>{item.boys_sel || 0}</span>
                       <label>Boys</label>
                     </div>
                     <div className={styles.statBox}>
-                      <span className={styles.emoji}>👧</span>
                       <span className={styles.val}>{item.girls_sel || 0}</span>
                       <label>Girls</label>
                     </div>

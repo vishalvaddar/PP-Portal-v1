@@ -1,7 +1,7 @@
 .reports-dashboard-container {
     padding: 2rem;
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 0 auto; 
 }
 
 .reports-header {
@@ -10,7 +10,7 @@
     padding-bottom: 1rem;
 }
 
-.reports-title {
+.reports-title { 
     font-size: 1.8rem;
     color: #333;
     font-weight: 600;

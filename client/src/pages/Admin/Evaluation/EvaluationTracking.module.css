@@ -1,0 +1,357 @@
+/* --- VARIABLES & TYPE (Based on Interview Module) --- */
+.container {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --card-bg: #ffffff;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+    
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--text-main);
+    line-height: 1.5;
+    padding: 2rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    min-height: 100vh;
+}
+
+/* --- FILTER SECTION (Stacked Categories) --- */
+.filterSection {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    box-shadow: var(--shadow-md);
+}
+
+.filterGroup {
+    display: flex;
+    flex-direction: row; /* Label and actions side-by-side */
+    align-items: center;
+    gap: 24px;
+    width: 100%;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.filterGroup:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.filterLabel {
+    min-width: 220px; /* Aligns all action rows */
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-main);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+/* Horizontal wrap for the buttons */
+.filterActionsRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    flex: 1;
+}
+
+/* --- BUTTONS & INPUTS --- */
+.selectInput {
+    max-width: 400px;
+    padding: 12px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background-color: #ffffff;
+    transition: all 0.2s;
+}
+
+.filterButton {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid var(--border-color);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filterButton:hover {
+    background-color: #e2e8f0;
+    color: var(--text-main);
+}
+
+.activeFilter {
+    background-color: var(--primary-color) !important;
+    color: #ffffff !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+/* --- STUDENT CARDS (Rectangle List) --- */
+.studentGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.studentCard {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.25s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.studentCard:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-md);
+}
+
+.studentName {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+/* --- ROUND BOXES (Grid inside details) --- */
+.roundGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 24px;
+}
+
+.roundBox {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.activeRound {
+    border-color: var(--primary-color);
+    background-color: #f8faff;
+    color: var(--primary-color);
+}
+
+/* --- DETAIL PANEL --- */
+.detailPanel {
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    padding: 32px;
+    margin-top: 24px;
+    box-shadow: var(--shadow-lg);
+}
+
+.panelTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-main);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+}
+/* --- 8. STATUS & RESULT BADGES (Logic Colors) --- */
+/* Used for the text displayed on the student rectangle cards */
+.statusBadge {
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+}
+
+/* Green state: COMPLETED / SELECTED */
+.statusSuccess {
+    color: #15803d !important;
+    background-color: #f0fdf4 !important;
+    border-color: #bbf7d0 !important;
+}
+
+/* Red state: SCHEDULED / REJECTED / NOT SUBMITTED */
+.statusDanger {
+    color: #dc2626 !important;
+    background-color: #fef2f2 !important;
+    border-color: #fecaca !important;
+}
+
+/* Yellow state: RESCHEDULED / HOME VERIFICATION */
+.statusWarning {
+    color: #b45309 !important;
+    background-color: #fffbeb !important;
+    border-color: #fef3c7 !important;
+}
+
+/* --- 9. BLOCKED STATE (From Interview Module) --- */
+/* Applied when a filter is disabled because another is active */
+.optionBoxDisabled {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+    filter: grayscale(1);
+    pointer-events: auto; /* Required to ensure the 'not-allowed' cursor shows */
+    background-color: #f1f5f9 !important;
+    border-color: #e2e8f0 !important;
+    color: #94a3b8 !important;
+}
+
+.optionBoxDisabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* --- 10. UTILITY CLASSES --- */
+.flexBetween {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.textMuted {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.bold {
+    font-weight: 700;
+}
+/* --- 11. SUBMISSION STATUS COLORS --- */
+
+/* Green for Submitted / Success states */
+.submitted {
+    color: #16a34a !important; /* Rich Green */
+    background-color: #f0fdf4 !important;
+    border: 1px solid #bbf7d0 !important;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+
+/* Red for Not Submitted / Danger states */
+.notSubmitted {
+    color: #dc2626 !important; /* Rich Red */
+    background-color: #fef2f2 !important;
+    border: 1px solid #fecaca !important;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+
+/* Optional: Subtle divider for the "Status | Result" line in your image */
+.statusDivider {
+    color: #cbd5e1;
+    margin: 0 8px;
+}
+
+/* --- 14. PAGINATION STYLING --- */
+.paginationContainer {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem; /* Better spacing between buttons and page text */
+}
+
+.paginationBtn {
+    background-color: #ffffff !important;
+    color: #475569 !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 8px 20px !important;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.paginationBtn:hover:not(:disabled) {
+    border-color: #2563eb !important;
+    color: #2563eb !important;
+    background-color: #f8faff !important;
+    transform: translateY(-1px);
+}
+
+.paginationBtn:disabled {
+    background-color: #f1f5f9 !important;
+    color: #94a3b8 !important;
+    border-color: #e2e8f0 !important;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.pageInfo {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+/* --- PHASE BLOCKED VIEW --- */
+.blockedCard {
+    margin-top: 2.5rem;
+    padding: 3rem;
+    background-color: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+    text-align: center;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.blockedIcon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    display: block;
+}
+
+.blockedTitle {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 1rem;
+}
+
+.blockedText {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.phaseLabel {
+    display: inline-block;
+    margin-top: 1.5rem;
+    padding: 6px 16px;
+    background-color: #f1f5f9;
+    border-radius: 99px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    border: 1px solid var(--border-color);
+}
