@@ -1,0 +1,4 @@
+{"timestamp":"2026-02-03T04:21:42.506Z","type":"LOGIN","user_name":"admin@rajalakshmifoundation.in","status":"success_pre_auth","ip":"::1"}
+{"timestamp":"2026-02-03T04:21:42.529Z","type":"ACTION","user_name":"admin@rajalakshmiFoundation.in","role":"ADMIN","action":"login_complete","status":"success","ip":"::1"}
+{"timestamp":"2026-02-03T04:21:42.578Z","type":"ACTION","user_id":"1","user_name":"admin@rajalakshmiFoundation.in","role_name":"ADMIN","method":"GET","path":"/api/system-config/active","action":"GET /api/system-config/active","ip":"::1"}
+{"timestamp":"2026-02-03T04:21:42.592Z","type":"ACTION","user_id":"1","user_name":"admin@rajalakshmiFoundation.in","role_name":"ADMIN","method":"GET","path":"/api/system-config/active","action":"GET /api/system-config/active","ip":"::1"}
