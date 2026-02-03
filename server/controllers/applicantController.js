@@ -1,298 +1,339 @@
-const applicantModel = require("../models/applicantModel");
-const moment = require("moment");
+// 1. Change import to require
+const pool = require("../config/db.js").default || require("../config/db.js");
 
-// --- HELPERS ---
+const clean = (val) => (val === "" || val === undefined ? null : val);
 
-const sanitizeValue = (value) => {
-  if (value === undefined || value === null || value === "") return null;
-  if (typeof value === "string") return value.trim();
-  return value;
-};
-
-const sanitizeDate = (dateStr) => {
-  if (!dateStr) return null;
-  const dateObj = moment.utc(dateStr, ["DD-MM-YYYY", "YYYY-MM-DD", moment.ISO_8601]);
-  return dateObj.isValid() ? dateObj.format("YYYY-MM-DD") : null;
-};
-
-const formatResponse = (data) => {
-  if (!data) return null;
-  const obj = { ...data };
-
-  if (obj.dob) {
-    obj.dob = moment(obj.dob).format("YYYY-MM-DD");
-  }
-
-  const genderMap = {
-    M: "Male",
-    F: "Female",
-    O: "Other"
-  };
-
-  if (obj.gender && genderMap[obj.gender]) {
-    obj.gender = genderMap[obj.gender];
-  }
-
-  return obj;
-};
-
-const buildPrimaryData = (sourceData, userId, isUpdate = false) => {
-  const data = {
-    nmms_year: sanitizeValue(sourceData.nmms_year),
-    nmms_reg_number: sanitizeValue(sourceData.nmms_reg_number),
-    app_state: sanitizeValue(sourceData.app_state),
-    district: sanitizeValue(sourceData.district),
-    nmms_block: sanitizeValue(sourceData.nmms_block),
-    student_name: sanitizeValue(sourceData.student_name),
-    father_name: sanitizeValue(sourceData.father_name),
-    mother_name: sanitizeValue(sourceData.mother_name),
-    gmat_score: sanitizeValue(sourceData.gmat_score),
-    sat_score: sanitizeValue(sourceData.sat_score),
-    gender: sanitizeValue(sourceData.gender),
-    medium: sanitizeValue(sourceData.medium),
-    aadhaar: sanitizeValue(sourceData.aadhaar),
-    dob: sanitizeDate(sourceData.dob),
-    home_address: sanitizeValue(sourceData.home_address),
-    family_income_total: sanitizeValue(sourceData.family_income_total),
-    contact_no1: sanitizeValue(sourceData.contact_no1),
-    contact_no2: sanitizeValue(sourceData.contact_no2),
-    current_institute_dise_code: sanitizeValue(sourceData.current_institute_dise_code),
-    previous_institute_dise_code: sanitizeValue(sourceData.previous_institute_dise_code),
-    updated_by: userId
-  };
-
-  if (!isUpdate) {
-    data.created_by = userId;
-  }
-
-  return data;
-};
-
-// ======================================================
-// CONTROLLERS
-// ======================================================
-
-// CREATE
-exports.createApplicant = async (req, res) => {
+const formatDate = (val) => {
+  if (!val) return null;
   try {
-    const userId = req.user?.user_id;
-    if (!userId) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
-    }
+    return new Date(val).toISOString().split('T')[0];
+  } catch (e) {
+    return null;
+  }
+};
 
-    let { primaryData, secondaryData = {} } = req.body;
+async function createApplicant(data) {
+  const { primaryData, secondaryData } = data;
+  const client = await pool.connect();
+  
+  try {
+    await client.query("BEGIN");
+    const insertPrimary = `
+      INSERT INTO pp.applicant_primary_info (
+        nmms_year, nmms_reg_number, app_state, district, nmms_block,
+        student_name, father_name, mother_name, gmat_score, sat_score,
+        gender, medium, aadhaar, dob, home_address, family_income_total,
+        contact_no1, contact_no2, current_institute_dise_code, previous_institute_dise_code,
+        created_by, updated_by
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$21)
+      RETURNING applicant_id
+    `;
 
-    if (!primaryData) {
-      primaryData = { ...req.body };
-      delete primaryData.secondaryData;
-    }
-
-    const requiredFields = [
-      "nmms_year",
-      "nmms_reg_number",
-      "student_name",
-      "father_name",
-      "medium",
-      "contact_no1",
-      "district",
-      "nmms_block"
+    const primaryValues = [
+      clean(primaryData.nmms_year), clean(primaryData.nmms_reg_number),
+      clean(primaryData.app_state), clean(primaryData.district),
+      clean(primaryData.nmms_block), clean(primaryData.student_name),
+      clean(primaryData.father_name), clean(primaryData.mother_name),
+      clean(primaryData.gmat_score), clean(primaryData.sat_score),
+      clean(primaryData.gender), clean(primaryData.medium),
+      clean(primaryData.aadhaar), formatDate(primaryData.dob),
+      clean(primaryData.home_address), clean(primaryData.family_income_total),
+      clean(primaryData.contact_no1), clean(primaryData.contact_no2),
+      clean(primaryData.current_institute_dise_code), clean(primaryData.previous_institute_dise_code),
+      primaryData.created_by
     ];
 
-    const missing = requiredFields.filter((f) => !primaryData[f]);
-    if (missing.length) {
-      return res.status(400).json({
-        success: false,
-        message: `Missing fields: ${missing.join(", ")}`
-      });
-    }
+    const { rows } = await client.query(insertPrimary, primaryValues);
+    const applicantId = rows[0].applicant_id;
 
-    if (!/^\d{10}$/.test(primaryData.contact_no1)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid contact_no1"
-      });
-    }
+    const insertSecondary = `
+      INSERT INTO pp.applicant_secondary_info (
+        applicant_id, village, father_occupation, mother_occupation,
+        father_education, mother_education, household_size, own_house,
+        smart_phone_home, internet_facility_home, career_goals, subjects_of_interest,
+        transportation_mode, distance_to_school, num_two_wheelers, num_four_wheelers,
+        irrigation_land, neighbor_name, neighbor_phone, favorite_teacher_name, favorite_teacher_phone,
+        created_by, updated_by
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $22)
+    `;
 
-    const sanitizedPrimary = buildPrimaryData(primaryData, userId, false);
-    const sanitizedSecondary = {
-      ...secondaryData,
-      created_by: userId,
-      updated_by: userId
-    };
+    const sec = secondaryData || {};
+    const secondaryValues = [
+      applicantId, clean(sec.village), clean(sec.father_occupation), clean(sec.mother_occupation),
+      clean(sec.father_education), clean(sec.mother_education), clean(sec.household_size),
+      clean(sec.own_house), clean(sec.smart_phone_home), clean(sec.internet_facility_home),
+      clean(sec.career_goals), clean(sec.subjects_of_interest), clean(sec.transportation_mode),
+      clean(sec.distance_to_school), sec.num_two_wheelers || 0, sec.num_four_wheelers || 0,
+      sec.irrigation_land || 0, clean(sec.neighbor_name), clean(sec.neighbor_phone),
+      clean(sec.favorite_teacher_name), clean(sec.favorite_teacher_phone), primaryData.created_by
+    ];
 
-    const applicant = await applicantModel.createApplicant({
-      primaryData: sanitizedPrimary,
-      secondaryData: sanitizedSecondary
-    });
-
-    res.status(201).json({
-      success: true,
-      message: "Applicant created successfully",
-      data: formatResponse(applicant)
-    });
-  } catch (error) {
-    console.error("Create Applicant Error:", error);
-
-    if (error.code === "23505") {
-      return res.status(400).json({
-        success: false,
-        message: "Registration Number already exists"
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to create applicant",
-      error: error.message
-    });
+    await client.query(insertSecondary, secondaryValues);
+    await client.query("COMMIT");
+    return { applicant_id: applicantId };
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
   }
-};
+}
 
-// UPDATE
-exports.updateApplicant = async (req, res) => {
+async function updateApplicant(applicantId, data) {
+  const { primaryData, secondaryData } = data;
+  const client = await pool.connect();
+
   try {
-    const { applicantId } = req.params;
-    const userId = req.user?.user_id;
+    await client.query("BEGIN");
 
-    if (!applicantId) {
-      return res.status(400).json({ success: false, message: "applicantId required" });
+    // --- A. Update Primary Info ---
+    if (primaryData) {
+      const updatePrimary = `
+        UPDATE pp.applicant_primary_info
+        SET
+          nmms_year = $1, app_state = $2, district = $3, nmms_block = $4,
+          student_name = $5, father_name = $6, mother_name = $7,
+          gmat_score = $8, sat_score = $9, gender = $10,
+          medium = $11, aadhaar = $12, dob = $13,
+          home_address = $14, family_income_total = $15,
+          contact_no1 = $16, contact_no2 = $17,
+          current_institute_dise_code = $18, previous_institute_dise_code = $19,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE applicant_id = $20
+      `;
+
+      const primaryValues = [
+        clean(primaryData.nmms_year),
+        clean(primaryData.app_state),
+        clean(primaryData.district),
+        clean(primaryData.nmms_block),
+        clean(primaryData.student_name),
+        clean(primaryData.father_name),
+        clean(primaryData.mother_name),
+        clean(primaryData.gmat_score),
+        clean(primaryData.sat_score),
+        clean(primaryData.gender),
+        clean(primaryData.medium),
+        clean(primaryData.aadhaar),
+        formatDate(primaryData.dob),
+        clean(primaryData.home_address),
+        clean(primaryData.family_income_total),
+        clean(primaryData.contact_no1),
+        clean(primaryData.contact_no2),
+        clean(primaryData.current_institute_dise_code),
+        clean(primaryData.previous_institute_dise_code),
+        applicantId
+      ];
+
+      await client.query(updatePrimary, primaryValues);
     }
 
-    const { primaryData, secondaryData } = req.body;
-
-    const cleanPrimary = primaryData
-      ? buildPrimaryData(primaryData, userId, true)
-      : null;
-
+    // --- B. Upsert Secondary Info (Insert if new, Update if exists) ---
     if (secondaryData) {
-      secondaryData.updated_by = userId;
+      const upsertSecondary = `
+        INSERT INTO pp.applicant_secondary_info (
+          village, father_occupation, mother_occupation, father_education, mother_education,
+          household_size, own_house, smart_phone_home, internet_facility_home,
+          career_goals, subjects_of_interest, transportation_mode, distance_to_school,
+          num_two_wheelers, num_four_wheelers, irrigation_land,
+          neighbor_name, neighbor_phone, favorite_teacher_name, favorite_teacher_phone,
+          applicant_id, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, CURRENT_TIMESTAMP
+        )
+        ON CONFLICT (applicant_id) 
+        DO UPDATE SET
+          village = EXCLUDED.village,
+          father_occupation = EXCLUDED.father_occupation,
+          mother_occupation = EXCLUDED.mother_occupation,
+          father_education = EXCLUDED.father_education,
+          mother_education = EXCLUDED.mother_education,
+          household_size = EXCLUDED.household_size,
+          own_house = EXCLUDED.own_house,
+          smart_phone_home = EXCLUDED.smart_phone_home,
+          internet_facility_home = EXCLUDED.internet_facility_home,
+          career_goals = EXCLUDED.career_goals,
+          subjects_of_interest = EXCLUDED.subjects_of_interest,
+          transportation_mode = EXCLUDED.transportation_mode,
+          distance_to_school = EXCLUDED.distance_to_school,
+          num_two_wheelers = EXCLUDED.num_two_wheelers,
+          num_four_wheelers = EXCLUDED.num_four_wheelers,
+          irrigation_land = EXCLUDED.irrigation_land,
+          neighbor_name = EXCLUDED.neighbor_name,
+          neighbor_phone = EXCLUDED.neighbor_phone,
+          favorite_teacher_name = EXCLUDED.favorite_teacher_name,
+          favorite_teacher_phone = EXCLUDED.favorite_teacher_phone,
+          updated_at = CURRENT_TIMESTAMP;
+      `;
+
+      const secondaryValues = [
+        clean(secondaryData.village),
+        clean(secondaryData.father_occupation),
+        clean(secondaryData.mother_occupation),
+        clean(secondaryData.father_education),
+        clean(secondaryData.mother_education),
+        clean(secondaryData.household_size),
+        clean(secondaryData.own_house),
+        clean(secondaryData.smart_phone_home),
+        clean(secondaryData.internet_facility_home),
+        clean(secondaryData.career_goals),
+        clean(secondaryData.subjects_of_interest),
+        clean(secondaryData.transportation_mode),
+        clean(secondaryData.distance_to_school),
+        clean(secondaryData.num_two_wheelers),
+        clean(secondaryData.num_four_wheelers),
+        clean(secondaryData.irrigation_land),
+        clean(secondaryData.neighbor_name),
+        clean(secondaryData.neighbor_phone),
+        clean(secondaryData.favorite_teacher_name),
+        clean(secondaryData.favorite_teacher_phone),
+        applicantId
+      ];
+
+      await client.query(upsertSecondary, secondaryValues);
     }
 
-    const updated = await applicantModel.updateApplicant(applicantId, {
-      primaryData: cleanPrimary,
-      secondaryData
-    });
+    await client.query("COMMIT");
+    return { success: true, applicantId };
 
-    res.json({
-      success: true,
-      message: "Applicant updated successfully",
-      data: formatResponse(updated)
-    });
-  } catch (error) {
-    console.error("Update Applicant Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to update applicant",
-      error: error.message
-    });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("Error updating applicant:", err.message);
+    throw err;
+  } finally {
+    client.release();
   }
-};
+}
 
-// GET BY ID
-exports.getApplicantById = async (req, res) => {
-  try {
-    const { applicantId } = req.params;
+async function viewApplicantByRegNumber(nmms_reg_number) {
+  const query = `
+    SELECT p.*, s.*, state.juris_name AS state_name, dist.juris_name AS district_name, blk.juris_name AS block_name
+    FROM pp.applicant_primary_info p
+    LEFT JOIN pp.applicant_secondary_info s ON p.applicant_id = s.applicant_id
+    LEFT JOIN pp.jurisdiction state ON p.app_state = state.juris_code
+    LEFT JOIN pp.jurisdiction dist ON p.district = dist.juris_code
+    LEFT JOIN pp.jurisdiction blk ON p.nmms_block = blk.juris_code
+    WHERE p.nmms_reg_number = $1
+  `;
+  const { rows } = await pool.query(query, [nmms_reg_number]);
+  return rows[0] || null;
+}
 
-    const result = await applicantModel.getApplicantById(applicantId);
-    if (!result?.rows?.length) {
-      return res.status(404).json({ success: false, message: "Applicant not found" });
-    }
+async function getApplicantById(applicantId) {
+  const query = `
+    SELECT p.*, s.* FROM pp.applicant_primary_info p
+    LEFT JOIN pp.applicant_secondary_info s ON p.applicant_id = s.applicant_id
+    WHERE p.applicant_id = $1
+  `;
+  const { rows } = await pool.query(query, [applicantId]);
+  return rows[0] || null;
+}
 
-    res.json({
-      success: true,
-      data: formatResponse(result.rows[0])
-    });
-  } catch (error) {
-    console.error("Get Applicant Error:", error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
+async function deleteApplicant(applicantId) {
+  const { rows } = await pool.query(
+    `DELETE FROM pp.applicant_primary_info WHERE applicant_id = $1 RETURNING applicant_id`,
+    [applicantId]
+  );
+  return rows[0];
+}
 
-// DELETE
-exports.deleteApplicant = async (req, res) => {
-  try {
-    const { applicantId } = req.params;
+async function getAllApplicants() {
+  const query = `
+    SELECT p.applicant_id, p.nmms_year, p.nmms_reg_number, p.student_name, p.father_name, p.gender, 
+           dist.juris_name as district_name, p.contact_no1, p.created_at
+    FROM pp.applicant_primary_info p
+    LEFT JOIN pp.jurisdiction dist ON p.district = dist.juris_code
+    ORDER BY p.created_at DESC
+  `;
+  const { rows } = await pool.query(query);
+  return rows;
+}
 
-    const result = await applicantModel.deleteApplicant(applicantId);
-    if (!result.rows.length) {
-      return res.status(404).json({ success: false, message: "Applicant not found" });
-    }
+async function getApplicantsCount(year) {
+  const query = `SELECT COUNT(*) AS count FROM pp.applicant_primary_info WHERE nmms_year = $1`;
+  const { rows } = await pool.query(query, [year]);
+  return parseInt(rows[0].count, 10);
+}
 
-    res.json({ success: true, message: "Applicant deleted successfully" });
-  } catch (error) {
-    console.error("Delete Applicant Error:", error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
+async function shortlistedApplicants(year) {
+  const query = `
+    SELECT COUNT(*) AS count
+    FROM pp.applicant_primary_info as ap
+    JOIN PP.applicant_shortlist_info as asi ON ap.applicant_id = asi.applicant_id
+    WHERE ap.nmms_year = $1
+  `;
+  const { rows } = await pool.query(query, [year]);
+  return parseInt(rows[0].count, 10);
+}
 
-// GET ALL
-exports.getAllApplicants = async (req, res) => {
-  try {
-    const result = await applicantModel.getAllApplicants(req.query);
-    const formatted = result.rows.map(formatResponse);
+async function selectedStudents(year) {
+  const query = `
+    SELECT COUNT(*) AS count
+    FROM pp.applicant_primary_info as ap
+    JOIN pp.student_master sm ON ap.applicant_id = sm.applicant_id
+    WHERE ap.nmms_year = $1
+  `;
+  const { rows } = await pool.query(query, [year]);
+  return parseInt(rows[0].count, 10);
+}
 
-    res.json({ success: true, data: formatted });
-  } catch (error) {
-    console.error("Get All Applicants Error:", error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
+async function getCohortStudentCount(currentYear) {
+  const previousYear = parseInt(currentYear, 10) - 1;
+  
+  const query = `
+    SELECT 
+      COUNT(CASE WHEN AP.NMMS_YEAR = $1 THEN 1 END)::INT AS current_count,
+      COUNT(CASE WHEN AP.NMMS_YEAR = $2 THEN 1 END)::INT AS previous_count
+    FROM PP.STUDENT_MASTER AS SM
+    JOIN PP.APPLICANT_PRIMARY_INFO AS AP
+      ON SM.APPLICANT_ID = AP.APPLICANT_ID
+    WHERE AP.NMMS_YEAR IN ($1, $2)
+  `;
 
-// GET BY REG NUMBER
-exports.viewApplicantByRegNumber = async (req, res) => {
-  try {
-    const { nmms_reg_number } = req.params;
+  const { rows } = await pool.query(query, [currentYear, previousYear]);
+  return rows[0];
+}
 
-    const result = await applicantModel.viewApplicantByRegNumber(nmms_reg_number);
-    if (!result.rows.length) {
-      return res.status(404).json({ success: false, message: "Applicant not found" });
-    }
+async function getTodayClassesCount(year) {
+  const cohortNumber = year - 2021;
 
-    res.json({
-      success: true,
-      data: formatResponse(result.rows[0])
-    });
-  } catch (error) {
-    console.error("View Applicant Error:", error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
+  const query = `
+    SELECT 
+        c.cohort_name,
+        COUNT(DISTINCT t.timetable_id) AS classes_count
+    FROM pp.timetable t
+    JOIN pp.classroom cl 
+        ON t.classroom_id = cl.classroom_id
+    JOIN pp.classroom_batch cb 
+        ON cl.classroom_id = cb.classroom_id
+    JOIN pp.batch b 
+        ON cb.batch_id = b.batch_id
+    JOIN pp.cohort c 
+        ON b.cohort_number = c.cohort_number
+    WHERE 
+        t.day_of_week = TRIM(UPPER(TO_CHAR(CURRENT_DATE, 'Day')))
+        AND b.cohort_number = $1
+    GROUP BY c.cohort_name
+    ORDER BY c.cohort_name
+  `;
 
-// COUNTS
-exports.applicantsCount = async (req, res) => {
-  const { year } = req.query;
-  const count = await applicantModel.getApplicantsCount(year);
-  res.json({ success: true, count: Number(count) || 0 });
-};
+  const { rows } = await pool.query(query, [cohortNumber]);
+  return rows;
+}
 
-exports.shortlistedCount = async (req, res) => {
-  const { year } = req.query;
-  const count = await applicantModel.shortlistedApplicants(year);
-  res.json({ success: true, count: Number(count) || 0 });
-};
-
-exports.selectedStudentsCount = async (req, res) => {
-  const { year } = req.query;
-  const count = await applicantModel.selectedStudents(year);
-  res.json({ success: true, count: Number(count) || 0 });
-};
-
-exports.studentCohortCount = async (req, res) => {
-  const { year } = req.query;
-  const data = await applicantModel.getCohortStudentCount(year);
-
-  res.json({
-    success: true,
-    data: {
-      currentYear: Number(year),
-      previousYear: Number(year) - 1,
-      counts: data
-    }
-  });
-};
-
-exports.todayClassesCount = async (req, res) => {
-  const { year } = req.query;
-  const count = await applicantModel.getTodayClassesCount(Number(year));
-  res.json({ success: true, count });
+// Export all functions as an object
+module.exports = {
+  createApplicant,
+  updateApplicant,
+  viewApplicantByRegNumber,
+  getApplicantById,
+  deleteApplicant,
+  getAllApplicants,
+  getApplicantsCount,
+  shortlistedApplicants,
+  selectedStudents,
+  getCohortStudentCount,
+  getTodayClassesCount
 };
