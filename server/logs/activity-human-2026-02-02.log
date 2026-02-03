@@ -2547,3 +2547,11 @@
 [2026-02-02T18:24:24.914Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
 [2026-02-02T18:24:24.968Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
 [2026-02-02T18:24:24.979Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:25:51.758Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:25:51.763Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:25:51.771Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:25:51.774Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:25:51.911Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-02T18:25:51.917Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:25:51.977Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-02T18:25:51.999Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
