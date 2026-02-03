@@ -15,7 +15,10 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copy only what is needed
+# 🔴 REQUIRED for ES Modules
+COPY --from=build /app/package.json ./package.json
+
+# App files
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/index.js ./index.js
 COPY --from=build /app/controllers ./controllers
@@ -25,7 +28,5 @@ COPY --from=build /app/utils ./utils
 COPY --from=build /app/config ./config
 COPY --from=build /app/middleware ./middleware
 
-
 EXPOSE 4000
-
 CMD ["node", "index.js"]
