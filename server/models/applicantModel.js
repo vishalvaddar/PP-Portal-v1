@@ -1,5 +1,5 @@
-// 1. Change require to import
-import pool from "../config/db.js"; 
+// 1. Change import to require
+const pool = require("../config/db.js").default || require("../config/db.js");
 
 const clean = (val) => (val === "" || val === undefined ? null : val);
 
@@ -12,7 +12,7 @@ const formatDate = (val) => {
   }
 };
 
-export async function createApplicant(data) {
+async function createApplicant(data) {
   const { primaryData, secondaryData } = data;
   const client = await pool.connect();
   
@@ -81,7 +81,7 @@ export async function createApplicant(data) {
   }
 }
 
-export async function updateApplicant(applicantId, data) {
+async function updateApplicant(applicantId, data) {
   const { primaryData, secondaryData } = data;
   const client = await pool.connect();
 
@@ -207,7 +207,7 @@ export async function updateApplicant(applicantId, data) {
   }
 }
 
-export async function viewApplicantByRegNumber(nmms_reg_number) {
+async function viewApplicantByRegNumber(nmms_reg_number) {
   const query = `
     SELECT p.*, s.*, state.juris_name AS state_name, dist.juris_name AS district_name, blk.juris_name AS block_name
     FROM pp.applicant_primary_info p
@@ -221,7 +221,7 @@ export async function viewApplicantByRegNumber(nmms_reg_number) {
   return rows[0] || null;
 }
 
-export async function getApplicantById(applicantId) {
+async function getApplicantById(applicantId) {
   const query = `
     SELECT p.*, s.* FROM pp.applicant_primary_info p
     LEFT JOIN pp.applicant_secondary_info s ON p.applicant_id = s.applicant_id
@@ -231,7 +231,7 @@ export async function getApplicantById(applicantId) {
   return rows[0] || null;
 }
 
-export async function deleteApplicant(applicantId) {
+async function deleteApplicant(applicantId) {
   const { rows } = await pool.query(
     `DELETE FROM pp.applicant_primary_info WHERE applicant_id = $1 RETURNING applicant_id`,
     [applicantId]
@@ -239,7 +239,7 @@ export async function deleteApplicant(applicantId) {
   return rows[0];
 }
 
-export async function getAllApplicants() {
+async function getAllApplicants() {
   const query = `
     SELECT p.applicant_id, p.nmms_year, p.nmms_reg_number, p.student_name, p.father_name, p.gender, 
            dist.juris_name as district_name, p.contact_no1, p.created_at
@@ -251,13 +251,13 @@ export async function getAllApplicants() {
   return rows;
 }
 
-export async function getApplicantsCount(year) {
+async function getApplicantsCount(year) {
   const query = `SELECT COUNT(*) AS count FROM pp.applicant_primary_info WHERE nmms_year = $1`;
   const { rows } = await pool.query(query, [year]);
   return parseInt(rows[0].count, 10);
 }
 
-export async function shortlistedApplicants(year) {
+async function shortlistedApplicants(year) {
   const query = `
     SELECT COUNT(*) AS count
     FROM pp.applicant_primary_info as ap
@@ -268,7 +268,7 @@ export async function shortlistedApplicants(year) {
   return parseInt(rows[0].count, 10);
 }
 
-export async function selectedStudents(year) {
+async function selectedStudents(year) {
   const query = `
     SELECT COUNT(*) AS count
     FROM pp.applicant_primary_info as ap
@@ -279,7 +279,7 @@ export async function selectedStudents(year) {
   return parseInt(rows[0].count, 10);
 }
 
-export async function getCohortStudentCount(currentYear) {
+async function getCohortStudentCount(currentYear) {
   const previousYear = parseInt(currentYear, 10) - 1;
   
   const query = `
@@ -296,7 +296,7 @@ export async function getCohortStudentCount(currentYear) {
   return rows[0];
 }
 
-export async function getTodayClassesCount(year) {
+async function getTodayClassesCount(year) {
   const cohortNumber = year - 2021;
 
   const query = `
@@ -323,3 +323,17 @@ export async function getTodayClassesCount(year) {
   return rows;
 }
 
+// Export all functions as an object
+module.exports = {
+  createApplicant,
+  updateApplicant,
+  viewApplicantByRegNumber,
+  getApplicantById,
+  deleteApplicant,
+  getAllApplicants,
+  getApplicantsCount,
+  shortlistedApplicants,
+  selectedStudents,
+  getCohortStudentCount,
+  getTodayClassesCount
+};
