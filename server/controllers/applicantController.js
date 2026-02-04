@@ -238,25 +238,62 @@ exports.getAllApplicants = async (req, res) => {
   }
 };
 
+// // GET BY REG NUMBER
+// exports.viewApplicantByRegNumber = async (req, res) => {
+//   try {
+//     const { nmms_reg_number } = req.params;
+
+//     const result = await applicantModel.viewApplicantByRegNumber(nmms_reg_number);
+//     if (!result?.rows?.length) {
+//       return res.status(404).json({ success: false, message: "Applicant not found" });
+//     }
+
+//     res.json({
+//       success: true,
+//       data: formatResponse(result.rows[0])
+//     });
+//   } catch (error) {
+//     console.error("View Applicant Error:", error);
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+
 // GET BY REG NUMBER
 exports.viewApplicantByRegNumber = async (req, res) => {
   try {
     const { nmms_reg_number } = req.params;
 
-    const result = await applicantModel.viewApplicantByRegNumber(nmms_reg_number);
-    if (!result.rows.length) {
-      return res.status(404).json({ success: false, message: "Applicant not found" });
+    if (!nmms_reg_number) {
+      return res.status(400).json({
+        success: false,
+        message: "nmms_reg_number is required"
+      });
+    }
+
+    // model returns ONE ROW or null
+    const applicant = await applicantModel.viewApplicantByRegNumber(nmms_reg_number);
+
+    if (!applicant) {
+      return res.status(404).json({
+        success: false,
+        message: "Applicant not found"
+      });
     }
 
     res.json({
       success: true,
-      data: formatResponse(result.rows[0])
+      data: formatResponse(applicant)
     });
   } catch (error) {
     console.error("View Applicant Error:", error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
+
 
 // COUNTS
 exports.applicantsCount = async (req, res) => {

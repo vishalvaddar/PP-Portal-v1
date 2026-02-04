@@ -228,6 +228,31 @@ const TrackingModel = {
         `;
         const result = await pool.query(query, [applicantId]);
         return result.rows[0] || null;
+    },
+
+
+    async getAllHomeVerificationRounds(applicantId) {
+        if (!applicantId) {
+            console.error("Validation Error in getAllHomeVerificationRounds: applicantId is invalid or missing.");
+            return [];
+        }
+        const query = `
+            SELECT
+                h.verification_id, 
+                TO_CHAR(h.date_of_verification, 'YYYY-MM-DD') AS date_of_verification, -- DATE FORMATTING
+                h.status AS home_verification_status, h.verified_by, h.verification_type AS home_verification_type,
+                h.doc_name AS home_verification_doc_name, h.doc_type AS home_verification_doc_type, h.remarks
+            FROM pp.home_verification h
+            WHERE h.applicant_id = $1
+            ORDER BY h.date_of_verification ASC;
+        `;
+        try {
+            const result = await pool.query(query, [applicantId]);
+            return result.rows;
+        } catch (error) {
+            console.error("Error fetching all home verification rounds:", error);
+            throw new Error("Failed to retrieve home verification details.");
+        }
     }
 };
 
