@@ -2,3 +2,13 @@
 [2026-02-03T04:21:42.529Z] ACTION: login_complete by admin@rajalakshmiFoundation.in  ip=::1 status=success
 [2026-02-03T04:21:42.578Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
 [2026-02-03T04:21:42.592Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-03T04:49:59.978Z] LOGIN:  by admin@rajalakshmifoundation.in  ip=::1 status=success_pre_auth
+[2026-02-03T04:50:00.001Z] ACTION: login_complete by admin@rajalakshmiFoundation.in  ip=::1 status=success
+[2026-02-03T04:50:00.044Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-03T04:50:00.056Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-03T04:50:00.064Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-03T04:50:00.070Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-03T04:50:00.169Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-03T04:50:00.249Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-03T04:50:00.260Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-03T04:50:00.264Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
