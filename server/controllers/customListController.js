@@ -70,19 +70,22 @@ exports.deleteList = async (req, res) => {
 exports.getStudentsByCohort = async (req, res) => {
     try {
         const { cohortId } = req.params;
-        const { batchId, stateId, districtId, blockId } = req.query; 
+        
+        // DESTRESSING: Ensure these names match EXACTLY what the frontend sends
+        const { batchId, stateId, divisionId, districtId, blockId } = req.query;
 
-        const data = await model.getStudentsByCohort(
+        // Call the model function with ALL the parameters
+        const students = await model.getStudentsByCohort(
             cohortId, 
             batchId, 
             stateId, 
+            divisionId, 
             districtId, 
             blockId
         );
         
-        res.json(data);
+        res.json(students);
     } catch (e) {
-        console.error("Fetch Cohort Students Error:", e.message);
         res.status(500).json({ error: e.message });
     }
 };
