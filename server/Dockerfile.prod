@@ -27,6 +27,7 @@ COPY --from=build /app/models ./models
 COPY --from=build /app/utils ./utils
 COPY --from=build /app/config ./config
 COPY --from=build /app/middleware ./middleware
+COPY --from=build /app/public ./public
 
 EXPOSE 4000
 CMD ["node", "index.js"]
