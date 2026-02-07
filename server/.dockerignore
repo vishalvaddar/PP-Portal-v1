@@ -1,11 +1,3 @@
 node_modules
 .git
 .gitignore
-logs
-*.log
-*.sql
-.env
-Dockerfile*
-README.md
-tests
-coverage
