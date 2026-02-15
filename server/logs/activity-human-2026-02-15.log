@@ -22,3 +22,436 @@
 [2026-02-15T10:57:08.067Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
 [2026-02-15T10:57:08.238Z] ACTION: GET /api/evaluation/exam_names by admin@rajalakshmiFoundation.in (1) ip=::1 
 [2026-02-15T10:57:08.255Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:00:45.619Z] LOGIN:  by admin@rajalakshmifoundation.in  ip=::1 status=success_pre_auth
+[2026-02-15T11:00:45.650Z] ACTION: login_complete by admin@rajalakshmiFoundation.in  ip=::1 status=success
+[2026-02-15T11:00:45.730Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-15T11:00:45.746Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-15T11:00:45.756Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-15T11:00:45.763Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:00:45.857Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:00:45.887Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-15T11:00:45.997Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-15T11:00:46.004Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-15T11:00:48.350Z] ACTION: GET /api/evaluation-dashboard/overall/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:00:48.359Z] ACTION: GET /api/evaluation-dashboard/jurisdictions/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:00:48.364Z] ACTION: GET /api/evaluation-dashboard/overall-progress/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:00:49.192Z] ACTION: GET /api/evaluation-dashboard/overall-progress/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:00:50.293Z] ACTION: GET /api/evaluation-dashboard/jurisdictions/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:00:50.301Z] ACTION: GET /api/evaluation-dashboard/overall/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:00:52.060Z] ACTION: GET /api/evaluation/exam_names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:00:52.266Z] ACTION: GET /api/evaluation/exam_names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:00:56.260Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"MEGHA_PRIMARY_AND_HIGH_SCHOOL_MUD_15_05_2025_10_00_14_00"}}
+[2026-02-15T11:00:56.268Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"body":{"exam_name":"MEGHA_PRIMARY_AND_HIGH_SCHOOL_MUD_15_05_2025_10_00_14_00"},"statusCode":404}
+[2026-02-15T11:00:58.492Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"S_K_HIGH_SCHOOL_CHI_16_05_2025_10_00_14_00"}}
+[2026-02-15T11:00:58.496Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"body":{"exam_name":"S_K_HIGH_SCHOOL_CHI_16_05_2025_10_00_14_00"},"statusCode":404}
+[2026-02-15T11:00:59.900Z] ACTION: POST /api/evaluation/download_excel by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"S_K_HIGH_SCHOOL_CHI_16_05_2025_10_00_14_00"}}
+[2026-02-15T11:01:33.287Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"A_K_HIGH_SCHOOL_ATH_18_05_2025_10_00_14_00"}}
+[2026-02-15T11:01:33.293Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"body":{"exam_name":"A_K_HIGH_SCHOOL_ATH_18_05_2025_10_00_14_00"},"statusCode":404}
+[2026-02-15T11:01:34.551Z] ACTION: POST /api/evaluation/download_excel by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"A_K_HIGH_SCHOOL_ATH_18_05_2025_10_00_14_00"}}
+[2026-02-15T11:16:23.711Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"}}
+[2026-02-15T11:16:23.740Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"},"statusCode":404}
+[2026-02-15T11:16:24.559Z] ACTION: POST /api/evaluation/download_excel by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"}}
+[2026-02-15T11:19:47.091Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:19:47.764Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"statusCode":500}
+[2026-02-15T11:25:44.612Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:25:45.035Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"statusCode":500}
+[2026-02-15T11:29:15.631Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:29:16.668Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"statusCode":500}
+[2026-02-15T11:33:18.341Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:35:19.342Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:35:42.635Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:35:42.653Z] ACTION: GET /api/results/all-exams by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:35:42.737Z] ACTION: GET /api/results/all-exams by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:35:42.741Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:37:05.330Z] ACTION: POST /api/results/search-by-exam by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_id":"6"}}
+[2026-02-15T11:38:46.622Z] ACTION: GET /api/exams/assigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.634Z] ACTION: GET /api/exams/exam-centres by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.653Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.666Z] ACTION: GET /api/exams/used-blocks by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.678Z] ACTION: GET /api/exams/notassigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.723Z] ACTION: GET /api/exams/exam-centres by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.756Z] ACTION: GET /api/exams/notassigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.827Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.832Z] ACTION: GET /api/exams/used-blocks by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.850Z] ACTION: GET /api/exams/assigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.877Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.889Z] ACTION: GET /api/exams/blocks-by-district/2914 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.909Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.914Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.924Z] ACTION: GET /api/exams/blocks-by-district/2908 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.929Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.932Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.935Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.939Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.944Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.950Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.955Z] ACTION: GET /api/exams/blocks-by-district/2914 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.960Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.962Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.967Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.972Z] ACTION: GET /api/exams/blocks-by-district/2908 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.979Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.985Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.989Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.993Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:46.998Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.001Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.007Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.013Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.016Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.019Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.023Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.026Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.032Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.037Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.041Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.044Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.048Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.052Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.060Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.065Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.069Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.073Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.078Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.083Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.089Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.094Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.098Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.102Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.106Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.110Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.114Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.119Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.125Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.133Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.137Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.140Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.146Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.149Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:38:47.436Z] ACTION: GET /api/evaluation-dashboard/overall/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:38:47.444Z] ACTION: GET /api/evaluation-dashboard/jurisdictions/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:38:47.453Z] ACTION: GET /api/evaluation-dashboard/overall-progress/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:38:48.212Z] ACTION: GET /api/evaluation-dashboard/overall-progress/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:38:49.137Z] ACTION: GET /api/evaluation-dashboard/jurisdictions/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:38:50.496Z] ACTION: GET /api/evaluation-dashboard/overall/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:40:50.987Z] ACTION: GET /api/exams/assigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.009Z] ACTION: GET /api/exams/exam-centres by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.022Z] ACTION: GET /api/exams/used-blocks by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.038Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.056Z] ACTION: GET /api/exams/notassigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.147Z] ACTION: GET /api/exams/exam-centres by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.179Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.187Z] ACTION: GET /api/exams/notassigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.253Z] ACTION: GET /api/exams/used-blocks by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.261Z] ACTION: GET /api/exams/assigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.272Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.282Z] ACTION: GET /api/exams/blocks-by-district/2914 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.286Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.307Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.312Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.317Z] ACTION: GET /api/exams/blocks-by-district/2908 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.321Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.326Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.340Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.352Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.359Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.366Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.370Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.377Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.383Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.390Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.398Z] ACTION: GET /api/exams/blocks-by-district/2914 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.404Z] ACTION: GET /api/exams/blocks-by-district/2908 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.420Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.426Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.435Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.439Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.442Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.453Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.457Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.461Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.464Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.468Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.477Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.481Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.485Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.488Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.492Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.500Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.503Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.508Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.512Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.515Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.522Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.527Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.530Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.535Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.542Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.547Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.553Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.556Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.561Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.568Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.573Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.576Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.579Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.585Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.587Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.592Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:51.716Z] ACTION: GET /api/evaluation-dashboard/overall/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:40:51.719Z] ACTION: GET /api/evaluation-dashboard/jurisdictions/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:40:51.724Z] ACTION: GET /api/evaluation-dashboard/overall-progress/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:40:52.601Z] ACTION: GET /api/evaluation-dashboard/overall-progress/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:40:53.784Z] ACTION: GET /api/evaluation-dashboard/jurisdictions/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:40:55.450Z] ACTION: GET /api/evaluation-dashboard/overall/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:40:56.824Z] ACTION: GET /api/evaluation/exam_names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:40:56.841Z] ACTION: GET /api/evaluation/exam_names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:41:04.801Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"}}
+[2026-02-15T11:41:04.810Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"},"statusCode":404}
+[2026-02-15T11:41:06.781Z] ACTION: POST /api/evaluation/download_excel by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"}}
+[2026-02-15T11:45:12.282Z] ACTION: GET /api/exams/assigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.294Z] ACTION: GET /api/exams/exam-centres by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.299Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.308Z] ACTION: GET /api/exams/used-blocks by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.317Z] ACTION: GET /api/exams/notassigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.398Z] ACTION: GET /api/exams/exam-centres by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.401Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.406Z] ACTION: GET /api/exams/notassigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.514Z] ACTION: GET /api/exams/used-blocks by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.525Z] ACTION: GET /api/exams/assigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.539Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.545Z] ACTION: GET /api/exams/blocks-by-district/2914 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.551Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.576Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.585Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.590Z] ACTION: GET /api/exams/blocks-by-district/2908 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.599Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.603Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.607Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.614Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.622Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.627Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.632Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.635Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.639Z] ACTION: GET /api/exams/blocks-by-district/2914 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.644Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.650Z] ACTION: GET /api/exams/blocks-by-district/2908 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.657Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.664Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.667Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.672Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.678Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.685Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.689Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.694Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.699Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.704Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.707Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.712Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.715Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.719Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.723Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.727Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.731Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.734Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.748Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.752Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.756Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.761Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.765Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.769Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.775Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.780Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.784Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.794Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.797Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.801Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.806Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.812Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.815Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.826Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.832Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.839Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:12.843Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:13.071Z] ACTION: GET /api/evaluation-dashboard/overall/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:45:13.078Z] ACTION: GET /api/evaluation-dashboard/jurisdictions/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:45:13.088Z] ACTION: GET /api/evaluation-dashboard/overall-progress/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:45:13.974Z] ACTION: GET /api/evaluation-dashboard/overall-progress/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:45:14.893Z] ACTION: GET /api/evaluation-dashboard/jurisdictions/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:45:14.898Z] ACTION: GET /api/evaluation-dashboard/overall/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T11:45:16.316Z] ACTION: GET /api/evaluation/exam_names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:16.710Z] ACTION: GET /api/evaluation/exam_names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:19.233Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"}}
+[2026-02-15T11:45:19.246Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"},"statusCode":404}
+[2026-02-15T11:45:26.337Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:45:27.533Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"statusCode":500}
+[2026-02-15T11:48:06.926Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T11:48:07.961Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"statusCode":500}
+[2026-02-15T12:29:27.711Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:34:06.411Z] ACTION: POST /api/evaluation/download_excel by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"}}
+[2026-02-15T12:35:38.972Z] ACTION: GET /api/evaluation/exam_names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:35:39.026Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:35:39.123Z] ACTION: GET /api/evaluation/exam_names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:35:39.131Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:35:59.050Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"}}
+[2026-02-15T12:35:59.061Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"},"statusCode":404}
+[2026-02-15T12:36:01.695Z] ACTION: POST /api/evaluation/download_excel by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"}}
+[2026-02-15T12:37:07.666Z] ACTION: POST /api/evaluation/download_excel by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"}}
+[2026-02-15T12:38:29.015Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:38:30.578Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"statusCode":500}
+[2026-02-15T12:41:49.913Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:41:51.262Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"statusCode":500}
+[2026-02-15T12:45:39.940Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:45:41.093Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"statusCode":500}
+[2026-02-15T12:47:05.427Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:51:00.340Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:51:00.356Z] ACTION: GET /api/results/all-exams by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:51:00.470Z] ACTION: GET /api/results/all-exams by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:51:00.475Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:51:09.063Z] ACTION: POST /api/results/search-by-exam by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_id":"6"}}
+[2026-02-15T12:51:26.205Z] ACTION: GET /api/evaluation-dashboard/overall/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T12:51:26.215Z] ACTION: GET /api/evaluation-dashboard/jurisdictions/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T12:51:26.228Z] ACTION: GET /api/evaluation-dashboard/overall-progress/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T12:51:27.076Z] ACTION: GET /api/evaluation-dashboard/overall-progress/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T12:51:28.016Z] ACTION: GET /api/evaluation-dashboard/jurisdictions/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T12:51:28.024Z] ACTION: GET /api/evaluation-dashboard/overall/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T12:51:29.305Z] ACTION: GET /api/evaluation/exam_names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:51:29.420Z] ACTION: GET /api/evaluation/exam_names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:51:35.332Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"}}
+[2026-02-15T12:51:35.337Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"},"statusCode":404}
+[2026-02-15T12:51:41.425Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:51:48.194Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:51:48.200Z] ACTION: GET /api/results/all-exams by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:51:48.212Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:51:48.324Z] ACTION: GET /api/results/all-exams by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:51:56.771Z] ACTION: POST /api/results/search-by-exam by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_id":"6"}}
+[2026-02-15T12:52:41.086Z] ACTION: GET /api/exams/assigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.106Z] ACTION: GET /api/exams/exam-centres by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.116Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.130Z] ACTION: GET /api/exams/used-blocks by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.137Z] ACTION: GET /api/exams/notassigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.193Z] ACTION: GET /api/exams/exam-centres by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.210Z] ACTION: GET /api/exams/notassigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.241Z] ACTION: GET /api/exams/used-blocks by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.248Z] ACTION: GET /api/exams/assigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.255Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.264Z] ACTION: GET /api/exams/blocks-by-district/2914 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.268Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.293Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.297Z] ACTION: GET /api/exams/blocks-by-district/2908 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.301Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.313Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.321Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.325Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.328Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.332Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.343Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.347Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.351Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.354Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.358Z] ACTION: GET /api/exams/blocks-by-district/2914 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.365Z] ACTION: GET /api/exams/blocks-by-district/2908 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.370Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.373Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.376Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.379Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.387Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.390Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.393Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.397Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.400Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.408Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.412Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.416Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.419Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.423Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.430Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.434Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.437Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.440Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.443Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.446Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.453Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.456Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.458Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.461Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.465Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.468Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.475Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.478Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.482Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.485Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.489Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.497Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.501Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.504Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.510Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.513Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.519Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:41.522Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.799Z] ACTION: GET /api/exams/assigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.803Z] ACTION: GET /api/exams/exam-centres by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.808Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.814Z] ACTION: GET /api/exams/used-blocks by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.824Z] ACTION: GET /api/exams/exam-centres by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.829Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.874Z] ACTION: GET /api/exams/used-blocks by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.901Z] ACTION: GET /api/exams/assigned by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.906Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.911Z] ACTION: GET /api/exams/blocks-by-district/2914 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.915Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.920Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.928Z] ACTION: GET /api/exams/blocks-by-district/2908 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.934Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.939Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.943Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.948Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.957Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.961Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.965Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.968Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.971Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.979Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.984Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.987Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.991Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.994Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:45.997Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.004Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.006Z] ACTION: GET /api/exams/blocks-by-district/2914 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.010Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.013Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.016Z] ACTION: GET /api/exams/blocks-by-district/2908 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.019Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.026Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.030Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.032Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.036Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.038Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.041Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.048Z] ACTION: GET /api/exams/blocks-by-district/2910 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.053Z] ACTION: GET /api/exams/blocks-by-district/2934 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.055Z] ACTION: GET /api/exams/blocks-by-district/2909 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.059Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.062Z] ACTION: GET /api/exams/blocks-by-district/2903 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.065Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.072Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.075Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.079Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.081Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.087Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.090Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.093Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.096Z] ACTION: GET /api/exams/blocks-by-district/2911 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.102Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.106Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.108Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.114Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.117Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.120Z] ACTION: GET /api/exams/blocks-by-district/2920 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.125Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:46.130Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:47.226Z] ACTION: GET /api/exams/education-districts-by-division/4 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:49.231Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:51.144Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T12:52:52.747Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 

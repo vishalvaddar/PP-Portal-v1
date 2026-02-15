@@ -493,22 +493,45 @@ const uploadBulkData = asyncHandler(async (req, res) => {
 
 
 // Helper function to safely parse date
+// Helper function to safely parse date and return YYYY-MM-DD
 function safeDate(row, index) {
   const value = row.getCell(index).value;
 
   if (!value) return null;
 
-  // Excel native date
+  // 1️⃣ Excel native date object
   if (value instanceof Date) {
-    return value;
+    return value.toISOString().split('T')[0]; // ✅ YYYY-MM-DD
   }
 
-  // String date → convert safely
+  // 2️⃣ If Excel serial number (rare case)
+  if (typeof value === 'number') {
+    const excelEpoch = new Date(1899, 11, 30);
+    const jsDate = new Date(excelEpoch.getTime() + value * 86400000);
+    return jsDate.toISOString().split('T')[0];
+  }
+
+  // 3️⃣ If string
   if (typeof value === 'string') {
-    const parts = value.split(/[-/]/);
+    const cleaned = value.trim();
+
+    // If already YYYY-MM-DD → return directly
+    if (/^\d{4}-\d{2}-\d{2}$/.test(cleaned)) {
+      return cleaned;
+    }
+
+    // If DD-MM-YYYY or DD/MM/YYYY
+    const parts = cleaned.split(/[-/]/);
     if (parts.length === 3) {
-      const [dd, mm, yyyy] = parts;
-      return new Date(`${yyyy}-${mm}-${dd}`);
+      let [a, b, c] = parts;
+
+      // If first part is 4 digits → already YYYY-MM-DD
+      if (a.length === 4) {
+        return `${a}-${b.padStart(2, '0')}-${c.padStart(2, '0')}`;
+      }
+
+      // Otherwise assume DD-MM-YYYY
+      return `${c}-${b.padStart(2, '0')}-${a.padStart(2, '0')}`;
     }
   }
 
