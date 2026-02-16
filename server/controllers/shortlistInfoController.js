@@ -3,7 +3,7 @@ const ShortlistInfoModel = require("../models/shortlistInfoModel");
 const xlsx = require("xlsx");
 const pool = require("../config/db");
 const path = require('path'); 
-const fs = require('fs');    
+const fs = require('fs');     
 const GENERATED_FILES_ROOT = path.join(process.env.FILE_STORAGE_PATH, 'generated-shortlist-data');
 
 const shortlistInfoController = {

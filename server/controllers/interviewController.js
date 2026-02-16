@@ -32,8 +32,7 @@ const PROJECT_ROOT = path.join(__dirname, '..', '..');
 const PATH_TO_RCF_LOGO = path.join(PROJECT_ROOT, 'server', 'public', 'assets', 'rcf_logo-removebg-preview.png');
 const PATH_TO_PP_LOGO = path.join(PROJECT_ROOT, 'server', 'public', 'assets', 'logo.png');
 
-const GENERATED_FILES_ROOT = path.join(process.env.FILE_STORAGE_PATH, 'generated-eval-data');
-    
+const GENERATED_FILES_ROOT = path.join(process.env.FILE_STORAGE_PATH || 'public', 'generated-eval-data');    
 
 // --- PDF HEADER UTILITY FUNCTION ---
 const drawReportHeader = (doc, isFirstPage, nmmsYear) => {
@@ -134,12 +133,12 @@ async downloadAssignmentReport(req, res) {
     const cleanInterviewerId = interviewerId.toString().replace(/[^a-zA-Z0-9-]/g, '');
     const filename = `Interview-Assignment${cleanInterviewerId}_${Date.now()}.pdf`;
 
-    // 🔥 MODIFIED: Store directly in generated-eval-data without the cohort sub-folder
-    const GENERATED_FILES_ROOT = "C:\\Users\\priya\\Downloads\\dump\\generated-eval-data";
+    // ✅ FIX 1: Use the safe path defined at the top of your controller (GENERATED_FILES_ROOT)
+    // This avoids the 'EPERM' error caused by trying to access private folders of another user.
     const localFilePath = path.join(GENERATED_FILES_ROOT, filename);
 
     try {
-        // Ensure the root directory exists
+        // ✅ FIX 2: Ensure directory exists using the safe variable
         if (!fs.existsSync(GENERATED_FILES_ROOT)) {
             fs.mkdirSync(GENERATED_FILES_ROOT, { recursive: true });
         }
@@ -162,7 +161,7 @@ async downloadAssignmentReport(req, res) {
         });
         
         doc.on('error', (err) => {
-            console.error('!!! PDF STREAM CRASHED (STREAM ERROR) !!! Detailed Error:', err);
+            console.error('!!! PDF STREAM CRASHED !!!', err);
             if (!res.headersSent) {
                 res.status(500).json({ error: 'PDF generation stream failed.' });
             } else {
@@ -170,11 +169,11 @@ async downloadAssignmentReport(req, res) {
             }
         });
 
-        // 🔥 PIPE TO LOCAL PC FOLDER
+        // PIPE TO LOCAL STORAGE
         const writeStream = fs.createWriteStream(localFilePath);
         doc.pipe(writeStream);
 
-        // 🔥 PIPE TO BROWSER RESPONSE (User download)
+        // PIPE TO BROWSER RESPONSE
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         doc.pipe(res);
@@ -272,8 +271,8 @@ async downloadAssignmentReport(req, res) {
                     doc.fontSize(FONT_SIZE_NORMAL).font('Times-Roman');
                     currentAssignmentFields.forEach((field) => {
                         doc.text(`${String(field[0])} `, 30, doc.y + 5, { continued: true })
-                           .font('Times-Bold').text(`${String(field[1])}`, { continued: false })
-                           .font('Times-Roman');
+                            .font('Times-Bold').text(`${String(field[1])}`, { continued: false })
+                            .font('Times-Roman');
                     });
                     doc.moveDown(1.5);
                 }
@@ -566,66 +565,59 @@ async getStudentsForVerification(req, res) {
     }
 },
 
-// Replace your current submitHomeVerification with this:
-async submitHomeVerification(req, res) {
-    const verificationData = req.body;
-    const { 
-        applicantId, 
-        status, 
-        verifiedBy, 
-        verificationType, 
-        dateOfVerification,
-        nmmsYear // 🔥 Added this
-    } = verificationData;
-
+async submitInterviewDetails(req, res) {
+    const interviewData = req.body;
+    const { applicantId, remarks, nmmsYear } = interviewData;
     const uploadedFile = req.file; 
 
-    // Updated validation to include nmmsYear
-    if (
-        !applicantId || 
-        !status || 
-        !verifiedBy || 
-        !verificationType ||
-        !dateOfVerification ||
-        !nmmsYear // 🔥 Added this
-    ) {
-        return res.status(400).json({ message: 'Missing applicantId, status, verifiedBy, verificationType, dateOfVerification, or nmmsYear.' });
+    if (!applicantId || !remarks || !uploadedFile || !nmmsYear) {
+        return res.status(400).json({ message: 'Missing applicantId, remarks, interview file, or nmmsYear.' });
+    }
+
+    try {
+        const result = await InterviewModel.submitInterviewDetails(applicantId, interviewData, uploadedFile);
+        
+        // 🔹 result now contains enr_id if the student was ACCEPTED
+        let successMsg = 'Interview details submitted successfully.';
+        if (result.enr_id) {
+            successMsg += ` Enrollment ID: ${result.enr_id}`;
+        }
+
+        res.status(200).json({ 
+            message: successMsg, 
+            data: result 
+        });
+    } catch (error) {
+        console.error('Controller Error - submitInterviewDetails:', error);
+        res.status(500).json({ error: true, message: error.message || 'Internal server error.' });
+    }
+},
+
+async submitHomeVerification(req, res) {
+    const verificationData = req.body;
+    const { applicantId, status, verifiedBy, verificationType, dateOfVerification, nmmsYear } = verificationData;
+    const uploadedFile = req.file; 
+
+    if (!applicantId || !status || !verifiedBy || !verificationType || !dateOfVerification || !nmmsYear) {
+        return res.status(400).json({ message: 'Missing required fields including nmmsYear.' });
     }
 
     try {
         const result = await InterviewModel.submitHomeVerification(verificationData, uploadedFile);
+        
+        // 🔹 Include Enrollment ID in message if student was accepted
+        let successMsg = "Home verification submitted successfully.";
+        if (result.enr_id) {
+            successMsg += ` Student Enrolled as: ${result.enr_id}`;
+        }
+
         res.status(200).json({ 
-            message: "Home verification submitted successfully.", 
+            message: successMsg, 
             data: result 
         });
     } catch (error) {
         console.error('Controller Error - submitHomeVerification:', error);
-        res.status(500).json({ message: error.message || 'Internal server error during home verification submission.' });
-    }
-},
-// Replace your current submitInterviewDetails with this:
-async submitInterviewDetails(req, res) {
-    const interviewData = req.body;
-    const { applicantId, remarks, nmmsYear } = interviewData; // 🔥 Added nmmsYear
-
-    const uploadedFile = req.file; 
-
-    if (
-        !applicantId || 
-        !remarks || 
-        remarks.trim() === '' ||
-        !uploadedFile ||
-        !nmmsYear // 🔥 Added validation
-    ) {
-        return res.status(400).json({ message: 'Missing applicantId, mandatory remarks, interview file, or nmmsYear.' });
-    }
-
-    try {
-        const updatedInterview = await InterviewModel.submitInterviewDetails(applicantId, interviewData, uploadedFile);
-        res.status(200).json({ message: 'Interview details and file submitted successfully.', data: updatedInterview });
-    } catch (error) {
-        console.error('Controller Error - submitInterviewDetails:', error);
-        res.status(500).json({ error: true, message: error.message || 'Internal server error.' });
+        res.status(500).json({ message: error.message || 'Internal server error.' });
     }
 },
 };
