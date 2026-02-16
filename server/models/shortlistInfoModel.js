@@ -1,116 +1,116 @@
 const pool = require("../config/db");
-
+ 
 const shortlistInfoModel = {
   // Fetches ALL names without checking for a year
-  async getAllShortlistNames() {
+  async getAllShortlistNames(year) {
     try {
-      const { rows } = await pool.query(`
-        SELECT shortlist_batch_name
-        FROM pp.shortlist_batch;
-      `);
-      return rows.map(row => row.shortlist_batch_name);
+        const { rows } = await pool.query(
+            `
+            SELECT shortlist_batch_name
+            FROM pp.shortlist_batch
+            WHERE shortlisted_year = $1
+            `,
+            [year] // 🔹 Parameterized for safety
+        );
+        return rows.map(row => row.shortlist_batch_name);
     } catch (error) {
-      console.error("Error fetching all shortlist names in model:", error);
-      throw error;
+        console.error("Error fetching all shortlist names in model:", error);
+        throw error;
     }
-  },
+},
 
   // Fetches non-frozen names without checking for a year
-  async getNonFrozenShortlistNames() {
+  async getNonFrozenShortlistNames(year) {
     try {
-      const { rows } = await pool.query(`
-        SELECT shortlist_batch_name, shortlist_batch_id
-        FROM pp.shortlist_batch
-        WHERE frozen_yn = 'N';
-      `);
-      return rows.map(row => ({
-        name: row.shortlist_batch_name,
-        id: row.shortlist_batch_id,
-      }));
+        const { rows } = await pool.query(
+            `
+            SELECT shortlist_batch_name, shortlist_batch_id
+            FROM pp.shortlist_batch
+            WHERE shortlisted_year = $1 AND frozen_yn = 'N';
+            `,
+            [year] // 🔹 Passed year here
+        );
+        return rows.map(row => ({
+            name: row.shortlist_batch_name,
+            id: row.shortlist_batch_id,
+        }));
     } catch (error) {
-      console.error("Error fetching non-frozen shortlist names in model:", error);
-      throw error;
+        console.error("Error fetching non-frozen shortlist names in model:", error);
+        throw error;
     }
-  },
-
-  async getShortlistInfo(shortlistName, year) {
+},
+async getShortlistInfo(shortlistName, year) {
     try {
-      // Find batch info by name only
-      const { rows } = await pool.query(
-        `SELECT shortlist_batch_id, description, criteria_id, shortlist_batch_name, frozen_yn
-          FROM pp.shortlist_batch
-          WHERE shortlist_batch_name = $1;`,
-        [shortlistName]
-      );
+        // 1. Find batch info by name AND year to ensure absolute accuracy
+        const { rows } = await pool.query(
+            `SELECT shortlist_batch_id, description, criteria_id, shortlist_batch_name, frozen_yn
+             FROM pp.shortlist_batch
+             WHERE shortlist_batch_name = $1 AND shortlisted_year = $2;`, // 🔹 Fixed syntax & added year filter
+            [shortlistName, year] // 🔹 Correctly mapped $1 and $2
+        );
 
-      if (rows.length === 0) return null;
+        if (rows.length === 0) return null;
 
-      const {
-        shortlist_batch_id: id,
-        description,
-        criteria_id,
-        shortlist_batch_name: name,
-        frozen_yn
-      } = rows[0];
+        const {
+            shortlist_batch_id: id,
+            description,
+            criteria_id,
+            shortlist_batch_name: name,
+            frozen_yn
+        } = rows[0];
 
-      const criteriaRes = await pool.query(
-        `SELECT criteria FROM pp.shortlist_criteria WHERE criteria_id = $1;`,
-        [criteria_id]
-      );
+        // 2. Fetch Criteria
+        const criteriaRes = await pool.query(
+            `SELECT criteria FROM pp.shortlist_criteria WHERE criteria_id = $1;`,
+            [criteria_id]
+        );
 
-      const blocksRes = await pool.query(
-        `SELECT j.juris_name
-          FROM pp.jurisdiction j
-          JOIN pp.shortlist_batch_jurisdiction sbj ON j.juris_code = sbj.juris_code
-          WHERE sbj.shortlist_batch_id = $1;`,
-        [id]
-      );
+        // 3. Fetch Jurisdictions
+        const blocksRes = await pool.query(
+            `SELECT j.juris_name
+             FROM pp.jurisdiction j
+             JOIN pp.shortlist_batch_jurisdiction sbj ON j.juris_code = sbj.juris_code
+             WHERE sbj.shortlist_batch_id = $1;`,
+            [id]
+        );
 
-      // Student counts still require the year parameter to filter the correct student batch
-      const totalStudentsRes = await pool.query(
-        `SELECT COUNT(*) AS total_students
-          FROM pp.applicant_primary_info
-          WHERE nmms_year = $1
-          AND nmms_block IN (
-            SELECT juris_code
-            FROM pp.shortlist_batch_jurisdiction
-            WHERE shortlist_batch_id = $2
-          );`,
-        [year, id]
-      );
+        // 4. Total potential students in these blocks for this specific year
+        const totalStudentsRes = await pool.query(
+            `SELECT COUNT(*) AS total_students
+             FROM pp.applicant_primary_info
+             WHERE nmms_year = $1
+             AND nmms_block IN (
+               SELECT juris_code
+               FROM pp.shortlist_batch_jurisdiction
+               WHERE shortlist_batch_id = $2
+             );`,
+            [year, id]
+        );
 
-      const shortlistedRes = await pool.query(
-        `SELECT COUNT(*) AS shortlisted_count
-          FROM pp.applicant_shortlist_info asi
-          WHERE asi.shortlisted_yn = 'Y'
-            AND asi.applicant_id IN (
-              SELECT api.applicant_id
-              FROM pp.applicant_primary_info api
-              WHERE api.nmms_year = $1
-                AND api.nmms_block IN (
-                  SELECT juris_code
-                  FROM pp.shortlist_batch_jurisdiction
-                  WHERE shortlist_batch_id = $2
-                )
-            );`,
-        [year, id]
-      );
+        // 5. Total successfully shortlisted students in this specific batch
+        const shortlistedRes = await pool.query(
+            `SELECT COUNT(*) AS shortlisted_count
+             FROM pp.applicant_shortlist_info asi
+             WHERE asi.shortlisted_yn = 'Y'
+               AND asi.shortlist_batch_id = $1;`, // 🔹 Simplified: checking by batch ID is more direct
+            [id]
+        );
 
-      return {
-        id,
-        name,
-        description,
-        criteria: criteriaRes.rows[0]?.criteria || "N/A",
-        blocks: blocksRes.rows.map(row => row.juris_name),
-        totalStudents: parseInt(totalStudentsRes.rows[0]?.total_students || "0", 10),
-        shortlistedCount: parseInt(shortlistedRes.rows[0]?.shortlisted_count || "0", 10),
-        isFrozen: frozen_yn === 'Y' ? 'Yes' : 'No' 
-      };
+        return {
+            id,
+            name,
+            description,
+            criteria: criteriaRes.rows[0]?.criteria || "N/A",
+            blocks: blocksRes.rows.map(row => row.juris_name),
+            totalStudents: parseInt(totalStudentsRes.rows[0]?.total_students || "0", 10),
+            shortlistedCount: parseInt(shortlistedRes.rows[0]?.shortlisted_count || "0", 10),
+            isFrozen: frozen_yn === 'Y' ? 'Yes' : 'No' 
+        };
     } catch (error) {
-      console.error(`Error fetching detailed shortlist info in model:`, error);
-      throw error;
+        console.error(`Error fetching detailed shortlist info in model:`, error);
+        throw error;
     }
-  },
+},
 
   async getTotalApplicantCount(year) {
     try {
@@ -234,7 +234,9 @@ const shortlistInfoModel = {
           api.contact_no1 AS "Contact No 1",
           api.contact_no2 AS "Contact No 2",
           cur_inst.institute_name AS "Current School Name",
-          prev_inst.institute_name AS "Previous School Name"
+          prev_inst.institute_name AS "Previous School Name",
+          gmat_score AS "GMAT Score",
+          sat_score AS "SAT Score"
         FROM pp.applicant_primary_info api
         LEFT JOIN pp.institute cur_inst
           ON api.current_institute_dise_code = cur_inst.dise_code

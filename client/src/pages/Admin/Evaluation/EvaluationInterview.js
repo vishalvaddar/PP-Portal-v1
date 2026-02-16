@@ -1146,9 +1146,8 @@ function UnassignedStudentsList({ selectedCenter }) {
                   >
                     <span className="font-semibold">
                       {student.student_name}
-                    </span>{" "}
-                    - Score: {student.pp_exam_score} - School:{" "}
-                    {student.institute_name || "N/A"}
+                    </span>{"      "}
+                         <b>Score:</b> {student.pp_exam_score} 
                   </label>
                 </li>
               ))}
@@ -1952,27 +1951,18 @@ const FillInterviewView = () => {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 sm:p-6 lg:p-8 font-inter">
       <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-2xl space-y-6">
         {/* Show submission status and "Back" button */}
-        {submissionStatus && (
-          <div className="flex flex-col items-center justify-center space-y-6 text-center">
-            <div
-              className={`p-6 rounded-lg border-l-4 ${getMessageClasses(message.type)}`}
-            >
-              <h2
-                className={`font-semibold text-lg sm:text-xl mb-2 ${message.type === "success" ? "text-green-700" : "text-red-700"}`}
-              >
-                {message.type === "success"
-                  ? "Submission Successful!"
-                  : "Submission Failed"}
-              </h2>
-              <p className="text-sm sm:text-base">{message.text}</p>
-            </div>
-            <button
-              onClick={resetFormAndSelections}
-              className="bg-blue-600 text-white font-bold py-2 px-6 rounded-full shadow-md hover:bg-blue-700 transition duration-300"
-            >
-            </button>
-          </div>
-        )}
+{submissionStatus && (
+  <div className="flex flex-col items-center justify-center space-y-6 text-center">
+    <div className={`p-6 rounded-lg border-l-4 ${getMessageClasses(message.type)}`}>
+      <h2 className={`font-semibold text-lg sm:text-xl mb-2 ${message.type === "success" ? "text-green-700" : "text-red-700"}`}>
+        {message.type === "success" ? "Submission Successful!" : "Submission Failed"}
+      </h2>
+      <p className="text-sm sm:text-base">{message.text}</p>
+    </div>
+    
+    {/* 🔹 Removed the 'Submit Another Result' button from here */}
+  </div>
+)}
 
         {/* Main Form - Only render if no submission has been made */}
         {!submissionStatus && (
@@ -2233,10 +2223,10 @@ const FillInterviewView = () => {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
-                    "lifeGoalsAndZeal",
-                    "commitmentToLearning",
-                    "integrity",
-                    "communicationSkills",
+                    "LifeGoalsAndZeal",
+                    "CommitmentToLearning",
+                    "Integrity",
+                    "CommunicationSkills",
                   ].map((field) => (
                     <div key={field}>
                       <label
@@ -2261,33 +2251,35 @@ const FillInterviewView = () => {
                   ))}
                 </div>
 
-                {/* Final Decisions */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Home Verification Required. HIDDEN if status is Completed (value is auto-set to 'Not Required'). */}
-                  {!isCompleted && (
-                    <div className={!isRescheduled ? "block" : "hidden"}>
-                      <label
-                        htmlFor="homeVerificationRequired"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Home Verification Required
-                      </label>
-                      <select
-                        id="homeVerificationRequired"
-                        name="homeVerificationRequired"
-                        value={formData.homeVerificationRequired}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        // Only required if the dropdown is visible (i.e., status is empty)
-                        required={!isCompleted && !isRescheduled}
-                      >
-                        <option value="">Select</option>
-                        <option value="Required">Required</option>
-                        <option value="Not Required">Not Required</option>
-                        <option value="Completed">Completed</option>
-                      </select>
-                    </div>
-                  )}
+          {/* Final Decisions */}
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {/* 🔹 This section is now commented out and won't appear on screen
+    {!isCompleted && (
+        <div className={!isRescheduled ? "block" : "hidden"}>
+            <label
+                htmlFor="homeVerificationRequired"
+                className="block text-sm font-medium text-gray-700 mb-1"
+            >
+                Home Verification Required
+            </label>
+            <select
+                id="homeVerificationRequired"
+                name="homeVerificationRequired"
+                value={formData.homeVerificationRequired}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required={!isCompleted && !isRescheduled}
+            >
+                <option value="">Select</option>
+                <option value="Required">Required</option>
+                <option value="Not Required">Not Required</option>
+                <option value="Completed">Completed</option>
+            </select>
+        </div>
+    )}
+    */}
+
+   
 
                   {/* Interview Result. Conditional options based on status. */}
                   <div className={isRescheduled ? "col-span-1" : "block"}>
@@ -2331,7 +2323,7 @@ const FillInterviewView = () => {
                       )}
                     </select>
                   </div>
-                </div>
+                </div> 
 
                 {/* Remarks Textarea */}
                 <div>

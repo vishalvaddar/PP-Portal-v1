@@ -1,236 +1,268 @@
-/* src/pages/Admin/Evaluation/EvaluationInterview.css */
+  :root {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    --card-bg: #ffffff;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+  }
 
-:root {
-  --primary-color: #2563eb;
-  --primary-hover: #1d4ed8;
-  --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  --card-bg: #ffffff;
-  --text-main: #1e293b;
-  --text-muted: #64748b;
-  --border-color: #e2e8f0;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
-}
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+  body {
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
 
-body {
-  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  color: var(--text-main);
-  margin: 0;
-  padding: 0;
-  background: var(--bg-gradient);
-  min-height: 100vh;
-  line-height: 1.5;
-}
+  .interview-module {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 32px;
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+  }
 
-.interview-module {
-  max-width: 900px;
-  margin: 40px auto;
-  padding: 32px;
-  background-color: var(--card-bg);
-  border-radius: 12px;
-  box-shadow: var(--shadow-lg);
-}
+  .interview-module h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 24px;
+    letter-spacing: -0.025em;
+    text-align: center;
+  }
 
-.interview-module h1 {
-  font-size: 2.25rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 24px;
-  letter-spacing: -0.025em;
-  text-align: center;
-}
+  hr.divider {
+    border: 0;
+    height: 1px;
+    background: var(--border-color);
+    margin: 40px 0;
+  }
 
-hr.divider {
-  border: 0;
-  height: 1px;
-  background: var(--border-color);
-  margin: 40px 0;
-}
+  /* --- Action Selection Grid --- */
+  .interview-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    width: 100%;
+    margin: 20px auto 40px;
+  }
 
-/* --- Action Selection Grid --- */
-.interview-options-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-  width: 100%;
-  margin: 20px auto 40px;
-}
+  .option-box {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 40px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+    box-shadow: var(--shadow-sm);
+  }
 
-.option-box {
-  background-color: #ffffff;
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 40px 24px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 180px;
-  box-shadow: var(--shadow-sm);
-}
+  .option-box:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+    background-color: #f8faff;
+  }
 
-.option-box:hover {
-  border-color: var(--primary-color);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  transform: translateY(-4px);
-  background-color: #f8faff;
-}
+  .icon-box {
+    font-size: 3.5rem;
+    margin-bottom: 16px;
+    color: var(--primary-color);
+    filter: drop-shadow(0 4px 3px rgba(37, 99, 235, 0.1));
+  }
 
-.icon-box {
-  font-size: 3.5rem;
-  margin-bottom: 16px;
-  color: var(--primary-color);
-  filter: drop-shadow(0 4px 3px rgba(37, 99, 235, 0.1));
-}
+  .text-box {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-main);
+  }
 
-.text-box {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-main);
-}
+  /* --- Detailed Views --- */
+  .detailed-view {
+    width: 100%;
+    margin-top: 30px;
+    padding: 32px;
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+  }
 
-/* --- Detailed Views --- */
-.detailed-view {
-  width: 100%;
-  margin-top: 30px;
-  padding: 32px;
-  background-color: var(--card-bg);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-}
+  .detailed-view-heading {
+    color: var(--primary-color);
+    margin-bottom: 32px;
+    font-size: 1.875rem;
+    font-weight: 700;
+    text-align: center;
+  }
 
-.detailed-view-heading {
-  color: var(--primary-color);
-  margin-bottom: 24px;
-  font-size: 1.875rem;
-  font-weight: 700;
-  text-align: center;
-}
+  /* --- 1. INSTRUCTIONS: Bullet Points --- */
+  .detailed-view ul.instructions-list {
+    list-style-type: disc !important;
+    padding-left: 25px !important;
+    margin-bottom: 20px !important;
+  }
 
-.back-button {
-  background-color: #f1f5f9;
-  color: #475569;
-  border: 1px solid var(--border-color);
-  padding: 10px 24px;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.2s;
-}
+  .detailed-view ul.instructions-list li {
+    display: list-item !important;
+    margin-bottom: 8px !important;
+    color: var(--text-muted) !important;
+  }
 
-.back-button:hover {
-  background-color: #e2e8f0;
-  color: #1e293b;
-}
+  .back-button {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid var(--border-color);
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    margin-top: 20px;
+  }
 
-/* --- Form Elements --- */
-.section-container {
-  background-color: #f8fafc;
-  padding: 24px;
-  border-radius: 8px;
-  margin-bottom: 24px;
-  border: 1px solid var(--border-color);
-}
+  .back-button:hover {
+    background-color: #e2e8f0;
+    color: #1e293b;
+  }
 
-select, 
-input[type="text"], 
-input[type="date"], 
-input[type="time"], 
-input[type="number"], 
-textarea {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  transition: all 0.2s;
-  background-color: #ffffff;
-}
+  /* --- Radio Button Alignment Fix --- */
+  .radio-group div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
 
-select:focus, input:focus, textarea:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-}
+  /* --- 2. STUDENT LIST: Numbering (1, 2, 3) --- */
+  .student-list-container ul {
+    list-style: none !important;
+    padding-left: 0 !important;
+    counter-reset: student-counter;
+  }
 
-/* Student List */
-.student-list {
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  max-height: 320px;
-  overflow-y: auto;
-  background-color: #ffffff;
-}
+  .student-list-container li {
+    counter-increment: student-counter;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px;
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+    background: #ffffff;
+  }
 
-.student-list-item {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  transition: background 0.2s;
-}
+  .student-list-container li::before {
+    content: counter(student-counter) ".";
+    font-weight: 700;
+    color: var(--primary-color);
+    min-width: 25px;
+  }
 
-.student-list-item:last-child { border-bottom: none; }
+  /* --- 3. CREATIVE RATING: Small Box & Slider --- */
+  .rating-box {
+    display: inline-flex;
+    align-items: center;
+    background: #f0f7ff;
+    border: 1px solid #bfdbfe;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-left: auto;
+  }
 
-.student-list-item:hover {
-  background-color: #f1f5f9;
-}
+  .rating-slider {
+    -webkit-appearance: none;
+    width: 100px;
+    height: 6px;
+    background: #dbeafe;
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+  }
 
-/* Buttons */
-button {
-  background-color: var(--primary-color);
-  font-weight: 600;
-  border-radius: 8px;
-  padding: 12px 24px;
-  transition: transform 0.1s active, background 0.2s;
-}
+  .rating-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    border: 2px solid #fff;
+  }
 
-button:active { transform: scale(0.98); }
+  /* --- Form Elements --- */
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #334155;
+    font-size: 0.9rem;
+  }
 
-/* Message States */
-.message-box {
-  border-radius: 8px;
-  font-size: 0.9rem;
-  animation: slideIn 0.3s ease-out;
-}
+  select, 
+  input[type="text"], 
+  input[type="date"], 
+  input[type="number"], 
+  textarea {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    background-color: #ffffff;
+    margin-bottom: 16px;
+  }
 
-@keyframes slideIn {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
+  /* --- 4. BLUE THEME: Success (No Red) --- */
+  .success-message,
+  .bg-green-100,
+  .error-message { /* Changed error to blue too as requested no red */
+    background-color: #eff6ff !important;
+    color: var(--primary-color) !important;
+    border: 1px solid #bfdbfe !important;
+    border-left: 5px solid var(--primary-color) !important;
+    padding: 16px;
+    border-radius: 8px;
+    margin: 16px 0;
+  }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .interview-module { margin: 0; border-radius: 0; padding: 20px; }
-  .option-box { min-height: 140px; }
-}
+  /* Buttons */
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
 
-/* The 'blocked' state for the buttons */
-.option-box-disabled {
-  opacity: 0.6;
-  cursor: not-allowed !important; /* This shows the red circle/slashed icon */
-  filter: grayscale(1);
-  border: 2px solid #ffcfcf !important;
-  pointer-events: auto; /* Allow cursor to show even if we block logic */
-}
+  button:hover:not(:disabled) {
+    background-color: var(--primary-hover);
+    box-shadow: var(--shadow-md);
+  }
 
-/* The 'blocked' state for the buttons */
-.option-box-disabled {
-  opacity: 0.6;
-  cursor: not-allowed !important; /* Shows the blocked cursor icon */
-  filter: grayscale(1);
-  pointer-events: auto; /* Required to ensure the cursor icon actually shows */
-}
-
-.option-box-disabled:hover {
-  transform: none !important; /* Prevents lifting effect when blocked */
-  border-color: var(--border-color) !important; /* Keeps border neutral */
-
-}
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: var(--primary-color);
+  }

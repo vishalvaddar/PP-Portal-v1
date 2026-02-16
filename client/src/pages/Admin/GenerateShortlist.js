@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import axios from "axios"; 
+import axios from "axios";  
 import {
     MapPin, Building2, ListChecks, Edit, Play, AlertTriangle, CheckCircle, Loader, FileText
 } from 'lucide-react';
@@ -54,9 +54,10 @@ const GenerateShortlist = () => {
     }, [appliedConfig]);
 
     // 🚀 Logic to generate Shortlist Name automatically
+   // 🚀 Logic to generate Shortlist Name automatically
     useEffect(() => {
         if (selectedDistrict && selectedBlocks.length > 0) {
-            // Helper function to handle multi-word 3-letter logic
+            // Helper function to handle 3-letter logic (Only for District now)
             const formatToThreeLetters = (name) => {
                 return name
                     .split(" ")
@@ -65,20 +66,23 @@ const GenerateShortlist = () => {
                     .join("-");
             };
 
+            // 1. District gets the 3-letter treatment
             const districtPart = formatToThreeLetters(selectedDistrict);
             
-            // Join all selected blocks. If multiple blocks, separate by underscore (_)
+            // 2. Blocks take the Full Name (trimmed and converted to uppercase)
+            // Join multiple blocks with an underscore (_)
             const blocksPart = selectedBlocks
-                .map(block => formatToThreeLetters(block))
+                .map(block => block.trim().toUpperCase().replace(/\s+/g, '-')) 
                 .join("_");
 
+            // 3. Final Format: DIST3-FULLBLOCK-YEAR
             const finalName = `${districtPart}-${blocksPart}-${displayYear}`;
             setShortlistName(finalName);
         } else {
             setShortlistName("");
         }
     }, [selectedDistrict, selectedBlocks, displayYear]);
-
+    
     // 1. Fetch initial states and criteria
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -166,9 +170,11 @@ const GenerateShortlist = () => {
         fetchDistricts();
     }, [selectedDivision]);
 
-    // 4. Fetch blocks when District changes
+    
+
+   // 4. Fetch blocks when District changes
     useEffect(() => {
-        if (!selectedState || !selectedDivision || !selectedDistrict) {
+        if (!selectedState || !selectedDivision || !selectedDistrict || !displayYear) {
             setBlocks([]);
             setSelectedBlocks([]);
             return;
@@ -178,7 +184,10 @@ const GenerateShortlist = () => {
             setLoading(prev => ({ ...prev, blocks: true }));
             setError(prev => ({ ...prev, blocks: null }));
             try {
-                const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/shortlist/generate/blocks/${selectedState}/${selectedDivision}/${selectedDistrict}`);
+                // 🔹 Added displayYear to the URL parameters
+                const res = await axios.get(
+                    `${process.env.REACT_APP_BACKEND_API_URL}/api/shortlist/generate/blocks/${selectedState}/${selectedDivision}/${selectedDistrict}/${displayYear}`
+                );
                 setBlocks(res.data);
             } catch (err) {
                 console.error("Error fetching blocks:", err);
@@ -189,7 +198,7 @@ const GenerateShortlist = () => {
             }
         };
         fetchBlocks();
-    }, [selectedDistrict, selectedDivision, selectedState]);
+    }, [selectedDistrict, selectedDivision, selectedState, displayYear]); 
 
     const handleBlockChange = (blockName, isFrozen) => {
         if (isFrozen) return;

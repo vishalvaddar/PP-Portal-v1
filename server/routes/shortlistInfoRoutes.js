@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const shortlistInfoController = require('../controllers/shortlistInfoController');
-
+ 
 router.get('/names', shortlistInfoController.getShortlistNames);
 router.get('/non-frozen-names', shortlistInfoController.getNonFrozenShortlistNames);
 router.get('/counts', shortlistInfoController.getCounts);

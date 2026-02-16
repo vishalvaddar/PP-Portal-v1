@@ -2,7 +2,7 @@ const GenerateShortlistModel = require("../models/generateShortlistModel");
 const pool = require("../config/db"); 
 
 const generateShortlistController = {
-  
+   
   getStates: async (req, res) => {
     try {
       const states = await GenerateShortlistModel.getAllStates();
@@ -35,16 +35,23 @@ const generateShortlistController = {
     }
   },
 
-  getBlocks: async (req, res) => {
-    const { stateName, divisionName, districtName } = req.params; 
+ getBlocks: async (req, res) => {
+    // 🔹 Destructure 'year' from params
+    const { stateName, divisionName, districtName, year } = req.params; 
     try {
-      const blocks = await GenerateShortlistModel.getBlocksByDistrict(stateName, divisionName, districtName);
+      // 🔹 Pass 'year' to the model function
+      const blocks = await GenerateShortlistModel.getBlocksByDistrict(
+        stateName, 
+        divisionName, 
+        districtName, 
+        year
+      );
       res.json(blocks);
     } catch (error) {
       console.error("getBlocks - Error:", error);
       res.status(500).json({ message: "Error fetching blocks", error: error.message });
     }
-  }, 
+  },
 
   getCriteria: async (req, res) => {
     try {
