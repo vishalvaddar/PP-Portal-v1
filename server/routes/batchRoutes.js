@@ -39,5 +39,6 @@ router.delete("/:batchId", batchController.deleteBatch);
 
 // Students in batch
 router.get("/:batchId/students", batchController.getStudentsInBatch);
+router.put("/:batchId/students/:enr_id/status", batchController.updateStudentStatusInBatch);
 
 module.exports = router;

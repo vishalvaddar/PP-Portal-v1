@@ -422,3 +422,144 @@
 [2026-02-04T11:27:20.356Z] ACTION: GET /api/custom-list/lists by admin (10) ip=::1 status=error details={"statusCode":500}
 [2026-02-04T11:27:20.380Z] ACTION: GET /api/system-config/active by admin (10) ip=::1 
 [2026-02-04T11:27:20.421Z] ACTION: GET /api/custom-list/available-fields by admin (10) ip=::1 
+[2026-02-04T11:30:08.339Z] ACTION: GET /api/custom-list/lists by admin (10) ip=::1 
+[2026-02-04T11:30:08.344Z] ACTION: GET /api/batches/cohorts by admin (10) ip=::1 
+[2026-02-04T11:30:08.348Z] ACTION: GET /api/states by admin (10) ip=::1 
+[2026-02-04T11:30:08.351Z] ACTION: GET /api/custom-list/available-fields by admin (10) ip=::1 
+[2026-02-04T11:30:08.356Z] ACTION: GET /api/system-config/active by admin (10) ip=::1 
+[2026-02-04T11:30:08.465Z] ACTION: GET /api/custom-list/lists by admin (10) ip=::1 status=error details={"statusCode":500}
+[2026-02-04T11:30:08.469Z] ACTION: GET /api/custom-list/lists by admin (10) ip=::1 
+[2026-02-04T11:30:08.495Z] ACTION: GET /api/batches/cohorts by admin (10) ip=::1 
+[2026-02-04T11:30:08.508Z] ACTION: GET /api/states by admin (10) ip=::1 
+[2026-02-04T11:30:08.520Z] ACTION: GET /api/system-config/active by admin (10) ip=::1 
+[2026-02-04T11:30:08.551Z] ACTION: GET /api/custom-list/available-fields by admin (10) ip=::1 
+[2026-02-04T11:30:08.575Z] ACTION: GET /api/custom-list/lists by admin (10) ip=::1 status=error details={"statusCode":500}
+[2026-02-04T11:30:13.110Z] ACTION: GET /api/custom-list/lists by admin (10) ip=::1 
+[2026-02-04T11:30:13.113Z] ACTION: GET /api/batches/cohorts by admin (10) ip=::1 
+[2026-02-04T11:30:13.119Z] ACTION: GET /api/states by admin (10) ip=::1 
+[2026-02-04T11:30:13.122Z] ACTION: GET /api/custom-list/lists by admin (10) ip=::1 status=error details={"statusCode":500}
+[2026-02-04T11:30:13.125Z] ACTION: GET /api/custom-list/available-fields by admin (10) ip=::1 
+[2026-02-04T11:30:13.128Z] ACTION: GET /api/system-config/active by admin (10) ip=::1 
+[2026-02-04T11:30:13.132Z] ACTION: GET /api/events/1 by admin (10) ip=::1 
+[2026-02-04T11:30:13.139Z] ACTION: GET /api/custom-list/lists by admin (10) ip=::1 
+[2026-02-04T11:30:13.143Z] ACTION: GET /api/batches/cohorts by admin (10) ip=::1 
+[2026-02-04T11:30:13.145Z] ACTION: GET /api/custom-list/lists by admin (10) ip=::1 status=error details={"statusCode":500}
+[2026-02-04T11:30:13.149Z] ACTION: GET /api/states by admin (10) ip=::1 
+[2026-02-04T11:30:13.199Z] ACTION: GET /api/custom-list/available-fields by admin (10) ip=::1 
+[2026-02-04T11:30:13.276Z] ACTION: GET /api/events/1 by admin (10) ip=::1 
+[2026-02-04T11:30:13.279Z] ACTION: GET /api/system-config/active by admin (10) ip=::1 
+[2026-02-04T11:30:13.285Z] ACTION: GET /api/system-config/active by admin (10) ip=::1 
+[2026-02-04T11:30:13.290Z] ACTION: GET /api/system-config/active by admin (10) ip=::1 
+[2026-02-04T11:30:13.412Z] ACTION: GET /api/juris-name/2901 by admin (10) ip=::1 
+[2026-02-04T11:30:13.415Z] ACTION: GET /api/juris-name/290103 by admin (10) ip=::1 
+[2026-02-04T11:44:26.035Z] ACTION: GET /api/coordinator/subjects by admin (10) ip=::1 
+[2026-02-04T11:44:26.050Z] ACTION: GET /api/coordinator/teachers by admin (10) ip=::1 
+[2026-02-04T11:44:26.056Z] ACTION: GET /api/coordinator/platforms by admin (10) ip=::1 
+[2026-02-04T11:44:26.061Z] ACTION: GET /api/batches/cohorts by admin (10) ip=::1 
+[2026-02-04T11:44:26.064Z] ACTION: GET /api/batches by admin (10) ip=::1 
+[2026-02-04T11:44:26.068Z] ACTION: GET /api/coordinator/classrooms by admin (10) ip=::1 
+[2026-02-04T11:44:26.175Z] ACTION: GET /api/coordinator/subjects by admin (10) ip=::1 
+[2026-02-04T11:44:26.188Z] ACTION: GET /api/coordinator/teachers by admin (10) ip=::1 
+[2026-02-04T11:44:26.204Z] ACTION: GET /api/coordinator/platforms by admin (10) ip=::1 
+[2026-02-04T11:44:26.210Z] ACTION: GET /api/batches/cohorts by admin (10) ip=::1 
+[2026-02-04T11:44:26.235Z] ACTION: GET /api/coordinator/classrooms by admin (10) ip=::1 
+[2026-02-04T11:44:26.238Z] ACTION: GET /api/batches by admin (10) ip=::1 
+[2026-02-04T11:44:31.585Z] ACTION: GET /api/events by admin (10) ip=::1 
+[2026-02-04T11:44:31.606Z] ACTION: GET /api/events by admin (10) ip=::1 
+[2026-02-04T11:46:21.444Z] ACTION: GET /api/events/1 by admin (10) ip=::1 
+[2026-02-04T11:46:21.572Z] ACTION: GET /api/events/1 by admin (10) ip=::1 
+[2026-02-04T11:46:21.656Z] ACTION: GET /api/juris-name/2901 by admin (10) ip=::1 
+[2026-02-04T11:46:21.663Z] ACTION: GET /api/juris-name/290103 by admin (10) ip=::1 
+[2026-02-04T11:46:35.059Z] ACTION: GET /api/events by admin (10) ip=::1 
+[2026-02-04T11:46:35.184Z] ACTION: GET /api/events by admin (10) ip=::1 
+[2026-02-04T11:46:37.229Z] ACTION: GET /api/coordinator/subjects by admin (10) ip=::1 
+[2026-02-04T11:46:37.233Z] ACTION: GET /api/coordinator/teachers by admin (10) ip=::1 
+[2026-02-04T11:46:37.239Z] ACTION: GET /api/coordinator/platforms by admin (10) ip=::1 
+[2026-02-04T11:46:37.243Z] ACTION: GET /api/batches/cohorts by admin (10) ip=::1 
+[2026-02-04T11:46:37.246Z] ACTION: GET /api/batches by admin (10) ip=::1 
+[2026-02-04T11:46:37.249Z] ACTION: GET /api/coordinator/classrooms by admin (10) ip=::1 
+[2026-02-04T11:46:37.267Z] ACTION: GET /api/coordinator/subjects by admin (10) ip=::1 
+[2026-02-04T11:46:37.374Z] ACTION: GET /api/coordinator/teachers by admin (10) ip=::1 
+[2026-02-04T11:46:37.388Z] ACTION: GET /api/coordinator/platforms by admin (10) ip=::1 
+[2026-02-04T11:46:37.399Z] ACTION: GET /api/batches/cohorts by admin (10) ip=::1 
+[2026-02-04T11:46:37.410Z] ACTION: GET /api/coordinator/classrooms by admin (10) ip=::1 
+[2026-02-04T11:46:37.424Z] ACTION: GET /api/batches by admin (10) ip=::1 
+[2026-02-04T11:46:39.779Z] ACTION: GET /api/states by admin (10) ip=::1 
+[2026-02-04T11:46:39.782Z] ACTION: GET /api/cohorts by admin (10) ip=::1 
+[2026-02-04T11:46:39.792Z] ACTION: GET /api/cohorts by admin (10) ip=::1 
+[2026-02-04T11:46:39.795Z] ACTION: GET /api/states by admin (10) ip=::1 
+[2026-02-04T11:46:40.987Z] ACTION: GET /api/batches/cohorts by admin (10) ip=::1 
+[2026-02-04T11:46:40.990Z] ACTION: GET /api/batches by admin (10) ip=::1 
+[2026-02-04T11:46:40.995Z] ACTION: GET /api/batches/cohorts by admin (10) ip=::1 
+[2026-02-04T11:46:40.998Z] ACTION: GET /api/batches/coordinators by admin (10) ip=::1 
+[2026-02-04T11:46:41.002Z] ACTION: GET /api/batches/names by admin (10) ip=::1 
+[2026-02-04T11:46:41.006Z] ACTION: GET /api/batches by admin (10) ip=::1 
+[2026-02-04T11:46:41.012Z] ACTION: GET /api/batches/names by admin (10) ip=::1 
+[2026-02-04T11:46:41.026Z] ACTION: GET /api/batches/coordinators by admin (10) ip=::1 
+[2026-02-04T11:46:42.611Z] ACTION: GET /api/timetable/cohorts/active by admin (10) ip=::1 
+[2026-02-04T11:46:42.614Z] ACTION: GET /api/timetable/data/subjects by admin (10) ip=::1 
+[2026-02-04T11:46:42.618Z] ACTION: GET /api/timetable/data/teachers by admin (10) ip=::1 
+[2026-02-04T11:46:42.621Z] ACTION: GET /api/timetable/data/platforms by admin (10) ip=::1 
+[2026-02-04T11:46:42.626Z] ACTION: GET /api/timetable/cohorts/active by admin (10) ip=::1 
+[2026-02-04T11:46:42.628Z] ACTION: GET /api/timetable/data/subjects by admin (10) ip=::1 
+[2026-02-04T11:46:42.636Z] ACTION: GET /api/timetable/data/platforms by admin (10) ip=::1 
+[2026-02-04T11:46:42.640Z] ACTION: GET /api/timetable/data/teachers by admin (10) ip=::1 
+[2026-02-04T11:47:28.324Z] ACTION: GET /api/states by admin (10) ip=::1 
+[2026-02-04T11:47:28.330Z] ACTION: GET /api/cohorts by admin (10) ip=::1 
+[2026-02-04T11:47:28.432Z] ACTION: GET /api/states by admin (10) ip=::1 
+[2026-02-04T11:47:28.438Z] ACTION: GET /api/cohorts by admin (10) ip=::1 
+[2026-02-04T11:47:34.059Z] ACTION: GET /api/search-students by admin (10) ip=::1 
+[2026-02-04T11:47:41.698Z] ACTION: GET /api/batches/cohort/1 by admin (10) ip=::1 
+[2026-02-04T11:47:43.282Z] ACTION: GET /api/search-students by admin (10) ip=::1  details={"query":{"cohort_number":"1"}}
+[2026-02-04T11:47:46.143Z] ACTION: GET /api/batches/cohort/4 by admin (10) ip=::1 
+[2026-02-04T11:47:46.153Z] ACTION: GET /api/batches/cohort/4 by admin (10) ip=::1 
+[2026-02-04T11:47:47.405Z] ACTION: GET /api/search-students by admin (10) ip=::1  details={"query":{"cohort_number":"4"}}
+[2026-02-04T11:47:57.448Z] ACTION: GET /api/search-students by admin (10) ip=::1 
+[2026-02-04T12:02:20.861Z] LOGIN:  by admin  ip=::1 status=failed
+[2026-02-04T12:02:37.025Z] LOGIN:  by admin  ip=::1 status=success_pre_auth
+[2026-02-04T12:02:40.323Z] ACTION: login_complete by admin  ip=::1 status=success
+[2026-02-04T12:02:40.386Z] ACTION: GET /api/applicants/count by admin (10) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-04T12:02:40.390Z] ACTION: GET /api/applicants/shortlisted/count by admin (10) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-04T12:02:40.394Z] ACTION: GET /api/applicants/selected/count by admin (10) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-04T12:02:40.397Z] ACTION: GET /api/system-config/active by admin (10) ip=::1 
+[2026-02-04T12:02:40.425Z] ACTION: GET /api/applicants/count by admin (10) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-04T12:02:40.546Z] ACTION: GET /api/applicants/shortlisted/count by admin (10) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-04T12:02:40.561Z] ACTION: GET /api/applicants/selected/count by admin (10) ip=::1  details={"query":{"year":"2025"}}
+[2026-02-04T12:02:40.564Z] ACTION: GET /api/system-config/active by admin (10) ip=::1 
+[2026-02-04T12:02:44.462Z] ACTION: GET /api/events by admin (10) ip=::1 
+[2026-02-04T12:02:44.487Z] ACTION: GET /api/events by admin (10) ip=::1 
+[2026-02-04T12:02:46.460Z] ACTION: GET /api/events/1 by admin (10) ip=::1 
+[2026-02-04T12:02:46.480Z] ACTION: GET /api/events/1 by admin (10) ip=::1 
+[2026-02-04T12:02:46.545Z] ACTION: GET /api/juris-name/2901 by admin (10) ip=::1 
+[2026-02-04T12:02:46.549Z] ACTION: GET /api/juris-name/290103 by admin (10) ip=::1 
+[2026-02-04T12:02:52.584Z] ACTION: GET /api/events by admin (10) ip=::1 
+[2026-02-04T12:02:52.608Z] ACTION: GET /api/events by admin (10) ip=::1 
+[2026-02-04T12:02:55.622Z] ACTION: GET /api/event-types by admin (10) ip=::1 
+[2026-02-04T12:02:55.625Z] ACTION: GET /api/states by admin (10) ip=::1 
+[2026-02-04T12:02:55.627Z] ACTION: GET /api/batches/cohorts by admin (10) ip=::1 
+[2026-02-04T12:02:55.639Z] ACTION: GET /api/event-types by admin (10) ip=::1 
+[2026-02-04T12:02:55.642Z] ACTION: GET /api/states by admin (10) ip=::1 
+[2026-02-04T12:02:55.733Z] ACTION: GET /api/batches/cohorts by admin (10) ip=::1 
+[2026-02-04T12:03:10.020Z] ACTION: GET /api/events by admin (10) ip=::1 
+[2026-02-04T12:03:12.221Z] ACTION: GET /api/events/1 by admin (10) ip=::1 
+[2026-02-04T12:03:12.241Z] ACTION: GET /api/events/1 by admin (10) ip=::1 
+[2026-02-04T12:03:12.255Z] ACTION: GET /api/juris-name/2901 by admin (10) ip=::1 
+[2026-02-04T12:03:12.258Z] ACTION: GET /api/juris-name/290103 by admin (10) ip=::1 
+[2026-02-04T12:04:08.544Z] ACTION: GET /api/states by admin (10) ip=::1 
+[2026-02-04T12:04:08.558Z] ACTION: GET /api/event-types by admin (10) ip=::1 
+[2026-02-04T12:04:08.716Z] ACTION: GET /api/event-types by admin (10) ip=::1 
+[2026-02-04T12:04:08.718Z] ACTION: GET /api/states by admin (10) ip=::1 
+[2026-02-04T12:04:08.724Z] ACTION: GET /api/events/1 by admin (10) ip=::1 
+[2026-02-04T12:04:08.746Z] ACTION: GET /api/events/1 by admin (10) ip=::1 
+[2026-02-04T12:04:08.832Z] ACTION: GET /api/blocks-by-district/2901 by admin (10) ip=::1 
+[2026-02-04T12:04:19.308Z] ACTION: GET /api/events/1 by admin (10) ip=::1 
+[2026-02-04T12:04:19.412Z] ACTION: GET /api/events/1 by admin (10) ip=::1 
+[2026-02-04T12:04:19.422Z] ACTION: GET /api/juris-name/2901 by admin (10) ip=::1 
+[2026-02-04T12:04:19.426Z] ACTION: GET /api/juris-name/290103 by admin (10) ip=::1 
+[2026-02-04T12:04:23.327Z] ACTION: GET /api/events by admin (10) ip=::1 
+[2026-02-04T12:04:23.345Z] ACTION: GET /api/events by admin (10) ip=::1 
+[2026-02-04T12:04:47.243Z] ACTION: GET /api/selection-reports/cohorts by admin (10) ip=::1 
+[2026-02-04T12:04:47.438Z] ACTION: GET /api/selection-reports/cohorts by admin (10) ip=::1 
+[2026-02-04T12:04:59.180Z] ACTION: GET /api/selection-reports/sammelan-data by admin (10) ip=::1  details={"query":{"cohort":"Cohort-01","fromDate":"2026-02-01","toDate":"2026-02-03"}}
+[2026-02-04T12:07:53.682Z] ACTION: GET /api/events by admin (10) ip=::1 
+[2026-02-04T12:07:53.782Z] ACTION: GET /api/events by admin (10) ip=::1 

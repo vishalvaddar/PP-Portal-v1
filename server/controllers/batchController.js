@@ -383,3 +383,36 @@ exports.removeStudentsFromBatch = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+exports.updateStudentStatusInBatch = async (req, res) => {
+  try {
+    const { student_id, enr_id } = req.params;
+    const { active_yn } = req.body;
+
+    // Resolve to numeric student_id: accept either direct student_id param or enr_id
+    let sid = student_id;
+    if (!sid && enr_id) {
+      const info = await BatchModel.fetchStudentInfoByEnrId(enr_id);
+      if (info.rows.length === 0)
+        return res.status(404).json({ error: "Student not found" });
+      sid = info.rows[0].student_id;
+    }
+
+    if (!sid)
+      return res.status(400).json({ error: "student_id or enr_id is required" });
+
+    if (active_yn == null)
+      return res.status(400).json({ error: "active_yn is required" });
+
+    const result = await BatchModel.updateStudentStatus(sid, active_yn);
+    if (result.rowCount === 0)
+      return res.status(404).json({ error: "Student not found" });
+    res.json({ message: "Student status updated successfully" });
+  } catch (err) {
+    console.error("Error updating student status:", err);
+    res.status(500).json({
+      error: "Internal Server Error",
+      details: err.message
+    });
+  }
+};

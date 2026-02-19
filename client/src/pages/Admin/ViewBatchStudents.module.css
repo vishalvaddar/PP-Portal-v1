@@ -455,3 +455,23 @@ button {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
+
+
+.statusDropdown {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 13px;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.statusDropdown:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.inlineLoader {
+  margin-left: 6px;
+  animation: spin 1s linear infinite;
+}

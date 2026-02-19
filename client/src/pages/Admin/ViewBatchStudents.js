@@ -1,25 +1,10 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import classes from "./ViewBatchStudents.module.css";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 import useBatchData from "../../hooks/useBatchData";
-import {
-  Users,
-  Hash,
-  Mail,
-  Phone,
-  Search,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-  Plus,
-  Trash2,
-  X,
-  CheckCircle,
-  AlertCircle,
-  Loader2,
-} from "lucide-react";
+import { Users, Search, ArrowUp, ArrowDown, Plus, Trash2, X, CheckCircle, AlertCircle, Loader2} from "lucide-react";
 
 const API_URL = process.env.REACT_APP_BACKEND_API_URL;
 
@@ -58,6 +43,7 @@ const AddStudentsModal = ({ isOpen, onClose, batchId, onSuccess }) => {
   const [submitting, setSubmitting] = useState(false);
   const [selected, setSelected] = useState([]);
   const [search, setSearch] = useState("");
+  const [toast, setToast] = useState(null);
   const debouncedSearch = useDebounce(search, 300);
 
   useEffect(() => {
@@ -220,6 +206,7 @@ const ViewBatchStudents = () => {
   
   // UI State
   const [toast, setToast] = useState(null);
+  const [updatingStatusId, setUpdatingStatusId] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
@@ -280,6 +267,26 @@ const ViewBatchStudents = () => {
       setSelectedStudents([]);
     } else {
       setSelectedStudents(processedStudents.map((s) => s.student_id));
+    }
+  };
+
+  const handleStatusToggle = async (studentId, enrId, newStatus) => {
+    try{
+      setUpdatingStatusId(studentId);
+
+      // Call the route defined in server: PUT /api/batches/:batchId/students/:enr_id/status
+      await axios.put(`${API_URL}/api/batches/${batchId}/students/${encodeURIComponent(enrId)}/status`, {
+        active_yn: newStatus
+      });
+
+      showToast("Student status updated successfully.");
+      // Refresh list to reflect changes from server
+      refresh();
+    } catch (err) {
+      console.error("Failed to update student status", err);
+      showToast("Failed to update student status.", "error");
+    } finally {
+      setUpdatingStatusId(null);
     }
   };
 
@@ -413,7 +420,20 @@ const ViewBatchStudents = () => {
                     <td className={classes.nameCell}>{student.student_name}</td>
                     <td>{student.student_email || <span className={classes.muted}>N/A</span>}</td>
                     <td>{student.contact_no1 || <span className={classes.muted}>N/A</span>}</td>
-                    <td><span className={classes.statusBadge}>Active</span></td>
+                    <td>
+                      <select
+                        className={classes.statusDropdown}
+                        value={student.active_yn}
+                        disabled={updatingStatusId === student.student_id}
+                        onChange={(e)=> 
+                          handleStatusToggle(student.student_id, student.enr_id, e.target.value)
+                        }
+                      >
+                        <option value="ACTIVE">Active</option>
+                        <option value="INACTIVE">Inactive</option>
+                      </select>
+                      {updatingStatusId === student.student_id && <Loader2 size ={14} className={classes.inlineLoader} />}
+                    </td>
                   </tr>
                 ))}
               </tbody>

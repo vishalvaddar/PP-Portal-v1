@@ -251,6 +251,7 @@ exports.fetchBatchesByCohortNumber = async (cohort_number) => {
 exports.fetchStudentInfoByEnrId = async (enr_id) => {
   return await pool.query(
     `SELECT 
+       sm.student_id,
        sm.enr_id,
        api.nmms_reg_number,
        api.nmms_year,
@@ -333,5 +334,16 @@ exports.removeStudentBatchId = async (student_ids) => {
      SET batch_id = NULL
      WHERE student_id = ANY($1::bigint[])`,
     [cleanStudentIds]
+  );
+};
+
+
+exports.updateStudentStatus = async (student_id, newStatus) => {
+  return await pool.query(
+    `UPDATE pp.student_master
+     SET active_yn = $1
+      WHERE student_id = $2
+      RETURNING *`,
+    [newStatus, student_id]
   );
 };

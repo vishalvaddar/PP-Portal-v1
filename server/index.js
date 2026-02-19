@@ -128,9 +128,7 @@ const upload = multer({
 app.set("multerUpload", upload);
 
 const authRoutes = require("./routes/authRoutes");
-const adminDashboardRoutes = require("./routes/adminDashboardRoutes");
 const coordinatorRoutes = require("./routes/coordinatorRoutes");
-const studentRoutes = require("./routes/studentRoutes");
 const applicantRoutes = require("./routes/applicantRoutes"); 
 const bulkUploadRoutes = require("./routes/bulkUploadRoutes");
 const searchRoutes = require("./routes/searchRoutes");
@@ -161,7 +159,6 @@ app.use("/api/system-config", systemConfigRoutes);
 app.use("/api/bulk-upload", bulkUploadRoutes);
 
 app.use("/api/applicants", applicantRoutes);
-app.use("/api/student", studentRoutes);
 app.use("/api", studentSearchRoutes);
 
 app.use("/api", jurisdictionRoutes);
@@ -186,7 +183,6 @@ app.use("/api/interview", interviewRoutes);
 app.use("/api/results", resultandrankinkRoutes);
 
 app.use("/api", userRoleRoutes);
-app.use("/api/admin-dashboard", adminDashboardRoutes);
 app.use("/api/coordinator", coordinatorRoutes);
 app.use("/api", searchRoutes);
 
