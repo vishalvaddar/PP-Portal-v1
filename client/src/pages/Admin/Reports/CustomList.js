@@ -18,6 +18,12 @@ import {
 import styles from "./CustomList.module.css";
 import Breadcrumbs from "../../../components/Breadcrumbs/Breadcrumbs";
 
+import {
+  useFetchStates,
+  useFetchEducationDistricts,
+  useFetchBlocks,
+} from "../../../hooks/useJurisData";
+
 // ==========================================
 // 1. SUB-COMPONENT: STUDENT SELECTOR MODAL
 // ==========================================
@@ -40,36 +46,36 @@ const StudentSelectorModal = ({
   const API_URL = process.env.REACT_APP_BACKEND_API_URL;
 
   useEffect(() => {
-    if (isOpen && cohortId) {
+    if (isOpen) {
       setSelected(preSelectedIds.map((id) => String(id)));
-      fetchStudents();
     }
-  }, [
-    isOpen,
-    cohortId,
-    batchId,
-    stateId,
-    divisionId,
-    districtId,
-    blockId,
-    preSelectedIds,
-  ]);
+  }, [isOpen, preSelectedIds]);
 
-  const fetchStudents = async () => {
-    setLoading(true);
-    try {
-      const params = { batchId, stateId, divisionId, districtId, blockId };
-      const res = await axios.get(
-        `${API_URL}/api/custom-list/students-by-cohort/${cohortId}`,
-        { params },
-      );
-      setStudents(Array.isArray(res.data) ? res.data : res.data.data || []);
-    } catch (err) {
-      console.error("Modal fetch error", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+ useEffect(() => {
+  if (isOpen && (cohortId || stateId)) {
+    fetchStudents();
+  }
+}, [isOpen, cohortId, batchId, stateId, divisionId, districtId, blockId]);
+
+const fetchStudents = async () => {
+  setLoading(true);
+  try {
+    // Check your variable names here! 
+    // They must match stateId, districtId, blockId exactly.
+    const params = { batchId, stateId, divisionId, districtId, blockId };
+    const cid = cohortId && cohortId !== 'null' ? cohortId : 'all';
+    
+    const res = await axios.get(
+      `${API_URL}/api/custom-list/students-by-cohort/${cid}`,
+      { params }
+    );
+    setStudents(Array.isArray(res.data) ? res.data : res.data.data || []);
+  } catch (err) {
+    console.error("Modal fetch error", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const filtered = useMemo(() => {
     return students.filter(
@@ -95,12 +101,20 @@ const StudentSelectorModal = ({
 
   return (
     <div className={styles.modalOverlay}>
-      <div className={styles.modalContentWide}>
-        <div className={styles.modalHeader}>
+      <div
+        className={styles.modalContentWide}
+        style={{
+          maxHeight: "90vh",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        }}
+      >
+        <div className={styles.modalHeader} style={{ flexShrink: 0 }}>
           <h2>Select Students ({selected.length})</h2>
           <div style={{ display: "flex", gap: "10px" }}>
             <button className={styles.exportBtn} onClick={handleSelectAll}>
-              Select All Filtered
+              Select All 
             </button>
             <button onClick={onClose} className={styles.closeBtn}>
               <X size={20} />
@@ -108,7 +122,7 @@ const StudentSelectorModal = ({
           </div>
         </div>
 
-        <div className={styles.modalSearchContainer}>
+        <div className={styles.modalSearchContainer} style={{ flexShrink: 0 }}>
           <div className={styles.searchWrapper}>
             <Search size={18} className={styles.searchIcon} />
             <input
@@ -121,7 +135,10 @@ const StudentSelectorModal = ({
           </div>
         </div>
 
-        <div className={styles.modalListContainer}>
+        <div
+          className={styles.modalListContainer}
+          style={{ flex: 1, overflowY: "auto", minHeight: 0 }}
+        >
           {loading ? (
             <div className={styles.centerState}>
               <Loader2 className={styles.animateSpin} />
@@ -137,9 +154,7 @@ const StudentSelectorModal = ({
                     onClick={() => toggleSelect(s.student_id)}
                   >
                     <div className={styles.studentInfo}>
-                      <span className={styles.studentName}>
-                        {s.student_name}
-                      </span>
+                      <span className={styles.studentName}>{s.student_name}</span>
                       <span className={styles.studentDetails}>
                         ID: {s.student_id} | Batch: {s.batch_name}
                       </span>
@@ -158,14 +173,22 @@ const StudentSelectorModal = ({
             </div>
           )}
         </div>
-        <div className={styles.modalActions}>
-          <button className={styles.buttonSecondary} onClick={onClose}>
-            Cancel
-          </button>
-          <button
-            className={styles.buttonPrimary}
-            onClick={() => onConfirm(selected)}
+
+        <div
+          className={styles.modalActions}
+          style={{
+            flexShrink: 0,
+            borderTop: "1px solid #eee",
+            background: "#fff",
+          }}
           >
+            <button className={styles.buttonSecondary} onClick={onClose}>
+              Cancel
+            </button>
+            <button
+              className={styles.buttonPrimary}
+              onClick={() => onConfirm(selected)}
+            >
             Confirm Selection
           </button>
         </div>
@@ -207,6 +230,29 @@ const ListManager = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // DATA FETCHING HOOKS
+  useFetchStates(setStates);
+  useFetchEducationDistricts(selectedState, setDistricts);
+  useFetchBlocks(selectedDistrict, setBlocks);
+
+  const handleStateChange = (e) => {
+    setSelectedState(e.target.value);
+    setSelectedDivision("");
+    setSelectedDistrict("");
+    setSelectedBlock("");
+  };
+
+  const handleDivisionChange = (e) => {
+    setSelectedDivision(e.target.value);
+    setSelectedDistrict("");
+    setSelectedBlock("");
+  };
+
+  const handleDistrictChange = (e) => {
+    setSelectedDistrict(e.target.value);
+    setSelectedBlock("");
+  };
+
   const fetchLists = useCallback(async () => {
     try {
       const res = await axios.get(`${ENDPOINT}/lists`);
@@ -224,18 +270,13 @@ const ListManager = () => {
         setCohorts(Array.isArray(res.data) ? res.data : res.data.data || []),
       );
     axios
-      .get(`${API_URL}/api/states`)
-      .then((res) =>
-        setStates(Array.isArray(res.data) ? res.data : res.data.data || []),
-      );
-    axios
       .get(`${ENDPOINT}/available-fields`)
       .then((res) =>
         setAvailableFields(
           Array.isArray(res.data) ? res.data : res.data.data || [],
         ),
       );
-  }, [view, API_URL, ENDPOINT, fetchLists]);
+  }, [API_URL, ENDPOINT, fetchLists]);
 
   useEffect(() => {
     if (selectedCohort && selectedCohort !== "" && selectedCohort !== "null") {
@@ -245,7 +286,7 @@ const ListManager = () => {
         })
         .then((res) => {
           setBatches(Array.isArray(res.data) ? res.data : []);
-          setSelectedBatch(""); 
+          setSelectedBatch("");
         })
         .catch((err) => console.error("Error fetching batches:", err));
     } else {
@@ -265,30 +306,6 @@ const ListManager = () => {
         setDivisions(Array.isArray(res.data) ? res.data : res.data.data || []),
       );
   }, [selectedState, API_URL]);
-
-  useEffect(() => {
-    if (!selectedDivision) {
-      setDistricts([]);
-      return;
-    }
-    axios
-      .get(`${API_URL}/api/districts-by-division/${selectedDivision}`)
-      .then((res) =>
-        setDistricts(Array.isArray(res.data) ? res.data : res.data.data || []),
-      );
-  }, [selectedDivision, API_URL]);
-
-  useEffect(() => {
-    if (!selectedDistrict) {
-      setBlocks([]);
-      return;
-    }
-    axios
-      .get(`${API_URL}/api/blocks-by-district/${selectedDistrict}`)
-      .then((res) =>
-        setBlocks(Array.isArray(res.data) ? res.data : res.data.data || []),
-      );
-  }, [selectedDistrict, API_URL]);
 
   const handleEdit = async (list) => {
     setLoading(true);
@@ -411,9 +428,6 @@ const ListManager = () => {
             <div className={styles.attributeBox}>
               <div className={styles.boxHeader}>Available Attributes</div>
               <div className={styles.boxList}>
-                {availableFields.length === 0 && (
-                  <p className={styles.emptyText}>No more attributes</p>
-                )}
                 {availableFields.map((f) => (
                   <div
                     key={`avail-${f.col_name}`}
@@ -430,9 +444,6 @@ const ListManager = () => {
             <div className={styles.attributeBox}>
               <div className={styles.boxHeader}>Selected Attributes</div>
               <div className={styles.boxList}>
-                {selectedFields.length === 0 && (
-                  <p className={styles.emptyText}>Select columns for report</p>
-                )}
                 {selectedFields.map((f) => (
                   <div
                     key={`sel-${f.col_name}`}
@@ -477,47 +488,38 @@ const ListManager = () => {
             <select
               className={styles.select}
               value={selectedState}
-              onChange={(e) => {
-                setSelectedState(e.target.value);
-                setSelectedDivision("");
-              }}
+              onChange={handleStateChange}
             >
               <option value="">-- State --</option>
               {states.map((s) => (
-                <option key={`state-${s.juris_code}`} value={s.juris_code}>
-                  {s.juris_name}
+                <option key={s.juris_code || s.id} value={s.juris_code || s.id}>
+                  {s.juris_name || s.name}
                 </option>
               ))}
             </select>
             <select
               className={styles.select}
               value={selectedDivision}
-              onChange={(e) => {
-                setSelectedDivision(e.target.value);
-                setSelectedDistrict("");
-              }}
+              onChange={handleDivisionChange}
               disabled={!selectedState}
             >
               <option value="">-- Division --</option>
               {divisions.map((d) => (
-                <option key={`div-${d.juris_code}`} value={d.juris_code}>
-                  {d.juris_name}
+                <option key={d.juris_code || d.id} value={d.juris_code || d.id}>
+                  {d.juris_name || d.name}
                 </option>
               ))}
             </select>
             <select
               className={styles.select}
               value={selectedDistrict}
-              onChange={(e) => {
-                setSelectedDistrict(e.target.value);
-                setSelectedBlock("");
-              }}
+              onChange={handleDistrictChange}
               disabled={!selectedDivision}
             >
               <option value="">-- District --</option>
               {districts.map((d) => (
-                <option key={`dist-${d.juris_code}`} value={d.juris_code}>
-                  {d.juris_name}
+                <option key={d.juris_code || d.id} value={d.juris_code || d.id}>
+                  {d.juris_name || d.name}
                 </option>
               ))}
             </select>
@@ -529,8 +531,8 @@ const ListManager = () => {
             >
               <option value="">-- Block --</option>
               {blocks.map((b) => (
-                <option key={`block-${b.juris_code}`} value={b.juris_code}>
-                  {b.juris_name}
+                <option key={b.juris_code || b.id} value={b.juris_code || b.id}>
+                  {b.juris_name || b.name}
                 </option>
               ))}
             </select>
@@ -539,7 +541,7 @@ const ListManager = () => {
           <button
             className={styles.buttonSecondary}
             onClick={() => setIsModalOpen(true)}
-            disabled={!selectedCohort}
+            disabled={!selectedCohort && !selectedState}
             style={{ width: "100%", marginTop: "20px" }}
           >
             <Users size={18} style={{ marginRight: 8 }} /> Manage Students (
@@ -547,15 +549,8 @@ const ListManager = () => {
           </button>
 
           <div style={{ marginTop: "25px", display: "flex", gap: "10px" }}>
-            <button
-              className={styles.buttonSecondary}
-              onClick={() => setView("list")}
-            >
-              Cancel
-            </button>
-            <button className={styles.buttonPrimary} onClick={handleSave}>
-              Save Full List
-            </button>
+            <button className={styles.buttonSecondary} onClick={() => setView("list")}>Cancel</button>
+            <button className={styles.buttonPrimary} onClick={handleSave}>Save Full List</button>
           </div>
 
           <StudentSelectorModal
@@ -581,46 +576,17 @@ const ListManager = () => {
               <div className={styles.cardHeader}>
                 <div className={styles.studentInfo}>
                   <h3 className={styles.listNameTitle}>{l.list_name}</h3>
-                  <span className={styles.badge}>
-                    {l.student_count} Students
-                  </span>
+                  <span className={styles.badge}>{l.student_count} Students</span>
                 </div>
               </div>
               <div className={styles.cardActions}>
                 <div className={styles.actionGroupLeft}>
-                  <button
-                    className={styles.iconBtn}
-                    onClick={() => handleEdit(l)}
-                    title="Edit"
-                  >
-                    <Edit size={16} />
-                  </button>
-                  <button
-                    className={styles.iconBtn}
-                    onClick={async () => {
-                      if (window.confirm("Delete?")) {
-                        await axios.delete(`${ENDPOINT}/list/${l.list_id}`);
-                        fetchLists();
-                      }
-                    }}
-                    title="Delete"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  <button className={styles.iconBtn} onClick={() => handleEdit(l)} title="Edit"><Edit size={16} /></button>
+                  <button className={styles.iconBtn} onClick={async () => { if (window.confirm("Delete?")) { await axios.delete(`${ENDPOINT}/list/${l.list_id}`); fetchLists(); } }} title="Delete"><Trash2 size={16} /></button>
                 </div>
                 <div className={styles.actionGroupRight}>
-                  <button
-                    className={styles.exportBtn}
-                    onClick={() => handleExport(l, "xlsx")}
-                  >
-                    <Download size={14} /> XLS
-                  </button>
-                  <button
-                    className={styles.exportBtn}
-                    onClick={() => handleExport(l, "pdf")}
-                  >
-                    <FileText size={14} /> PDF
-                  </button>
+                  <button className={styles.exportBtn} onClick={() => handleExport(l, "xlsx")}><Download size={14} /> XLS</button>
+                  <button className={styles.exportBtn} onClick={() => handleExport(l, "pdf")}><FileText size={14} /> PDF</button>
                 </div>
               </div>
             </div>

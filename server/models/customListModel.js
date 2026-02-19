@@ -72,39 +72,54 @@ exports.getStudentsByListId = async (listId) => {
 
 
 exports.getStudentsByCohort = async (cohortId, batchId, stateId, divisionId, districtId, blockId) => {
+    // Start with the base query including all necessary joins
     let query = `
         SELECT 
             sm.student_id, 
             sm.student_name, 
-            b.batch_name
+            b.batch_name,
+            api.gender
         FROM pp.student_master sm 
-        JOIN pp.batch b ON sm.batch_id = b.batch_id 
-        JOIN pp.applicant_primary_info api ON api.applicant_id = sm.applicant_id
-        LEFT JOIN pp.jurisdiction sj ON api.app_state = sj.juris_code
-        LEFT JOIN pp.jurisdiction dj ON api.district = dj.juris_code
-        LEFT JOIN pp.jurisdiction bj ON api.nmms_block = bj.juris_code
-        WHERE b.cohort_number = $1 and sm.active_yn='ACTIVE'
+        JOIN pp.applicant_primary_info api ON sm.applicant_id = api.applicant_id
+        LEFT JOIN pp.batch b ON sm.batch_id = b.batch_id 
+        WHERE sm.active_yn = 'ACTIVE' 
+          AND api.nmms_year = 2025
     `;
     
-    const params = [cohortId];
+    const params = [];
 
+    // Helper function to add filters dynamically
     const addFilter = (val, col) => {
-        if (val && val !== 'null' && val !== '') {
+        if (val && val !== 'all' && val !== 'null' && val !== 'undefined' && val !== '') {
             params.push(val);
             query += ` AND ${col} = $${params.length}`;
         }
     };
 
+    // Apply any and all filters that are selected
+    addFilter(cohortId, 'b.cohort_number');
     addFilter(batchId, 'sm.batch_id');
-    addFilter(stateId, 'sj.juris_code');
-    addFilter(districtId, 'dj.juris_code');
-    addFilter(blockId, 'bj.juris_code');
+    addFilter(stateId, 'api.app_state');
+    addFilter(districtId, 'api.district');
+    addFilter(blockId, 'api.nmms_block');
 
     query += ` ORDER BY sm.student_name;`;
 
-    const { rows } = await pool.query(query, params);
-    return rows;
+    // DEBUG LOGS
+  //  console.log("--- DYNAMIC FLEXIBLE QUERY ---");
+   // console.log("SQL:", query);
+   // console.log("Params:", params);
+
+    try {
+        const { rows } = await pool.query(query, params);
+        console.log(`SUCCESS: Found ${rows.length} students matching ALL filters.`);
+        return rows;
+    } catch (err) {
+        console.error("DATABASE ERROR:", err.message);
+        throw err;
+    }
 };
+
 exports.getAllLists = async () => { 
     const { rows } = await pool.query(`SELECT cl.list_id, cl.list_name, COUNT(cls.student_id) AS student_count FROM pp.custom_list cl LEFT JOIN pp.custom_list_students cls ON cl.list_id = cls.list_id GROUP BY cl.list_id, cl.list_name ORDER BY cl.list_id DESC;`);
     return rows;

@@ -4,7 +4,7 @@ const pool = require("../config/db");
 const fs = require("fs/promises");
 const format = require("pg-format");
 const { existsSync: fsExistsSync } = require("fs");
-const NO_INTERVIEWER_ID = "NO_ONE";
+const NO_INTERVIEWER_ID = "NO_ONE"; 
 
 const InterviewModel = {
   async getExamCenters() {
@@ -771,8 +771,7 @@ getStudentsForVerification: async (nmmsYear) => {
       throw new Error("Could not fetch students for verification.");
     }
 },
-
- async submitInterviewDetails(applicantId, interviewData, uploadedFile) {
+async submitInterviewDetails(applicantId, interviewData, uploadedFile) {
   const {
     interviewDate,
     interviewTime,
@@ -802,8 +801,11 @@ getStudentsForVerification: async (nmmsYear) => {
     if (!remarks || remarks.trim() === "") {
       throw new Error("Remarks field is mandatory.");
     }
+    if (!nmmsYear) {
+      throw new Error("Academic Year (nmmsYear) is missing.");
+    }
 
-    // 2. FILE HANDLING (RENAME & CUSTOMIZE)
+    // 2. FILE HANDLING
     const fileExtension = path.extname(uploadedFile.filename);
     const dbDocType = fileExtension.substring(1).toUpperCase();
     const newFileName = `INTERVIEW-${applicantId}-${nmmsYear}${fileExtension}`;
@@ -813,19 +815,20 @@ getStudentsForVerification: async (nmmsYear) => {
     await fs.rename(originalFilePath, finalTargetPath);
 
     // 3. LOGIC PROCESSING
-    // Normalize input to uppercase
     let dbInterviewResult = interviewResult.toUpperCase().trim();
     
-    // Check if Home Verification is required
+    // 🔥 FIX: Map 'ACCEPTED' to 'SELECTED' to satisfy the DB Check Constraint
+    if (dbInterviewResult === "ACCEPTED") {
+      dbInterviewResult = "SELECTED";
+    }
+
     const isHomeVerificationRequired =
       homeVerificationRequired === "Required" ||
       dbInterviewResult === "HOME VERIFICATION REQUIRED";
     
     const homeVerificationYN = isHomeVerificationRequired ? "Y" : "N";
 
-    // --- NEW CHANGE ---
-    // If the selection was "HOME VERIFICATION REQUIRED", 
-    // we set the flag to 'Y' (done above) but store the result as 'SELECTED'
+    // Extra safety for the string "HOME VERIFICATION REQUIRED" which isn't in your DB list either
     if (dbInterviewResult === "HOME VERIFICATION REQUIRED") {
       dbInterviewResult = "SELECTED";
     }
@@ -833,41 +836,46 @@ getStudentsForVerification: async (nmmsYear) => {
     const dbStatus = interviewStatus.toUpperCase().trim();
     const dbMode = interviewMode.toUpperCase().trim();
 
-    // 4. DATABASE UPDATE
+    // --- GENERATE ENROLLMENT ID (enr_id) ---
+    let enrollmentId = null;
+    // We check against the NEW mapped value 'SELECTED'
+    if (dbInterviewResult === "SELECTED") {
+        const checkEnrRes = await client.query(
+            `SELECT enr_id FROM pp.student_master WHERE applicant_id = $1`, 
+            [applicantId]
+        );
+
+        if (checkEnrRes.rows.length > 0 && checkEnrRes.rows[0].enr_id) {
+            enrollmentId = checkEnrRes.rows[0].enr_id;
+        } else {
+            const countQuery = `
+                SELECT MAX(CAST(SUBSTRING(enr_id::TEXT, 5) AS INTEGER)) as last_seq
+                FROM pp.student_master
+                WHERE enr_id::TEXT LIKE $1 || '%';
+            `;
+            const countRes = await client.query(countQuery, [nmmsYear]);
+            const nextSeq = (countRes.rows[0].last_seq || 0) + 1;
+            const paddedSeq = nextSeq.toString().padStart(4, '0');
+            enrollmentId = `${nmmsYear}${paddedSeq}`;
+        }
+    }
+
+    // 4. DATABASE UPDATE (student_interview)
     const updateResult = await client.query(
       `UPDATE pp.student_interview
        SET
-         interview_date = $1, 
-         interview_time = $2, 
-         interview_mode = $3, 
-         status = $4, 
-         life_goals_and_zeal = $5, 
-         commitment_to_learning = $6, 
-         integrity = $7, 
-         communication_skills = $8, 
-         home_verification_req_yn = $9, 
-         interview_result = $10, 
-         doc_name = $11, 
-         doc_type = $12, 
-         remarks = $13
+         interview_date = $1, interview_time = $2, interview_mode = $3, 
+         status = $4, life_goals_and_zeal = $5, commitment_to_learning = $6, 
+         integrity = $7, communication_skills = $8, home_verification_req_yn = $9, 
+         interview_result = $10, doc_name = $11, doc_type = $12, remarks = $13
        WHERE applicant_id = $14 
          AND UPPER(TRIM(status)) = 'SCHEDULED' 
          AND interview_result IS NULL
        RETURNING *;`,
       [
-        interviewDate,
-        interviewTime,
-        dbMode,
-        dbStatus,
-        lifeGoalsAndZeal,
-        commitmentToLearning,
-        integrity,
-        communicationSkills,
-        homeVerificationYN,
-        dbInterviewResult, // This will now be 'SELECTED' if home verification was req.
-        newFileName,
-        dbDocType,
-        remarks,
+        interviewDate, interviewTime, dbMode, dbStatus,
+        lifeGoalsAndZeal, commitmentToLearning, integrity, communicationSkills,
+        homeVerificationYN, dbInterviewResult, newFileName, dbDocType, remarks,
         applicantId,
       ]
     );
@@ -877,34 +885,32 @@ getStudentsForVerification: async (nmmsYear) => {
     }
 
     // 5. CONDITIONAL INSERT FOR STUDENT MASTER
-    // Updated logic: Moved to master if result is 'ACCEPTED' OR 'SELECTED'
-    if (dbInterviewResult === "ACCEPTED" || dbInterviewResult === "SELECTED") {
+    if (dbInterviewResult === "SELECTED") {
       const insertQuery = `
         INSERT INTO pp.student_master (
-          applicant_id, student_name, father_name, mother_name,
+          applicant_id, enr_id, student_name, father_name, mother_name,
           father_occupation, mother_occupation, gender,
           contact_no1, contact_no2, current_institute_dise_code,
           previous_institute_dise_code, home_address
         )
         SELECT
-          p.applicant_id, p.student_name, p.father_name, p.mother_name,
+          p.applicant_id, $2, p.student_name, p.father_name, p.mother_name,
           s.father_occupation, s.mother_occupation, p.gender,
           p.contact_no1, p.contact_no2, p.current_institute_dise_code,
           p.previous_institute_dise_code, p.home_address
         FROM pp.applicant_primary_info p
         LEFT JOIN pp.applicant_secondary_info s ON p.applicant_id = s.applicant_id
         WHERE p.applicant_id = $1
-        ON CONFLICT (applicant_id) DO NOTHING;
+        ON CONFLICT (applicant_id) DO UPDATE SET enr_id = EXCLUDED.enr_id;
       `;
-      await client.query(insertQuery, [applicantId]);
+      await client.query(insertQuery, [applicantId, enrollmentId]);
     }
 
     await client.query("COMMIT");
-    return updateResult.rows[0];
+    return { ...updateResult.rows[0], enr_id: enrollmentId };
 
   } catch (error) {
     await client.query("ROLLBACK");
-    // Cleanup file on failure
     if (finalTargetPath && fsExistsSync(finalTargetPath)) {
         await fs.unlink(finalTargetPath);
     }
@@ -913,8 +919,8 @@ getStudentsForVerification: async (nmmsYear) => {
   } finally {
     client.release();
   }
-}, 
-  
+},
+    
 submitHomeVerification: async (data, fileData) => {
     const client = await pool.connect();
     let originalFilePath = null;
@@ -931,14 +937,42 @@ submitHomeVerification: async (data, fileData) => {
             status,
             verifiedBy,
             verificationType,
-            nmmsYear 
+            nmmsYear // Year from frontend (e.g., 2025)
         } = data;
 
         if (!nmmsYear) {
             throw new Error("Academic Year (nmmsYear) is missing.");
         }
 
-        // --- 2. FILE HANDLING ---
+        // --- 2. GENERATE ENROLLMENT ID (enr_id) ---
+        let enrollmentId = null;
+        const dbStatus = status.toUpperCase().trim();
+
+        if (dbStatus === "ACCEPTED") {
+            // Check if student already has an enr_id to prevent duplicates on re-submission
+            const checkEnrQuery = `SELECT enr_id FROM pp.student_master WHERE applicant_id = $1`;
+            const checkEnrRes = await client.query(checkEnrQuery, [applicantId]);
+
+            if (checkEnrRes.rows.length > 0 && checkEnrRes.rows[0].enr_id) {
+                enrollmentId = checkEnrRes.rows[0].enr_id;
+            } else {
+                // Generate New ID: Year + 4 digit sequence (e.g., 20250001)
+                // Added ::TEXT casting to fix substring error
+                const countQuery = `
+                    SELECT MAX(CAST(SUBSTRING(enr_id::TEXT, 5) AS INTEGER)) as last_seq
+                    FROM pp.student_master
+                    WHERE enr_id::TEXT LIKE $1 || '%';
+                `;
+                const countRes = await client.query(countQuery, [nmmsYear]);
+                const nextSeq = (countRes.rows[0].last_seq || 0) + 1;
+                
+                // Pad with zeros to 4 digits
+                const paddedSeq = nextSeq.toString().padStart(4, '0');
+                enrollmentId = `${nmmsYear}${paddedSeq}`;
+            }
+        }
+
+        // --- 3. FILE HANDLING ---
         let docName = null;
         let docType = null;
         let newFileName = null;
@@ -956,91 +990,55 @@ submitHomeVerification: async (data, fileData) => {
             docName = newFileName;
         }
 
-        // --- 3. DATABASE INSERTION ---
-        const dbStatus = status.toUpperCase().trim();
+        // --- 4. DATABASE INSERTION (Home Verification) ---
         const dbVerificationType = verificationType.toUpperCase().trim();
 
-        // 🔥 REMOVED the "REJECTED ? 1 : null" logic here
         const insertQuery = `
             INSERT INTO pp.home_verification (
-                applicant_id, 
-                date_of_verification, 
-                remarks, 
-                status, 
-                verified_by, 
-                rejection_reason_id, 
-                verification_type, 
-                doc_name, 
-                doc_type
+                applicant_id, date_of_verification, remarks, status, 
+                verified_by, rejection_reason_id, verification_type, 
+                doc_name, doc_type
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING *;
         `;
 
         const values = [
-            applicantId,
-            dateOfVerification,
-            remarks,
-            dbStatus,
-            verifiedBy,
-            null, // 🔥 Explicitly passing null to avoid foreign key violation
-            dbVerificationType,
-            docName,
-            docType,
+            applicantId, dateOfVerification, remarks, dbStatus,
+            verifiedBy, null, dbVerificationType, docName, docType
         ];
 
         const result = await client.query(insertQuery, values);
 
-        // --- 4. CONDITIONAL INSERT (pp.student_master) ---
+        // --- 5. CONDITIONAL INSERT (pp.student_master) ---
         if (dbStatus === "ACCEPTED") {
             const masterInsertQuery = `
                 INSERT INTO pp.student_master (
-                    applicant_id,
-                    student_name,
-                    father_name,
-                    mother_name,
-                    father_occupation,
-                    mother_occupation,
-                    gender,
-                    contact_no1,
-                    contact_no2,
-                    current_institute_dise_code,
-                    previous_institute_dise_code,
-                    home_address
+                    applicant_id, enr_id, student_name, father_name, mother_name,
+                    father_occupation, mother_occupation, gender,
+                    contact_no1, contact_no2, current_institute_dise_code,
+                    previous_institute_dise_code, home_address
                 )
                 SELECT
-                    p.applicant_id,
-                    p.student_name,
-                    p.father_name,
-                    p.mother_name,
-                    s.father_occupation,
-                    s.mother_occupation,
-                    p.gender,
-                    p.contact_no1,
-                    p.contact_no2,
-                    p.current_institute_dise_code,
-                    p.previous_institute_dise_code,
-                    p.home_address
+                    p.applicant_id, $2, p.student_name, p.father_name, p.mother_name,
+                    s.father_occupation, s.mother_occupation, p.gender,
+                    p.contact_no1, p.contact_no2, p.current_institute_dise_code,
+                    p.previous_institute_dise_code, p.home_address
                 FROM pp.applicant_primary_info p
                 LEFT JOIN pp.applicant_secondary_info s 
                     ON p.applicant_id = s.applicant_id
                 WHERE p.applicant_id = $1
-                ON CONFLICT (applicant_id) DO NOTHING;
+                ON CONFLICT (applicant_id) DO UPDATE SET enr_id = EXCLUDED.enr_id;
             `;
-            await client.query(masterInsertQuery, [applicantId]);
+            // Passing applicantId and the generated enrollmentId
+            await client.query(masterInsertQuery, [applicantId, enrollmentId]);
         }
 
         await client.query("COMMIT");
-        return result.rows[0];
+        return { ...result.rows[0], enr_id: enrollmentId };
 
     } catch (error) {
         await client.query("ROLLBACK");
-
-        if (finalTargetPath && fsExistsSync(finalTargetPath)) {
-            await fs.unlink(finalTargetPath);
-        } else if (originalFilePath && fsExistsSync(originalFilePath)) {
-            await fs.unlink(originalFilePath);
-        }
-
+        if (finalTargetPath && fsExistsSync(finalTargetPath)) await fs.unlink(finalTargetPath);
         console.error("Error in submitHomeVerification:", error);
         throw new Error(`Home verification failed: ${error.message}`);
     } finally {

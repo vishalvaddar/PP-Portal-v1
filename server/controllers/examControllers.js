@@ -600,13 +600,14 @@ async function downloadAllHallTickets(req, res) {
 
     // ---------------- STATIC ASSETS ----------------
     // These should stay INSIDE your project
-    const assetsBase = path.join(process.cwd(), "public");
+    const assetsBase = path.join(__dirname, "../public");
 
-    const logoLeftPath = path.join(assetsBase, "assets/rcf_logo-removebg-preview.png");
-    const logoRightPath = path.join(assetsBase, "assets/logo.png");
-    const kannadaFontPath = path.join(assetsBase, "fonts/NotoSansKannada-Regular.ttf");
-    const authoritySignaturePath = path.join(assetsBase, "assets/ravi_sir_sign-removebg-preview.png");
-    const stamplogo = path.join(assetsBase, "assets/rcf_stamp-removebg-preview.png");
+   const logoLeftPath = path.join(assetsBase, "assets/rcf_logo-removebg-preview.png");
+const logoRightPath = path.join(assetsBase, "assets/logo.png");
+const kannadaFontPath = path.join(assetsBase, "fonts/NotoSansKannada-Regular.ttf");
+const authoritySignaturePath = path.join(assetsBase, "assets/ravi_sir_sign-removebg-preview.png");
+const stamplogo = path.join(assetsBase, "assets/rcf_stamp-removebg-preview.png");
+
 
     const requiredFiles = [
       logoLeftPath,
