@@ -227,7 +227,27 @@ const baseNumber = year * 10000 + 1;
 
     // ---------- student_master ----------
  // ---------- student_master ----------
-let nextEnrId = await generateEnrId();  // 🔥 generate once
+const currentYear = new Date().getFullYear() % 100;
+const yearBase = currentYear * 10000;
+
+// Ensure sequence is aligned
+const { rows: maxRows } = await client.query(
+  `SELECT MAX(enr_id) AS max_id
+   FROM pp.student_master
+   WHERE enr_id BETWEEN $1 AND $2`,
+  [yearBase, yearBase + 9999]
+);
+
+let nextNumber = 1;
+
+if (maxRows[0].max_id) {
+  nextNumber = maxRows[0].max_id - yearBase + 1;
+}
+
+await client.query(
+  `SELECT setval('pp.enr_id_seq', $1, false)`,
+  [nextNumber]
+);
 
 for (const s of eligibleStudents) {
 
@@ -242,37 +262,43 @@ for (const s of eligibleStudents) {
 
   if (!rows.length) continue;
 
-  // Prevent duplicate insert
   const exists = await client.query(
     `SELECT 1 FROM pp.student_master WHERE applicant_id = $1`,
     [s.applicant_id]
   );
   if (exists.rowCount) continue;
 
-  const enrId = nextEnrId++;   // ✅ SAFE
-  const p = rows[0];
-
   await client.query(
     `
     INSERT INTO pp.student_master (
-      applicant_id, enr_id, student_name,
-      father_name, mother_name, gender,
-      father_occupation, mother_occupation,
-      home_address, contact_no1, contact_no2,
+      applicant_id,
+      enr_id,
+      student_name,
+      father_name,
+      mother_name,
+      gender,
+      father_occupation,
+      mother_occupation,
+      home_address,
+      contact_no1,
+      contact_no2,
       current_institute_dise_code,
       previous_institute_dise_code,
-      teacher_name, teacher_mobile_number,
+      teacher_name,
+      teacher_mobile_number,
       created_at
     )
     VALUES (
-      $1,$2,$3,$4,$5,$6,$7,$8,$9,
-      $10,$11,$12,$13,$14,$15,
+      $1,
+      (EXTRACT(YEAR FROM CURRENT_DATE)::int % 100) * 10000
+        + nextval('pp.enr_id_seq'),
+      $2,$3,$4,$5,$6,$7,$8,$9,
+      $10,$11,$12,$13,$14,
       CURRENT_TIMESTAMP
     )
     `,
     [
       s.applicant_id,
-      enrId,
       s.student_name,
       s.father_name,
       s.mother_name,
@@ -280,15 +306,16 @@ for (const s of eligibleStudents) {
       s.father_occupation,
       s.mother_occupation,
       s.home_address,
-      p.contact_no1,
-      p.contact_no2,
-      p.current_institute_dise_code,
-      p.previous_institute_dise_code,
+      rows[0].contact_no1,
+      rows[0].contact_no2,
+      rows[0].current_institute_dise_code,
+      rows[0].previous_institute_dise_code,
       s.teacher_name,
       s.teacher_mobile_number
     ]
   );
 }
+
 
     await client.query('COMMIT');
 
