@@ -130,6 +130,7 @@ export const appRouter = createBrowserRouter([
               { path: "batches", element: <Batches /> },
               { path: "batches/:batchId/students", element: <ViewBatchStudents /> },
               { path: "batches/view-student-info/:nmms_reg_number", element: <ViewStudentInfo /> },
+              { path: "students/view-student-info/:nmms_reg_number", element: <ViewStudentInfo /> },
               { path: "time-table-dashboard", element: <TimeTableDashboard /> },
               { path: "reports", element: <Reports /> },
               { path: "classrooms", element: <ClassroomManager /> },

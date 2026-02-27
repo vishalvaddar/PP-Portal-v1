@@ -1,4 +1,3 @@
-// 1. Change import to require
 const pool = require("../config/db.js").default || require("../config/db.js");
 
 const clean = (val) => (val === "" || val === undefined ? null : val);
@@ -209,12 +208,15 @@ async function updateApplicant(applicantId, data) {
 
 async function viewApplicantByRegNumber(nmms_reg_number) {
   const query = `
-    SELECT p.*, s.*, state.juris_name AS state_name, dist.juris_name AS district_name, blk.juris_name AS block_name
+    SELECT p.*, s.*, state.juris_name AS state_name, dist.juris_name AS district_name, blk.juris_name AS block_name, sm.enr_id, c.cohort_name, b.batch_name, sm.active_yn
     FROM pp.applicant_primary_info p
     LEFT JOIN pp.applicant_secondary_info s ON p.applicant_id = s.applicant_id
     LEFT JOIN pp.jurisdiction state ON p.app_state = state.juris_code
     LEFT JOIN pp.jurisdiction dist ON p.district = dist.juris_code
     LEFT JOIN pp.jurisdiction blk ON p.nmms_block = blk.juris_code
+    LEFT JOIN pp.student_master sm ON p.applicant_id = sm.applicant_id
+    LEFT JOIN pp.batch b ON sm.batch_id = b.batch_id
+    LEFT JOIN pp.cohort c ON b.cohort_number = c.cohort_number
     WHERE p.nmms_reg_number = $1
   `;
   const { rows } = await pool.query(query, [nmms_reg_number]);

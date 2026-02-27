@@ -25,7 +25,7 @@ const ViewStudentInfo = () => {
   
   const [expandedSections, setExpandedSections] = useState({ personal: true });
 
-  const isFromBatches = location.pathname.includes("/batches/view-student-info/");
+  const isFromBatches = location.pathname.includes("/batches/view-student-info/") || location.pathname.includes("/students/view-student-info/");
   const pageTitle = isFromBatches ? "Student Profile" : "Applicant Profile";
 
   useFetchStates(setStates);
@@ -73,8 +73,19 @@ const ViewStudentInfo = () => {
     favorite_teacher_name: "Favorite Teacher",
     favorite_teacher_phone: "Teacher's Contact",
     gmat_score: "GMAT Score",
-    sat_score: "SAT Score"
+    sat_score: "SAT Score",
+    enr_id: "Enrollment ID",
+    cohort_name: "Cohort",
+    batch_name: "Batch",
+    active_yn: "Academic Status"
   };
+
+  const academicSection = {
+    key: "academic_info",
+    title: "Pratibha Poshak Academic Information",
+    icon: "📚",
+    fields: ["enr_id", "cohort_name", "batch_name", "active_yn"]
+  }
 
   const sections = [
     {
@@ -83,6 +94,7 @@ const ViewStudentInfo = () => {
       icon: "👤",
       fields: ["student_name", "gender", "dob", "aadhaar", "medium", "father_name", "mother_name"]
     },
+    ...(isFromBatches ? [academicSection] : []),
     {
       key: "address",
       title: "Address Information",
@@ -133,6 +145,7 @@ const ViewStudentInfo = () => {
         setLoading(true);
         const res = await axios.get(`${process.env.REACT_APP_BACKEND_API_URL}/api/applicants/reg/${nmms_reg_number}`);
         const data = res.data.data;
+        console.log("Fetched student data:", data);
 
         if (!data) {
           setError("Student not found.");
@@ -162,7 +175,11 @@ const ViewStudentInfo = () => {
           contact_no2: data.contact_no2,
           current_institute_dise_code: data.current_institute_dise_code,
           previous_institute_dise_code: data.previous_institute_dise_code,
-          medium: data.medium
+          medium: data.medium,
+          enr_id: data.enr_id || "",
+          cohort_name: data.cohort_name || "",
+          batch_name: data.batch_name || "",
+          active_yn: data.active_yn || ""
         });
 
         setSecondaryData({

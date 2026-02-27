@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import axios from "axios";
 import Select from "react-select";
 import { saveAs } from "file-saver";
@@ -9,7 +9,6 @@ import { Link } from "react-router-dom";
 import { 
   Users, Search, RotateCcw, FileDown, ChevronDown, 
   Info, MapPin, GraduationCap, Loader2, FileSpreadsheet, FileText, AlertCircle,
-  // NEW: Import chevron icons for pagination
   ChevronLeft, ChevronRight 
 } from "lucide-react";
 
@@ -42,22 +41,20 @@ const Students = () => {
   const [loading, setLoading] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   
-  // --- New Validation States ---
   const [errors, setErrors] = useState({});
   const [toastMessage, setToastMessage] = useState("");
 
-  // --- NEW: Pagination States ---
+  // --- Server-Side Pagination States ---
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10); // Change this to 20 or 50 if needed
+  const [totalRecords, setTotalRecords] = useState(0);
+  const itemsPerPage = 50; 
 
   const exportRef = useRef(null);
 
-  // --- Jurisdictional Data Hooks ---
   useFetchStates(setStates);
   useFetchEducationDistricts(formData.state_id, setDistricts);
   useFetchBlocks(formData.district_id, setBlocks);
 
-  // --- Fetch Initial Metadata (Cohorts Only) ---
   useEffect(() => {
     const fetchCohorts = async () => {
       try {
@@ -76,7 +73,6 @@ const Students = () => {
     fetchCohorts();
   }, []);
 
-  // --- Fetch Batches when Cohort is selected ---
   const fetchBatchesByCohort = async (cohortNumber) => {
     try {
       const res = await axios.get(`${API_BASE}/api/batches/cohort/${cohortNumber}`);
@@ -93,13 +89,11 @@ const Students = () => {
     }
   };
 
-  // --- Filter Batches based on Cohort Selection ---
   const filteredBatchOptions = useMemo(() => {
     if (!formData.cohort_id) return []; 
     return options.batches.filter(batch => Number(batch.cohort_number) === Number(formData.cohort_id));
   }, [formData.cohort_id, options.batches]);
 
-  // --- Memoized Geo & Static Options ---
   const geoOptions = useMemo(() => ({
     states: states.map((s) => ({ value: s.id, label: s.name })),
     districts: districts.map((d) => ({ value: d.id, label: d.name })),
@@ -111,92 +105,10 @@ const Students = () => {
     ],
   }), [states, districts, blocks]);
 
-  // --- Export Logic ---
-  const downloadPDF = () => {
-    const doc = new jsPDF("l", "mm", "a4");
-    const tableColumns = ["ID", "Name", "Enroll ID", "Batch", "State", "District"];
-    // Note: We use 'results' here (not currentItems) to export ALL data, not just the current page
-    const tableRows = results.map(s => [s.student_id, s.student_name, s.enr_id, s.batch_name, s.state, s.district]);
-
-    doc.setFontSize(18).text("Student Search Report", 14, 20);
-    autoTable(doc, {
-      startY: 30,
-      head: [tableColumns],
-      body: tableRows,
-      headStyles: { fillColor: [37, 99, 235] }
-    });
-    doc.save(`students_${Date.now()}.pdf`);
-    setIsExportOpen(false);
-  };
-
-  const downloadExcel = () => {
-    // Export ALL results
-    const worksheet = XLSX.utils.json_to_sheet(results);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
-    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-    const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-    saveAs(data, `students_${Date.now()}.xlsx`);
-    setIsExportOpen(false);
-  };
-
-  // --- Handlers ---
-  
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: undefined }));
-    if (toastMessage) setToastMessage("");
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSelectChange = (selected, name) => {
-    const value = selected?.value || "";
-    if (toastMessage) setToastMessage("");
-
-    setFormData((prev) => {
-      const updates = { ...prev, [name]: value };
-      if (name === "cohort_id") {
-        updates.batch_id = "";
-        if (value) fetchBatchesByCohort(value);
-        else setOptions(prevOpt => ({ ...prevOpt, batches: [] }));
-      }
-      if (name === "state_id") {
-        updates.district_id = "";
-        updates.block_id = "";
-      }
-      if (name === "district_id") {
-        updates.block_id = "";
-      }
-      return updates;
-    });
-  };
-
-  const handleReset = () => {
-    setFormData(initialFormData);
-    setResults([]);
-    setCurrentPage(1); // Reset page on clear
-    setOptions(prev => ({ ...prev, batches: [] }));
-    setErrors({});
-    setToastMessage("");
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErrors({});
-    setToastMessage("");
-    
-    // Validation
-    const hasValues = Object.values(formData).some(val => val !== "" && val !== null && val !== undefined);
-    const newErrors = {};
-    if (formData.enr_id && formData.enr_id.length < 3) newErrors.enr_id = "ID must be at least 3 characters";
-    if (formData.student_name && formData.student_name.length < 3) newErrors.student_name = "Name must be at least 3 characters";
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-    
+  // --- Centralized Data Fetcher ---
+  const fetchStudents = useCallback(async (page = 1) => {
     setLoading(true);
+    const offset = (page - 1) * itemsPerPage;
 
     const apiPayload = {
       enr_id: formData.enr_id,
@@ -206,7 +118,9 @@ const Students = () => {
       gender: formData.gender,
       state_id: formData.state_id,
       district_id: formData.district_id,
-      block_id: formData.block_id
+      block_id: formData.block_id,
+      limit: itemsPerPage,
+      offset: offset
     };
 
     const params = Object.fromEntries(Object.entries(apiPayload).filter(([_, v]) => v && v !== ""));
@@ -214,12 +128,16 @@ const Students = () => {
     try {
       const res = await axios.get(`${API_BASE}/api/search-students`, { params });
       
-      if (!res.data?.data?.length) {
-        setToastMessage("No students found matching your criteria.");
+      const responseData = res.data.data || [];
+      const total = res.data.pagination?.total || 0;
+
+      if (responseData.length === 0) {
+        if (page === 1) setToastMessage("No students found matching your criteria.");
         setResults([]);
+        setTotalRecords(0);
       } else {
-        setResults(res.data.data);
-        setCurrentPage(1); // Reset to page 1 on new search
+        setResults(responseData);
+        setTotalRecords(total);
       }
     } catch (err) {
       console.error("Search failed", err);
@@ -227,40 +145,100 @@ const Students = () => {
     } finally {
       setLoading(false);
     }
+  }, [formData]);
+
+  // Handle Search Submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setErrors({});
+    
+    // Simple Validation
+    const newErrors = {};
+    if (formData.enr_id && formData.enr_id.length < 3) newErrors.enr_id = "ID must be at least 3 characters";
+    if (formData.student_name && formData.student_name.length < 3) newErrors.student_name = "Name must be at least 3 characters";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setCurrentPage(1); // Reset to page 1 for new search
+    fetchStudents(1);
   };
 
-  // --- NEW: Pagination Logic ---
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = results.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(results.length / itemsPerPage);
+  // Trigger fetch when page changes
+  useEffect(() => {
+    if (currentPage > 1 || (results.length > 0)) {
+        fetchStudents(currentPage);
+    }
+  }, [currentPage]);
 
-  const nextPage = () => {
-    if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
+  const totalPages = Math.ceil(totalRecords / itemsPerPage);
+
+  const nextPage = () => { if (currentPage < totalPages) setCurrentPage(p => p + 1); };
+  const prevPage = () => { if (currentPage > 1) setCurrentPage(p => p - 1); };
+
+  // --- Handlers ---
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: undefined }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const prevPage = () => {
-    if (currentPage > 1) setCurrentPage(prev => prev - 1);
+  const handleSelectChange = (selected, name) => {
+    const value = selected?.value || "";
+    setFormData((prev) => {
+      const updates = { ...prev, [name]: value };
+      if (name === "cohort_id") {
+        updates.batch_id = "";
+        if (value) fetchBatchesByCohort(value);
+      }
+      return updates;
+    });
   };
 
-  // Close export menu on outside click
+  const handleReset = () => {
+    setFormData(initialFormData);
+    setResults([]);
+    setCurrentPage(1);
+    setTotalRecords(0);
+    setOptions(prev => ({ ...prev, batches: [] }));
+    setErrors({});
+  };
+
+  // --- Export Logic ---
+  const downloadPDF = () => {
+    const doc = new jsPDF("l", "mm", "a4");
+    const tableColumns = ["ID", "Name", "Enroll ID", "Batch", "State", "District"];
+    const tableRows = results.map(s => [s.student_id, s.student_name, s.enr_id, s.batch_name, s.state, s.district]);
+    doc.setFontSize(18).text("Student Search Report (Current Page)", 14, 20);
+    autoTable(doc, {
+      startY: 30,
+      head: [tableColumns],
+      body: tableRows,
+      headStyles: { fillColor: [37, 99, 235] }
+    });
+    doc.save(`students_page_${currentPage}.pdf`);
+    setIsExportOpen(false);
+  };
+
+  const downloadExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(results);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    saveAs(data, `students_page_${currentPage}.xlsx`);
+    setIsExportOpen(false);
+  };
+
   useEffect(() => {
     const handler = (e) => {
-      if (exportRef.current && !exportRef.current.contains(e.target)) {
-        setIsExportOpen(false);
-      }
+      if (exportRef.current && !exportRef.current.contains(e.target)) setIsExportOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
-
-  // Auto-clear Toast
-  useEffect(() => {
-    if (toastMessage) {
-      const timer = setTimeout(() => setToastMessage(""), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toastMessage]);
 
   const isQuickSearch = !!formData.enr_id;
 
@@ -283,7 +261,7 @@ const Students = () => {
         <div className={classes.searchCard}>
           <header className={classes.cardHeader}>
             <Users size={24} color="#2563eb" />
-            <h1>Student</h1>
+            <h1>Student Search</h1>
           </header>
 
           <form onSubmit={handleSubmit} className={classes.form}>
@@ -299,7 +277,6 @@ const Students = () => {
                   style={errors.enr_id ? {borderColor: '#ef4444'} : {}}
                 />
               </div>
-              {errors.enr_id && <span style={{color: '#ef4444', fontSize: '12px'}}>{errors.enr_id}</span>}
             </div>
 
             <div className={classes.divider}><span>OR FILTER BY</span></div>
@@ -312,17 +289,11 @@ const Students = () => {
                   <input 
                     name="student_name"
                     className={classes.input}
-                    placeholder="Enter student name to search..."
+                    placeholder="Enter student name..."
                     value={formData.student_name}
                     onChange={handleChange}
-                    style={errors.student_name ? {borderColor: '#ef4444'} : {}}
                   />
                 </div>
-                {errors.student_name && (
-                  <span style={{color: '#ef4444', fontSize: '12px', marginTop: '4px', display: 'block'}}>
-                    {errors.student_name}
-                  </span>
-                )}
               </div>
 
               <div className={classes.dropdownGrid}>
@@ -332,25 +303,19 @@ const Students = () => {
                   value={options.cohorts.find(o => o.value === formData.cohort_id)} 
                   onChange={(s) => handleSelectChange(s, "cohort_id")} 
                 />
-
                 <CustomSelect 
                   label="Batch" 
-                  icon={<GraduationCap size={14}/>} 
                   options={filteredBatchOptions} 
                   value={filteredBatchOptions.find(o => o.value === formData.batch_id)} 
                   onChange={(s) => handleSelectChange(s, "batch_id")} 
                   isDisabled={!formData.cohort_id}
-                  placeholder={!formData.cohort_id ? "Select Cohort First" : "Any Batch"}
                 />
-
                 <CustomSelect 
                   label="State" 
-                  icon={<MapPin size={14}/>} 
                   options={geoOptions.states} 
                   value={geoOptions.states.find(o => o.value === formData.state_id)} 
                   onChange={(s) => handleSelectChange(s, "state_id")} 
                 />
-
                 <CustomSelect 
                   label="District" 
                   options={geoOptions.districts} 
@@ -375,7 +340,7 @@ const Students = () => {
           <aside className={classes.infoPanel}>
             <Info className={classes.infoIcon} />
             <h3>Quick Search Guide</h3>
-            <p>Enter a specific <strong>Enrollment ID</strong> for a direct result, or use the filters to narrow down by academic batch or location.</p>
+            <p>Enter an <strong>Enrollment ID</strong> for direct results, or use filters to narrow down by academic batch.</p>
           </aside>
         )}
       </div>
@@ -383,15 +348,15 @@ const Students = () => {
       {results.length > 0 && (
         <div className={classes.resultsContainer}>
           <div className={classes.resultsToolbar}>
-            <h3>Results ({results.length})</h3>
+            <h3>Results ({totalRecords})</h3>
             <div className={classes.exportWrapper} ref={exportRef}>
               <button onClick={() => setIsExportOpen(!isExportOpen)} className={classes.btnSecondary}>
                 <FileDown size={16} /> Export <ChevronDown size={14} />
               </button>
               {isExportOpen && (
                 <div className={classes.exportMenu}>
-                  <button onClick={downloadPDF}><FileText size={14} /> Save as PDF</button>
-                  <button onClick={downloadExcel}><FileSpreadsheet size={14} /> Save as Excel</button>
+                  <button onClick={downloadPDF}><FileText size={14} /> Save Page as PDF</button>
+                  <button onClick={downloadExcel}><FileSpreadsheet size={14} /> Save Page as Excel</button>
                 </div>
               )}
             </div>
@@ -408,11 +373,11 @@ const Students = () => {
                 </tr>
               </thead>
               <tbody>
-                {currentItems.map(s => (
+                {results.map(s => (
                   <tr key={s.student_id}>
                     <td className={classes.boldText}>{s.student_name}</td>
                     <td>
-                      <Link to={`/admin/admissions/view-student-info/${s.nmms_reg_number}`} className={classes.idBadge}>
+                      <Link to={`/admin/academics/students/view-student-info/${s.nmms_reg_number}`} className={classes.idBadge}>
                         {s.enr_id}
                       </Link>
                     </td>
@@ -424,25 +389,16 @@ const Students = () => {
             </table>
           </div>
 
-          {/* NEW: Pagination Controls */}
           {totalPages > 1 && (
             <div className={classes.paginationContainer}>
                <span className={classes.pageInfo}>
-                 Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
+                 Showing {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, totalRecords)} of <strong>{totalRecords}</strong>
                </span>
                <div className={classes.paginationControls}>
-                 <button 
-                   onClick={prevPage} 
-                   disabled={currentPage === 1}
-                   className={classes.pageBtn}
-                 >
+                 <button onClick={prevPage} disabled={currentPage === 1} className={classes.pageBtn}>
                    <ChevronLeft size={16} /> Previous
                  </button>
-                 <button 
-                   onClick={nextPage} 
-                   disabled={currentPage === totalPages}
-                   className={classes.pageBtn}
-                 >
+                 <button onClick={nextPage} disabled={currentPage === totalPages} className={classes.pageBtn}>
                    Next <ChevronRight size={16} />
                  </button>
                </div>
@@ -457,7 +413,7 @@ const Students = () => {
 const CustomSelect = ({ label, icon, ...props }) => (
   <div className={classes.field}>
     <label className={classes.label}>{icon} {label}</label>
-    <Select {...props} classNamePrefix="react-select" isClearable placeholder={props.placeholder || `Any ${label}`} />
+    <Select {...props} classNamePrefix="react-select" isClearable placeholder={`Any ${label}`} />
   </div>
 );
 
