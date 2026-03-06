@@ -2,12 +2,12 @@ import React, {
   useState,
   useCallback,
   useMemo,
-  useEffect,
   useRef,
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import axios from "axios";
+import ReCAPTCHA from "react-google-recaptcha";
 import login_logo from "../../assets/LOGO_PP.png";
 
 // UI Components
@@ -53,42 +53,10 @@ const LockIcon = React.memo(() => (
   </svg>
 ));
 
-const CaptchaIcon = React.memo(() => (
-  <svg
-    className={styles.inputIcon}
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-  </svg>
-));
-
-const RefreshIcon = React.memo(() => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3" />
-  </svg>
-));
-
 /* ---------------- Component ---------------- */
 const LoginForm = () => {
   const [formState, setFormState] = useState({
     credentials: { user_name: "", password: "" },
-    captchaInput: "",
     step: 1,
     error: "",
     isLoading: false,
@@ -97,8 +65,8 @@ const LoginForm = () => {
     preAuthToken: null,
   });
 
-  const [captchaCode, setCaptchaCode] = useState("");
-  const canvasRef = useRef(null);
+  const [captchaToken, setCaptchaToken] = useState(null);
+  const recaptchaRef = useRef(null);
 
   const navigate = useNavigate();
   const auth = useAuth();
@@ -107,58 +75,10 @@ const LoginForm = () => {
     setFormState((prev) => ({ ...prev, ...updates }));
   }, []);
 
-  /* ---------------- CAPTCHA ---------------- */
-  const drawCaptcha = useCallback((code) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = "#f3f4f6";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    for (let i = 0; i < 7; i++) {
-      ctx.beginPath();
-      ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
-      ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
-      ctx.strokeStyle = `rgba(0,0,0,${Math.random() * 0.2})`;
-      ctx.stroke();
-    }
-
-    ctx.font = "bold 24px 'Courier New', monospace";
-    ctx.fillStyle = "#1e293b";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-
-    [...code].forEach((char, i) => {
-      ctx.save();
-      ctx.translate(18 + i * 20, canvas.height / 2);
-      ctx.rotate((Math.random() - 0.5) * 0.4);
-      ctx.fillText(char, 0, 0);
-      ctx.restore();
-    });
-  }, []);
-
-  const generateCaptcha = useCallback(() => {
-    const chars = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZ";
-    let code = "";
-    for (let i = 0; i < 6; i++) {
-      code += chars[Math.floor(Math.random() * chars.length)];
-    }
-    setCaptchaCode(code);
-    drawCaptcha(code);
-  }, [drawCaptcha]);
-
-  useEffect(() => {
-    if (formState.step === 1) generateCaptcha();
-  }, [formState.step, generateCaptcha]);
-
   /* ---------------- Handlers ---------------- */
   const resetForm = useCallback(() => {
     updateFormState({
       credentials: { user_name: "", password: "" },
-      captchaInput: "",
       step: 1,
       error: "",
       isLoading: false,
@@ -166,8 +86,11 @@ const LoginForm = () => {
       selectedRole: "",
       preAuthToken: null,
     });
-    generateCaptcha();
-  }, [updateFormState, generateCaptcha]);
+    setCaptchaToken(null);
+    if (recaptchaRef.current) {
+      recaptchaRef.current.reset();
+    }
+  }, [updateFormState]);
 
   const handleFirstStep = useCallback(
     async (e) => {
@@ -179,12 +102,8 @@ const LoginForm = () => {
         return;
       }
 
-      if (formState.captchaInput.toUpperCase() !== captchaCode) {
-        updateFormState({
-          error: "Invalid CAPTCHA code. Please try again.",
-          captchaInput: "",
-        });
-        generateCaptcha();
+      if (!captchaToken) {
+        updateFormState({ error: "Please complete the CAPTCHA verification." });
         return;
       }
 
@@ -193,7 +112,11 @@ const LoginForm = () => {
       try {
         const { data } = await axios.post(
           `${process.env.REACT_APP_BACKEND_API_URL}/api/auth/login`,
-          { user_name: user_name.trim(), password }
+          { 
+            user_name: user_name.trim(), 
+            password,
+            captchaToken // Sent to your backend for verification
+          }
         );
 
         if (data.roles.length === 1) {
@@ -210,14 +133,17 @@ const LoginForm = () => {
           error:
             err.response?.data?.error ||
             "Login failed. Please check your credentials.",
-          captchaInput: "",
         });
-        generateCaptcha();
+        // Reset the CAPTCHA widget on a failed login attempt
+        setCaptchaToken(null);
+        if (recaptchaRef.current) {
+          recaptchaRef.current.reset();
+        }
       } finally {
         updateFormState({ isLoading: false });
       }
     },
-    [formState, captchaCode, updateFormState, generateCaptcha]
+    [formState, captchaToken, updateFormState]
   );
 
   const handleRoleSelection = useCallback(
@@ -288,6 +214,7 @@ const LoginForm = () => {
             <img src={login_logo} alt="Logo" className={styles.logoImage} />
           </div>
         </div>
+        
         <CardContent className={styles.formSection}>
           {formState.error && (
             <div className={styles.errorBanner}>⚠ {formState.error}</div>
@@ -334,34 +261,14 @@ const LoginForm = () => {
                 </div>
               </div>
 
-              {/* --- CAPTCHA SECTION --- */}
-              <div className={styles.inputWrapper}>
-                <Label htmlFor="captcha" className={styles.label}>Verification Code</Label>
-                <div className={styles.captchaRow}>
-                    <canvas 
-                        ref={canvasRef} 
-                        width="140" 
-                        height="48" 
-                        className={styles.captchaCanvas}
-                        onClick={generateCaptcha}
-                        title="Click to refresh image"
-                    />
-                    <button type="button" onClick={generateCaptcha} className={styles.refreshBtn} title="Refresh Code">
-                        <RefreshIcon />
-                    </button>
-                </div>
-                <div className={styles.inputContainer}>
-                  <CaptchaIcon />
-                  <Input
-                    id="captcha"
-                    className={styles.inputField}
-                    placeholder="Enter code shown above"
-                    value={formState.captchaInput}
-                    onChange={(e) => updateFormState({ captchaInput: e.target.value })}
-                    required
-                    maxLength={6}
-                  />
-                </div>
+              {/* reCAPTCHA */}
+              <div className={styles.inputWrapper} style={{ display: 'flex', justifyContent: 'center', margin: '15px 0' }}>
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
+                  onChange={(token) => setCaptchaToken(token)}
+                  onExpired={() => setCaptchaToken(null)}
+                />
               </div>
 
               <Button

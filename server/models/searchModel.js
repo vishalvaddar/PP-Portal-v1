@@ -22,41 +22,50 @@ const searchModel = {
     const values = [];
     let whereClause = "";
 
-    // Dynamic Query Construction
     if (nmms_reg_number) {
       values.push(nmms_reg_number.trim());
       whereClause += ` AND a.nmms_reg_number = $${values.length}`;
-    }
-    if (student_name) {
-      values.push(`%${student_name.trim()}%`);
-      whereClause += ` AND a.student_name ILIKE $${values.length}`;
-    }
-    if (nmms_year) {
-      values.push(parseInt(nmms_year));
-      whereClause += ` AND a.nmms_year = $${values.length}`;
-    }
-    if (medium) {
-      values.push(medium.trim().toUpperCase());
-      whereClause += ` AND UPPER(a.medium) = $${values.length}`;
-    }
-    if (app_state) {
-      values.push(app_state.trim());
-      whereClause += ` AND a.app_state = $${values.length}`;
-    }
-    if (district) {
-      values.push(district.trim());
-      whereClause += ` AND a.district = $${values.length}`;
-    }
-    if (nmms_block) {
-      values.push(nmms_block.trim());
-      whereClause += ` AND a.nmms_block = $${values.length}`;
-    }
-    if (current_institute_dise_code) {
-      values.push(current_institute_dise_code.trim());
-      whereClause += ` AND a.current_institute_dise_code = $${values.length}`;
+    } 
+    else {
+
+      if (student_name) {
+        values.push(`%${student_name.trim()}%`);
+        whereClause += ` AND a.student_name ILIKE $${values.length}`;
+      }
+
+      if (nmms_year) {
+        values.push(parseInt(nmms_year));
+        whereClause += ` AND a.nmms_year = $${values.length}`;
+      }
+
+      if (medium) {
+        values.push(medium.trim().toUpperCase());
+        whereClause += ` AND UPPER(a.medium) = $${values.length}`;
+      }
+
+      if (app_state) {
+        values.push(app_state.trim());
+        whereClause += ` AND a.app_state = $${values.length}`;
+      }
+
+      if (district) {
+        values.push(district.trim());
+        whereClause += ` AND a.district = $${values.length}`;
+      }
+
+      if (nmms_block) {
+        values.push(nmms_block.trim());
+        whereClause += ` AND a.nmms_block = $${values.length}`;
+      }
+
+      if (current_institute_dise_code) {
+        values.push(current_institute_dise_code.trim());
+        whereClause += ` AND a.current_institute_dise_code = $${values.length}`;
+      }
+
     }
 
-    // 1. Get Total Count
+    // Count query
     const countQuery = `SELECT COUNT(*) ${baseQuery} ${whereClause}`;
     const countResult = await pool.query(countQuery, values);
     const totalCount = parseInt(countResult.rows[0].count, 10);
@@ -65,8 +74,9 @@ const searchModel = {
       return { rows: [], totalCount: 0 };
     }
 
-    // 2. Get Data
+    // Data query
     const dataValues = [...values, limit, offset];
+
     const dataQuery = `
       SELECT 
         a.*, 
@@ -81,24 +91,23 @@ const searchModel = {
     `;
 
     const { rows } = await pool.query(dataQuery, dataValues);
-    
+
     return { rows, totalCount };
   },
 
-  /**
-   * Get all cohorts
-   */
   getAllCohorts: async () => {
-    const query = `SELECT * from pp.cohort ORDER BY cohort_number ASC`;
+    const query = `SELECT * FROM pp.cohort ORDER BY cohort_number ASC`;
     const { rows } = await pool.query(query);
     return rows;
   },
 
-  /**
-   * Get batches by cohort number
-   */
   getBatchesByCohort: async (cohortNumber) => {
-    const query = `SELECT * from pp.batch WHERE cohort_number = $1 ORDER BY batch_id ASC`;
+    const query = `
+      SELECT * 
+      FROM pp.batch 
+      WHERE cohort_number = $1 
+      ORDER BY batch_id ASC
+    `;
     const { rows } = await pool.query(query, [cohortNumber]);
     return rows;
   }

@@ -5,7 +5,7 @@ import { FileSearch, Search, RotateCcw, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   useFetchStates,
-  useFetchEducationDistricts, // 👈 Updated hook auto-fetches districts using divisions internally
+  useFetchEducationDistricts,
   useFetchBlocks,
 } from "../../hooks/useJurisData";
 import classes from "./SearchApplications.module.css";
@@ -38,7 +38,7 @@ const SearchApplications = () => {
 
   // --- Form Data ---
   const initialFormData = {
-    nmms_year: currentYear,
+    nmms_year: "",
     app_state: "",
     district: "",
     nmms_block: "",
@@ -55,14 +55,33 @@ const SearchApplications = () => {
 
   // --- Fetch Data ---
   useFetchStates(setStates);
-  useFetchEducationDistricts(formData.app_state, setDistricts); // 👈 Uses hidden division internally
+  useFetchEducationDistricts(formData.app_state, setDistricts);
   useFetchBlocks(formData.district, setBlocks);
 
   // --- Handlers ---
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: undefined }));
+
+    if (name === "nmms_reg_number") {
+      setFormData((prev) => ({
+        ...prev,
+        nmms_reg_number: value,
+        student_name: "",
+        app_state: "",
+        district: "",
+        nmms_block: "",
+        medium: "",
+      }));
+
+      setDistricts([]);
+      setBlocks([]);
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
   };
 
   const handleSelectChange = (selectedOption, name) => {
@@ -225,6 +244,7 @@ const SearchApplications = () => {
                   <Select
                     id="nmms_year"
                     options={yearOptions}
+                    placeholder="Any Year"
                     value={yearOptions.find((o) => o.value === formData.nmms_year)}
                     onChange={(s) => handleSelectChange(s, "nmms_year")}
                     classNamePrefix="react-select"

@@ -86,5 +86,24 @@ const getPlatforms = async () => {
   return result.rows || [];
 };
 
+const getCohorts = async () => {
+  const result = await pool.query(
+    `SELECT cohort_number, cohort_name
+     FROM pp.cohort
+     ORDER BY cohort_number DESC`
+  );
+  return result.rows || [];
+};
 
-module.exports = { getClassroomsByBatch, getAllClassrooms, createClassroom, getTeachers, getPlatforms };
+const getBatches = async (cohortId) => {
+  const result = await pool.query(
+    `SELECT batch_id, batch_name
+     FROM pp.batch
+     WHERE cohort_id = $1
+     ORDER BY batch_name`,
+    [cohortId]
+  );
+  return result.rows || [];
+};
+
+module.exports = { getClassroomsByBatch, getAllClassrooms, createClassroom, getTeachers, getPlatforms, getCohorts, getBatches };

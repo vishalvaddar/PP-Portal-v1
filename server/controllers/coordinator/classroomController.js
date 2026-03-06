@@ -6,6 +6,8 @@ const {
   createClassroom: createClassroomModel,
   getTeachers,
   getPlatforms,
+  getCohorts,
+  getBatches,
 } = require("../../models/coordinator/classroomModel");
 
 // ---------------------------------------------
@@ -94,5 +96,31 @@ const fetchClassrooms = async (req, res) => {
   }
 };
 
+const fetchCohorts = async (req, res) => {
+  try {
+    const cohorts = await getCohorts();
+    res.json(cohorts);
+  } catch (err) {
+    console.error("Error fetching cohorts:", err);
+    res.status(500).json({ error: "Failed to fetch cohorts" });
+  }
+};
 
-module.exports = { getClassroomsByBatchId, getAllClassrooms, createClassroom, fetchTeachers, fetchPlatforms, fetchClassrooms };
+const fetchBatches = async (req, res) => {
+  try {
+    const { cohortId } = req.params;
+
+    if (!cohortId) {
+      return res.status(400).json({ error: "Cohort ID is required" });
+    }
+
+    const batches = await getBatches(cohortId);
+    res.json(batches);
+  } catch (err) {
+    console.error("Error fetching batches:", err);
+    res.status(500).json({ error: "Failed to fetch batches" });
+  }
+};
+
+
+module.exports = { getClassroomsByBatchId, getAllClassrooms, createClassroom, fetchTeachers, fetchPlatforms, fetchClassrooms, fetchCohorts, fetchBatches };

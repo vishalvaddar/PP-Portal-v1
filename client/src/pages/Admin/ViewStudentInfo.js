@@ -176,10 +176,10 @@ const ViewStudentInfo = () => {
           current_institute_dise_code: data.current_institute_dise_code,
           previous_institute_dise_code: data.previous_institute_dise_code,
           medium: data.medium,
-          enr_id: data.enr_id || "",
-          cohort_name: data.cohort_name || "",
-          batch_name: data.batch_name || "",
-          active_yn: data.active_yn || ""
+          enr_id: data.enr_id,
+          cohort_name: data.cohort_name,
+          batch_name: data.batch_name,
+          active_yn: data.active_yn
         });
 
         setSecondaryData({
