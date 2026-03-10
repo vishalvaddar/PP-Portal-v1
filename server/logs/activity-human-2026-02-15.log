@@ -455,3 +455,26 @@
 [2026-02-15T12:52:49.231Z] ACTION: GET /api/exams/blocks-by-district/2901 by admin@rajalakshmiFoundation.in (1) ip=::1 
 [2026-02-15T12:52:51.144Z] ACTION: GET /api/exams/blocks-by-district/2902 by admin@rajalakshmiFoundation.in (1) ip=::1 
 [2026-02-15T12:52:52.747Z] ACTION: GET /api/exams/blocks-by-district/2930 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T13:05:02.730Z] ACTION: GET /api/evaluation-dashboard/overall/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T13:05:02.786Z] ACTION: GET /api/evaluation-dashboard/overall-progress/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T13:05:02.790Z] ACTION: GET /api/evaluation-dashboard/jurisdictions/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T13:05:03.720Z] ACTION: GET /api/evaluation-dashboard/overall-progress/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T13:05:04.650Z] ACTION: GET /api/evaluation-dashboard/jurisdictions/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T13:05:04.655Z] ACTION: GET /api/evaluation-dashboard/overall/2025 by anonymous (anonymous) ip=::1 
+[2026-02-15T13:06:00.416Z] ACTION: GET /api/evaluation/exam_names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T13:06:00.533Z] ACTION: GET /api/evaluation/exam_names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T13:06:04.565Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"}}
+[2026-02-15T13:06:04.577Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"},"statusCode":404}
+[2026-02-15T13:06:10.335Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T13:06:11.040Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"statusCode":500}
+[2026-02-15T13:07:30.612Z] ACTION: POST /api/evaluation/download_excel by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"}}
+[2026-02-15T13:09:56.048Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T13:10:01.147Z] ACTION: POST /api/evaluation/download_excel by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"}}
+[2026-02-15T13:11:33.570Z] ACTION: GET /api/evaluation/exam_names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T13:11:33.581Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T13:11:33.676Z] ACTION: GET /api/evaluation/exam_names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T13:11:33.682Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T13:11:35.673Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"}}
+[2026-02-15T13:11:35.677Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"},"statusCode":404}
+[2026-02-15T13:11:40.720Z] ACTION: POST /api/evaluation/bulk-upload by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-02-15T13:11:44.088Z] ACTION: POST /api/evaluation/download_excel by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"SARDARS_HIGH_SCHOOL_BEL_19_05_2025_10_00_14_00"}}
