@@ -235,6 +235,9 @@ async getShortlistInfo(shortlistName, year) {
           api.contact_no2 AS "Contact No 2",
           cur_inst.institute_name AS "Current School Name",
           prev_inst.institute_name AS "Previous School Name",
+          api.medium As Medium,
+		     d.juris_name  AS District,
+		     b.juris_name AS Block,
           gmat_score AS "GMAT Score",
           sat_score AS "SAT Score"
         FROM pp.applicant_primary_info api
@@ -242,6 +245,8 @@ async getShortlistInfo(shortlistName, year) {
           ON api.current_institute_dise_code = cur_inst.dise_code
         LEFT JOIN pp.institute prev_inst
           ON api.previous_institute_dise_code = prev_inst.dise_code
+        Left join pp.jurisdiction d on  api.district=d.juris_code
+		   Left join pp.jurisdiction b on  api.district=b.juris_code
         WHERE api.nmms_year = $1
           AND api.nmms_block IN (
             SELECT juris_code
