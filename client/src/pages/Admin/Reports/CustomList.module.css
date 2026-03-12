@@ -271,27 +271,11 @@
   align-items: center;
 }
 
-.iconBtn {
-  background: white;
-  border: 1px solid #dcdcdc;
-  padding: 6px;
-  border-radius: 4px;
-  cursor: pointer;
-  color: #555;
-  display: flex;
-}
 
-.exportBtn {
-  font-size: 0.75rem;
-  padding: 5px 10px;
-  border: 1px solid #dcdcdc;
-  border-radius: 4px;
-  cursor: pointer;
-  background-color: white;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+
+/* Ensure the Lucide icons inside inherit the color */
+.exportBtn svg {
+  display: block;
 }
 
 /* =========================================
@@ -308,15 +292,32 @@
   backdrop-filter: blur(2px);
 }
 
+
 .modalContentWide {
   background: white;
   width: 90%;
-  max-width: 600px;
+  max-width: 650px; /* Slightly wider */
   border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.25);
   display: flex;
   flex-direction: column;
-  max-height: 85vh;
+  max-height: 90vh; /* Increased height */
+  overflow: hidden; /* Keeps the rounded corners clean */
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.closeBtn:hover {
+  color: #e53e3e;
 }
 
 .modalListItem {
@@ -516,4 +517,85 @@
   background: #f8f9fa; /* Light grey to distinguish from list */
   border-top: 1px solid #eee;
   margin-top: auto;   /* Push to the very bottom */
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: #ffffff;
+  border-bottom: 2px solid #f0f0f0;
+  flex-shrink: 0; /* Prevents header from shrinking */
+}
+
+.modalHeader h2 {
+  font-size: 1.2rem;
+  margin: 0;
+  color: #2c3e50;
+}
+
+
+/* =========================================
+   LIST GRID VIEW & CARD ACTIONS
+   ========================================= */
+.iconBtn {
+  background: white;
+  border: 1px solid #dcdcdc;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #555;
+  display: flex;
+  transition: all 0.2s ease;
+}
+
+/* Edit & Delete Hover - Matching Primary Blue */
+.iconBtn:hover {
+  background-color: #3498db !important;
+  border-color: #2980b9 !important;
+  color: white !important;
+}
+
+.exportBtn {
+  font-size: 0.75rem;
+  padding: 5px 10px;
+  border: 1px solid #dcdcdc;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: white;
+  color: #444;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+/* XLS & PDF Hover - Matching Primary Blue */
+.exportBtn:hover {
+  background-color: #3498db !important;
+  border-color: #2980b9 !important;
+  color: white !important;
+}
+
+/* Ensure icons turn white on hover */
+.iconBtn:hover svg,
+.exportBtn:hover svg {
+  stroke: white;
+}
+
+/* Maintain the Modal "Select All" special styling you had */
+.modalHeader .exportBtn {
+  background-color: #f0f7ff;
+  border-color: #3498db;
+  color: #3498db;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+.modalHeader .exportBtn:hover {
+  background-color: #3498db !important;
+  border-color: #2980b9 !important;
+  color: white !important;
 }
