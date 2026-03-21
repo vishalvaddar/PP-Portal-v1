@@ -1,6 +1,8 @@
 const { file } = require("pdfkit");
 const pool = require("../config/db");
 const EventModel = require("../models/eventModel");
+const fs = require('fs');
+const path = require('path');
 
 /* =========================================================
    EVENT TYPE CONTROLLERS
@@ -364,4 +366,100 @@ exports.getEventById = async (req, res) => {
       message: "Failed to fetch event"
     });
   }
+};
+
+/* =========================================================
+   FOR SAMMELAN EVENTS
+========================================================= */
+
+exports.getSammelanEvents = async (req, res) => {
+    try {
+        const events = await EventModel.getSammelanEvents();
+        res.status(200).json({ success: true, data: events });
+    } catch (err) {
+        res.status(500).json({ success: false, msg: err.message });
+    }
+};
+
+exports.getJurisdictionData = async (req, res) => {
+    try {
+        const { type, stateName, divisionNames, districtNames } = req.query;
+        let data;
+
+        if (type === 'state') data = await EventModel.getStates();
+        else if (type === 'division') data = await EventModel.getDivisionsByState(stateName);
+        else if (type === 'district') data = await EventModel.getDistrictsByDivisions(divisionNames);
+        else if (type === 'block') data = await EventModel.getBlocksByMultiDistricts(stateName, divisionNames, districtNames);
+
+        res.status(200).json({ success: true, data });
+    } catch (err) {
+        res.status(500).json({ success: false, msg: err.message });
+    }
+};
+
+exports.fetchStudentAttendanceList = async (req, res) => {
+    try {
+        const { eventTitle, stateName, districtNames, blockNames, page } = req.body;
+
+        if (!eventTitle) {
+            return res.status(400).json({ success: false, msg: "Event Title is required." });
+        }
+
+        const filters = {
+            eventTitle,
+            stateName: stateName || null,
+            districtNames: (districtNames && districtNames.length > 0) ? districtNames : null,
+            blockNames: (blockNames && blockNames.length > 0) ? blockNames : null,
+            limit: 15,
+            offset: ((page || 1) - 1) * 15
+        };
+
+        const students = await EventModel.getSammelanStudentList(filters);
+        res.status(200).json({ success: true, data: students });
+    } catch (err) {
+        console.error("Query Error:", err.message);
+        res.status(500).json({ success: false, msg: "Database error occurred." });
+    }
+};
+
+exports.submitAttendance = async (req, res) => {
+    try {
+        const { eventId, studentIds } = req.body;
+        const parsedStudentIds = typeof studentIds === 'string' ? JSON.parse(studentIds) : studentIds;
+        
+        // IMPORTANT: Database 'uploaded_by' is NUMERIC. 
+        // If not logged in, we MUST use null, NOT the string 'ADMIN'.
+        const userId = req.user?.user_id || null; 
+
+        await EventModel.saveSammelanAttendance(pool, eventId, parsedStudentIds);
+
+        if (req.files?.photos) {
+            for (const file of req.files.photos) {
+                // Sending EXACTLY 4 items to match the Model
+                await EventModel.insertPhoto(pool, [
+                    eventId,       // $1
+                    file.path,     // $2
+                    file.filename, // $3
+                    userId         // $4 (Numeric or Null)
+                ]);
+            }
+        }
+
+        if (req.files?.reports) {
+            const report = req.files.reports[0];
+            // Sending EXACTLY 5 items to match the Model
+            await EventModel.insertEventReport(pool, [
+                eventId,           // $1
+                'SAMMELAN_REPORT', // $2
+                report.path,       // $3
+                report.filename,   // $4
+                userId             // $5 (Numeric or Null)
+            ]);
+        }
+
+        res.status(200).json({ success: true, msg: "Saved successfully!" });
+    } catch (err) {
+        console.error("Save Error:", err.message);
+        res.status(500).json({ success: false, msg: err.message });
+    }
 };

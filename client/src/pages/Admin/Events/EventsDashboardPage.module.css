@@ -1,4 +1,4 @@
-/* Container for the table */
+/* Container for the table */ 
 .listContainer {
   background: white;
   border-radius: 12px;
@@ -162,4 +162,51 @@
   font-weight: 600;
   margin-bottom: 8px;
   color: #0f172a;
+}
+/* Add this to your existing CSS file */
+
+/* Add this to your EventsDashboardPage.module.css */
+
+.buttonGroup {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.secondaryButton {
+  background-color: #334155; /* Matching your td color */
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid #1e293b;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.secondaryButton:hover {
+  background-color: #0f172a; /* Matching your titleText color */
+  border-color: #0f172a;
+}
+
+
+/* Make sure your primaryButton matches the BLUE from your badges for consistency */
+.primaryButton {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  background-color: #2563eb; /* Same as your typeBadge color */
+  color: white;
+  border: none;
+  transition: all 0.2s;
+}
+
+.primaryButton:hover {
+  background-color: #1d4ed8;
 }
