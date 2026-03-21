@@ -1,7 +1,9 @@
+/* --- Global Styles --- */
 .pageWrapper {
-  background: #f6f9fc; /* soft light background */
+  background: #f6f9fc;
   min-height: 100vh;
   padding: 30px;
+  font-family: 'Inter', sans-serif;
 }
 
 .container {
@@ -9,215 +11,245 @@
   margin: auto;
 }
 
-/* ---------------- TOP BAR ---------------- */
-
-.topBar {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
+/* --- Attendance Section Title --- */
+.sectionTitle {
+  color: #355f9a;
+  font-size: 1.5rem;
+  margin: 0;
 }
 
-.backLink {
-  text-decoration: none;
+/* --- Filter Grid (Dropdowns) --- */
+.filterGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+  margin-bottom: 25px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 8px;
   color: #5b7db1;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
-.editButton {
-  background: #7fa1c3;
-  color: white;
-  padding: 8px 18px;
+.formGroup select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #dbeafe;
   border-radius: 10px;
-  text-decoration: none;
+  background-color: #f8fbff;
+  color: #4a6fa5;
+  outline: none;
+}
+
+/* --- Dual Box Selection (Districts/Blocks) --- */
+.dualBoxContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.box {
+  border: 1px solid #dbeafe;
+  border-radius: 15px;
+  height: 250px;
+  overflow-y: auto;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.box h4 {
+  background: #7fa1c3; /* Matching your buttons */
+  color: white;
+  padding: 12px;
+  margin: 0;
+  font-size: 0.9rem;
+  position: sticky;
+  top: 0;
+  text-align: center;
+}
+
+.box ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.box li {
+  padding: 10px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f6fb;
+  font-size: 0.9rem;
+  color: #4b5563;
+  transition: background 0.2s;
+}
+
+.box li:hover {
+  background: #edf4ff;
+  color: #355f9a;
+}
+
+/* --- Buttons --- */
+.primaryButton {
+  margin-top: 25px;
+  width: 100%;
+  padding: 14px;
+  background: #5b7db1;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
   transition: background 0.3s;
 }
 
-.editButton:hover {
-  background: #6c8fb4;
+.primaryButton:hover {
+  background: #4a6fa5;
 }
 
-/* ---------------- HERO ---------------- */
-
-.hero {
-  background: linear-gradient(135deg, #dbeafe, #e8f1fb);
-  color: #1f2937;
-  padding: 35px;
-  border-radius: 20px;
-  margin-bottom: 30px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+.primaryButton:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
 }
 
-.hero h1 {
-  margin: 10px 0;
-  font-size: 2.1rem;
-  font-weight: 600;
-}
-
-.eventType {
-  background: #edf4ff;
-  color: #4a6fa5;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 13px;
-}
-
-.heroMeta {
-  display: flex;
-  gap: 25px;
-  margin-top: 12px;
-  font-size: 14px;
-  color: #4b5563;
-}
-
-/* ---------------- GRID ---------------- */
-
-.infoGrid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 25px;
-}
-
-.leftColumn,
-.rightColumn {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* ---------------- CARDS ---------------- */
-
-.card {
-  background: #ffffff;
-  padding: 22px;
+/* --- Pretty Table --- */
+.studentListSection {
+  margin-top: 30px;
+  background: white;
   border-radius: 18px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+  padding: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
 }
 
-.card h3 {
-  margin-bottom: 15px;
-  color: #374151;
+.studentTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.studentTable th {
+  background: #f1f6fb;
+  color: #5b7db1;
+  text-align: left;
+  padding: 15px;
   font-weight: 600;
+  border-bottom: 2px solid #dfeaf6;
 }
 
-/* ---------------- INFO ROWS ---------------- */
+.studentTable td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #f1f6fb;
+  color: #4b5563;
+  font-size: 0.95rem;
+}
 
-.infoRow {
+.studentTable tr:hover {
+  background: #fcfdfe;
+}
+
+/* Checkbox Styling */
+.studentTable input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #5b7db1;
+}
+
+/* --- Pagination Controls (Fixed Visibility) --- */
+.paginationControls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin: 20px 0;
+  padding: 15px;
+  background: #edf4ff; /* Light blue instead of grey */
+  border-radius: 12px;
+}
+
+.pageBtn {
+  padding: 8px 20px;
+  border: 1px solid #5b7db1;
+  background: white;
+  color: #5b7db1; /* Text is now blue and visible */
+  cursor: pointer;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background: #5b7db1;
+  color: white;
+}
+
+.pageBtn:disabled {
+  cursor: not-allowed;
+  border-color: #cbd5e1;
+  color: #cbd5e1;
+}
+
+.pageInfo {
+  font-weight: 600;
+  color: #355f9a;
+}
+
+/* --- Footer and Save Button --- */
+.tableFooter {
   display: flex;
   justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid #eef2f7;
-  color: #4b5563;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #f1f6fb;
 }
 
-.infoRow strong {
-  color: #1f2937;
+.tableFooter span {
+  color: #5b7db1;
+  font-weight: 600;
 }
 
-.infoRow:last-child {
-  border-bottom: none;
-}
-
-.description {
-  line-height: 1.8;
-  color: #4b5563;
-}
-
-/* ---------------- STATS ---------------- */
-
-.statsGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-
-.statCard {
-  background: #f1f6fb;
-  padding: 20px;
-  border-radius: 18px;
-  text-align: center;
+.saveBtn {
+  padding: 12px 30px;
+  background: #059669; /* Keep the green for success/save */
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
   transition: transform 0.2s;
 }
 
-.statCard:hover {
-  transform: translateY(-3px);
+.saveBtn:hover {
+  background: #047857;
+  transform: scale(1.02);
 }
 
-.statCard h2 {
-  color: #5b7db1;
-  font-size: 2rem;
-}
-
-.statCard span {
-  color: #6b7280;
-  font-size: 14px;
-}
-
-.statCardTotal {
-  grid-column: span 2;
-  background: #dfeaf6;
-  padding: 22px;
-  border-radius: 18px;
-  text-align: center;
-}
-
-.statCardTotal h2 {
-  color: #355f9a;
-  font-size: 2.2rem;
-}
-
-.statCardTotal span {
-  color: #4b5563;
-}
-
-/* ---------------- GALLERY ---------------- */
-
-.gallerySection {
-  margin-top: 40px;
-}
-
-.gallerySection h3 {
-  margin-bottom: 15px;
-  color: #374151;
-}
-
-.galleryGrid {
+.uploadSection {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 25px;
+  padding: 20px;
+  background: #f1f6fb;
+  border-radius: 15px;
 }
 
-.galleryImg {
-  width: 100%;
-  height: 170px;
-  object-fit: cover;
-  border-radius: 16px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+.uploadCard h4 {
+  color: #355f9a;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
 }
 
-.galleryImg:hover {
-  transform: scale(1.04);
-  box-shadow: 0 12px 22px rgba(0,0,0,0.12);
-}
-
-/* ---------------- EMPTY ---------------- */
-
-.emptyState {
-  background: #ffffff;
-  padding: 25px;
-  text-align: center;
-  border-radius: 14px;
-  color: #6b7280;
-}
-
-/* ---------------- RESPONSIVE ---------------- */
-
-@media (max-width: 900px) {
-  .infoGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .heroMeta {
-    flex-direction: column;
-    gap: 8px;
-  }
+.fileHint {
+  font-size: 0.8rem;
+  color: #5b7db1;
+  margin-top: 5px;
 }

@@ -1,4 +1,4 @@
-const express = require("express");
+const express = require("express"); 
 const cors = require("cors");
 const path = require("path");
 require("dotenv").config();
@@ -15,8 +15,10 @@ const interviewDataDir = path.join(PROJECT_ROOT_DIR, "Interview-data");
 const homeVerificationDataDir = path.join(PROJECT_ROOT_DIR, "Home-verification-data");
 const uploadsDir = path.join(__dirname, "uploads");
 
-const EVENT_PHOTOS_DIR = process.env.EVENT_STORAGE_PATH || path.join(__dirname, "uploads", "events", "photos");
+const EVENT_BASE_DIR = process.env.EVENT_STORAGE_PATH || path.join(__dirname, "uploads", "events");
 
+const EVENT_PHOTOS_DIR = path.join(EVENT_BASE_DIR, "photos");
+const EVENT_REPORTS_DIR = path.join(EVENT_BASE_DIR, "reports");
 [
   uploadsDir, 
   interviewDataDir, 
@@ -53,6 +55,20 @@ app.use(
   "/uploads/events/photos",
   express.static(EVENT_PHOTOS_DIR)
 );
+
+app.use(
+  "/uploads/events/reports",
+  express.static(EVENT_REPORTS_DIR)
+);
+app.use(express.json({ limit: '60mb' }));
+app.use(express.urlencoded({ limit: '60mb', extended: true }));
+
+[EVENT_PHOTOS_DIR, EVENT_REPORTS_DIR].forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+    console.log(`Created directory: ${dir}`);
+  }
+});
 
 const PROFILE_PHOTOS_ROOT = process.env.PROFILE_PHOTOS_ROOT;
 

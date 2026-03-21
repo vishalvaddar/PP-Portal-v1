@@ -1,5 +1,11 @@
 const pool = require("../config/db");
 
+
+
+const { spawn } = require("child_process");
+const fs = require("fs");
+const path = require("path");
+
 // ======================================================
 //  GET ACTIVE COHORTS
 // ======================================================
@@ -345,17 +351,431 @@ const deletePlatform = async (req, res) => {
     }
 };
 
+
+
+//=====================my code==========================
+
+const getSubjectsForTimeTable = async (req, res) => {
+    try {
+        const { rows } = await pool.query(`
+            
+SELECT subject_id,subject_name,subject_code,CAST
+(SUBSTRING(subject_code FROM '[0-9]+') AS INTEGER) AS grade,
+SUBSTRING(subject_code FROM '[0-9]+')||'-'||subject_name AS grade_subject FROM pp.subject ORDER BY grade
+        `);
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error("Error fetching subjects:", error);
+        res.status(500).json({ message: "Server error." });
+    }
+};
+
+const getTeachersForTimeTable = async (req, res) => {
+    try {
+        const { rows } = await pool.query(`
+            select teacher_id,teacher_name from pp.teacher t 
+	order by teacher_id;
+        `);
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error("Error fetching subjects:", error);
+        res.status(500).json({ message: "Server error." });
+    }
+};
+
+
+
+const getBatchesByGrades = async (req, res) => {
+
+try {
+
+    /* Grades coming from frontend */
+    // Example: { grades:[9,10] }
+
+    const grades = req.body.grades;
+
+    if (!grades || grades.length === 0) {
+        return res.json([]);
+    }
+
+    /* Convert grades array into placeholders */
+    // [9,10] → $1,$2
+
+    const placeholders = grades
+        .map((_, i) => `$${i + 1}`)
+        .join(",");
+
+    /* Query */
+
+    const query = `
+    SELECT 
+        'B' || 
+        LPAD(c.current_grade::text, 2, '0') || 
+        '-' || 
+        LPAD(SPLIT_PART(b.batch_name, '-', 2), 2, '0') AS id,
+        c.current_grade AS grade,
+        b.medium
+    FROM pp.batch b
+    JOIN pp.cohort c
+    ON c.cohort_number = b.cohort_number
+    WHERE c.current_grade IN (${placeholders})
+    ORDER BY id
+    `;
+
+    /* Execute query */
+
+    const result = await pool.query(query, grades);
+
+    /* Send response */
+      res.json(result.rows);
+
+}
+catch (err) {
+
+    console.log(err);
+    res.status(500).send("Server Error");
+
+}
+
+};
+
+const getBatchesByGradeMediumAndSubjectIds = async (req, res) => {
+  try {
+    const { grade, medium } = req.body; // single values
+
+    if (!grade || !medium) {
+      return res.status(400).json({ error: "Grade and medium are required" });
+    }
+
+    const query = `
+      SELECT 
+          'B' || 
+          LPAD(c.current_grade::text, 2, '0') || 
+          '-' || 
+          LPAD(SPLIT_PART(b.batch_name, '-', 2), 2, '0') AS id,
+          c.current_grade AS grade,
+          b.medium
+      FROM pp.batch b
+      JOIN pp.cohort c
+      ON c.cohort_number = b.cohort_number
+      WHERE c.current_grade = $1
+        AND b.medium = $2
+      ORDER BY id
+    `;
+    const result = await pool.query(query, [grade, medium]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server Error");
+  }
+};
+
+
+
+const getSubjectsByteacher = async (req, res) => {
+  try {
+
+    const teacherId = req.body.teacherId;
+    const query = `
+      SELECT 
+        t.teacher_id,
+        s.subject_name as subject,
+        s.subject_id as subject_id,
+        ts.medium,
+        CAST(
+            REGEXP_REPLACE(s.subject_code,'[^0-9]','','g')
+            AS INTEGER
+        ) AS grade
+      FROM pp.teacher t
+      JOIN pp.teacher_subject ts
+        ON t.teacher_id = ts.teacher_id
+      JOIN pp.subject s
+        ON s.subject_id = ts.subject_id
+      WHERE t.teacher_id = $1
+      ORDER BY t.teacher_id
+    `;
+
+    const result = await pool.query(query, [teacherId]);
+
+    res.json(result.rows);
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Server Error");
+  }
+};
+
+
+const getCanTeachByTeacherIds = async (req, res) => {
+
+try {
+
+    /* Teacher IDs from frontend */
+    // Example: { teacherIds:[1,2,3] }
+
+    let teacherIds = req.body.teacherIds || [];
+
+    if(teacherIds.length === 0){
+        return res.json([]);
+    }
+
+    /* Remove duplicates */
+
+    teacherIds = [...new Set(teacherIds)];
+    /* Create placeholders */
+    // [1,2] → $1,$2
+
+    const placeholders = teacherIds
+        .map((_,i)=>`$${i+1}`)
+        .join(",");
+
+    /* Query */
+
+    const query = `
+
+    SELECT 
+        t.teacher_id,
+        s.subject_name as subject,
+        ts.medium,
+
+        CAST(
+            REGEXP_REPLACE(s.subject_code,'[^0-9]','','g')
+            AS INTEGER
+        ) AS grade
+
+    FROM pp.teacher t
+
+    JOIN pp.teacher_subject ts
+    ON t.teacher_id = ts.teacher_id
+
+    JOIN pp.subject s
+    ON s.subject_id = ts.subject_id
+
+    WHERE t.teacher_id IN (${placeholders})
+
+    ORDER BY t.teacher_id
+
+    `;
+
+    const result = await pool.query(query,teacherIds);
+    res.json(result.rows);
+
+}
+catch(err){
+
+console.log(err);
+res.status(500).send("Server Error");
+
+}
+
+};
+
+
+
+
+const getTeachersBySubjects = async (req, res) => {
+  try {
+    const subjectIds = req.body.subjectIds;
+    if (!subjectIds || subjectIds.length === 0) {
+      return res.json([]);
+    }
+    const placeholders = subjectIds.map((_, i) => `$${i + 1}`).join(",");
+    const query = `
+      SELECT 
+        a.teacher_id,
+        a.teacher_name
+      FROM pp.teacher a
+      JOIN pp.teacher_subject b 
+        ON a.teacher_id = b.teacher_id
+      WHERE b.subject_id IN (${placeholders})
+      group by a.teacher_id,a.teacher_name 
+      ORDER BY a.teacher_id`;
+    const result = await pool.query(query, subjectIds);
+    res.json(result.rows);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Server Error");
+  }
+};
+
+
+
+const generateFinalOutputFromPython = async (req, res) => {
+  try {
+    
+    const path = require("path");
+    const { spawn } = require("child_process");
+    const fs = require("fs");
+
+    const pythonPath = "C:\\Users\\supri\\AppData\\Local\\Programs\\Python\\Python311\\python.exe";
+
+    //  STATIC input file
+    console.log("file path is "+__dirname)
+    //const inputFilePath = path.join(__dirname, "input_file.json");
+    // Only finalJson
+    const inputFilePath = path.join(__dirname, "input_file.json"); // <-- define it
+
+    if (fs.existsSync(inputFilePath)) {
+     fs.unlinkSync(inputFilePath);
+     console.log("file deleted sucessfully")
+    }
+
+    fs.writeFileSync(inputFilePath, JSON.stringify(req.body, null, 2)); // only finalJson
+    console.log("File Written Successfully");
+
+    const scriptPath = path.join(__dirname, "tt.py");
+
+
+    const pythonProcess = spawn(
+    pythonPath,
+    ["-u", scriptPath, inputFilePath],
+    { cwd: __dirname }
+    );
+
+    console.log("Python PID:", pythonProcess.pid);
+    console.log(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::0")
+    pythonProcess.stdout.on("data", (data) => {
+      console.log("Python output:", data.toString());
+    });
+     
+    console.log(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::1")
+    pythonProcess.stderr.on("data", (data) => {
+        console.log(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::2")
+        
+      console.log("Python error:", data.toString());
+    });
+
+
+    // ✅ ADD HERE
+    pythonProcess.on("exit", (code) => {
+    console.log("Python exited with code:", code);
+    }); 
+     
+    console.log(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::3")
+
+    pythonProcess.on("close", (code) => {
+        if(code === 0){
+            const reportPath = path.join(__dirname,"report.txt");
+            if(fs.existsSync(reportPath)){
+                const reportContent = fs.readFileSync(reportPath,"utf8");
+                fs.unlinkSync(reportPath);
+                console.log("output file deleted sucessfully");
+                res.json({type: "report",data: reportContent});
+            }else {
+                res.status(404).json({ error: "Report file not found" });
+            }
+        }else if (code === 1 ) {
+            const outputPath = path.join(__dirname, "output.json");
+            if (fs.existsSync(outputPath)) {
+                const jsonData = JSON.parse(fs.readFileSync(outputPath, "utf8"));
+                    fs.unlinkSync(outputPath);
+                    console.log("output file deleted sucessfully")
+                res.json({type: "timetable",data: jsonData});
+            }else {
+                res.status(404).json({ error: "Output file not found" });
+            }
+        }    
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+
+
+// Controller to save draft file and insert record
+const saveConfigurationDraftFile = async (req, res) => {
+  try {
+    console.log("Saving draft...");
+    const { userName, fileContent } = req.body;
+
+    if (!userName || !fileContent) {
+      return res.status(400).json({ message: "User name and file content are required" });
+    }
+console.log("111111");
+    // Step 1: Fixed local server path
+    const draftsDir = "C:\\Drafts"; // <-- folder on your local server
+    console.log("Checking folder:", draftsDir);
+console.log("Folder exists?", fs.existsSync(draftsDir));
+
+
+    if (!fs.existsSync(draftsDir)) {
+        console.log(">>>>>>>>>>>>>>>>>inside the folder")
+      fs.mkdirSync(draftsDir, { recursive: true });
+      console.log("Drafts folder created at:", draftsDir);
+    }
+
+    const fileName = `${userName}_configurationDraftFile.json`;
+    const filePath = path.join(draftsDir, fileName);
+
+    // Step 2: Save file
+    fs.writeFile(filePath, fileContent, async (err) => {
+      if (err) {
+        console.error("Error saving file:", err);
+        return res.status(500).json({ message: "Error saving file" });
+      }
+
+      console.log("Draft file saved:", filePath);
+
+      // Step 3: Insert record in DB after file is saved
+      const query = `
+        INSERT INTO pp.config_file (config_file_name)
+        VALUES ($1)
+        RETURNING *;
+      `;
+      const values = [fileName];
+
+      try {
+        const result = await pool.query(query, values);
+        return res.status(200).json({
+          message: "Draft saved successfully!",
+          data: result.rows[0],
+        });
+      } catch (dbErr) {
+        console.error("Error inserting in DB:", dbErr);
+        return res.status(500).json({ message: "Error saving to database" });
+      }
+    });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+const getAllConfigurationDraftFileDtls = async (req, res) => {
+  try {
+    const query = `
+      SELECT config_id,config_file_name,created_at,updated_at
+        FROM pp.config_file
+      ORDER BY updated_at DESC`;
+    const result = await db.query(query); 
+    res.status(200).json(result.rows);
+
+  } catch (error) {
+    console.error("Error fetching configuration draft file details:", error);
+    res.status(500).json({
+      message: "Failed to fetch configuration draft files"
+    });
+  }
+};
+
+
+
 // ======================================================
 //  EXPORTS
 // ======================================================
 module.exports = {
-    getActiveCohorts,
+    getActiveCohorts, 
     getTimeTableByBatch,
     addTimetableSlot,
     updateTimetableSlot,
     deleteTimetableSlot,
 
     getSubjects,
+    getSubjectsForTimeTable,
+    getTeachersForTimeTable,
     getTeachers,
     getPlatforms,
 
@@ -365,4 +785,16 @@ module.exports = {
     addPlatform,
     deleteSubject,
     deletePlatform,
+    getBatchesByGrades,
+    getCanTeachByTeacherIds,
+    generateFinalOutputFromPython,
+    getSubjectsByteacher,
+    getTeachersBySubjects,
+    getBatchesByGradeMediumAndSubjectIds,
+    saveConfigurationDraftFile,
+    getAllConfigurationDraftFileDtls
 };
+
+
+
+

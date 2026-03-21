@@ -6,10 +6,17 @@ const fs = require("fs");
   BASE DIRECTORY CONFIGURATION
 ========================================================= */
 
-const PHOTOS_DIR = process.env.EVENT_STORAGE_PATH
-  ? path.resolve(process.env.EVENT_STORAGE_PATH)
-  : path.join(__dirname, "..", "uploads", "events", "photos");
+const BASE_EVENT_DIR = process.env.EVENT_STORAGE_PATH 
+  ? path.resolve(process.env.EVENT_STORAGE_PATH) 
+  : path.join(__dirname, "..", "uploads", "events");
 
+const PHOTOS_DIR = path.join(BASE_EVENT_DIR, "photos");
+const REPORTS_DIR = path.join(BASE_EVENT_DIR, "reports");
+
+// Ensure both folders exist
+[PHOTOS_DIR, REPORTS_DIR].forEach(dir => {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+});
 
 /* =========================================================
    ENSURE DIRECTORY EXISTS
@@ -27,26 +34,45 @@ ensureDir(PHOTOS_DIR);
 /* =========================================================
    MULTER STORAGE CONFIGURATION
 ========================================================= */
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     if (file.fieldname === "photos") {
       cb(null, PHOTOS_DIR);
+    } else if (file.fieldname === "reports") {
+      cb(null, REPORTS_DIR);
     } else {
-      cb(new Error("Invalid upload field"), null);
+      cb(new Error("Invalid field"), null);
     }
   },
 
   filename: (req, file, cb) => {
-    const uniqueName =
-      Date.now() +
-      "-" +
-      Math.round(Math.random() * 1e9) +
-      path.extname(file.originalname).toLowerCase();
+    // 1. Get Title from body (sent from frontend)
+    let eventTitle = req.body.eventTitle || "event";
+    
+    // 2. Clean the title: remove spaces/special chars
+    const cleanName = eventTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const extension = path.extname(file.originalname).toLowerCase();
 
-    cb(null, uniqueName);
+    if (file.fieldname === "photos") {
+      // Initialize a counter on the request object if it doesn't exist
+      if (!req.photoIndex) {
+        req.photoIndex = 1;
+      } else {
+        req.photoIndex++;
+      }
+      
+      // Result: event_title-1.jpg, event_title-2.jpg
+      const fileName = `${cleanName}-${req.photoIndex}${extension}`;
+      cb(null, fileName);
+    } else if (file.fieldname === "reports") {
+      // Result: event_title-report.pdf
+      const fileName = `${cleanName}-report${extension}`;
+      cb(null, fileName);
+    }
   }
 });
+
+
 
 
 /* =========================================================
@@ -54,31 +80,53 @@ const storage = multer.diskStorage({
 ========================================================= */
 
 const fileFilter = (req, file, cb) => {
-  const allowed = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
-
-  if (allowed.includes(file.mimetype)) {
-    cb(null, true);
+  if (file.fieldname === "photos") {
+    const allowedImages = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
+    if (allowedImages.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Photos must be JPG, PNG, or WEBP"), false);
+    }
+  } else if (file.fieldname === "reports") {
+    // FIX: Allow PDFs and Word docs for reports
+    const allowedDocs = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    if (allowedDocs.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Reports must be PDF or Word documents"), false);
+    }
   } else {
-    cb(
-      new Error("Only JPG, PNG, WEBP images are allowed"),
-      false
-    );
+    cb(null, false);
   }
 };
-
 
 /* =========================================================
    UPLOAD MIDDLEWARE
 ========================================================= */
 
-exports.uploadEventFiles = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB
-}).fields([
-  { name: "photos", maxCount: 10 }
-]);
+// Wrap the multer call to catch limit errors
+exports.uploadEventFiles = (req, res, next) => {
+  const upload = multer({
+    storage,
+    fileFilter,
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+  }).fields([
+    { name: "photos", maxCount: 4 },
+    { name: "reports", maxCount: 1 }
+  ]);
 
+  upload(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === "LIMIT_UNEXPECTED_FILE") {
+        return res.status(400).json({ message: "Too many files! Max 4 photos and 1 report allowed." });
+      }
+      return res.status(400).json({ message: err.message });
+    } else if (err) {
+      return res.status(400).json({ message: err.message });
+    }
+    next();
+  });
+};
 
 /* =========================================================
    VALIDATE EVENT BODY

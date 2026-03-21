@@ -1,6 +1,6 @@
 import React from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./Layout";
 import LoginForm from "./components/login/LoginForm";
 
@@ -24,9 +24,15 @@ import UserRoles from "./pages/Admin/UserRoles";
 import SystemConfig from "./pages/Admin/SystemConfig";
 import MyProfile from "./pages/Admin/MyProfile";
 import CreateExam from "./pages/Admin/Exam/CreateExam";
-import TimeTableDashboard from "./pages/Admin/TimeTableDashboard";
-import ClassroomManager from "./pages/Admin/ClassroomManager";
 
+//Time Table
+import TimeTableDashboard from "./pages/Admin/TimeTable/TimeTableDashboard";
+import ActiveTimeTable from "./pages/Admin/TimeTable/ActiveTimeTable";
+import ConfigurationDraftFileList from "./pages/Admin/TimeTable/ConfigurationDraftFileList";
+import SavedTimeTable from "./pages/Admin/TimeTable/SavedTimeTable";
+import GenerateTimeTable from "./pages/Admin/TimeTable/GenerateTimeTable"
+
+import ClassroomManager from "./pages/Admin/ClassroomManager";
 
 //Reports
 import ReportsDashboard from "./pages/Admin/Reports/ReportsDashboard";
@@ -75,7 +81,6 @@ import InterviewFeedback from "./pages/Interviewer/InterviewFeedback";
 
 import LogoutHandler from "./components/LogoutHandler";
 
-
 export const appRouter = createBrowserRouter([
   {
     path: "/login",
@@ -85,27 +90,36 @@ export const appRouter = createBrowserRouter([
     path: "/",
     element: <ProtectedRoute />,
     children: [
-      { index: true, element: <Navigate to="/admin/admin-dashboard" replace /> },
-
+      {
+        index: true,
+        element: <Navigate to="/admin/admin-dashboard" replace />,
+      },
+    
       // ---------------- Admin Routes ----------------
       {
         path: "admin",
         element: <Layout />,
         children: [
           { path: "admin-dashboard", element: <AdminDashboard /> },
-
+     
           {
             path: "admissions",
             children: [
               { path: "new-application", element: <NewApplication /> },
-              { path: "bulk-upload-applications", element: <BulkUploadApplications /> },
+              {
+                path: "bulk-upload-applications",
+                element: <BulkUploadApplications />,
+              },
               { path: "search-applications", element: <SearchApplications /> },
               { path: "applications", element: <Applications /> },
               { path: "shortlisting", element: <Shortlisting /> },
               { path: "generate-shortlist", element: <GenerateShortlist /> },
               { path: "shortlist-info", element: <ShortlistInfo /> },
               { path: "exam-management", element: <CreateExam /> },
-              { path: "view-student-info/:nmms_reg_number", element: <ViewStudentInfo /> },
+              {
+                path: "view-student-info/:nmms_reg_number",
+                element: <ViewStudentInfo />,
+              },
               { path: "view-applications", element: <ViewApplications /> },
               { path: "edit-form/:nmms_reg_number", element: <EditForm /> },
               { path: "results", element: <Resultandrank /> },
@@ -117,10 +131,10 @@ export const appRouter = createBrowserRouter([
                   { path: "", element: <EvaluationDashboard /> },
                   { path: "marks-entry", element: <EvaluationMarksEntry /> },
                   { path: "interview", element: <EvaluationInterview /> },
-                  { path: "tracking", element: <EvaluationTracking /> }
-                ]
-              }
-            ]
+                  { path: "tracking", element: <EvaluationTracking /> },
+                ],
+              },
+            ],
           },
 
           {
@@ -128,28 +142,55 @@ export const appRouter = createBrowserRouter([
             children: [
               { path: "students", element: <Students /> },
               { path: "batches", element: <Batches /> },
-              { path: "batches/:batchId/students", element: <ViewBatchStudents /> },
-              { path: "batches/view-student-info/:nmms_reg_number", element: <ViewStudentInfo /> },
-              { path: "students/view-student-info/:nmms_reg_number", element: <ViewStudentInfo /> },
-              { path: "time-table-dashboard", element: <TimeTableDashboard /> },
-              { path: "reports", element: <Reports /> },
+              {
+                path: "batches/:batchId/students",
+                element: <ViewBatchStudents />,
+              },
+              {
+                path: "batches/view-student-info/:nmms_reg_number",
+                element: <ViewStudentInfo />,
+              },
+              {
+                path: "students/view-student-info/:nmms_reg_number",
+                element: <ViewStudentInfo />,
+              },
               { path: "classrooms", element: <ClassroomManager /> },
-                {
+              {
                 path: "reports",
                 children: [
                   { index: true, element: <ReportsDashboard /> },
                   { path: "selection", element: <SelectionReports /> },
                   { path: "academic", element: <AcademicReports /> },
                   { path: "sammelan", element: <SammelanReports /> },
-
-                  // 3. Your existing custom list (keep this if you still need it)
                   { path: "custom-lists", element: <CustomList /> },
                 ],
               },
+  // Router.js -> Inside Admin -> Academics
+{
+  path: "time-table-dashboard",
+  children: [
+    { index: true, element: <TimeTableDashboard /> },
+    { path: "active", element: <ActiveTimeTable /> },
+    { path: "saved", element: <SavedTimeTable /> },
+    { path: "generate", element: <ConfigurationDraftFileList /> },
+    
+    // Add these specifically for the Admin Editor
+    { path: "configure", element: <GenerateTimeTable /> },
+    { path: "configure/:id", element: <GenerateTimeTable /> },
+  ],
+},
+     
+      
+    
+             
               // EVENTS
               { path: "events", element: <Events /> },
               { path: "events/:eventId", element: <EventDetailsPage /> },
               { path: "events/:eventId/edit", element: <EventEditPage /> },
+              {
+                path: "events/attendance/manage",
+                element: <EventDetailsPage />,
+              },
             ],
           },
 
@@ -175,7 +216,7 @@ export const appRouter = createBrowserRouter([
           { path: "batch-reports", element: <BatchReports /> },
           { path: "attendance-tracker", element: <AttendanceTracker /> },
           { path: "time-table", element: <CoordinatorTimeTable /> },
-        ]
+        ],
       },
 
       // ---------------- Student Routes ----------------
@@ -185,8 +226,8 @@ export const appRouter = createBrowserRouter([
         children: [
           { path: "student-dashboard", element: <StudentDashboard /> },
           { path: "student-profile", element: <StudentProfile /> },
-          { path: "student-corner", element: <StudentCorner /> }
-        ]
+          { path: "student-corner", element: <StudentCorner /> },
+        ],
       },
 
       // ---------------- Teacher Routes ----------------
@@ -197,8 +238,8 @@ export const appRouter = createBrowserRouter([
           { path: "teacher-dashboard", element: <TeacherDashboard /> },
           { path: "students-list", element: <StudentsList /> },
           { path: "assigned-batches", element: <AssignedBatches /> },
-          { path: "time-table", element: <TeacherTimeTable /> }
-        ]
+          { path: "time-table", element: <TeacherTimeTable /> },
+        ],
       },
 
       // ---------------- Interviewer Routes ----------------
@@ -208,15 +249,15 @@ export const appRouter = createBrowserRouter([
         children: [
           { path: "interviewer-dashboard", element: <InterviewerDashboard /> },
           { path: "interview-schedule", element: <InterviewSchedule /> },
-          { path: "interview-feedback", element: <InterviewFeedback /> }
-        ]
+          { path: "interview-feedback", element: <InterviewFeedback /> },
+        ],
       },
 
       // Logout
       { path: "logout", element: <LogoutHandler /> },
 
       // 404
-      { path: "*", element: <div>404 - Page Not Found</div> }
-    ]
-  }
+      { path: "*", element: <div>404 - Page Not Found</div> },
+    ],
+  },
 ]);
