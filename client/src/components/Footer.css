@@ -2,8 +2,9 @@
 .footer {
   background-color: var(--primary-color);
   color: var(--surface);
-  padding: 1rem;
+  padding: 0.4rem 0.6rem;
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   margin-top: auto;
+  line-height: 1.2;
 }

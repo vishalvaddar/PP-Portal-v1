@@ -150,6 +150,7 @@ const interviewRoutes = require("./routes/interviewRoutes");
 const resultandrankinkRoutes = require("./routes/resultandrankinkRoutes");
 const systemConfigRoutes = require("./routes/systemConfigRoutes");
 const eventRoutes = require("./routes/eventRoutes");
+const classroomRoutes = require("./routes/classroomRoutes");
 
 const customListRoutes = require("./routes/customListRoutes");
 const selectionReportRoutes = require("./routes/selectionReportRoutes");
@@ -168,6 +169,7 @@ app.use("/api/districts", districtRoutes);
 
 app.use("/api", eventRoutes);
 app.use("/api/custom-list", customListRoutes);
+app.use("/api/classrooms", classroomRoutes);
 app.use("/api/selection-reports", selectionReportRoutes);
 
 app.use("/api/batches", batchRoutes);

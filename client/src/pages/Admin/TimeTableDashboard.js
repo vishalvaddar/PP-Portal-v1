@@ -5,26 +5,37 @@ import * as XLSX from "xlsx";
 import axios from 'axios';
 import styles from "./TimeTableDashboard.module.css";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
-import { Plus, Trash2, Edit, Download, AlertCircle, Settings, BookOpen, Clock, Users, Tv } from 'lucide-react';
+import { 
+    Plus, Trash2, Edit, Download, AlertCircle, Settings, BookOpen, 
+    Clock, Users, Tv, AlertTriangle, ExternalLink, Info, Layout, CheckCircle, X
+} from 'lucide-react';
+import Logo from "../../assets/RCF-PP.jpg";
 
 // --- API Definitions ---
 const API_URL = process.env.REACT_APP_BACKEND_API_URL;
-const fetchActiveCohorts = () => axios.get(`${API_URL}/api/timetable/cohorts/active`);
-const fetchBatchesByCohort = (cohortId) =>
-    axios.get(`${API_URL}/api/timetable/cohorts/${cohortId}/batches`);
 
+const fetchActiveCohorts = () => axios.get(`${API_URL}/api/timetable/cohorts/active`);
+const fetchBatchesByCohort = (cohortId) => axios.get(`${API_URL}/api/timetable/cohorts/${cohortId}/batches`);
 const fetchConfigData = () => Promise.all([
     axios.get(`${API_URL}/api/timetable/data/subjects`),
     axios.get(`${API_URL}/api/timetable/data/teachers`),
-    axios.get(`${API_URL}/api/timetable/data/platforms`),
 ]);
-// [MODIFIED] Updated to accept a data object
+const fetchClassroomsByBatch = (batchId) => axios.get(`${API_URL}/api/coordinator/classrooms/${batchId}`);
+const checkConflictApi = (params) => axios.get(`${API_URL}/api/coordinator/timetable/check-conflict?${params.toString()}`);
+
 const addSubject = (data) => axios.post(`${API_URL}/api/timetable/data/subjects`, data);
 const deleteSubject = (id) => axios.delete(`${API_URL}/api/timetable/data/subjects/${id}`);
-// [MODIFIED] Updated to accept a data object
-const addPlatform = (data) => axios.post(`${API_URL}/api/timetable/data/platforms`, data);
-const deletePlatform = (id) => axios.delete(`${API_URL}/api/timetable/data/platforms/${id}`);
-// --- End API Definitions ---
+
+const DAY_ORDER = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+
+const t12 = (timeStr) => {
+    if (!timeStr) return "-";
+    const [hours, minutes] = timeStr.split(":");
+    let h = parseInt(hours, 10);
+    const ampm = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+    return `${h}:${minutes} ${ampm}`;
+};
 
 // --- Custom Hooks ---
 const useFetchCohorts = (setCohorts, setLoading, setError) => {
@@ -36,7 +47,6 @@ const useFetchCohorts = (setCohorts, setLoading, setError) => {
                 setCohorts(response.data || []);
             } catch (err) {
                 setError("Failed to fetch cohorts.");
-                console.error("Failed to fetch cohorts:", err);
                 setCohorts([]);
             } finally {
                 setLoading(false);
@@ -55,12 +65,10 @@ const useFetchBatches = (cohortId, setBatches, setLoading, setError) => {
         const fetchBatches = async () => {
             try {
                 setLoading(true);
-                // match route: GET /api/timetable/cohorts/:cohortId/batches
                 const response = await fetchBatchesByCohort(cohortId);
                 setBatches(response.data || []);
             } catch (err) {
-                setError(`Failed to fetch batches for the selected cohort.`);
-                console.error(`Failed to fetch batches for cohort ${cohortId}:`, err);
+                setError(`Failed to fetch batches.`);
                 setBatches([]);
             } finally {
                 setLoading(false);
@@ -69,438 +77,261 @@ const useFetchBatches = (cohortId, setBatches, setLoading, setError) => {
         fetchBatches();
     }, [cohortId, setBatches, setLoading, setError]);
 };
-// --- End Custom Hooks ---
-
-const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const generateEmptyTimetable = () => {
-    const timetable = {};
-    daysOfWeek.forEach(day => { timetable[day] = []; });
-    return timetable;
-};
-
-// --- DataManagementModal Component (Subjects/Platforms) ---
-// [MODIFIED] Heavily updated to handle subject code + name
-const DataManagementModal = ({ isOpen, onClose, title, items, placeholder, onAdd, onRemove, type }) => {
-    const [formState, setFormState] = useState({ code: '', name: '' });
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    if (!isOpen) return null;
-
-    const handleChange = (e) => {
-        setFormState(prev => ({ ...prev, [e.target.name]: e.target.value }));
-    };
-
-    const handleConfirmAdd = async () => {
-        setIsSubmitting(true);
-        try {
-            if (type === 'subjects') {
-                const code = formState.code.trim();
-                const name = formState.name.trim();
-
-                if (!code || !name) {
-                    alert("Subject code and name are required.");
-                    setIsSubmitting(false);
-                    return;
-                }
-                if (items.find(item => item.code.toLowerCase() === code.toLowerCase())) {
-                    alert("Subject code already exists.");
-                    setIsSubmitting(false);
-                    return;
-                }
-                await onAdd({ subject_code: code, subject_name: name });
-
-            } else { // platforms
-                const name = formState.name.trim();
-                if (!name) {
-                    alert("Platform name is required.");
-                    setIsSubmitting(false);
-                    return;
-                }
-                if (items.find(item => item.name.toLowerCase() === name.toLowerCase())) {
-                    alert("Platform already exists.");
-                    setIsSubmitting(false);
-                    return;
-                }
-                await onAdd({ platform_name: name });
-            }
-            setFormState({ code: '', name: '' }); // Reset form
-        } catch (err) {
-            // Error is handled by parent
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    const handleConfirmRemove = async (itemToRemove) => {
-        if (window.confirm(`Are you sure you want to delete "${itemToRemove.name}"?`)) {
-            await onRemove(itemToRemove.id);
-        }
-    };
-
-    return (
-        <div className={styles.modalOverlay}>
-            <div className={styles.modalContent}>
-                <h2 className={styles.modalTitle}>{title}</h2>
-                <div className={styles.modalFormGroup}>
-                    {type === 'subjects' && (
-                        <input
-                            type="text"
-                            name="code"
-                            value={formState.code}
-                            onChange={handleChange}
-                            placeholder="Subject Code (e.g., 21CS01)"
-                            className={styles.textInput}
-                            disabled={isSubmitting}
-                            style={{ flex: 1 }}
-                        />
-                    )}
-                    <input
-                        type="text"
-                        name="name"
-                        value={formState.name}
-                        onChange={handleChange}
-                        placeholder={type === 'subjects' ? 'Subject Name (e.g., Physics)' : placeholder}
-                        className={styles.textInput}
-                        disabled={isSubmitting}
-                        style={{ flex: 2, marginLeft: type === 'subjects' ? '10px' : '0' }}
-                    />
-                    <button onClick={handleConfirmAdd} className={styles.buttonPrimary} disabled={isSubmitting}>
-                        {isSubmitting ? 'Adding...' : 'Add'}
-                    </button>
-                </div>
-                <div className={styles.modalListContainer}>
-                    <ul className={styles.modalList}>
-                        {items.map((item) => (
-                            <li key={item.id} className={styles.modalListItem}>
-                                <span>{type === 'subjects' ? `${item.code} - ${item.name}` : item.name}</span>
-                                <button onClick={() => handleConfirmRemove(item)} className={`${styles.buttonIcon} ${styles.delete}`}><Trash2 size={16} /></button>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                <div className={styles.modalActions}>
-                    <button onClick={onClose} className={styles.buttonSecondary}>Close</button>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-// --- CohortSelector Component ---
-const CohortSelector = ({ cohorts, selectedCohort, onCohortChange }) => (
-    <div className={styles.card}>
-        <h2 className={styles.cardTitle}>Select Cohort</h2>
-        <div className={styles.selectorGrid}>
-            {cohorts.map(cohort => (
-                <div key={cohort.cohort_number} className={`${styles.selectorItem} ${selectedCohort?.cohort_number === cohort.cohort_number ? styles.selected : ''}`} onClick={() => onCohortChange(cohort)}>
-                    <h3 className={styles.itemName}>{cohort.cohort_name}</h3>
-                    <p className={styles.itemDetail}>Start Date: {new Date(cohort.start_date).toLocaleDateString()}</p>
-                </div>
-            ))}
-        </div>
-    </div>
-);
-
-// --- BatchSelector Component ---
-const BatchSelector = ({ batches, selectedBatch, onBatchChange, cohortSelected }) => {
-    if (!cohortSelected) {
-        return (
-            <div className={styles.card}>
-                <h2 className={styles.cardTitle}>Select Batch</h2>
-                <p className={styles.placeholderText}>Please select a cohort first.</p>
-            </div>
-        );
-    }
-    if (batches.length === 0) {
-        return (
-            <div className={styles.card}>
-                <h2 className={styles.cardTitle}>Select Batch</h2>
-                <p className={styles.placeholderText}>No batches found for this cohort.</p>
-            </div>
-        );
-    }
-    return (
-        <div className={styles.card}>
-            <h2 className={styles.cardTitle}>Select Batch</h2>
-            <div className={styles.selectorGrid}>
-                {batches.map(batch => (
-                    <div key={batch.batch_id} className={`${styles.selectorItem} ${selectedBatch?.batch_id === batch.batch_id ? styles.selected : ''}`} onClick={() => onBatchChange(batch)}>
-                        <h3 className={styles.itemName}>{batch.batch_name}</h3>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-};
 
 // --- EditTimetableModal Component ---
-const EditTimetableModal = ({ isOpen, onClose, slotData, onSave, day, dropdownData, batchId }) => {
-    const { subjects, teachers, platforms } = dropdownData;
+const EditTimetableModal = ({ isOpen, onClose, slotData, onSave, day, dropdownData, batchId, classrooms }) => {
+    const { subjects, teachers } = dropdownData;
 
-    const formatTo24Hour = (time12) => {
-        if (!time12) return '';
-        const [time, period] = time12.split(' ');
-        if (!period) return time12; // Already 24-hour
-        let [hours, minutes] = time.split(':');
-        hours = parseInt(hours, 10);
-        if (period.toLowerCase() === 'pm' && hours !== 12) hours += 12;
-        if (period.toLowerCase() === 'am' && hours === 12) hours = 0;
-        return `${String(hours).padStart(2, '0')}:${minutes}`;
-    };
-
-    const [formData, setFormData] = useState({});
+    const [formData, setFormData] = useState({
+        id: null, dayOfWeek: 'MONDAY', startTime: '09:00', endTime: '10:00', 
+        subjectId: '', teacherId: '', classroomId: '', classLink: ''
+    });
 
     useEffect(() => {
         if (slotData) {
-            const [startStr, endStr] = slotData.time ? slotData.time.split(' - ') : ['', ''];
-            
-            // Find related data from dropdowns
-            const teacher = teachers.find(t => t.user_name === slotData.teacher);
-            // Find subject by name (assuming slotData.subject is just the name string)
-            const subject = subjects.find(s => s.subject_name === slotData.subject);
-            const platform = platforms.find(p => p.platform_name === slotData.platform);
-            
             setFormData({
-                id: slotData.id,
-                dayOfWeek: slotData.day_of_week || day || 'Monday',
-                startTime: formatTo24Hour(startStr),
-                endTime: formatTo24Hour(endStr),
-                subjectId: subject ? subject.subject_id : '',
-                teacherId: teacher ? teacher.teacher_id : '', 
-                platformId: platform ? platform.platform_id : '',
+                id: slotData.timetable_id || slotData.id,
+                dayOfWeek: slotData.day_of_week || day || 'MONDAY',
+                startTime: slotData.start_time || '09:00',
+                endTime: slotData.end_time || '10:00',
+                subjectId: slotData.subject_id || '',
+                teacherId: slotData.teacher_id || '', 
+                classroomId: slotData.classroom_id || '',
+                classLink: slotData.class_link || ''
             });
         } else {
             setFormData({ 
-                id: null, 
-                dayOfWeek: day || 'Monday', 
-                startTime: '', 
-                endTime: '', 
-                subjectId: '', 
-                teacherId: '', 
-                platformId: '' 
+                id: null, dayOfWeek: day || 'MONDAY', startTime: '09:00', endTime: '10:00', 
+                subjectId: '', teacherId: '', classroomId: '', classLink: '' 
             });
         }
-    }, [slotData, day, subjects, teachers, platforms]);
+    }, [slotData, day]);
+
+    const handleChange = (field, value) => {
+        if (field === 'classroomId') {
+            const selected = classrooms.find(c => String(c.classroom_id) === String(value));
+            setFormData(prev => ({ ...prev, classroomId: value, classLink: selected?.class_link || "" }));
+        } else {
+            setFormData(prev => ({ ...prev, [field]: value }));
+        }
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const finalSlotData = {
-            batchId,
-            dayOfWeek: formData.dayOfWeek,
-            startTime: formData.startTime,
-            endTime: formData.endTime,
-            subjectId: formData.subjectId,
-            teacherId: formData.teacherId,
-            platformId: formData.platformId,
-        };
-        onSave(slotData?.id, finalSlotData);
-        onClose();
-    };
-
-    const handleChange = (field, value) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
+        onSave(formData.id, {
+            batch_id: batchId,
+            day_of_week: formData.dayOfWeek,
+            start_time: formData.startTime,
+            end_time: formData.endTime,
+            subject_id: formData.subjectId,
+            teacher_id: formData.teacherId,
+            classroom_id: formData.classroomId,
+            class_link: formData.classLink
+        });
     };
 
     if (!isOpen) return null;
 
     return (
         <div className={styles.modalOverlay}>
-            <div className={styles.modalContent}>
-                <h2 className={styles.modalTitle}>
-                    {slotData && slotData.id ? 'Edit' : 'Add'} Class Slot
-                </h2>
+            <div className={styles.modalContent} style={{ maxWidth: '600px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <h2 className={styles.modalTitle}>{formData.id ? 'Edit' : 'Create New'} Class Slot</h2>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X /></button>
+                </div>
 
-                <form onSubmit={handleSubmit} className={styles.form}>
-                    {/* Day Selection */}
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Day of Week</label>
-                        <select 
-                            value={formData.dayOfWeek || ''} 
-                            onChange={(e) => handleChange('dayOfWeek', e.target.value)} 
-                            className={styles.selectInput}
-                            required
-                        >
-                            <option value="">Select Day</option>
-                            {daysOfWeek.map(d => (
-                                <option key={d} value={d}>{d}</option>
-                            ))}
-                        </select>
+                <form onSubmit={handleSubmit} className={styles.form} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                    <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
+                        <label className={styles.label}>Classroom</label>
+                        {formData.id ? (
+                            <div className={styles.textInput} style={{ background: '#f3f4f6' }}>
+                                {classrooms.find(c => String(c.classroom_id) === String(formData.classroomId))?.classroom_name || 'Assigned Room'}
+                            </div>
+                        ) : (
+                            <select value={formData.classroomId} onChange={(e) => handleChange('classroomId', e.target.value)} className={styles.selectInput} required>
+                                <option value="">Select Classroom</option>
+                                {classrooms.map(c => <option key={c.classroom_id} value={c.classroom_id}>{c.classroom_name}</option>)}
+                            </select>
+                        )}
                     </div>
 
-                    <div className={styles.timePickerContainer}>
-                        <div className={styles.formGroup}>
-                            <label className={styles.label}>Start Time</label>
-                            <input type="time" value={formData.startTime || ''} onChange={(e) => handleChange('startTime', e.target.value)} className={styles.textInput} required />
-                        </div>
-                        <div className={styles.formGroup}>
-                            <label className={styles.label}>End Time</label>
-                            <input type="time" value={formData.endTime || ''} onChange={(e) => handleChange('endTime', e.target.value)} className={styles.textInput} required />
-                        </div>
+                    <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
+                        <label className={styles.label}>Class Link</label>
+                        <input type="url" value={formData.classLink} onChange={(e) => handleChange('classLink', e.target.value)} className={styles.textInput} readOnly={!formData.id} />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Day of Week</label>
+                        <select value={formData.dayOfWeek} onChange={(e) => handleChange('dayOfWeek', e.target.value)} className={styles.selectInput} required>
+                            {DAY_ORDER.map(d => <option key={d} value={d}>{d}</option>)}
+                        </select>
                     </div>
 
                     <div className={styles.formGroup}>
                         <label className={styles.label}>Subject</label>
-                        <select value={formData.subjectId || ''} onChange={(e) => handleChange('subjectId', e.target.value)} className={styles.selectInput} required>
+                        <select value={formData.subjectId} onChange={(e) => handleChange('subjectId', e.target.value)} className={styles.selectInput} required>
                             <option value="">Select Subject</option>
-                            {/* [MODIFIED] Show code and name in dropdown */}
                             {subjects.map(s => <option key={s.subject_id} value={s.subject_id}>{s.subject_code} - {s.subject_name}</option>)}
                         </select>
                     </div>
+
                     <div className={styles.formGroup}>
+                        <label className={styles.label}>Start Time</label>
+                        <input type="time" value={formData.startTime} onChange={(e) => handleChange('startTime', e.target.value)} className={styles.textInput} required />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>End Time</label>
+                        <input type="time" value={formData.endTime} onChange={(e) => handleChange('endTime', e.target.value)} className={styles.textInput} required />
+                    </div>
+
+                    <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
                         <label className={styles.label}>Teacher</label>
-                        <select value={formData.teacherId || ''} onChange={(e) => handleChange('teacherId', e.target.value)} className={styles.selectInput} required>
+                        <select value={formData.teacherId} onChange={(e) => handleChange('teacherId', e.target.value)} className={styles.selectInput} required>
                             <option value="">Select Teacher</option>
                             {teachers.map(t => <option key={t.teacher_id} value={t.teacher_id}>{t.user_name}</option>)}
                         </select>
                     </div>
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Platform</label>
-                        <select value={formData.platformId || ''} onChange={(e) => handleChange('platformId', e.target.value)} className={styles.selectInput} required>
-                            <option value="">Select Platform</option>
-                            {platforms.map(p => <option key={p.platform_id} value={p.platform_id}>{p.platform_name}</option>)}
-                        </select>
-                    </div>
-                        
-                    <div className={styles.modalActions}>
-                        <button type="button" onClick={onClose} className={styles.buttonSecondary}>Cancel</button>
-                        <button type="submit" className={styles.buttonPrimary}>Save</button>
+
+                    <div className={styles.modalActions} style={{ gridColumn: 'span 2', marginTop: '10px' }}>
+                        <button type="button" onClick={onClose} className={styles.buttonSecondary}>Discard</button>
+                        <button type="submit" className={styles.buttonPrimary}><CheckCircle size={18} className="mr-2 inline" /> Save Slot</button>
                     </div>
                 </form>
             </div>
         </div>
     );
-}; 
-
+};
 
 // --- TimetableGridView Component ---
-const TimetableGridView = ({ timetable, onEditSlot, onDeleteSlot, isBatchSelected }) => (
+const TimetableGridView = ({ timetable, onEditSlot, onDeleteSlot, isBatchSelected, conflictsMap }) => (
     <div className={styles.timetableContainer}>
         <table className={styles.timetableGrid}>
             <thead>
                 <tr>
-                    <th>Day</th><th>Timings</th><th>Subject</th><th>Teacher</th><th>Platform</th><th>Actions</th>
+                    <th style={{ width: "120px" }}>Day</th>
+                    <th>Time Slot</th>
+                    <th>Subject Name</th>
+                    <th>Assigned Teacher</th>
+                    <th>Classroom</th>
+                    <th>Online Link</th>
+                    <th style={{ width: "100px" }}>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {daysOfWeek.map(day => {
+                {DAY_ORDER.map(day => {
                     const daySlots = timetable[day] || [];
-                    if (daySlots.length === 0 && isBatchSelected) {
-                        return (
-                            <tr key={day}>
-                                <td className={styles.dayCell}>{day}</td>
-                                <td colSpan="5" className={styles.placeholderText}>No classes scheduled.</td>
-                            </tr>
-                        );
-                    }
+                    if (daySlots.length === 0 && isBatchSelected) return null;
+                    
                     return daySlots.map((slot, index) => (
-                        <tr key={slot.id} className={styles.slotRow}>
-                            {index === 0 && <td rowSpan={daySlots.length} className={styles.dayCell}>{day}</td>}
-                            <td>{slot.time}</td>
-                            <td>{slot.subject}</td>
-                            <td>{slot.teacher}</td>
-                            <td>{slot.platform}</td>
+                        <tr key={slot.timetable_id || slot.id} className={styles.slotRow} style={{ backgroundColor: conflictsMap[slot.timetable_id || slot.id] ? "#fff1f2" : "inherit" }}>
+                            {index === 0 && <td rowSpan={daySlots.length} className={styles.dayCell} style={{ fontWeight: '700', color: '#1e40af' }}>{day}</td>}
+                            <td style={{ fontWeight: '600', color: '#4b5563' }}>{t12(slot.start_time)} - {t12(slot.end_time)}</td>
+                            <td>{slot.subject_name || slot.subject}</td>
+                            <td>{slot.teacher_name || slot.teacher}</td>
+                            <td><span style={{ background: '#eff6ff', color: '#1e40af', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', border: '1px solid #dbeafe' }}>{slot.classroom_name}</span></td>
                             <td>
-                                <div className={styles.slotActions}>
-                                    <button onClick={() => onEditSlot(day, slot)} className={styles.buttonIcon}><Edit size={16} /></button>
-                                    <button onClick={() => onDeleteSlot(slot.id)} className={`${styles.buttonIcon} ${styles.delete}`}><Trash2 size={16} /></button>
+                                {slot.class_link ? (
+                                    <a href={slot.class_link} target="_blank" rel="noreferrer" style={{ color: '#10b981', fontWeight: '600', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <ExternalLink size={14} /> Join
+                                    </a>
+                                ) : <span style={{ color: '#9ca3af' }}>-</span>}
+                            </td>
+                            <td>
+                                <div className={styles.slotActions} style={{ display: 'flex', gap: '12px' }}>
+                                    <button onClick={() => onEditSlot(day, slot)} style={{ color: '#d97706', border: 'none', background: 'none', cursor: 'pointer' }}><Edit size={16} /></button>
+                                    <button onClick={() => onDeleteSlot(slot.timetable_id || slot.id)} style={{ color: '#dc2626', border: 'none', background: 'none', cursor: 'pointer' }}><Trash2 size={16} /></button>
                                 </div>
                             </td>
                         </tr>
                     ));
                 })}
+                {Object.values(timetable).every(slots => slots.length === 0) && isBatchSelected && (
+                    <tr><td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>No data found for this batch.</td></tr>
+                )}
             </tbody>
         </table>
     </div>
 );
 
-// --- TeacherTimetableView Component (Unused, but defined) ---
-const TeacherTimetableView = ({ timetable, teachers }) => {
-    const classesByTeacher = teachers.reduce((acc, teacher) => {
-        acc[teacher.user_name] = [];
-        return acc;
-    }, {});
-
-    Object.entries(timetable).forEach(([, daySlots]) => {
-        daySlots.forEach(slot => {
-            if (slot.teacher && classesByTeacher[slot.teacher]) {
-                classesByTeacher[slot.teacher].push({ ...slot, day: slot.day_of_week });
-            }
-        });
+// --- DownloadButtons Component ---
+const DownloadButtons = ({ timetable, batchName, cohortName }) => {
+    const flatRows = DAY_ORDER.filter(d => timetable[d]).flatMap(day => {
+        const sessions = timetable[day];
+        return sessions.map((r, index) => ({
+            ...r,
+            rowSpan: index === 0 ? sessions.length : 0 
+        }));
     });
 
-    return (
-        <div className={styles.timetableContainer}>
-            <table className={styles.timetableGrid}>
-                <thead>
-                    <tr>
-                        <th>Teacher</th><th>Day</th><th>Timings</th><th>Subject</th><th>Platform</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {Object.entries(classesByTeacher).map(([teacher, slots]) => {
-                        const sortedSlots = slots.sort((a, b) => daysOfWeek.indexOf(a.day) - daysOfWeek.indexOf(b.day));
-                        if (slots.length === 0) {
-                            return (
-                                <tr key={teacher}>
-                                    <td className={styles.teacherCell}>{teacher}</td>
-                                    <td colSpan="4" className={styles.placeholderText}>No classes scheduled.</td>
-                                </tr>
-                            );
-                        }
-                        return sortedSlots.map((slot, index) => (
-                            <tr key={slot.id} className={styles.slotRow}>
-                                {index === 0 && <td rowSpan={slots.length} className={styles.teacherCell}>{teacher}</td>}
-                                <td>{slot.day}</td>
-                                <td>{slot.time}</td>
-                                <td>{slot.subject}</td>
-                                <td>{slot.platform}</td>
-                            </tr>
-                        ));
-                    })}
-                </tbody>
-            </table>
-        </div>
-    );
-};
-
-// --- DownloadButtons Component ---
-const DownloadButtons = ({ timetable, batchName }) => {
     const handleExcelDownload = () => {
-        const rows = Object.values(timetable).flat().map(slot => [
-            slot.day_of_week, slot.time, slot.subject, slot.teacher, slot.platform
-        ]);
-        const ws = XLSX.utils.aoa_to_sheet([["Day", "Time", "Subject", "Teacher", "Platform"], ...rows]);
-        ws['!cols'] = [{ wch: 15 }, { wch: 20 }, { wch: 25 }, { wch: 25 }, { wch: 20 }];
+        const rows = flatRows.map(r => ({
+            Day: r.day_of_week, Time: `${t12(r.start_time)} - ${t12(r.end_time)}`,
+            "Subject Code": r.subject_code || "-", Teacher: r.teacher_name || "-",
+            Classroom: r.classroom_name || "-", Link: r.class_link || "-"
+        }));
+        const ws = XLSX.utils.json_to_sheet(rows);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Timetable");
         XLSX.writeFile(wb, `Timetable-${batchName.replace(/ /g, '_')}.xlsx`);
     };
 
     const handlePdfDownload = () => {
-        const doc = new jsPDF();
-        doc.setFontSize(18);
-        doc.text(`Timetable for ${batchName}`, 14, 22);
-        const body = [];
-        daysOfWeek.forEach(day => {
-            const daySlots = timetable[day] || [];
-            if (daySlots.length > 0) {
-                daySlots.forEach((slot, index) => {
-                    const row = [];
-                    if (index === 0) row.push({ content: day, rowSpan: daySlots.length, styles: { valign: 'middle', halign: 'center' } });
-                    row.push(slot.time, slot.subject, slot.teacher, slot.platform);
-                    body.push(row);
-                });
-            }
-        });
+        const doc = new jsPDF({ unit: "pt", format: "a4" });
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 40;
+
+        try {
+            const logoWidth = 50;
+            const logoHeight = 50;
+            doc.addImage(Logo, 'JPEG', pageWidth - margin - logoWidth, 20, logoWidth, logoHeight);
+        } catch (e) {}
+
+        const title = `COHORT ${cohortName || ""} - ${batchName || "N/A"} - TIME TABLE`;
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text(title, pageWidth / 2, 45, { align: "center" });
+
         autoTable(doc, {
-            head: [["Day", "Timings", "Subject", "Teacher", "Platform"]],
-            body,
-            startY: 30,
-            theme: 'grid',
-            headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' }
+            startY: 80,
+            head: [["Day", "Time", "Subject Code", "Teacher", "Classroom", "Link"]],
+            body: flatRows.map(r => [
+                r.rowSpan > 0 ? { content: r.day_of_week, rowSpan: r.rowSpan } : null,
+                `${t12(r.start_time)} - ${t12(r.end_time)}`,
+                r.subject_code || "-", r.teacher_name || "-",
+                r.classroom_name || "-", r.class_link ? "JOIN CLASS" : "-"
+            ].filter(cell => cell !== null)),
+            
+            theme: "grid",
+            headStyles: { fillColor: [16, 185, 129], halign: 'center' },
+            styles: { fontSize: 8, valign: 'middle' },
+            columnStyles: { 0: { halign: 'center', fontStyle: 'bold' }, 5: { halign: 'center' } },
+
+            willDrawCell: (data) => {
+                if (data.section === 'body' && data.column.index === 5) {
+                    const link = flatRows[data.row.index]?.class_link;
+                    if (link && link !== "-") doc.setTextColor(0, 0, 255);
+                }
+            },
+            didDrawCell: (data) => {
+                if (data.section === 'body' && data.column.index === 5) {
+                    const link = flatRows[data.row.index]?.class_link;
+                    if (link && link !== "-") {
+                        const text = data.cell.text[0];
+                        const textWidth = doc.getTextWidth(text);
+                        const startX = data.cell.x + (data.cell.width - textWidth) / 2;
+                        const startY = data.cell.y + data.cell.height - 5;
+                        doc.setDrawColor(0, 0, 255);
+                        doc.line(startX, startY, startX + textWidth, startY);
+                        doc.link(data.cell.x, data.cell.y, data.cell.width, data.cell.height, { url: link });
+                    }
+                }
+            }
         });
         doc.save(`Timetable-${batchName.replace(/ /g, '_')}.pdf`);
     };
+
     return (
         <div className={styles.card}>
             <h2 className={styles.cardTitle}>Download Timetable</h2>
@@ -512,79 +343,38 @@ const DownloadButtons = ({ timetable, batchName }) => {
     );
 };
 
-// --- TeacherLoadReport Component ---
-const TeacherLoadReport = ({ timetable, teachers }) => {
-    const teacherLoad = useMemo(() => {
-        const load = {};
-        teachers.forEach(teacher => {
-            load[teacher.user_name] = 0; // Use user_name as the display key
-        });
-        Object.values(timetable).flat().forEach(slot => {
-            if (slot.teacher && load.hasOwnProperty(slot.teacher)) {
-                load[slot.teacher]++;
-            }
-        });
-        return load;
-    }, [timetable, teachers]);
-
-    return (
-        <div className={styles.card}>
-            <div className={styles.cardHeader}>
-                <h2 className={styles.cardTitle}>Teacher Load Report</h2>
-            </div>
-            <div className={styles.tableContainer}>
-                <table className={styles.table}>
-                    <thead>
-                        <tr>
-                            <th>Teacher</th>
-                            <th>Class Count (Weekly)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {Object.entries(teacherLoad).map(([teacher, count]) => (
-                            <tr key={teacher}>
-                                <td>{teacher}</td>
-                                <td>{count}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    );
-};
-
 // --- Main TimetableDashboard Component ---
 const TimetableDashboard = () => {
     const [selectedCohort, setSelectedCohort] = useState(null);
     const [selectedBatch, setSelectedBatch] = useState(null);
     const [editingSlot, setEditingSlot] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [loading, setLoading] = useState(true);
-    const [viewMode, setViewMode] = useState('day');
-    const [modalType, setModalType] = useState(null);
-    const [error, setError] = useState(null);
+    
+    // Core Data State
     const [cohorts, setCohorts] = useState([]);
     const [batches, setBatches] = useState([]);
-    const [timetable, setTimetable] = useState(generateEmptyTimetable());
-    const [dropdownData, setDropdownData] = useState({ subjects: [], teachers: [], platforms: [] });
-    const currentPath = ['Admin','Academics', 'TimeTable'];
+    const [classrooms, setClassrooms] = useState([]);
+    const [timetable, setTimetable] = useState({});
+    const [dropdownData, setDropdownData] = useState({ subjects: [], teachers: [] });
+    
+    // Conflict UI State
+    const [conflictsMap, setConflictsMap] = useState({});
+    const [showConflictModal, setShowConflictModal] = useState(false);
+    const [conflictDetails, setConflictDetails] = useState([]);
 
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const currentPath = ['Admin', 'Academics', 'TimeTable'];
 
     useFetchCohorts(setCohorts, setLoading, setError);
     useFetchBatches(selectedCohort?.cohort_number, setBatches, setLoading, setError);
 
     const fetchDropdownData = useCallback(async () => {
         try {
-            const [subjectsRes, teachersRes, platformsRes] = await fetchConfigData();
-            setDropdownData({
-                subjects: subjectsRes.data,
-                teachers: teachersRes.data, // Expects [{ teacher_id, user_name }, ...]
-                platforms: platformsRes.data,
-            });
+            const [subjectsRes, teachersRes] = await fetchConfigData();
+            setDropdownData({ subjects: subjectsRes.data, teachers: teachersRes.data });
         } catch (err) {
             setError("Failed to load configuration data.");
-            console.error("Failed to fetch dropdown data:", err);
         }
     }, []);
     useEffect(() => { fetchDropdownData(); }, [fetchDropdownData]);
@@ -592,7 +382,8 @@ const TimetableDashboard = () => {
     const handleCohortChange = useCallback((cohort) => {
         setSelectedCohort(cohort);
         setSelectedBatch(null);
-        setTimetable(generateEmptyTimetable());
+        setTimetable({});
+        setClassrooms([]);
     }, []);
 
     const handleBatchChange = useCallback(async (batch) => {
@@ -600,21 +391,32 @@ const TimetableDashboard = () => {
         setSelectedBatch(batch);
         setLoading(true);
         setError(null);
+        setConflictsMap({});
         try {
-            // Use server route: GET /api/timetable/batch/:batchId
-            const response = await axios.get(`${API_URL}/api/timetable/batch/${batch.batch_id}`);
-            const timetableData = response.data; // Expects { Monday: [...], Tuesday: [...] }
-            const fullTimetable = generateEmptyTimetable();
-            Object.assign(fullTimetable, timetableData);
-            setTimetable(fullTimetable);
+            const [timetableRes, classroomsRes] = await Promise.all([
+                axios.get(`${API_URL}/api/timetable/batch/${batch.batch_id}`),
+                fetchClassroomsByBatch(batch.batch_id)
+            ]);
+            
+            const rawTimetable = timetableRes.data || [];
+            // Group by day exactly like Snippet 1
+            const grouped = rawTimetable.reduce((acc, curr) => {
+                const day = curr.day_of_week || curr.day;
+                if (!acc[day]) acc[day] = [];
+                acc[day].push(curr);
+                return acc;
+            }, {});
+            
+            setTimetable(grouped);
+            setClassrooms(classroomsRes.data || []);
         } catch (err) {
-            setError("Failed to fetch timetable for the selected batch.");
-            setTimetable(generateEmptyTimetable());
-            console.error("Failed to fetch timetable:", err);
+            setError("Failed to fetch timetable or classrooms for the selected batch.");
+            setTimetable({});
+            setClassrooms([]);
         } finally {
             setLoading(false);
         }
-    }, [API_URL]);
+    }, []);
     
     const refreshTimetable = useCallback(async () => {
         if (!selectedBatch) return;
@@ -622,7 +424,7 @@ const TimetableDashboard = () => {
     }, [selectedBatch, handleBatchChange]);
 
     const handleAddSlot = (day) => {
-        setEditingSlot({ day: day || 'Monday', slot: null });
+        setEditingSlot({ day: day || 'MONDAY', slot: null });
         setIsEditModalOpen(true);
     };
 
@@ -634,7 +436,6 @@ const TimetableDashboard = () => {
     const handleDeleteSlot = async (slotId) => {
         if (window.confirm("Are you sure you want to delete this class slot?")) {
             try {
-                // slotId here is pp.timetable.timetable_id
                 await axios.delete(`${API_URL}/api/timetable/${slotId}`);
                 await refreshTimetable();
             } catch (err) {
@@ -643,16 +444,34 @@ const TimetableDashboard = () => {
         }
     };
 
-    const handleCloseModal = useCallback(() => {
-        setIsEditModalOpen(false);
-        setEditingSlot(null);
-    }, []);
+    const validateSlot = async (slotData, excludeId) => {
+        const params = new URLSearchParams({ 
+            classroomId: slotData.classroom_id, 
+            day: slotData.day_of_week, 
+            startTime: slotData.start_time, 
+            endTime: slotData.end_time 
+        });
+        if (excludeId) params.append("excludeId", excludeId);
 
-    const handleSaveSlot = useCallback(async (slotId, slotData) => {
-        // slotData = { batchId, dayOfWeek, startTime, endTime, subjectId, teacherId, platformId }
-        // The backend API must handle the logic of finding/creating a pp.classroom,
-        // linking it to the batch via pp.classroom_batch,
-        // and creating/updating the pp.timetable entry.
+        try {
+            const res = await checkConflictApi(params);
+            if (res.data?.overlap) {
+                const conflicts = res.data.conflicts || [];
+                setConflictsMap(conflicts.reduce((a, c) => ({ ...a, [c.timetable_id]: true }), {}));
+                setConflictDetails(conflicts);
+                setShowConflictModal(true);
+                return { ok: false };
+            }
+            return { ok: true };
+        } catch (err) { 
+            return { ok: false }; 
+        }
+    };
+
+    const handleSaveSlot = async (slotId, slotData) => {
+        const val = await validateSlot(slotData, slotId);
+        if (!val.ok) return;
+
         const isUpdating = !!slotId;
         const url = isUpdating ? `${API_URL}/api/timetable/${slotId}` : `${API_URL}/api/timetable`;
         const method = isUpdating ? 'put' : 'post';
@@ -660,96 +479,30 @@ const TimetableDashboard = () => {
         try {
             await axios({ url, method, data: slotData });
             await refreshTimetable();
-            handleCloseModal();
+            setIsEditModalOpen(false);
+            setEditingSlot(null);
+            setConflictsMap({});
         } catch (err) {
             alert(`Error saving slot: ${err.response?.data?.message || err.message}`);
         }
-    }, [refreshTimetable, handleCloseModal]);
-
-    // --- Data Modal Handlers ---
-    // [MODIFIED] Updated to pass 'data' object instead of 'name' string
-    const handleAddItem = async (data) => {
-        try {
-            switch (modalType) {
-                case 'subjects':
-                    await addSubject(data);
-                    break;
-                case 'platforms':
-                    await addPlatform(data);
-                    break;
-                default:
-                    throw new Error("Invalid item type");
-            }
-            await fetchDropdownData();
-        } catch (err) {
-            console.error(`Failed to add ${modalType}:`, err);
-            alert(`Error: Could not add the item.`);
-            throw err;
-        }
     };
-
-    const handleRemoveItem = async (id) => {
-        try {
-            switch (modalType) {
-                case 'subjects':
-                    await deleteSubject(id);
-                    break;
-                case 'platforms':
-                    await deletePlatform(id);
-                    break;
-                default:
-                    throw new Error("Invalid item type");
-            }
-            await fetchDropdownData();
-        } catch (err) {
-            console.error(`Failed to remove ${modalType}:`, err);
-            alert(`Error: Could not remove the item.`);
-            throw err;
-        }
-    };
-
-    const openDataModal = (type) => setModalType(type);
-    const closeDataModal = () => setModalType(null);
-    
-    // [MODIFIED] Updated to pass 'type' and correct item structure for subjects
-    const getModalProps = () => {
-        const { subjects, platforms } = dropdownData;
-        switch (modalType) {
-            case 'subjects': 
-                return { 
-                    title: 'Manage Subjects', 
-                    // Pass 'code' as well for display
-                    items: subjects.map(s => ({ 
-                        id: s.subject_id, 
-                        name: s.subject_name, 
-                        code: s.subject_code 
-                    })), 
-                    placeholder: 'Subject Name', // Placeholder is now handled in modal
-                    type: 'subjects' // Pass type to modal
-                };
-            case 'platforms': 
-                return { 
-                    title: 'Manage Platforms', 
-                    items: platforms.map(p => ({ id: p.platform_id, name: p.platform_name })), 
-                    placeholder: 'e.g., Google Meet',
-                    type: 'platforms' // Pass type to modal
-                };
-            default: return null;
-        }
-    };
-    // --- End Data Modal Handlers ---
 
     return (
         <div className={styles.dashboardPage}>
-        <Breadcrumbs path={currentPath} nonLinkSegments={['Admin', 'Academics']} />    
-            <header className={styles.pageHeader}>
-                <h1 className={styles.pageTitle}>Timetable Management</h1>
+            <Breadcrumbs path={currentPath} nonLinkSegments={['Admin', 'Academics']} />    
+            <header className={styles.pageHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <img src={Logo} alt="Logo" style={{ width: '60px', height: '60px', borderRadius: '8px' }} />
+                    <div>
+                        <h1 className={styles.pageTitle}>Timetable Management</h1>
+                        <p className={styles.subtitle} style={{ color: '#6b7280' }}>Manage dynamic scheduling and room allocation</p>
+                    </div>
+                </div>
             </header>
 
             {error && <div className={`${styles.card} ${styles.errorCard}`}><AlertCircle size={20} /> {error}</div>}
             
             <div className={styles.mainLayout}>
-                
                 <div className={styles.leftColumn}>
                     <div className={styles.card}>
                         <h2 className={styles.cardTitle}>Controls</h2>
@@ -777,19 +530,12 @@ const TimetableDashboard = () => {
                             </select>
                         </div>
                     </div>
-                    <div className={styles.card}>
-                        <h2 className={styles.cardTitle}>Configuration</h2>
-                        <div className={styles.configGrid}>
-                            <button onClick={() => openDataModal('subjects')} className={styles.button}><BookOpen size={16} /> Manage Subjects</button>
-                            <button onClick={() => openDataModal('platforms')} className={styles.button}><Tv size={16} /> Manage Platforms</button>
-                        </div>
-                    </div>
                 </div>
 
                 <div className={styles.rightColumn}>
                     {!selectedBatch ? (
-                        <div className={`${styles.card} ${styles.placeholderCard}`}>
-                            <Clock size={48} />
+                        <div className={`${styles.card} ${styles.placeholderCard}`} style={{ padding: '80px', textAlign: 'center' }}>
+                            <Clock size={48} style={{ color: '#d1d5db', marginBottom: '15px' }} />
                             <h3 className={styles.placeholderTitle}>Select a Cohort and Batch</h3>
                             <p className={styles.placeholderText}>Choose a cohort and batch from the controls to view or edit the timetable.</p>
                         </div>
@@ -800,11 +546,11 @@ const TimetableDashboard = () => {
                         </div>
                     ) : (
                         <>
-                            <div className={styles.card}>
-                                <div className={styles.cardHeader}>
+                            <div className={styles.card} style={{ padding: 0, overflow: 'hidden' }}>
+                                <div className={styles.cardHeader} style={{ padding: '20px', borderBottom: '1px solid #e5e7eb', background: '#f9fafb' }}>
                                     <h2 className={styles.cardTitle}>Weekly Timetable for {selectedBatch.batch_name}</h2>
                                     <div className={styles.cardActions}>
-                                        <button onClick={() => handleAddSlot()} className={`${styles.button} ${styles.buttonPrimary}`}><Plus size={16} /> Add Class</button>
+                                        <button onClick={() => handleAddSlot()} className={`${styles.button} ${styles.buttonPrimary}`}><Plus size={16} /> Add Slot</button>
                                     </div>
                                 </div>
                                 <TimetableGridView
@@ -812,21 +558,59 @@ const TimetableDashboard = () => {
                                     onEditSlot={handleEditSlot}
                                     onDeleteSlot={handleDeleteSlot}
                                     isBatchSelected={!!selectedBatch}
+                                    conflictsMap={conflictsMap}
                                 />
                             </div>
-                            <div className={styles.card}>
-                                <TeacherLoadReport timetable={timetable} teachers={dropdownData.teachers} />
-                            </div>
-                            <div className={styles.card}>
-                                <DownloadButtons timetable={timetable} batchName={selectedBatch.batch_name} />
-                            </div>
+                            <DownloadButtons timetable={timetable} batchName={selectedBatch.batch_name} cohortName={selectedCohort?.cohort_number} />
                         </>
                     )}
                 </div>
             </div>
 
-            {isEditModalOpen && <EditTimetableModal isOpen={isEditModalOpen} onClose={handleCloseModal} slotData={editingSlot?.slot} day={editingSlot?.day} onSave={handleSaveSlot} dropdownData={dropdownData} batchId={selectedBatch?.batch_id} />}
-            {modalType && <DataManagementModal isOpen={!!modalType} onClose={closeDataModal} onAdd={handleAddItem} onRemove={handleRemoveItem} {...getModalProps()} />}
+            {isEditModalOpen && (
+                <EditTimetableModal 
+                    isOpen={isEditModalOpen} 
+                    onClose={() => setIsEditModalOpen(false)} 
+                    slotData={editingSlot?.slot} 
+                    day={editingSlot?.day} 
+                    onSave={handleSaveSlot} 
+                    dropdownData={dropdownData} 
+                    batchId={selectedBatch?.batch_id}
+                    classrooms={classrooms}
+                />
+            )}
+
+            {/* CONFLICT MODAL */}
+            {showConflictModal && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modalContent} style={{ maxWidth: '400px', borderTop: '5px solid #ef4444' }}>
+                        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                            <AlertTriangle size={48} color="#ef4444" style={{ marginBottom: '10px', display: 'inline-block' }} />
+                            <h3 className={styles.modalTitle} style={{ color: '#b91c1c' }}>Schedule Conflict Detected</h3>
+                            <p style={{ fontSize: '13px', color: '#6b7280' }}>The proposed time slot overlaps with existing classes:</p>
+                        </div>
+
+                        <div style={{ maxHeight: '250px', overflowY: 'auto', background: '#fef2f2', padding: '10px', borderRadius: '8px', border: '1px solid #fee2e2' }}>
+                            {conflictDetails.map((c, i) => (
+                                <div key={i} style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: i !== conflictDetails.length - 1 ? '1px solid #fecaca' : 'none' }}>
+                                    <div style={{ fontWeight: '700', fontSize: '14px', color: '#991b1b' }}>{i + 1}. {c.subject_name}</div>
+                                    <div style={{ fontSize: '12px', color: '#4b5563', marginTop: '4px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Info size={12}/> Teacher: {c.teacher_name}</div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Layout size={12}/> Room: {c.classroom_name}</div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Clock size={12}/> {t12(c.start_time)} - {t12(c.end_time)}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className={styles.modalActions} style={{ marginTop: '20px' }}>
+                            <button className={`${styles.button} ${styles.buttonPrimary}`} style={{ backgroundColor: '#ef4444', width: '100%', justifyContent: 'center' }} onClick={() => setShowConflictModal(false)}>
+                                I Understand, Let me fix it
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

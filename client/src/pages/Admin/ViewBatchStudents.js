@@ -43,7 +43,6 @@ const AddStudentsModal = ({ isOpen, onClose, batchId, onSuccess }) => {
   const [submitting, setSubmitting] = useState(false);
   const [selected, setSelected] = useState([]);
   const [search, setSearch] = useState("");
-  const [toast, setToast] = useState(null);
   const debouncedSearch = useDebounce(search, 300);
 
   useEffect(() => {

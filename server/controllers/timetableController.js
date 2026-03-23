@@ -1,40 +1,38 @@
 const pool = require("../config/db");
 
 // ======================================================
-//  GET ACTIVE COHORTS
+// GET ACTIVE COHORTS
 // ======================================================
 const getActiveCohorts = async (req, res) => {
     try {
-        const query = `
+        const { rows } = await pool.query(`
             SELECT *
             FROM pp.cohort
             WHERE end_date IS NULL
-            ORDER BY start_date DESC;
-        `;
-        const { rows } = await pool.query(query);
+            ORDER BY start_date DESC
+        `);
+
         res.status(200).json(rows);
+
     } catch (error) {
         console.error("Error fetching active cohorts:", error);
-        res.status(500).json({ message: "Server error while fetching active cohorts." });
+        res.status(500).json({ message: "Server error while fetching cohorts." });
     }
 };
 
 // ======================================================
-//  GET TIMETABLE BY BATCH — USING NEW DB STRUCTURE
+// GET TIMETABLE BY BATCH
 // ======================================================
 const getTimeTableByBatch = async (req, res) => {
     const { batchId } = req.params;
 
-    if (!batchId) {
-        return res.status(400).json({ message: "Batch ID is required." });
-    }
-
     try {
-        const query = `
+        const { rows } = await pool.query(`
             SELECT 
                 tt.timetable_id AS id,
                 tt.day_of_week,
-                TO_CHAR(tt.start_time, 'HH12:MI AM') || ' - ' || TO_CHAR(tt.end_time, 'HH12:MI AM') AS time,
+                tt.start_time,
+                tt.end_time,
 
                 c.classroom_id,
                 c.classroom_name,
@@ -46,6 +44,7 @@ const getTimeTableByBatch = async (req, res) => {
             FROM pp.timetable tt
             JOIN pp.classroom c ON c.classroom_id = tt.classroom_id
             JOIN pp.classroom_batch cb ON cb.classroom_id = c.classroom_id
+
             LEFT JOIN pp.subject s ON c.subject_id = s.subject_id
             LEFT JOIN pp.teacher t ON c.teacher_id = t.teacher_id
             LEFT JOIN pp.user u ON t.user_id = u.user_id
@@ -54,7 +53,7 @@ const getTimeTableByBatch = async (req, res) => {
             WHERE cb.batch_id = $1
 
             ORDER BY
-                CASE UPPER(tt.day_of_week)
+                CASE tt.day_of_week
                     WHEN 'SUNDAY' THEN 1
                     WHEN 'MONDAY' THEN 2
                     WHEN 'TUESDAY' THEN 3
@@ -63,16 +62,12 @@ const getTimeTableByBatch = async (req, res) => {
                     WHEN 'FRIDAY' THEN 6
                     WHEN 'SATURDAY' THEN 7
                 END,
-                tt.start_time;
-        `;
+                tt.start_time
+        `, [batchId]);
 
-        const { rows } = await pool.query(query, [batchId]);
-
-        // Group timetable slots by day
         const timetable = rows.reduce((acc, slot) => {
-            const day = slot.day_of_week;
-            if (!acc[day]) acc[day] = [];
-            acc[day].push(slot);
+            if (!acc[slot.day_of_week]) acc[slot.day_of_week] = [];
+            acc[slot.day_of_week].push(slot);
             return acc;
         }, {});
 
@@ -85,114 +80,182 @@ const getTimeTableByBatch = async (req, res) => {
 };
 
 // ======================================================
-//  ADD NEW TIMETABLE SLOT — NEW LOGIC (classroom + timetable)
+// ADD TIMETABLE SLOT
 // ======================================================
 const addTimetableSlot = async (req, res) => {
-    const { batchId, subjectId, teacherId, platformId, dayOfWeek, startTime, endTime } = req.body;
 
-    if (!batchId || !dayOfWeek || !startTime) {
-        return res.status(400).json({ message: "Batch, day, and start time are required." });
-    }
+    const {
+        batchId,
+        subjectId,
+        teacherId,
+        platformId,
+        dayOfWeek,
+        startTime,
+        endTime
+    } = req.body;
+
+    const createdBy = req.user?.user_id || 1;
+
+    const client = await pool.connect();
 
     try {
-        // 1. Create classroom
-        const className = `AUTO-${subjectId}-${teacherId}-${platformId}`;
-        const classroomRes = await pool.query(
-            `INSERT INTO pp.classroom (classroom_name, subject_id, teacher_id, platform_id)
-             VALUES ($1, $2, $3, $4)
-             RETURNING classroom_id`,
-            [className, subjectId, teacherId, platformId]
+
+        await client.query("BEGIN");
+
+        // normalize day value to match DB check constraint (e.g. 'MONDAY')
+        const mappedDay = typeof dayOfWeek === 'string' ? dayOfWeek.toUpperCase() : dayOfWeek;
+
+        // create classroom
+        const classroom = await client.query(
+            `INSERT INTO pp.classroom
+            (classroom_name, subject_id, teacher_id, platform_id)
+            VALUES ($1,$2,$3,$4)
+            RETURNING classroom_id`,
+            [`AUTO-${subjectId}-${teacherId}`, subjectId, teacherId, platformId]
         );
 
-        const classroomId = classroomRes.rows[0].classroom_id;
+        const classroomId = classroom.rows[0].classroom_id;
 
-        // 2. Map classroom → batch
-        await pool.query(
+        // map classroom to batch
+        await client.query(
             `INSERT INTO pp.classroom_batch (classroom_id, batch_id)
-             VALUES ($1, $2)
+             VALUES ($1,$2)
              ON CONFLICT DO NOTHING`,
             [classroomId, batchId]
         );
 
-        // 3. Add timetable entry
-        const ttRes = await pool.query(
-            `INSERT INTO pp.timetable (classroom_id, day_of_week, start_time, end_time)
-             VALUES ($1, $2, $3, $4)
-             RETURNING *`,
-            [classroomId, dayOfWeek, startTime, endTime]
+        // insert timetable
+        const timetable = await client.query(
+            `INSERT INTO pp.timetable
+            (classroom_id, day_of_week, start_time, end_time, created_by)
+            VALUES ($1,$2,$3,$4,$5)
+            RETURNING *`,
+            [classroomId, mappedDay, startTime, endTime, createdBy]
         );
 
-        res.status(201).json({ message: "Timetable slot added successfully.", slot: ttRes.rows[0] });
+        await client.query("COMMIT");
+
+        res.status(201).json({
+            message: "Timetable slot added successfully",
+            slot: timetable.rows[0]
+        });
 
     } catch (error) {
-        console.error("Error adding timetable slot:", error);
-        res.status(500).json({ message: "Server error while adding slot." });
+
+        await client.query("ROLLBACK");
+
+        if (error.code === "23505") {
+            return res.status(400).json({
+                message: "Timetable already exists for this classroom and day"
+            });
+        }
+
+        console.error("Error adding timetable:", error);
+        res.status(500).json({ message: "Server error while adding timetable." });
+
+    } finally {
+        client.release();
     }
 };
 
 // ======================================================
-//  UPDATE TIMETABLE SLOT
+// UPDATE TIMETABLE SLOT
 // ======================================================
 const updateTimetableSlot = async (req, res) => {
+
     const { slotId } = req.params;
-    const { subjectId, teacherId, platformId, dayOfWeek, startTime, endTime } = req.body;
+    const { dayOfWeek, startTime, endTime, subjectId, teacherId, platformId } = req.body;
+
+    const updatedBy = req.user?.user_id || 1;
+
+    // normalize day value to match DB check constraint (e.g. 'MONDAY')
+    const mappedDay = typeof dayOfWeek === 'string' ? dayOfWeek.toUpperCase() : dayOfWeek;
+
+    const client = await pool.connect();
 
     try {
-        // 1. Fetch classroom
-        const ttRes = await pool.query(
+
+        await client.query("BEGIN");
+
+        const timetable = await client.query(
             `SELECT classroom_id FROM pp.timetable WHERE timetable_id = $1`,
             [slotId]
         );
 
-        if (ttRes.rows.length === 0) {
-            return res.status(404).json({ message: "Slot not found." });
+        if (timetable.rows.length === 0) {
+            return res.status(404).json({ message: "Timetable slot not found." });
         }
 
-        const classroomId = ttRes.rows[0].classroom_id;
+        const classroomId = timetable.rows[0].classroom_id;
 
-        // 2. Update classroom
-        await pool.query(
+        // update classroom
+        await client.query(
             `UPDATE pp.classroom
-             SET subject_id = $1, teacher_id = $2, platform_id = $3
+             SET subject_id = $1,
+                 teacher_id = $2,
+                 platform_id = $3
              WHERE classroom_id = $4`,
             [subjectId, teacherId, platformId, classroomId]
         );
 
-        // 3. Update timetable slot
-        const updateRes = await pool.query(
+        // update timetable
+        const updated = await client.query(
             `UPDATE pp.timetable
-             SET day_of_week = $1, start_time = $2, end_time = $3
-             WHERE timetable_id = $4
+             SET day_of_week = $1,
+                 start_time = $2,
+                 end_time = $3,
+                 updated_by = $4,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE timetable_id = $5
              RETURNING *`,
-            [dayOfWeek, startTime, endTime, slotId]
+            [mappedDay, startTime, endTime, updatedBy, slotId]
         );
 
-        res.status(200).json({ message: "Timetable slot updated successfully.", slot: updateRes.rows[0] });
+        await client.query("COMMIT");
+
+        res.status(200).json({
+            message: "Timetable updated successfully",
+            slot: updated.rows[0]
+        });
 
     } catch (error) {
-        console.error("Error updating timetable slot:", error);
-        res.status(500).json({ message: "Server error while updating slot." });
+
+        await client.query("ROLLBACK");
+
+        console.error("Error updating timetable:", error);
+        res.status(500).json({ message: "Server error while updating timetable." });
+
+    } finally {
+        client.release();
     }
 };
 
 // ======================================================
-//  DELETE TIMETABLE SLOT
+// DELETE TIMETABLE SLOT
 // ======================================================
 const deleteTimetableSlot = async (req, res) => {
+
     const { slotId } = req.params;
 
     try {
-        const result = await pool.query("DELETE FROM pp.timetable WHERE timetable_id = $1", [slotId]);
+
+        const result = await pool.query(
+            `DELETE FROM pp.timetable WHERE timetable_id = $1`,
+            [slotId]
+        );
 
         if (result.rowCount === 0) {
             return res.status(404).json({ message: "Slot not found." });
         }
 
-        res.status(200).json({ message: "Timetable slot deleted successfully." });
+        res.status(200).json({
+            message: "Timetable slot deleted successfully"
+        });
 
     } catch (error) {
-        console.error("Error deleting timetable slot:", error);
-        res.status(500).json({ message: "Server error while deleting slot." });
+
+        console.error("Error deleting timetable:", error);
+        res.status(500).json({ message: "Server error while deleting timetable." });
     }
 };
 

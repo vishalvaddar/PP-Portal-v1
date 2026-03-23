@@ -89,77 +89,141 @@ const Timetable = {
     // 2. CREATE NEW TIMETABLE SLOT
     // --------------------------
     create: async (data) => {
-        const { batchId, subjectId, teacherId, platformId, dayOfWeek, startTime, endTime } = data;
+            const { batchId, subjectId, teacherId, platformId, dayOfWeek, startTime, endTime } = data;
 
-        try {
-            // 1. Create / reuse classroom
-            const classroomQuery = `
-                INSERT INTO pp.classroom (classroom_name, subject_id, teacher_id, platform_id, created_at)
-                VALUES ($1, $2, $3, $4, NOW())
-                RETURNING classroom_id;
-            `;
-            const className = `AUTO-${subjectId}-${teacherId}-${platformId}`;
-            const classroomRes = await pool.query(classroomQuery, [className, subjectId, teacherId, platformId]);
-
-            const classroomId = classroomRes.rows[0].classroom_id;
-
-            // 2. Link classroom to batch
-            await pool.query(
-                `INSERT INTO pp.classroom_batch (classroom_id, batch_id)
-                 VALUES ($1, $2)
-                 ON CONFLICT DO NOTHING`,
-                [classroomId, batchId]
-            );
-
-            // 3. Insert timetable entry
-            const ttQuery = `
-                INSERT INTO pp.timetable (classroom_id, day_of_week, start_time, end_time)
-                VALUES ($1, $2, $3, $4)
-                RETURNING *;
-            `;
-            const { rows } = await pool.query(ttQuery, [classroomId, dayOfWeek, startTime, endTime]);
-
-            return rows[0];
-
-        } catch (error) {
-            console.error("Error creating timetable slot:", error.message);
-            throw new Error("Failed to create timetable slot.");
-        }
-    },
+            try {
+            
+                const day = dayOfWeek.toUpperCase();
+            
+                // 1️⃣ Create classroom
+                const classroomQuery = `
+                    INSERT INTO pp.classroom (classroom_name, subject_id, teacher_id, platform_id, created_at)
+                    VALUES ($1,$2,$3,$4,NOW())
+                    RETURNING classroom_id;
+                `;
+            
+                const className = `AUTO-${subjectId}-${teacherId}-${platformId}`;
+            
+                const classroomRes = await pool.query(classroomQuery, [
+                    className,
+                    subjectId,
+                    teacherId,
+                    platformId
+                ]);
+            
+                const classroomId = classroomRes.rows[0].classroom_id;
+            
+                // 2️⃣ Link classroom to batch
+                await pool.query(
+                    `INSERT INTO pp.classroom_batch (classroom_id,batch_id)
+                     VALUES ($1,$2)
+                     ON CONFLICT DO NOTHING`,
+                    [classroomId, batchId]
+                );
+            
+                // 3️⃣ Check if slot already exists for this day
+                const checkQuery = `
+                    SELECT timetable_id
+                    FROM pp.timetable
+                    WHERE classroom_id=$1 AND day_of_week=$2
+                `;
+            
+                const existing = await pool.query(checkQuery, [classroomId, day]);
+            
+                let result;
+            
+                if (existing.rows.length > 0) {
+                
+                    // 4️⃣ Update existing slot
+                    const updateQuery = `
+                        UPDATE pp.timetable
+                        SET start_time=$1,
+                            end_time=$2,
+                            updated_at=NOW()
+                        WHERE timetable_id=$3
+                        RETURNING *;
+                    `;
+                
+                    result = await pool.query(updateQuery, [
+                        startTime,
+                        endTime,
+                        existing.rows[0].timetable_id
+                    ]);
+                
+                } else {
+                
+                    // 5️⃣ Insert new slot
+                    const insertQuery = `
+                        INSERT INTO pp.timetable
+                        (classroom_id,day_of_week,start_time,end_time)
+                        VALUES ($1,$2,$3,$4)
+                        RETURNING *;
+                    `;
+                
+                    result = await pool.query(insertQuery, [
+                        classroomId,
+                        day,
+                        startTime,
+                        endTime
+                    ]);
+                }
+            
+                return result.rows[0];
+            
+            } catch (error) {
+                console.error("Error creating timetable slot:", error.message);
+                throw new Error("Failed to create timetable slot.");
+            }
+    },      
 
     // --------------------------
     // 3. UPDATE TIMETABLE SLOT
     // --------------------------
     update: async (timetableId, data) => {
+
         const { subjectId, teacherId, platformId, dayOfWeek, startTime, endTime } = data;
 
         try {
-            // Get existing classroom
+
+            const day = dayOfWeek.toUpperCase();
+
+            // get classroom
             const ttRes = await pool.query(
-                `SELECT classroom_id FROM pp.timetable WHERE timetable_id = $1`,
+                `SELECT classroom_id FROM pp.timetable WHERE timetable_id=$1`,
                 [timetableId]
             );
-            if (ttRes.rows.length === 0) throw new Error("Timetable slot not found.");
+
+            if (ttRes.rows.length === 0)
+                throw new Error("Timetable slot not found.");
 
             const classroomId = ttRes.rows[0].classroom_id;
 
-            // Update classroom
+            // update classroom info
             await pool.query(
                 `UPDATE pp.classroom
-                 SET subject_id = $1, teacher_id = $2, platform_id = $3
-                 WHERE classroom_id = $4`,
+                 SET subject_id=$1,
+                     teacher_id=$2,
+                     platform_id=$3
+                 WHERE classroom_id=$4`,
                 [subjectId, teacherId, platformId, classroomId]
             );
 
-            // Update timetable
+            // update timetable
             const updateQuery = `
                 UPDATE pp.timetable
-                SET day_of_week = $1, start_time = $2, end_time = $3
-                WHERE timetable_id = $4
+                SET day_of_week=$1,
+                    start_time=$2,
+                    end_time=$3,
+                    updated_at=NOW()
+                WHERE timetable_id=$4
                 RETURNING *;
             `;
+
             const { rows } = await pool.query(updateQuery, [
-                dayOfWeek, startTime, endTime, timetableId
+                day,
+                startTime,
+                endTime,
+                timetableId
             ]);
 
             return rows[0];
@@ -168,7 +232,7 @@ const Timetable = {
             console.error("Error updating timetable:", error.message);
             throw new Error("Failed to update timetable.");
         }
-    },
+    },  
 
     // --------------------------
     // 4. DELETE TIMETABLE SLOT
