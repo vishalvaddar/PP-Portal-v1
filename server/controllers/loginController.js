@@ -3,12 +3,14 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const logger = require('../utils/logger');
 
+// If using Node < 18 → uncomment below
+// const fetch = require("node-fetch");
+
 const loginController = async (req, res) => {
-  // 1. Extract captchaToken from the request body
   const { user_name, password, captchaToken } = req.body;
   const clientIp = logger.constructor.getClientIp(req);
 
-  // 2. Basic Validation (Now includes CAPTCHA)
+  // ✅ Basic Validation
   if (!user_name || !password) {
     return res.status(400).json({ error: 'Username and password are required' });
   }
@@ -18,21 +20,50 @@ const loginController = async (req, res) => {
   }
 
   try {
-    // 3. Verify the CAPTCHA with Google BEFORE hitting the database
-    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${captchaToken}`;
-    
-    // Using Node's built-in fetch (Requires Node v18+). If using older Node, use axios.post() instead.
-    const captchaVerifyRes = await fetch(verifyUrl, { method: 'POST' });
+    // ======================================================
+    // ✅ CAPTCHA VERIFICATION (FIXED)
+    // ======================================================
+    const params = new URLSearchParams();
+    params.append("secret", process.env.RECAPTCHA_SECRET_KEY);
+    params.append("response", captchaToken);
+
+    const captchaVerifyRes = await fetch(
+      "https://www.google.com/recaptcha/api/siteverify",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: params,
+      }
+    );
+
     const captchaData = await captchaVerifyRes.json();
 
+    // 🔥 DEBUG LOG (REMOVE IN PROD)
+    console.log("CAPTCHA DEBUG:", captchaData);
+
     if (!captchaData.success) {
-      logger.logLogin({ user_name, status: 'failed', reason: 'captcha_failed', ip: clientIp });
-      return res.status(400).json({ error: 'CAPTCHA verification failed. Please try again.' });
+      logger.logLogin({
+        user_name,
+        status: 'failed',
+        reason: `captcha_failed: ${JSON.stringify(captchaData)}`,
+        ip: clientIp
+      });
+
+      return res.status(400).json({
+        error: 'CAPTCHA verification failed. Please try again.',
+      });
     }
 
-    // --- FROM HERE DOWN, YOUR CODE REMAINS EXACTLY THE SAME ---
+    // Optional (extra strict check)
+    // if (captchaData.score && captchaData.score < 0.3) {
+    //   return res.status(400).json({ error: 'Low CAPTCHA score' });
+    // }
 
-    // 4. Fetch User & Roles
+    // ======================================================
+    // ✅ FETCH USER & ROLES
+    // ======================================================
     const query = `
       SELECT u.user_id, u.user_name, u.enc_password, u.locked_yn, r.role_name
       FROM pp.user u
@@ -43,48 +74,71 @@ const loginController = async (req, res) => {
 
     const result = await pool.query(query, [user_name]);
 
-    // 5. Prevent Enumeration (Generic Error)
+    // Prevent enumeration
     if (result.rows.length === 0) {
-      logger.logLogin({ user_name, status: 'failed', reason: 'user_not_found', ip: clientIp });
+      logger.logLogin({
+        user_name,
+        status: 'failed',
+        reason: 'user_not_found',
+        ip: clientIp
+      });
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const user = result.rows[0];
 
-    // 6. Check Lock Status
+    // ======================================================
+    // ✅ ACCOUNT LOCK CHECK
+    // ======================================================
     if (user.locked_yn === 'Y') {
       return res.status(403).json({ error: 'Account is locked. Contact support.' });
     }
 
-    // 7. Verify Password
+    // ======================================================
+    // ✅ PASSWORD VERIFY
+    // ======================================================
     const isMatch = await bcrypt.compare(password, user.enc_password);
+
     if (!isMatch) {
-      logger.logLogin({ user_name, status: 'failed', reason: 'bad_password', ip: clientIp });
+      logger.logLogin({
+        user_name,
+        status: 'failed',
+        reason: 'bad_password',
+        ip: clientIp
+      });
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // 8. Extract Roles
+    // ======================================================
+    // ✅ EXTRACT ROLES
+    // ======================================================
     const roles = result.rows.map(row => row.role_name);
 
-    // 9. Generate PRE-AUTH TOKEN
+    // ======================================================
+    // ✅ PRE-AUTH TOKEN
+    // ======================================================
     const preAuthToken = jwt.sign(
-      { 
-        user_id: user.user_id, 
-        user_name: user.user_name, 
+      {
+        user_id: user.user_id,
+        user_name: user.user_name,
         type: 'PRE_AUTH_ROLE_SELECT',
-        allowed_roles: roles 
+        allowed_roles: roles
       },
       process.env.JWT_SECRET,
-      { expiresIn: '5m' } 
+      { expiresIn: '5m' }
     );
 
-    logger.logLogin({ user_name, status: 'success_pre_auth', ip: clientIp });
+    logger.logLogin({
+      user_name,
+      status: 'success_pre_auth',
+      ip: clientIp
+    });
 
     return res.status(200).json({
       message: 'Credentials verified',
       user_name: user.user_name,
       roles: roles,
-      preAuthToken: preAuthToken 
+      preAuthToken: preAuthToken
     });
 
   } catch (err) {
