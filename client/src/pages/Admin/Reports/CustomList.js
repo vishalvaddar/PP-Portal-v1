@@ -569,30 +569,70 @@ const ListManager = () => {
             }}
           />
         </div>
-      ) : (
-        <div className={styles.listsGrid}>
-          {lists.map((l) => (
-            <div key={`list-card-${l.list_id}`} className={styles.listCardItem}>
-              <div className={styles.cardHeader}>
-                <div className={styles.studentInfo}>
-                  <h3 className={styles.listNameTitle}>{l.list_name}</h3>
-                  <span className={styles.badge}>{l.student_count} Students</span>
-                </div>
-              </div>
-              <div className={styles.cardActions}>
-                <div className={styles.actionGroupLeft}>
-                  <button className={styles.iconBtn} onClick={() => handleEdit(l)} title="Edit"><Edit size={16} /></button>
-                  <button className={styles.iconBtn} onClick={async () => { if (window.confirm("Delete?")) { await axios.delete(`${ENDPOINT}/list/${l.list_id}`); fetchLists(); } }} title="Delete"><Trash2 size={16} /></button>
-                </div>
-                <div className={styles.actionGroupRight}>
-                  <button className={styles.exportBtn} onClick={() => handleExport(l, "xlsx")}><Download size={14} /> XLS</button>
-                  <button className={styles.exportBtn} onClick={() => handleExport(l, "pdf")}><FileText size={14} /> PDF</button>
-                </div>
-              </div>
+     // ... (rest of your code stays exactly the same)
+) : (
+  <div className={styles.listsGrid}>
+    {lists.length === 0 ? (
+      <div className={styles.noDataContainer}>
+        <FileText size={48} color="#cbd5e0" />
+        <p className={styles.noDataText}>No lists created yet.</p>
+      </div>
+    ) : (
+      lists.map((l) => (
+        <div key={`list-card-${l.list_id}`} className={styles.listCardItem}>
+          <div className={styles.cardHeader}>
+            <div className={styles.studentInfo}>
+              <h3 className={styles.listNameTitle}>{l.list_name}</h3>
+              <span className={styles.badge}>{l.student_count} Students</span>
             </div>
-          ))}
+          </div>
+          <div className={styles.cardActions}>
+            <div className={styles.actionGroupLeft}>
+              <button 
+                className={styles.iconBtn} 
+                onClick={() => handleEdit(l)} 
+                title="Edit"
+                style={{ color: '#3182ce' }} 
+              >
+                <Edit size={16} />
+              </button>
+              <button 
+                className={styles.iconBtn} 
+                onClick={async () => { 
+                  if (window.confirm("Delete this list?")) { 
+                    await axios.delete(`${ENDPOINT}/list/${l.list_id}`); 
+                    fetchLists(); 
+                  } 
+                }} 
+                title="Delete"
+                style={{ color: '#e53e3e' }} 
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+            <div className={styles.actionGroupRight}>
+              <button 
+                className={styles.exportBtn} 
+                onClick={() => handleExport(l, "xlsx")}
+                style={{ borderColor: '#2f855a', color: '#2f855a' }} 
+              >
+                <Download size={14} /> XLS
+              </button>
+              <button 
+                className={styles.exportBtn} 
+                onClick={() => handleExport(l, "pdf")}
+                style={{ borderColor: '#c53030', color: '#c53030' }} 
+              >
+                <FileText size={14} /> PDF
+              </button>
+            </div>
+          </div>
         </div>
-      )}
+      ))
+    )}
+  </div>
+)}
+
     </div>
   );
 };

@@ -675,12 +675,12 @@ const stamplogo = path.join(assetsBase, "assets/rcf_stamp-removebg-preview.png")
 
     // ---------------- GENERATE PDFs ----------------
     for (const student of result.rows) {
-      const safeExamName = sanitizeFilename(student.exam_name);
+      const safeStudentName = sanitizeFilename(student.student_name);
       const safeHallTicket = sanitizeFilename(student.pp_hall_ticket_no);
 
       const pdfPath = path.join(
         hallTicketDir,
-        `${safeExamName}_${safeHallTicket}.pdf`
+        `${safeStudentName}_${safeHallTicket}.pdf`
       );
 
       tempFiles.push(pdfPath);
@@ -694,7 +694,7 @@ const stamplogo = path.join(assetsBase, "assets/rcf_stamp-removebg-preview.png")
       });
 
       archive.file(pdfPath, {
-        name: `${safeExamName}_${safeHallTicket}.pdf`
+        name: `${safeStudentName}_${safeHallTicket}.pdf`
       });
     }
 

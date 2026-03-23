@@ -2,7 +2,7 @@
   padding: 40px;
   background: #ffffff;
   min-height: 100vh;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', sans-serif; 
 }
 
 /* Header Area (Refere Dashboard Style) */
@@ -215,4 +215,69 @@
   padding: 100px; 
   font-weight: 700; 
   color: #64748b; 
+}
+/* ... (Keep your existing Header, Action Bar, and Card styles) ... */
+
+/* =========================================
+   NO DATA & INITIAL MESSAGE STYLES
+   ========================================= */
+
+.noDataContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 20px;
+  width: 100%;
+  /* Optional: adds a smooth fade in when switching states */
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.noDataContent {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 450px;
+}
+
+.noDataText {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e3a8a; /* Deep blue to match your theme */
+  margin: 0;
+}
+
+.noDataSubText {
+  font-size: 1rem;
+  color: #64748b; /* Slate gray */
+  line-height: 1.5;
+}
+
+/* Styles the bold text in the "Ready to generate" message */
+.noDataSubText strong {
+  color: #3b82f6; /* Bright blue for emphasis */
+  font-weight: 800;
+}
+
+/* If you want the icon in the initial message to look subtle */
+.noDataContent svg {
+  opacity: 0.6;
+  margin-bottom: 5px;
+}
+
+/* Responsive fix for the grid on smaller screens */
+@media (max-width: 900px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+  .actionBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }

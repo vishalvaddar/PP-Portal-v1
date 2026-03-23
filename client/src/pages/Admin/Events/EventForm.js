@@ -5,7 +5,7 @@ import styles from "./EventForm.module.css";
 import {
   useFetchStates,
   useFetchEducationDistricts,
-  useFetchBlocks
+  useFetchBlocks,
 } from "../../../hooks/useJurisData";
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_API_URL;
@@ -19,9 +19,7 @@ const useFetchEventTypes = () => {
     const fetchEventTypes = async () => {
       try {
         const res = await axios.get(`${API_BASE_URL}/api/event-types`);
-        const list = Array.isArray(res.data)
-          ? res.data
-          : res.data?.data || [];
+        const list = Array.isArray(res.data) ? res.data : res.data?.data || [];
 
         if (mounted) setEventTypes(list);
       } catch (err) {
@@ -53,7 +51,7 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
     boysCount: 0,
     girlsCount: 0,
     parentsCount: 0,
-    description: ""
+    description: "",
   });
 
   const [selectedFiles, setSelectedFiles] = useState(null);
@@ -63,6 +61,12 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
   const [districtsList, setDistrictsList] = useState([]);
   const [talukaOptions, setTalukaOptions] = useState([]);
   const [cohortsList, setCohortsList] = useState([]);
+
+  const selectedTypeObj = eventTypes.find(
+    (t) => t.event_type_id === Number(formData.eventType),
+  );
+  const isSammelan =
+    selectedTypeObj?.event_type_name?.toLowerCase() === "sammelan";
 
   useFetchStates(setStatesList);
   useFetchEducationDistricts(formData.state, setDistrictsList);
@@ -84,13 +88,15 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
     const { eventType, startDate, cohort, taluka } = formData;
 
     const selectedType = eventTypes.find(
-      (t) => t.event_type_id === Number(eventType)
+      (t) => t.event_type_id === Number(eventType),
     );
 
     const selectedBlock = talukaOptions.find(
-      (b) => String(b.block_id || b.id) === String(taluka)
+      (b) => String(b.block_id || b.id) === String(taluka),
     );
-    const currentTalukaName = selectedBlock ? (selectedBlock.block_name || selectedBlock.name) : "";
+    const currentTalukaName = selectedBlock
+      ? selectedBlock.block_name || selectedBlock.name
+      : "";
 
     if (!selectedType || !startDate || !cohort || !currentTalukaName) {
       setFormData((p) => ({ ...p, eventTitle: "" }));
@@ -102,13 +108,20 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const yy = String(d.getFullYear()).slice(-2);
 
-    const title = `${selectedType.event_type_name}-${dd}${mm}${yy}-COHORT-${cohort}-${currentTalukaName}`
-      .replace(/\s+/g, "_")
-      .toUpperCase();
+    const title =
+      `${selectedType.event_type_name}-${dd}${mm}${yy}-COHORT-${cohort}-${currentTalukaName}`
+        .replace(/\s+/g, "_")
+        .toUpperCase();
 
     setFormData((p) => ({ ...p, eventTitle: title }));
-
-  }, [formData.eventType, formData.startDate, formData.cohort, formData.taluka, eventTypes, talukaOptions]);
+  }, [
+    formData.eventType,
+    formData.startDate,
+    formData.cohort,
+    formData.taluka,
+    eventTypes,
+    talukaOptions,
+  ]);
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -161,7 +174,7 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
       cohort_number: formData.cohort,
       boys_attended: formData.boysCount,
       girls_attended: formData.girlsCount,
-      parents_attended: formData.parentsCount
+      parents_attended: formData.parentsCount,
     }).forEach(([k, v]) => data.append(k, v));
 
     selectedFiles &&
@@ -173,11 +186,14 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
   return (
     <div className={styles.formContainer}>
       <form onSubmit={handleSubmit} className={styles.form}>
-
         <div className={styles.formGroup}>
           <div className={styles.labelWithButton}>
             <label htmlFor="eventTypeSelect">Event Type</label>
-            <button type="button" onClick={onOpenAddTypeModal} className={styles.addTypeButton}>
+            <button
+              type="button"
+              onClick={onOpenAddTypeModal}
+              className={styles.addTypeButton}
+            >
               + Add New Type
             </button>
           </div>
@@ -190,7 +206,11 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
             required
             disabled={eventTypes.length === 0}
           >
-            <option value="">{eventTypes.length === 0 ? "Loading Event Types..." : "Select Event Type..."}</option>
+            <option value="">
+              {eventTypes.length === 0
+                ? "Loading Event Types..."
+                : "Select Event Type..."}
+            </option>
             {eventTypes.map((t) => (
               <option key={t.event_type_id} value={t.event_type_id}>
                 {t.event_type_name}
@@ -209,7 +229,11 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
             required
             disabled={cohortsList.length === 0}
           >
-            <option value="">{cohortsList.length === 0 ? "Loading Cohorts..." : "Select Cohort…"}</option>
+            <option value="">
+              {cohortsList.length === 0
+                ? "Loading Cohorts..."
+                : "Select Cohort…"}
+            </option>
             {cohortsList.map((c) => (
               <option key={c.cohort_number} value={c.cohort_number}>
                 {c.cohort_name || `Cohort ${c.cohort_number}`}
@@ -257,7 +281,11 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
                 required
                 disabled={statesList.length === 0}
               >
-                <option value="">{statesList.length === 0 ? "Loading States..." : "Select State…"}</option>
+                <option value="">
+                  {statesList.length === 0
+                    ? "Loading States..."
+                    : "Select State…"}
+                </option>
                 {statesList?.map((s) => (
                   <option key={s.state_id || s.id} value={s.state_id || s.id}>
                     {s.state_name || s.name}
@@ -276,9 +304,16 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
                 disabled={!formData.state || districtsList.length === 0}
                 required
               >
-                <option value="">{districtsList.length === 0 ? "Loading Districts..." : "Select District…"}</option>
+                <option value="">
+                  {districtsList.length === 0
+                    ? "Loading Districts..."
+                    : "Select District…"}
+                </option>
                 {districtsList?.map((d) => (
-                  <option key={d.district_id || d.id} value={d.district_id || d.id}>
+                  <option
+                    key={d.district_id || d.id}
+                    value={d.district_id || d.id}
+                  >
                     {d.district_name || d.name}
                   </option>
                 ))}
@@ -295,9 +330,16 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
                 disabled={!formData.district || talukaOptions.length === 0}
                 required
               >
-                <option value="">{talukaOptions.length === 0 ? "Loading Talukas..." : "Select Taluka…"}</option>
+                <option value="">
+                  {talukaOptions.length === 0
+                    ? "Loading Talukas..."
+                    : "Select Taluka…"}
+                </option>
                 {talukaOptions?.map((blk) => (
-                  <option key={blk.block_id || blk.id} value={blk.block_id || blk.id}>
+                  <option
+                    key={blk.block_id || blk.id}
+                    value={blk.block_id || blk.id}
+                  >
                     {blk.block_name || blk.name}
                   </option>
                 ))}
@@ -332,53 +374,57 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
           />
         </div>
 
-        <fieldset className={styles.attendanceFieldset}>
-          <legend>Attendance Count</legend>
+        {/* This condition hides the entire box and all 3 inputs for Sammelan */}
+        {!isSammelan && (
+          <fieldset className={styles.attendanceFieldset}>
+            <legend>Attendance Count</legend>
+            <div className={styles.gridThreeCol}>
+              <div className={styles.formGroup}>
+                <label htmlFor="boysCountInput">Boys</label>
+                <input
+                  id="boysCountInput"
+                  type="number"
+                  name="boysCount"
+                  min="0"
+                  value={formData.boysCount}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
-          <div className={styles.gridThreeCol}>
-            <div className={styles.formGroup}>
-              <label htmlFor="boysCountInput">Boys</label>
-              <input
-                id="boysCountInput"
-                type="number"
-                name="boysCount"
-                min="0"
-                value={formData.boysCount}
-                onChange={handleChange}
-                required
-              />
-            </div>
+              <div className={styles.formGroup}>
+                <label htmlFor="girlsCountInput">Girls</label>
+                <input
+                  id="girlsCountInput"
+                  type="number"
+                  name="girlsCount"
+                  min="0"
+                  value={formData.girlsCount}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="girlsCountInput">Girls</label>
-              <input
-                id="girlsCountInput"
-                type="number"
-                name="girlsCount"
-                min="0"
-                value={formData.girlsCount}
-                onChange={handleChange}
-                required
-              />
+              <div className={styles.formGroup}>
+                <label htmlFor="parentsCountInput">Parents / Guardians</label>
+                <input
+                  id="parentsCountInput"
+                  type="number"
+                  name="parentsCount"
+                  min="0"
+                  value={formData.parentsCount}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
             </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="parentsCountInput">Parents / Guardians</label>
-              <input
-                id="parentsCountInput"
-                type="number"
-                name="parentsCount"
-                min="0"
-                value={formData.parentsCount}
-                onChange={handleChange}
-                required
-              />
-            </div>
-          </div>
-        </fieldset>
+          </fieldset>
+        )}
 
         <div className={styles.formGroup}>
-          <label htmlFor="descriptionTextarea">Event Description / Notes (Optional)</label>
+          <label htmlFor="descriptionTextarea">
+            Event Description / Notes (Optional)
+          </label>
           <textarea
             id="descriptionTextarea"
             name="description"
@@ -387,24 +433,38 @@ const EventForm = ({ onSave, onCancel, onOpenAddTypeModal }) => {
             rows="3"
           />
         </div>
-
-        <div className={styles.formGroup}>
-          <label htmlFor="photosInput">Upload Photos (max 4)</label>
-          <input id="photosInput" type="file" multiple accept="image/*" onChange={handleFileChange} />
-          {fileError && <div className={styles.fileError}>{fileError}</div>}
-          <p className={styles.fileHint}>Selected: {selectedFiles ? selectedFiles.length : 0} file(s)</p>
-        </div>
-
+        {!isSammelan && (
+          <div className={styles.formGroup}>
+            <label htmlFor="photosInput">Upload Photos (max 4)</label>
+            <input
+              id="photosInput"
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleFileChange}
+            />
+            {fileError && <div className={styles.fileError}>{fileError}</div>}
+            <p className={styles.fileHint}>
+              Selected: {selectedFiles ? selectedFiles.length : 0} file(s)
+            </p>
+          </div>
+        )}
         <div className={styles.buttonContainer}>
-          <button type="button" onClick={onCancel} className={`${styles.button} ${styles.secondaryButton}`}>
+          <button
+            type="button"
+            onClick={onCancel}
+            className={`${styles.button} ${styles.secondaryButton}`}
+          >
             Cancel
           </button>
 
-          <button type="submit" className={`${styles.button} ${styles.submitButton}`}>
+          <button
+            type="submit"
+            className={`${styles.button} ${styles.submitButton}`}
+          >
             Save Event
           </button>
         </div>
-
       </form>
     </div>
   );

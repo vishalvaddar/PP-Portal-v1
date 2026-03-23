@@ -58,4 +58,17 @@ router.delete(
   eventController.deleteEvent
 );
 
+router.get('/attendance/sammelan-list', eventController.getSammelanEvents);
+
+router.get('/attendance/jurisdictions', eventController.getJurisdictionData);
+
+router.post('/attendance/students-list', eventController.fetchStudentAttendanceList);
+
+// --- Update this line in eventRoutes.js ---
+router.post(
+  '/attendance/save', 
+  uploadEventFiles, // Add this middleware here!
+  eventController.submitAttendance
+);
+
 module.exports = router;
