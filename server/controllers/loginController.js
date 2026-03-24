@@ -7,7 +7,7 @@ const logger = require('../utils/logger');
 // const fetch = require("node-fetch");
 
 const loginController = async (req, res) => {
-  const { user_name, password, captchaToken } = req.body;
+  const { user_name, password } = req.body;
   const clientIp = logger.constructor.getClientIp(req);
 
   // ✅ Basic Validation
@@ -15,52 +15,7 @@ const loginController = async (req, res) => {
     return res.status(400).json({ error: 'Username and password are required' });
   }
 
-  if (!captchaToken) {
-    return res.status(400).json({ error: 'CAPTCHA token is missing' });
-  }
-
   try {
-    // ======================================================
-    // ✅ CAPTCHA VERIFICATION (FIXED)
-    // ======================================================
-    const params = new URLSearchParams();
-    params.append("secret", process.env.RECAPTCHA_SECRET_KEY);
-    params.append("response", captchaToken);
-
-    const captchaVerifyRes = await fetch(
-      "https://www.google.com/recaptcha/api/siteverify",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: params,
-      }
-    );
-
-    const captchaData = await captchaVerifyRes.json();
-
-    // 🔥 DEBUG LOG (REMOVE IN PROD)
-    console.log("CAPTCHA DEBUG:", captchaData);
-
-    if (!captchaData.success) {
-      logger.logLogin({
-        user_name,
-        status: 'failed',
-        reason: `captcha_failed: ${JSON.stringify(captchaData)}`,
-        ip: clientIp
-      });
-
-      return res.status(400).json({
-        error: 'CAPTCHA verification failed. Please try again.',
-      });
-    }
-
-    // Optional (extra strict check)
-    // if (captchaData.score && captchaData.score < 0.3) {
-    //   return res.status(400).json({ error: 'Low CAPTCHA score' });
-    // }
-
     // ======================================================
     // ✅ FETCH USER & ROLES
     // ======================================================
@@ -125,7 +80,7 @@ const loginController = async (req, res) => {
         allowed_roles: roles
       },
       process.env.JWT_SECRET,
-      { expiresIn: '5m' }
+      { expiresIn: process.env.PRE_AUTH_JWT_EXPIRES_IN || '15m' }
     );
 
     logger.logLogin({
