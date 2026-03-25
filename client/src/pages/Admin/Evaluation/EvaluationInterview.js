@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import axios from "axios";
-import "./EvaluationInterview.css";
+import "./EvaluationInterview.module.css";
 import Breadcrumbs from "../../../components/Breadcrumbs/Breadcrumbs";
 
 import { useSystemConfig } from "../../../contexts/SystemConfigContext";

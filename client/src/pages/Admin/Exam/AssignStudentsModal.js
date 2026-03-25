@@ -100,6 +100,7 @@ const AssignStudentsModal = ({ examId, onClose, onAssigned }) => {
   };
 
   return (
+    <div className={classes.modalOverlay}>
     <div className={classes.modal}>
       <h2>Assign Students to Exam</h2>
       <form onSubmit={handleAssignSubmit}>
@@ -225,6 +226,7 @@ const AssignStudentsModal = ({ examId, onClose, onAssigned }) => {
 
         {message && <p style={{ marginTop: "10px" }}>{message}</p>}
       </form>
+    </div>
     </div>
   );
 };

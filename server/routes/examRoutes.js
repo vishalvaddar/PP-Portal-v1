@@ -24,7 +24,8 @@ const {
     freezeExam,
 
     createExamOnly,
-    assignApplicantsToExam
+    assignApplicantsToExam,
+    fetchexamcentresview
 } = require('../controllers/examControllers');
 
 // Exam Centre Routes
@@ -52,7 +53,7 @@ router.put("/:examId/freeze", freezeExam);
 //changed data
 router.post("/create", createExamOnly); // Only create the exam, no applicant assignment
 router.post("/:examId/assign-students", assignApplicantsToExam); // Assign applicants to an existing exam
-
+router.get("/viewcentres",fetchexamcentresview);
 
 
 

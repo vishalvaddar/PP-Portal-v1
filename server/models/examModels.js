@@ -207,6 +207,11 @@ async function deleteExamById(examId) {
     await pool.query("COMMIT");
 }
 
+async function getexamcentresview(){
+  const res = await pool.query(`select *from pp.pp_exam_centre`);
+  return res.rows;
+}
+
 module.exports = {
     getExamCentres,
     addExamCentre,
@@ -218,5 +223,6 @@ module.exports = {
     getUsedBlocks,
     getAllExams,
     getAllExamsnotassigned,
-    deleteExamById
+    deleteExamById,
+    getexamcentresview
 };

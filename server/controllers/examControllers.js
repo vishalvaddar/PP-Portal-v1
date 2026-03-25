@@ -13,11 +13,13 @@ const {
     getDivisionsByState,
   getEducationDistrictsByDivision,
   getBlocksByDistrict,
-  getClustersByBlock
+  getClustersByBlock,
+  getexamcentresview
 } = require('../models/examModels');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
+const XLSX = require('xlsx');
 const archiver = require('archiver');
 const pool = require("../config/db");
 const stream = require("stream");
@@ -323,6 +325,7 @@ function generateHallTicket(applicantId, nmmsYear) {
   }
 
   //done dusted
+
 async function generateStudentList(req, res) {
   try {
     const examId = req.params.examId;
@@ -340,80 +343,45 @@ async function generateStudentList(req, res) {
         ee.exam_date,
         ee.exam_start_time,
         ee.exam_end_time,
-        ec.pp_exam_centre_name
+        ec.pp_exam_centre_name,
+        api.nmms_reg_number,
+        ROW_NUMBER() OVER (ORDER BY api.student_name) as sl_no
       FROM pp.examination ee
       JOIN pp.applicant_exam ae ON ee.exam_id = ae.exam_id
       JOIN pp.applicant_primary_info api ON ae.applicant_id = api.applicant_id
       JOIN pp.pp_exam_centre ec ON ee.pp_exam_centre_id = ec.pp_exam_centre_id
       LEFT JOIN pp.institute i ON api.current_institute_dise_code = i.dise_code
       WHERE ae.exam_id = $1
+      ORDER BY api.student_name
     `, [examId]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "No students found for this exam." });
     }
 
-        // ---------------- STORAGE PATH ----------------
+    // ---------------- STORAGE PATH ----------------
     const BASE_PATH = process.env.FILE_STORAGE_PATH;
     if (!BASE_PATH) throw new Error("FILE_STORAGE_PATH not set");
 
-    const hallTicketDir = path.join(
+    const excelDir = path.join(
       BASE_PATH,
       "Admission",
       "Exam",
-      "halltickets"
+      "callinglists"
     );
 
-    if (!fs.existsSync(hallTicketDir)) {
-      fs.mkdirSync(hallTicketDir, { recursive: true });
+    if (!fs.existsSync(excelDir)) {
+      fs.mkdirSync(excelDir, { recursive: true });
     }
 
-    const filePath = path.join(
-      hallTicketDir,
-      `Exam_callingList_${examId}.pdf`
-    );
-      // --------------------------------------
-    const doc = new PDFDocument({ margin: 50 });
-    const stream = fs.createWriteStream(filePath);
-    
-    // Variables for page numbering
-    let pageNumber = 1;
-    
-    // Event handler for page addition
-    doc.on('pageAdded', () => {
-      pageNumber++;
-    });
-    
-    doc.pipe(stream);
+    // Format exam name for filename
+    const examName = result.rows[0].exam_name.replace(/\s+/g, '_');
+    const fileName = `${examName}_Calling_List.xlsx`;
+    const filePath = path.join(excelDir, fileName);
 
-    // ✅ Add page number function
-    const addPageNumber = () => {
-      const pages = doc.bufferedPageRange();
-      for (let i = 0; i < pages.count; i++) {
-        doc.switchToPage(i);
-        
-        // Add page number at top right corner
-        doc.fontSize(10)
-           .fillColor('#000000')
-           .text(`Page ${i + 1}`, doc.page.width - 100, 40, { align: 'right' });
-      }
-    };
-
-    // ✅ Title - BOLD and centered
-    doc.fontSize(22)
-      .font('Helvetica-Bold')
-      .fillColor('#000000')
-      .text("STUDENT CALLING LIST", 0, 50, { align: 'center' });
-    
-    doc.moveDown(2);
-
-    // ✅ Extract exam info (all rows have same exam info)
-    const examInfo = result.rows[0];
-
-    // ✅ Format date properly
+    // ✅ Format date function
     const formatDate = (dateString) => {
       const date = new Date(dateString);
-      // Format as DD/MM/YYYY
       return date.toLocaleDateString('en-IN', {
         day: '2-digit',
         month: '2-digit',
@@ -421,157 +389,117 @@ async function generateStudentList(req, res) {
       });
     };
 
-    // ✅ Display exam details with left padding
-    const leftPadding = 80;
-
-    doc.fontSize(12);
-
-    doc.font("Helvetica-Bold")
-       .fillColor('#000000')
-       .text(`Exam Name: `, leftPadding, doc.y, { continued: true })
-       .font("Helvetica")
-       .text(`${examInfo.exam_name}`);
-
-    doc.font("Helvetica-Bold")
-       .text(`Exam Date: `, leftPadding, doc.y, { continued: true })
-       .font("Helvetica")
-       .text(`${formatDate(examInfo.exam_date)}`);
-
-    doc.font("Helvetica-Bold")
-       .text(`Exam Time: `, leftPadding, doc.y, { continued: true })
-       .font("Helvetica")
-       .text(`${examInfo.exam_start_time} - ${examInfo.exam_end_time}`);
-
-    doc.font("Helvetica-Bold")
-       .text(`Exam Centre: `, leftPadding, doc.y, { continued: true })
-       .font("Helvetica")
-       .text(`${examInfo.pp_exam_centre_name}`);
-
-    // ✅ Add generated timestamp slightly indented too
-    doc.moveDown(1.5);
-    doc.fontSize(10)
-       .fillColor('#666666')
-       .text(`Generated on: ${new Date().toLocaleString('en-IN', {
-         day: '2-digit',
-         month: '2-digit',
-         year: 'numeric',
-         hour: '2-digit',
-         minute: '2-digit'
-       })}`, leftPadding, doc.y);
+    // ✅ Prepare data for Excel
+    const examInfo = result.rows[0];
     
-    doc.moveDown(1);
-
-    // ✅ Draw table header with light green background
-    const tableTop = 230;
-    const rowHeight = 40;
-    const colWidths = [100, 130, 120, 80, 80];
-
-    doc.fontSize(10);
-    let currentX = 50;
-
-    const headers = ['Hall Ticket No', 'Student Name', 'School Name', 'Contact NO.1', 'Contact NO.2'];
+    // Create workbook and worksheet
+    const workbook = XLSX.utils.book_new();
     
-    // Draw header background
-    doc.rect(50, tableTop, colWidths.reduce((a, b) => a + b, 0), rowHeight)
-       .fillAndStroke('#d4f1d4', '#000000'); // Light green background, black border
+    // Create header rows for exam information
+    const examInfoData = [
+      ['STUDENT CALLING LIST'],
+      [],
+      ['Exam Name:', examInfo.exam_name],
+      ['Exam Date:', formatDate(examInfo.exam_date)],
+      ['Exam Time:', `${examInfo.exam_start_time} - ${examInfo.exam_end_time}`],
+      ['Exam Centre:', examInfo.pp_exam_centre_name],
+      ['Generated on:', new Date().toLocaleString('en-IN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })],
+      [],
+      []
+    ];
     
-    // Add header text
-    currentX = 50;
-    headers.forEach((header, i) => {
-      doc.fillColor('#000000') // Black font color
-         .font('Helvetica-Bold')
-         .text(header, currentX + 5, tableTop + 10, {
-           width: colWidths[i] - 10,
-           align: 'left'
-         });
-      currentX += colWidths[i];
-    });
-
-    // ✅ Table rows
-    let currentY = tableTop + rowHeight;
+    // Prepare student data with columns:
+    // 1. Serial Number
+    // 2. NMMS Registration Number
+    // 3. Hall Ticket Number
+    // 4. Student Name
+    // 5. School Name
+    // 6. Contact No. 1
+    // 7. Contact No. 2
     
-    // Track rows for alternating colors
-    let rowIndex = 0;
+    const studentData = result.rows.map((row, index) => [
+      index + 1,                                    // Serial Number
+      row.nmms_reg_number || '',                    // NMMS Registration Number
+      row.pp_hall_ticket_no || '',                  // Hall Ticket Number
+      row.student_name || '',                       // Student Name
+      row.institute_name || '',                     // School Name
+      row.contact_no1 || '',                        // Contact No. 1
+      row.contact_no2 || ''                         // Contact No. 2
+    ]);
     
-    result.rows.forEach((row) => {
-      const rowData = [
-        row.pp_hall_ticket_no || '',
-        row.student_name || '',
-        row.institute_name || '',
-        row.contact_no1 || '',
-        row.contact_no2 || ''
-      ];
-
-      // Calculate required height for wrapped text
-      const textHeight = Math.max(
-        ...rowData.map((text, idx) =>
-          doc.heightOfString(String(text), { width: colWidths[idx] - 10 })
-        )
-      );
-
-      const actualRowHeight = Math.max(rowHeight, textHeight + 15);
-
-      // Alternate row colors (white and light gray)
-      const rowColor = rowIndex % 2 === 0 ? '#ffffff' : '#f5f5f5';
-      
-      // Draw row background
-      doc.rect(50, currentY, colWidths.reduce((a, b) => a + b, 0), actualRowHeight)
-         .fillAndStroke(rowColor, '#000000');
-
-      // Draw cell borders and text
-      currentX = 50;
-      rowData.forEach((text, i) => {
-        // Draw cell border
-        doc.rect(currentX, currentY, colWidths[i], actualRowHeight)
-           .stroke('#000000');
-        
-        // Add text
-        doc.fillColor('#000000') // Black font color for data
-           .font('Helvetica')
-           .text(String(text), currentX + 5, currentY + 5, {
-             width: colWidths[i] - 10,
-             align: 'left'
-           });
-        
-        currentX += colWidths[i];
-      });
-
-      currentY += actualRowHeight;
-      rowIndex++;
-
-      // Add new page if needed
-      if (currentY > doc.page.height - 100) {
-        doc.addPage();
-        
-        // Add page number on new page
-        doc.fontSize(10)
-           .fillColor('#000000')
-           .text(`Page ${pageNumber}`, doc.page.width - 100, 40, { align: 'right' });
-        
-        currentY = 50;
+    // Add headers for student data
+    const headers = [
+      'Sl. No.',
+      'NMMS Reg. No.',
+      'Hall Ticket No.',
+      'Student Name',
+      'School Name',
+      'Contact No. 1',
+      'Contact No. 2'
+    ];
+    
+    // Combine all data
+    const worksheetData = [
+      ...examInfoData,
+      headers,
+      ...studentData,
+      [],
+      [`Total Students: ${result.rows.length}`]
+    ];
+    
+    // Create worksheet
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+    
+    // Set column widths
+    const colWidths = [
+      { wch: 8 },   // Sl. No.
+      { wch: 15 },  // NMMS Reg. No.
+      { wch: 15 },  // Hall Ticket No.
+      { wch: 25 },  // Student Name
+      { wch: 35 },  // School Name
+      { wch: 15 },  // Contact No. 1
+      { wch: 15 }   // Contact No. 2
+    ];
+    worksheet['!cols'] = colWidths;
+    
+    // Style the header row (optional)
+    const headerRange = XLSX.utils.decode_range(worksheet['!ref']);
+    for (let C = headerRange.s.c; C <= headerRange.e.c; ++C) {
+      const headerCell = worksheet[XLSX.utils.encode_cell({ r: 9, c: C })]; // Row 10 is headers (0-indexed)
+      if (headerCell) {
+        headerCell.s = {
+          font: { bold: true, sz: 11 },
+          fill: { fgColor: { rgb: "D4F1D4" } },
+          alignment: { horizontal: "center", vertical: "center" }
+        };
       }
+    }
+    
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Student Calling List');
+    
+    // Write to file
+    XLSX.writeFile(workbook, filePath);
+    
+    // Send file for download
+    res.download(filePath, fileName, (err) => {
+      if (err) {
+        console.error('Download error:', err);
+        // Don't delete file if there's an error, just log it
+      }
+      // Optional: Delete file after download to clean up
+      // fs.unlinkSync(filePath);
     });
-
-    // Add total count at the bottom
-    doc.moveDown(2);
-    doc.fontSize(11)
-       .font('Helvetica-Bold')
-       .fillColor('#000000')
-       .text(`Total Students: ${result.rows.length}`, 50, doc.y);
-
-    doc.end();
-
-    // Add page numbers to all pages
-    doc.on('end', addPageNumber);
-
-    const examName = result.rows[0].exam_name.replace(/\s+/g, '_');
-    stream.on('finish', () => {
-      return res.download(filePath, `${examName}_Calling_List.pdf`);
-    });
-
+    
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Failed to generate PDF", error: err.message });
+    res.status(500).json({ message: "Failed to generate Excel file", error: err.message });
   }
 }
 
@@ -1196,9 +1124,9 @@ const freezeExam = async (req, res) => {
 
 // Create only the exam – does not assign applicants
 async function createExamOnly(req, res) {
-  const { centreId, examName, date ,startTime,endTime } = req.body;
+  const { centreId, examName, date, startTime, endTime } = req.body;
 
-  if (!centreId || !examName || !date) {
+  if (!centreId || !examName || !date || !startTime || !endTime) {
     return res.status(400).json({ error: "Missing required fields." });
   }
 
@@ -1206,16 +1134,50 @@ async function createExamOnly(req, res) {
   try {
     await client.query("BEGIN");
 
+    // ✅ Check for existing exams at the same centre on the same date
+    const existingExams = await client.query(
+      `SELECT exam_id, exam_name, exam_start_time, exam_end_time 
+       FROM pp.examination 
+       WHERE pp_exam_centre_id = $1 
+         AND exam_date = $2`,
+      [centreId, date]
+    );
+
+    // ✅ Check for time conflicts
+    if (existingExams.rows.length > 0) {
+      for (const existingExam of existingExams.rows) {
+        const existingStart = existingExam.exam_start_time;
+        const existingEnd = existingExam.exam_end_time;
+        
+        // Check if time ranges overlap
+        const isOverlapping = (
+          (startTime >= existingStart && startTime < existingEnd) || // New exam starts within existing exam
+          (endTime > existingStart && endTime <= existingEnd) ||     // New exam ends within existing exam
+          (startTime <= existingStart && endTime >= existingEnd)      // New exam completely contains existing exam
+        );
+        
+        if (isOverlapping) {
+          await client.query("ROLLBACK");
+          return res.status(409).json({ 
+            error: "Time conflict", 
+            message: `An exam already exists on this date from ${existingStart} to ${existingEnd}. Please choose a different time slot.`,
+            conflictingExam: existingExam.exam_name
+          });
+        }
+      }
+    }
+
+    // ✅ If no conflicts, insert the new exam
     const examInsertResult = await client.query(
-      `INSERT INTO pp.examination (exam_name, exam_date, pp_exam_centre_id,exam_start_time,exam_end_time)
-       VALUES ($1, $2, $3 ,$4 ,$5) RETURNING exam_id`,
-      [examName, date, centreId ,startTime ,endTime]
+      `INSERT INTO pp.examination (exam_name, exam_date, pp_exam_centre_id, exam_start_time, exam_end_time)
+       VALUES ($1, $2, $3, $4, $5) RETURNING exam_id`,
+      [examName, date, centreId, startTime, endTime]
     );
     const examId = examInsertResult.rows[0].exam_id;
 
     await client.query("COMMIT");
 
-    res.status(201).json({ message: "Exam created", examId });
+    res.status(201).json({ message: "Exam created successfully", examId });
   } catch (error) {
     await client.query("ROLLBACK");
     console.error(error);
@@ -1322,7 +1284,14 @@ const shortlistedApplicants = await client.query(
   }
 }
 
-//hi
+const fetchexamcentresview = async (req,res)=> {
+  try {
+    const examcentresviews = await getexamcentresview();
+    res.json(examcentresviews);
+  } catch (error) {
+    console("failed to fetch the exam centres");
+  }
+}
 
 
 
@@ -1353,6 +1322,7 @@ module.exports = {
     freezeExam,
 
     createExamOnly,
-    assignApplicantsToExam
+    assignApplicantsToExam,
+    fetchexamcentresview
 };
 

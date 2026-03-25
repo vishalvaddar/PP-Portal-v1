@@ -14,8 +14,9 @@ import {
   FaFilter,
   FaCheckCircle,
   FaClock,
-  FaTimes
+  FaTimes,
 } from "react-icons/fa";
+import { GrView } from 'react-icons/gr';
 import classes from "./CreateExam.module.css";
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_API_URL;
@@ -28,6 +29,7 @@ const CreateExam = () => {
   const [activeTab, setActiveTab] = useState("active"); // 'active', 'frozen', 'all'
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("date_desc"); // 'date_desc', 'date_asc', 'name'
+ const [showCentres, setShowCentres] = useState(false);
   
   const {
     entries,
@@ -44,7 +46,9 @@ const CreateExam = () => {
     setIsCreatingCentre,
     newCentreName,
     createCentre,
-    setNewCentreName
+    setNewCentreName,
+    setviewcentres,
+    viewcentres
   } = useCreateExamHooks();
 
   // Filter and categorize exams
@@ -112,17 +116,14 @@ const CreateExam = () => {
     }
   };
 
-  const handleCreateCentre = async () => {
-    try {
-      await createCentre();
-      setMessage("✅ Centre created successfully");
-      setTimeout(() => setMessage(""), 3000);
-      setIsCreatingCentre(false);
-    } catch (error) {
-      setMessage("❌ Failed to create centre");
-      setTimeout(() => setMessage(""), 3000);
-    }
-  };
+ const handleCreateCentre = async () => {
+  const success = await createCentre();
+
+  if (!success) return;
+
+  setTimeout(() => setMessage(""), 3000);
+  setIsCreatingCentre(false);
+};
 
   return (
     <div className={classes.container}>
@@ -143,6 +144,13 @@ const CreateExam = () => {
             >
               <FaPlus /> Create Centre
             </button>
+            <button
+              type="button"
+              className={classes.createButton}
+              onClick={() => setShowCentres(true)}
+            >
+              <GrView /> View Exam Centre
+            </button>
           </div>
         </div>
 
@@ -152,7 +160,7 @@ const CreateExam = () => {
             <FaSearch className={classes.searchIcon} />
             <input
               type="text"
-              placeholder="Search exams by name or centre..."
+              placeholder="  Search exams by name or centre..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className={classes.searchInput}
@@ -210,7 +218,44 @@ const CreateExam = () => {
           </div>
         </div>
       )}
+
+     
+    
+    {showCentres && (
+  <div className={classes.modalOverlays}>
+    <div className={classes.centreModal}>
+      <button 
+        onClick={() => setShowCentres(false)} 
+        className={classes.closeButton}
+        title="Close"
+      >
+        ×
+      </button>
+      <h3>Exam Centres</h3>
       
+      <div className={classes.centresList}>
+        {viewcentres.length === 0 ? (
+          <div className={classes.emptyState}>
+            <p>No centres found</p>
+          </div>
+        ) : (
+          viewcentres.map((centre) => (
+            <div key={centre.id} className={classes.centreItem}>
+              <div className={classes.centreName}>
+                {centre.pp_exam_centre_name}
+              </div>
+              {centre.pp_exam_centre_code && (
+                <div className={classes.centreCode}>
+                  Code: {centre.pp_exam_centre_code}
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  </div>
+)}
       {assignExamId && (
         <div className={classes.modalOverlay}>
           <div className={classes.modalContent}>
@@ -426,7 +471,9 @@ const CreateExam = () => {
                   <span className={classes.badgePending}>Pending</span>
                 </div>
                 <div className={classes.cardBody}>
-                  <p><strong>Date:</strong> {new Date(exam.exam_date).toLocaleDateString()}</p>
+                  <p>
+  <strong>Date:</strong> {new Date(exam.exam_date).toLocaleDateString('en-GB')}
+</p>
                   <p><strong>Centre:</strong> {exam.pp_exam_centre_name}</p>
                   <p><strong>Time:</strong> {exam.exam_start_time} - {exam.exam_end_time}</p>
                 </div>
@@ -500,7 +547,7 @@ const CreateExam = () => {
                   
                   <div className={classes.cardBody}>
                     <div className={classes.cardInfo}>
-                      <p><strong>Date:</strong> {new Date(entry.exam_date).toLocaleDateString()}</p>
+                      <p><strong>Date:</strong> {new Date(entry.exam_date).toLocaleDateString('en-GB')}</p>
                       <p><strong>Time:</strong> {entry.exam_start_time} - {entry.exam_end_time}</p>
                       <p><strong>Centre:</strong> {entry.pp_exam_centre_name}</p>
                       
