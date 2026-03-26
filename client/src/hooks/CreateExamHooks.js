@@ -12,7 +12,8 @@ const useCreateExamHooks = () => {
   const [newCentreName, setNewCentreName] = useState("");
   const [examBlocks, setExamBlocks] = useState({});
    const [isCreatingCentre, setIsCreatingCentre] = useState(false);
-  
+     const [viewcentres,setviewcentres] = useState([]);
+     
 
      const [newCentre, setNewCentre] = useState({
     pp_exam_centre_code: "",
@@ -44,6 +45,19 @@ const useCreateExamHooks = () => {
   const [blocks, setBlocks] = useState([]);
   const [clusters, setClusters] = useState([]);
     const [usedBlocks, setUsedBlocks] = useState([]);
+
+    //view exam centres
+    useEffect(() =>{
+      const fetchviewcentres = async() =>{
+        try {
+          const resp = await axios.get(`${API_BASE_URL}/api/exams/viewcentres`)
+           setviewcentres(resp.data);
+        } catch (error) {
+          console.error("Error fetching exam centres ");
+        }
+      };
+      fetchviewcentres();
+    },[]);
 
 
   // Fetch all exams student assigned when component mounts
@@ -109,7 +123,7 @@ const useCreateExamHooks = () => {
     fetchExams();
   }, []);
 
-  // fetch the centres
+  // fe;tch the centres
   useEffect(() => {
     const fetchCentres = async () => {
       try {
@@ -201,50 +215,69 @@ useEffect(() => {
   };
 
   // main submit button
-  const handleSubmit = async e => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
+const handleSubmit = async e => {
+  e.preventDefault();
+  setLoading(true);
+  setMessage("");
 
-    try {
-      const payload = {
-        centreId: formData.centreId,
-        examName: formData.examName,
-        date: formData.examDate,
-        startTime: formData.examstarttime,   // ✅ Added
-        endTime: formData.examendtime 
-      };
-      console.log("Payload being sent to backend:", payload);
+  // ✅ Validate end time is after start time
+  if (formData.examendtime <= formData.examstarttime) {
+    setMessage("❌ Exam end time must be after start time");
+    setLoading(false);
+    return;
+  }
 
-      await axios.post(`${API_BASE_URL}/api/exams/create`, payload);
+  try {
+    const payload = {
+      centreId: formData.centreId,
+      examName: formData.examName,
+      date: formData.examDate,
+      startTime: formData.examstarttime,
+      endTime: formData.examendtime
+    };
+    console.log("Payload being sent to backend:", payload);
 
-      // Fetch updated exam list after creation
-      const updatedExamsResponse = await axios.get(`${API_BASE_URL}/api/exams`);
-      setEntries(updatedExamsResponse.data);
+    await axios.post(`${API_BASE_URL}/api/exams/create`, payload);
 
-      setFormData({
-        centreId: "",
-        examName: "",
-        examDate: "",
-        app_state: formData.app_state,
-        examstarttime:"",
-        examendtime:""
-      });
-      setShowForm(false);
-      setMessage("✅ Exam Created Successfully");
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      if (error.response) {
-        setMessage(`❌ ${error.response.data.error || "Missing required fields"}`);
-      } else if (error.request) {
-        setMessage("❌ No response from server. Check your connection.");
+    // Fetch updated exam list after creation
+    const updatedExamsResponse = await axios.get(`${API_BASE_URL}/api/exams/notassigned`);
+    setEntries(updatedExamsResponse.data);
+
+    setFormData({
+      centreId: "",
+      examName: "",
+      examDate: "",
+      app_state: formData.app_state,
+      examstarttime: "",
+      examendtime: ""
+    });
+    setShowForm(false);
+    
+    // ✅ Set success message
+    setMessage("✅ Exam created successfully! You can now assign students to this exam.");
+    
+    // ✅ Return success for modal to close
+    return { success: true };
+    
+  } catch (error) {
+    console.error("Error submitting form:", error);
+    if (error.response) {
+      // ✅ Handle time conflict error specifically
+      if (error.response.status === 409) {
+        setMessage(`❌ ${error.response.data.message || "Time conflict detected. Please choose a different time slot."}`);
       } else {
-        setMessage(`❌ Error: ${error.message}`);
+        setMessage(`❌ ${error.response.data.error || "Failed to create exam"}`);
       }
-    } finally {
-      setLoading(false);
+    } else if (error.request) {
+      setMessage("❌ No response from server. Check your connection.");
+    } else {
+      setMessage(`❌ Error: ${error.message}`);
     }
-  };
+    return { success: false };
+  } finally {
+    setLoading(false);
+  }
+};
 
   // delete exam
   const deleteExam = async examId => {
@@ -298,43 +331,37 @@ const createCentre = async () => {
     longitude: newCentre.longitude ? parseFloat(newCentre.longitude) : null,
   };
 
-  try {
-    const res = await axios.post(
-      `${API_BASE_URL}/api/exams/exam-centres`,
-      formattedCentre
-    );
+try {
+  const res = await axios.post(
+    `${API_BASE_URL}/api/exams/exam-centres`,
+    formattedCentre
+  );
 
+  // ✅ Only show success if status is 200 or 201
+  if (res.status === 200 || res.status === 201) {
     setCentres([...centres, res.data]);
     setMessage("✅ Centre created successfully");
     window.alert("✅ Centre created successfully!");
-
-    // Reset form
-    setNewCentre({
-      pp_exam_centre_code: "",
-      pp_exam_centre_name: "",
-      address: "",
-      village: "",
-      pincode: "",
-      contact_person: "",
-      contact_phone: "",
-      contact_email: "",
-      sitting_capacity: "",
-      latitude: "",
-      longitude: "",
-    });
-
-    setIsCreatingCentre(false);
-  } catch (err) {
-    console.error("Create centre error:", err);
-
-    if (err.response && err.response.data?.message) {
-      setMessage(`❌ ${err.response.data.message}`);
-      window.alert(`❌ ${err.response.data.message}`);
-    } else {
-      setMessage("❌ Failed to create centre. Please try again.");
-      window.alert("❌ Failed to create centre. Please try again.");
-    }
+    return true;
+  } else {
+    // ❌ Unexpected success response
+    setMessage("❌ Something went wrong. Please try again.");
+    return false;
   }
+
+} catch (err) {
+  console.error("Create centre error:", err);
+
+  if (err.response && err.response.data?.message) {
+    setMessage(`❌ ${err.response.data.message}`);
+    window.alert(`❌ ${err.response.data.message}`);
+  } else {
+    setMessage("❌ Failed to create centre. Please try again.");
+    window.alert("❌ Failed to create centre. Please try again.");
+  }
+
+  return false;
+}
 };
 
 
@@ -426,7 +453,9 @@ const createCentre = async () => {
     isLoading,
     error,
     setUsedBlocks,
-    toggleFreezeExam
+    toggleFreezeExam,
+    setviewcentres,
+    viewcentres
   };
 };
 

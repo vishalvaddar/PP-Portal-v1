@@ -1,0 +1,328 @@
+/* AssignStudents.module.css */
+
+/* Modal Overlay - Background dim */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+/* Modal Content - Single white background (NO ANIMATION) */
+.modal {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid #e0e6ef;
+}
+
+.modal h2 {
+  color: #0C0356;
+  margin: 0 0 30px 0;
+  font-size: 26px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Form Group - Consistent styling */
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 8px;
+  color: #2d3748;
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+.formGroup select {
+  width: 100%;
+  padding: 13px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: all 0.2s ease;
+  background: white;
+  color: #2d3748;
+  cursor: pointer;
+}
+
+.formGroup select:focus {
+  outline: none;
+  border-color: #4361ee;
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+.formGroup select:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Checkbox Grid Layout */
+.checkboxGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 0.75rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.checkboxItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background: white;
+  border: 1px solid transparent;
+}
+
+.checkboxItem:hover:not(.disabled) {
+  background-color: #f0f7ff;
+  border-color: #4361ee;
+  transform: translateX(2px);
+}
+
+.checkboxItem.disabled {
+  opacity: 0.6;
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+  border-color: #e2e8f0;
+}
+
+.checkboxItem.disabled:hover {
+  background-color: #f5f5f5;
+}
+
+.checkboxItem input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #4361ee;
+}
+
+.checkboxItem.disabled input[type="checkbox"] {
+  cursor: not-allowed;
+}
+
+.checkboxItem label {
+  margin: 0;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  color: #2c3e50;
+  flex: 1;
+}
+
+.checkboxItem.disabled label {
+  cursor: not-allowed;
+  color: #999;
+}
+
+.checkboxItem label span {
+  font-size: 12px;
+  color: #e74c3c;
+  margin-left: 6px;
+  font-weight: normal;
+}
+
+/* Buttons */
+.btnGreen, 
+.btnRed {
+  padding: 12px 24px !important;
+  border-radius: 8px !important;
+  font-size: 14.5px !important;
+  font-weight: 600 !important;
+  min-width: 140px !important;
+  text-align: center !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.25s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  height: 44px !important;
+  text-decoration: none !important;
+}
+
+.btnGreen {
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%) !important;
+  color: white !important;
+}
+
+.btnGreen:hover:not(:disabled) {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3) !important;
+}
+
+.btnGreen:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btnRed {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+  color: white !important;
+}
+
+.btnRed:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3) !important;
+}
+
+/* Message styling */
+.message {
+  padding: 16px 25px;
+  border-radius: 12px;
+  margin: 20px 0;
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  background: white;
+  border-left: 5px solid;
+}
+
+.successMessage {
+  color: #0f5132;
+  border-color: #28a745;
+  background-color: #f0fff4;
+}
+
+.errorMessage {
+  color: #721c24;
+  border-color: #dc3545;
+  background-color: #fff5f5;
+}
+
+/* Scrollbar styling */
+.checkboxGrid::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.checkboxGrid::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.checkboxGrid::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+.checkboxGrid::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* Button Container */
+.buttonContainer {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+  justify-content: flex-end;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modal {
+    width: 95%;
+    padding: 25px;
+  }
+
+  .modal h2 {
+    font-size: 22px;
+    margin-bottom: 25px;
+  }
+
+  .checkboxGrid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    max-height: 250px;
+  }
+
+  .btnGreen, 
+  .btnRed {
+    min-width: 120px !important;
+    padding: 10px 20px !important;
+    height: 40px !important;
+    font-size: 13px !important;
+  }
+
+  .buttonContainer {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .buttonContainer button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal {
+    padding: 20px;
+  }
+
+  .modal h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+
+  .formGroup select {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .checkboxItem {
+    padding: 0.4rem;
+  }
+
+  .checkboxItem label {
+    font-size: 13px;
+  }
+}
+
+/* Focus states for accessibility */
+.btnGreen:focus-visible,
+.btnRed:focus-visible,
+.formGroup select:focus-visible,
+.checkboxItem input:focus-visible {
+  outline: 2px solid #4361ee;
+  outline-offset: 2px;
+}
+
+/* Helper text styling */
+.helperText {
+  font-size: 12px;
+  color: #7f8c8d;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}

@@ -213,7 +213,7 @@
     font-size: 0.9rem;
   }
 
-  select, 
+  /* select, 
   input[type="text"], 
   input[type="date"], 
   input[type="number"], 
@@ -227,7 +227,7 @@
     transition: all 0.2s;
     background-color: #ffffff;
     margin-bottom: 16px;
-  }
+  } */
 
   /* --- 4. BLUE THEME: Success (No Red) --- */
   .success-message,
