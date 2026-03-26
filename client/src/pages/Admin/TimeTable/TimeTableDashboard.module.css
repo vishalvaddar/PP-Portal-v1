@@ -1,0 +1,126 @@
+.tt-dashboard-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto; 
+}
+
+.tt-header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 1rem;
+}
+
+.tt-title { 
+    font-size: 1.8rem;
+    color: #333;
+    font-weight: 600;
+}
+
+.tt-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.tt-card {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+    background: #ffffff;
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e0e0e0;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.tt-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    border-color: #2563eb; /* Blue border on hover */
+}
+
+.tt-icon-container {
+    background: #eff6ff; /* Light blue background */
+    color: #2563eb;      /* Darker blue icon */
+    padding: 1rem;
+    border-radius: 10px;
+    margin-right: 1.2rem;
+}
+
+.tt-text-content {
+    flex-grow: 1;
+}
+
+.tt-card-title {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.tt-card-desc {
+    margin: 4px 0 0 0;
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.tt-arrow {
+    color: #cbd5e1;
+}
+
+.tt-card:hover .tt-arrow {
+    color: #2563eb;
+}
+/* Container for the buttons at the bottom of the card */
+.report-actions {
+    display: flex;
+    gap: 10px;
+    padding: 0 1.5rem 1.5rem 1.5rem; /* Matches card padding */
+    background: #ffffff;
+    border-radius: 0 0 12px 12px;
+    margin-top: -10px; /* Pulls it up to join the card */
+    border: 1px solid #e0e0e0;
+    border-top: none;
+}
+
+/* Adjust the card to not have bottom rounding if buttons are present */
+.report-card {
+    border-radius: 12px 12px 0 0 !important;
+    border-bottom: none !important;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.view-btn {
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+}
+
+.view-btn:hover {
+    background: #2563eb;
+    color: white;
+}
+
+.pdf-btn {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.pdf-btn:hover {
+    background: #dc2626;
+    color: white;
+}

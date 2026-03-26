@@ -63,7 +63,16 @@ const authorizeRoleController = async (req, res) => {
 
   } catch (err) {
     console.error('Auth Role Error:', err.message);
-    return res.status(401).json({ error: 'Session expired. Please login again.' });
+    if (err?.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        error: 'Session expired. Please login again.',
+        code: 'PRE_AUTH_TOKEN_EXPIRED',
+      });
+    }
+    return res.status(401).json({
+      error: 'Invalid session. Please login again.',
+      code: 'PRE_AUTH_TOKEN_INVALID',
+    });
   }
 };
 

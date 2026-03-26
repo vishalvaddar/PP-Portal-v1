@@ -2,12 +2,10 @@ import React, {
   useState,
   useCallback,
   useMemo,
-  useRef,
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import axios from "axios";
-import ReCAPTCHA from "react-google-recaptcha";
 import login_logo from "../../assets/LOGO_PP.png";
 
 // UI Components
@@ -65,9 +63,6 @@ const LoginForm = () => {
     preAuthToken: null,
   });
 
-  const [captchaToken, setCaptchaToken] = useState(null);
-  const recaptchaRef = useRef(null);
-
   const navigate = useNavigate();
   const auth = useAuth();
 
@@ -86,10 +81,6 @@ const LoginForm = () => {
       selectedRole: "",
       preAuthToken: null,
     });
-    setCaptchaToken(null);
-    if (recaptchaRef.current) {
-      recaptchaRef.current.reset();
-    }
   }, [updateFormState]);
 
   const handleFirstStep = useCallback(
@@ -102,11 +93,6 @@ const LoginForm = () => {
         return;
       }
 
-      if (!captchaToken) {
-        updateFormState({ error: "Please complete the CAPTCHA verification." });
-        return;
-      }
-
       updateFormState({ error: "", isLoading: true });
 
       try {
@@ -114,8 +100,7 @@ const LoginForm = () => {
           `${process.env.REACT_APP_BACKEND_API_URL}/api/auth/login`,
           { 
             user_name: user_name.trim(), 
-            password,
-            captchaToken // Sent to your backend for verification
+            password
           }
         );
 
@@ -134,16 +119,11 @@ const LoginForm = () => {
             err.response?.data?.error ||
             "Login failed. Please check your credentials.",
         });
-        // Reset the CAPTCHA widget on a failed login attempt
-        setCaptchaToken(null);
-        if (recaptchaRef.current) {
-          recaptchaRef.current.reset();
-        }
       } finally {
         updateFormState({ isLoading: false });
       }
     },
-    [formState, captchaToken, updateFormState]
+    [formState, updateFormState]
   );
 
   const handleRoleSelection = useCallback(
@@ -259,16 +239,6 @@ const LoginForm = () => {
                     required
                   />
                 </div>
-              </div>
-
-              {/* reCAPTCHA */}
-              <div className={styles.inputWrapper} style={{ display: 'flex', justifyContent: 'center', margin: '15px 0' }}>
-                <ReCAPTCHA
-                  ref={recaptchaRef}
-                  sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
-                  onChange={(token) => setCaptchaToken(token)}
-                  onExpired={() => setCaptchaToken(null)}
-                />
               </div>
 
               <Button

@@ -1,0 +1,59 @@
+ .tt-container {
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8fafc;
+  min-height: 100vh;
+}
+
+.tt-header {
+  margin-bottom: 24px;
+}
+
+.tt-title {
+  color: #1e293b;
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+/* Segmented Control Styling */
+.tt-segment-control {
+  display: inline-flex;
+  background-color: #e2e8f0;
+  padding: 4px;
+  border-radius: 8px;
+  gap: 4px;
+}
+
+.tt-tab {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.tt-tab:hover {
+  color: #0f172a;
+}
+
+.tt-tab.active {
+  background-color: #ffffff;
+  color: #2563eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Content Area */
+.view-card {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  color: #475569;
+  text-align: center;
+}

@@ -1,0 +1,465 @@
+/* --- Dashboard Container --- */
+.container {
+  padding: 2.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: #f7fafc;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+}
+
+/* --- Header Section --- */
+.title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #1a365d;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.title::before {
+  content: '🗓️';
+  font-size: 1.8rem;
+}
+
+/* --- Professional Card Styling --- */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 2rem;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+/* --- Step Badge (Table Tag) --- */
+.tableTag {
+  position: absolute;
+  top: -12px;
+  left: 24px;
+  background: #3182ce;
+  color: white;
+  padding: 0.35rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(49, 130, 206, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* --- Pro Tables --- */
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1.5rem 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table th {
+  background-color: #ebf8ff;
+  color: #2c5282;
+  font-weight: 600;
+  text-align: left;
+  padding: 1rem;
+  font-size: 0.9rem;
+  border-bottom: 2px solid #bee3f8;
+}
+
+.table td {
+  padding: 1rem;
+  border-bottom: 1px solid #edf2f7;
+  vertical-align: middle;
+  background: white;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+/* --- Inputs & Selects --- */
+.select, .table input[type="text"], .table input[type="time"] {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  color: #2d3748;
+}
+
+.select:focus, .table input:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+}
+
+/* --- Checkbox Styling --- */
+.checkboxCell {
+  text-align: center;
+}
+
+.checkboxLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f0f9ff;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #3182ce;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.checkboxLabel:hover {
+  background: #e1f5fe;
+  border-color: #bbdefb;
+}
+
+/* --- BUTTON GROUPING & DISTANCES --- */
+
+/* The space between the Table and the "Add" button */
+.table + .addButton {
+  margin-top: 1.5rem; /* Standard professional gap */
+}
+
+/* The "Add" button - styled like a secondary action */
+.addButton {
+  background: #ebf8ff;
+  color: #3182ce;
+  border: 2px dashed #90cdf4;
+  padding: 0.8rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%; /* Makes it a full-width drop-zone style button */
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.addButton:hover {
+  background: #3182ce;
+  color: white;
+  border-style: solid;
+  border-color: #3182ce;
+  transform: translateY(-1px);
+}
+
+/* --- NAVIGATION BUTTONS (Prev/Next) --- */
+
+/* This container creates a big distance between "Add Slot" and "Next/Prev" */
+.navButtons {
+  margin-top: 3rem; /* LARGE GAP here to separate data entry from navigation */
+  display: flex;
+  justify-content: space-between; /* Pushes Prev to left and Next to right */
+  align-items: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid #edf2f7; /* Subtle line to separate navigation */
+}
+
+.nextBtn, .generateButton {
+  min-width: 160px; /* Consistent size */
+  padding: 0.8rem 2rem;
+  background: #3182ce;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(49, 130, 206, 0.2);
+  transition: all 0.2s;
+}
+
+.prevBtn {
+  min-width: 140px;
+  padding: 0.8rem 2rem;
+  background: white;
+  color: #4a5568;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nextBtn:hover {
+  background: #2c5282;
+  box-shadow: 0 6px 12px rgba(44, 82, 130, 0.3);
+}
+
+.prevBtn:hover {
+  background: #f7fafc;
+  border-color: #a0aec0;
+}
+
+/* Spacer for Step 1 where there is no Prev button */
+.flexEnd {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+
+/* --- Action Buttons Footer --- */
+.actionButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 2rem;
+  border-top: 2px solid #edf2f7;
+}
+
+.clearButton {
+  background: #fed7d7;
+  color: #c53030;
+  padding: 0.8rem 2rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* --- Delete Icon --- */
+.deleteIcon {
+  color: #fc8181;
+  cursor: pointer;
+  font-size: 1.25rem;
+  transition: color 0.2s;
+}
+
+.deleteIcon:hover {
+  color: #e53e3e;
+}
+
+/* Centering the entire dashboard card */
+.container {
+  max-width: 1000px;
+  margin: 0 auto; /* Centers the dashboard in the middle of the screen */
+  padding: 2rem;
+}
+
+.navButtons {
+  display: flex;
+  justify-content: space-between; /* Pushes buttons to opposite corners */
+  align-items: center;
+  margin-top: 3rem; /* Distance between "Add Slot" and navigation */
+  padding-top: 1.5rem;
+  border-top: 1px solid #edf2f7; /* Clean separation line */
+}
+
+/* Small, Professional Next Button */
+.nextBtn {
+  background-color: #3182ce;
+  color: white;
+  padding: 8px 20px; /* Small, refined size */
+  font-size: 0.9rem;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.nextBtn:hover {
+  background-color: #2c5282;
+}
+
+/* Professional Previous Button Color */
+.prevBtn {
+  background-color: #f1f5f9; /* Soft slate gray */
+  color: #475569;            /* Muted professional blue-gray */
+  padding: 8px 20px;         /* Small, refined size */
+  font-size: 0.9rem;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.prevBtn:hover {
+  background-color: #e2e8f0;
+  color: #1e293b;
+}
+
+/* --- Dashboard Container (Centered) --- */
+.container {
+  max-width: 1000px; /* Limits width so it doesn't stretch too much */
+  margin: 0 auto;    /* Centers the whole dashboard in the middle of the screen */
+  padding: 3rem 1.5rem;
+  background-color: #f7fafc;
+  min-height: 100vh;
+}
+
+/* --- Centered Header --- */
+.title {
+  text-align: center;      /* Centers the text */
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #1a365d;          /* Deep PP Portal Blue */
+  margin-bottom: 2.5rem;   /* Distance between header and the card */
+  display: block;          /* Ensures it takes full width to center properly */
+}
+
+/* --- The Card (Centered) --- */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  margin: 0 auto;          /* Double check centering */
+}
+
+/* ---------------- MODAL OVERLAY ---------------- */
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  background: rgba(0, 0, 0, 0.45); /* dark overlay */
+  backdrop-filter: blur(4px);      /* blur background */
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 9999;
+  animation: fadeIn 0.25s ease;
+}
+
+
+/* ---------------- MODAL BOX ---------------- */
+
+.modalContent {
+  background: #ffffff;
+  width: 360px;
+  max-width: 90%;
+
+  border-radius: 14px;
+  padding: 20px 22px;
+
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+
+  text-align: center;
+  position: relative;
+}
+
+
+/* ---------------- HEADER ---------------- */
+
+.modalContent h3 {
+  margin-bottom: 16px;
+  color: #3f51b5;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+
+/* ---------------- FORM GROUP ---------------- */
+
+.formGroup {
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.formGroup label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #333;
+  font-weight: 500;
+}
+
+.formGroup input {
+  width: 100%;
+  padding: 8px 10px;
+
+  border: 1px solid #c5cae9;
+  border-radius: 6px;
+
+  font-size: 13px;
+  outline: none;
+
+  transition: 0.2s;
+}
+
+.formGroup input:focus {
+  border-color: #3f51b5;
+  box-shadow: 0 0 0 2px rgba(63,81,181,0.15);
+}
+
+
+/* ---------------- ACTION BUTTONS ---------------- */
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Save Button (Blue Primary) */
+.saveButton {
+  padding: 7px 16px;
+  background: linear-gradient(135deg,#5c6bc0,#3f51b5);
+  color: white;
+
+  border: none;
+  border-radius: 8px;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.saveButton:hover {
+  background: linear-gradient(135deg,#3f51b5,#283593);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Cancel Button */
+.modalActions .clearButton {
+  padding: 7px 16px;
+  background: #e0e0e0;
+  color: #333;
+
+  border: none;
+  border-radius: 8px;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.modalActions .clearButton:hover {
+  background: #cfcfcf;
+}
+
+
+/* ---------------- ANIMATION ---------------- */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

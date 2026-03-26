@@ -95,13 +95,13 @@ const getCohorts = async () => {
   return result.rows || [];
 };
 
-const getBatches = async (cohortId) => {
+const getBatches = async (cohort_number) => {
   const result = await pool.query(
     `SELECT batch_id, batch_name
      FROM pp.batch
-     WHERE cohort_id = $1
+     WHERE cohort_number = $1
      ORDER BY batch_name`,
-    [cohortId]
+    [cohort_number]
   );
   return result.rows || [];
 };

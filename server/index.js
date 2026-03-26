@@ -1,4 +1,4 @@
-const express = require("express");
+const express = require("express"); 
 const cors = require("cors");
 const path = require("path");
 require("dotenv").config();
@@ -15,8 +15,10 @@ const interviewDataDir = path.join(PROJECT_ROOT_DIR, "Interview-data");
 const homeVerificationDataDir = path.join(PROJECT_ROOT_DIR, "Home-verification-data");
 const uploadsDir = path.join(__dirname, "uploads");
 
-const EVENT_PHOTOS_DIR = process.env.EVENT_STORAGE_PATH || path.join(__dirname, "uploads", "events", "photos");
+const EVENT_BASE_DIR = process.env.EVENT_STORAGE_PATH || path.join(__dirname, "uploads", "events");
 
+const EVENT_PHOTOS_DIR = path.join(EVENT_BASE_DIR, "photos");
+const EVENT_REPORTS_DIR = path.join(EVENT_BASE_DIR, "reports");
 [
   uploadsDir, 
   interviewDataDir, 
@@ -36,7 +38,16 @@ const allowedOrigins =
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+      // Allow mobile apps / Postman (no origin)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -53,6 +64,20 @@ app.use(
   "/uploads/events/photos",
   express.static(EVENT_PHOTOS_DIR)
 );
+
+app.use(
+  "/uploads/events/reports",
+  express.static(EVENT_REPORTS_DIR)
+);
+app.use(express.json({ limit: '60mb' }));
+app.use(express.urlencoded({ limit: '60mb', extended: true }));
+
+[EVENT_PHOTOS_DIR, EVENT_REPORTS_DIR].forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+    console.log(`Created directory: ${dir}`);
+  }
+});
 
 const PROFILE_PHOTOS_ROOT = process.env.PROFILE_PHOTOS_ROOT;
 
@@ -150,6 +175,7 @@ const interviewRoutes = require("./routes/interviewRoutes");
 const resultandrankinkRoutes = require("./routes/resultandrankinkRoutes");
 const systemConfigRoutes = require("./routes/systemConfigRoutes");
 const eventRoutes = require("./routes/eventRoutes");
+const classroomRoutes = require("./routes/classroomRoutes");
 
 const customListRoutes = require("./routes/customListRoutes");
 const selectionReportRoutes = require("./routes/selectionReportRoutes");
@@ -168,6 +194,7 @@ app.use("/api/districts", districtRoutes);
 
 app.use("/api", eventRoutes);
 app.use("/api/custom-list", customListRoutes);
+app.use("/api/classrooms", classroomRoutes);
 app.use("/api/selection-reports", selectionReportRoutes);
 
 app.use("/api/batches", batchRoutes);

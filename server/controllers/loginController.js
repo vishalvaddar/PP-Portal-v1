@@ -3,17 +3,22 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const logger = require('../utils/logger');
 
+// If using Node < 18 → uncomment below
+// const fetch = require("node-fetch");
+
 const loginController = async (req, res) => {
   const { user_name, password } = req.body;
   const clientIp = logger.constructor.getClientIp(req);
 
-  // 1. Basic Validation
+  // ✅ Basic Validation
   if (!user_name || !password) {
     return res.status(400).json({ error: 'Username and password are required' });
   }
 
   try {
-    // 2. Fetch User & Roles
+    // ======================================================
+    // ✅ FETCH USER & ROLES
+    // ======================================================
     const query = `
       SELECT u.user_id, u.user_name, u.enc_password, u.locked_yn, r.role_name
       FROM pp.user u
@@ -24,49 +29,71 @@ const loginController = async (req, res) => {
 
     const result = await pool.query(query, [user_name]);
 
-    // 3. Prevent Enumeration (Generic Error)
+    // Prevent enumeration
     if (result.rows.length === 0) {
-      logger.logLogin({ user_name, status: 'failed', reason: 'user_not_found', ip: clientIp });
+      logger.logLogin({
+        user_name,
+        status: 'failed',
+        reason: 'user_not_found',
+        ip: clientIp
+      });
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const user = result.rows[0];
 
-    // 4. Check Lock Status
+    // ======================================================
+    // ✅ ACCOUNT LOCK CHECK
+    // ======================================================
     if (user.locked_yn === 'Y') {
       return res.status(403).json({ error: 'Account is locked. Contact support.' });
     }
 
-    // 5. Verify Password
+    // ======================================================
+    // ✅ PASSWORD VERIFY
+    // ======================================================
     const isMatch = await bcrypt.compare(password, user.enc_password);
+
     if (!isMatch) {
-      logger.logLogin({ user_name, status: 'failed', reason: 'bad_password', ip: clientIp });
+      logger.logLogin({
+        user_name,
+        status: 'failed',
+        reason: 'bad_password',
+        ip: clientIp
+      });
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // 6. Extract Roles
+    // ======================================================
+    // ✅ EXTRACT ROLES
+    // ======================================================
     const roles = result.rows.map(row => row.role_name);
 
-    // 7. Generate PRE-AUTH TOKEN
-    // This token is ONLY valid for role selection, NOT for API access.
+    // ======================================================
+    // ✅ PRE-AUTH TOKEN
+    // ======================================================
     const preAuthToken = jwt.sign(
-      { 
-        user_id: user.user_id, 
-        user_name: user.user_name, 
-        type: 'PRE_AUTH_ROLE_SELECT', // Specific type claim
-        allowed_roles: roles // Embed roles so we don't need another DB query
+      {
+        user_id: user.user_id,
+        user_name: user.user_name,
+        type: 'PRE_AUTH_ROLE_SELECT',
+        allowed_roles: roles
       },
       process.env.JWT_SECRET,
-      { expiresIn: '5m' } // Expire quickly (5 mins)
+      { expiresIn: process.env.PRE_AUTH_JWT_EXPIRES_IN || '15m' }
     );
 
-    logger.logLogin({ user_name, status: 'success_pre_auth', ip: clientIp });
+    logger.logLogin({
+      user_name,
+      status: 'success_pre_auth',
+      ip: clientIp
+    });
 
     return res.status(200).json({
       message: 'Credentials verified',
       user_name: user.user_name,
       roles: roles,
-      preAuthToken: preAuthToken 
+      preAuthToken: preAuthToken
     });
 
   } catch (err) {
