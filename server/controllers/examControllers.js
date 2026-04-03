@@ -25,9 +25,9 @@ const pool = require("../config/db");
 const stream = require("stream");
 
 // Helper function to generate hall ticket number
-function generateHallTicket(applicantId) {
-    return `25${applicantId}`;
-}
+// function generateHallTicket(applicantId) {
+//     return `25${applicantId}`;
+// }
 
 // Exam Centre Controllers
 const fetchExamCentres = async (req, res) => {
@@ -208,11 +208,23 @@ const deleteExam = async (req, res) => {
 };
 
 // Generate a simple hall ticket number
-function generateHallTicket(applicantId, nmmsYear) {
-  // Hall ticket format: YY + applicant_id (e.g., 25 + 000123)
-  const yearSuffix = nmmsYear ? nmmsYear.toString().slice(-2) : '25';
-  const paddedId = applicantId.toString().padStart(6, '0');
-  return `${yearSuffix}${paddedId}`;
+function generateHallTicket(sequenceNumber, juris_code) {
+  if (!juris_code || sequenceNumber === undefined) {
+    console.error("Invalid data:", { sequenceNumber, juris_code });
+    throw new Error("Missing required values for hall ticket generation");
+  }
+
+  // ✅ 1. Get CURRENT year dynamically
+  const currentYear = new Date().getFullYear();   // e.g. 2026
+  const yearSuffix = currentYear.toString().slice(-2); // → 26
+
+  // ✅ 2. Block → last 2 digits (2901 → 01)
+  const jurisLast2 = juris_code.toString().slice(-2).padStart(2, '0');
+
+  // ✅ 3. Sequential number (0001, 0002...)
+  const sequence = sequenceNumber.toString().padStart(4, '0');
+
+  return `${yearSuffix}${jurisLast2}${sequence}`;
 }
 
  async function createExamAndAssignApplicants(req, res) {
@@ -330,7 +342,7 @@ async function generateStudentList(req, res) {
   try {
     const examId = req.params.examId;
     
-    // ✅ Fetch exam + student + institute data
+    // ✅ Fetch exam + student + institute data + block name
     const result = await pool.query(`
       SELECT 
         ae.pp_hall_ticket_no, 
@@ -345,12 +357,14 @@ async function generateStudentList(req, res) {
         ee.exam_end_time,
         ec.pp_exam_centre_name,
         api.nmms_reg_number,
+        j.juris_name as block_name,
         ROW_NUMBER() OVER (ORDER BY api.student_name) as sl_no
       FROM pp.examination ee
       JOIN pp.applicant_exam ae ON ee.exam_id = ae.exam_id
       JOIN pp.applicant_primary_info api ON ae.applicant_id = api.applicant_id
       JOIN pp.pp_exam_centre ec ON ee.pp_exam_centre_id = ec.pp_exam_centre_id
       LEFT JOIN pp.institute i ON api.current_institute_dise_code = i.dise_code
+      LEFT JOIN pp.jurisdiction j ON api.nmms_block = j.juris_code
       WHERE ae.exam_id = $1
       ORDER BY api.student_name
     `, [examId]);
@@ -420,8 +434,9 @@ async function generateStudentList(req, res) {
     // 3. Hall Ticket Number
     // 4. Student Name
     // 5. School Name
-    // 6. Contact No. 1
-    // 7. Contact No. 2
+    // 6. Block Name
+    // 7. Contact No. 1
+    // 8. Contact No. 2
     
     const studentData = result.rows.map((row, index) => [
       index + 1,                                    // Serial Number
@@ -429,6 +444,7 @@ async function generateStudentList(req, res) {
       row.pp_hall_ticket_no || '',                  // Hall Ticket Number
       row.student_name || '',                       // Student Name
       row.institute_name || '',                     // School Name
+      row.block_name || '',                         // Block Name
       row.contact_no1 || '',                        // Contact No. 1
       row.contact_no2 || ''                         // Contact No. 2
     ]);
@@ -440,6 +456,7 @@ async function generateStudentList(req, res) {
       'Hall Ticket No.',
       'Student Name',
       'School Name',
+      'Block Name',
       'Contact No. 1',
       'Contact No. 2'
     ];
@@ -463,6 +480,7 @@ async function generateStudentList(req, res) {
       { wch: 15 },  // Hall Ticket No.
       { wch: 25 },  // Student Name
       { wch: 35 },  // School Name
+      { wch: 20 },  // Block Name
       { wch: 15 },  // Contact No. 1
       { wch: 15 }   // Contact No. 2
     ];
@@ -573,19 +591,20 @@ const stamplogo = path.join(assetsBase, "assets/rcf_stamp-removebg-preview.png")
     // ---------------- FETCH STUDENTS ----------------
     const result = await pool.query(
       `
-      SELECT 
-        ae.pp_hall_ticket_no,
-        api.student_name,
-        ec.pp_exam_centre_name,
-        e.exam_date,
-        e.exam_name,
-        e.exam_start_time,
-        e.exam_end_time,
-        ec.latitude,
-        ec.address,
-        ec.village,
-        ec.pincode,
-        ec.longitude
+     SELECT 
+    ae.pp_hall_ticket_no,
+    api.student_name,
+    api.district AS juris_code,   -- ✅ ADD THIS
+    ec.pp_exam_centre_name,
+    e.exam_date,
+    e.exam_name,
+    e.exam_start_time,
+    e.exam_end_time,
+    ec.latitude,
+    ec.address,
+    ec.village,
+    ec.pincode,
+    ec.longitude
       FROM pp.applicant_exam ae
       JOIN pp.applicant_primary_info api ON ae.applicant_id = api.applicant_id
       JOIN pp.examination e ON ae.exam_id = e.exam_id
@@ -744,7 +763,7 @@ function generateStudentPDF(student, ticketPath, assets) {
       const studentDetailsY = 210;
       
       // Main rectangle for student details - with border only
-      doc.rect(50, studentDetailsY, 360, 100)
+      doc.rect(50, studentDetailsY, 360, 90)
          .stroke(primaryColor)
          .lineWidth(2);
 
@@ -794,9 +813,9 @@ function generateStudentPDF(student, ticketPath, assets) {
         // --------------------------------------------------------------------
         // Exam Center Box Container
 const examCenterBoxX = 50;
-const examCenterBoxY = studentDetailsY + 120;
+const examCenterBoxY = studentDetailsY + 110;
 const examCenterBoxWidth = 360;
-const examCenterBoxHeight = 60;
+const examCenterBoxHeight = 65;
 
 // Draw the box
 doc.rect(examCenterBoxX, examCenterBoxY, examCenterBoxWidth, examCenterBoxHeight)
@@ -817,7 +836,7 @@ doc.text(examCenterTitle, examCenterBoxX + 10, examCenterBoxY -12);
 
 // Exam Center content position inside the box
 const examCenterContentX = examCenterBoxX + 15;
-const examCenterContentY = examCenterBoxY + 18;
+const examCenterContentY = examCenterBoxY + 15;
 const maxTextWidth = examCenterBoxWidth - 30;
 
 // Create address string from components
@@ -841,7 +860,7 @@ if (student.latitude && student.longitude) {
        });
     
     // Address with Google Maps link on next line
-    const addressY = examCenterContentY + 15;
+    const addressY = examCenterContentY + 25;
     doc.font('Helvetica').fontSize(9).fillColor('blue').text(fullAddress, examCenterContentX, addressY, {
         width: maxTextWidth,
         underline: true
@@ -863,7 +882,7 @@ if (student.latitude && student.longitude) {
        });
     
     // Address without link
-    const addressY = examCenterContentY + 15;
+    const addressY = examCenterContentY + 30;
     doc.font('Helvetica').fontSize(9).fillColor(primaryColor)
        .text(fullAddress, examCenterContentX, addressY, {
            width: maxTextWidth
@@ -1225,7 +1244,8 @@ const shortlistedApplicants = await client.query(
     api.contact_no1,
     api.contact_no2,
     api.nmms_year,
-    api.nmms_block
+    api.nmms_block,
+    edu_district_juris.juris_code
   FROM pp.applicant_primary_info api
   INNER JOIN pp.applicant_shortlist_info asi 
     ON api.applicant_id = asi.applicant_id
@@ -1252,29 +1272,41 @@ const shortlistedApplicants = await client.query(
     }
 
     // ✅ 3. Insert applicants into applicant_exam with hall ticket numbers
+    let counter = 1;
     for (const applicant of applicants) {
-      const hallTicketNo = generateHallTicket(applicant.applicant_id, applicant.nmms_year);
+     const hallTicketNo =generateHallTicket(counter, applicant.juris_code)
       await client.query(
         `INSERT INTO pp.applicant_exam (applicant_id, exam_id, pp_hall_ticket_no)
          VALUES ($1, $2, $3)
          ON CONFLICT (applicant_id, exam_id) DO NOTHING;`,
         [applicant.applicant_id, examId, hallTicketNo]
       );
+      counter++;
     }
 
     await client.query("COMMIT");
 
     // ✅ 4. Send response
-    res.status(201).json({
-      message: "Applicants assigned to exam successfully ✅",
-      examId,
-      totalAssigned: applicants.length,
-      applicants: applicants.map(applicant => ({
-        applicant_id: applicant.applicant_id,
-        applicant_name: applicant.student_name,
-        hall_ticket_no: generateHallTicket(applicant.applicant_id, applicant.nmms_year)
-      }))
-    });
+   let responseCounter = 1;
+
+res.status(201).json({
+  message: "Applicants assigned to exam successfully ✅",
+  examId,
+  totalAssigned: applicants.length,
+  applicants: applicants.map(applicant => {
+    const hallTicket = generateHallTicket(
+      responseCounter++,
+      applicant.nmms_year,
+      applicant.juris_code
+    );
+
+    return {
+      applicant_id: applicant.applicant_id,
+      applicant_name: applicant.student_name,
+      hall_ticket_no: hallTicket
+    };
+  })
+});
   } catch (error) {
     await client.query("ROLLBACK");
     console.error("Error assigning applicants:", error);
