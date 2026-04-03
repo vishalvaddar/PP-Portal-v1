@@ -1,0 +1,37 @@
+[2026-03-30T09:28:43.383Z] LOGIN:  by admin@rajalakshmifoundation.in  ip=::1 status=success_pre_auth
+[2026-03-30T09:28:43.433Z] ACTION: login_complete by admin@rajalakshmiFoundation.in  ip=::1 status=success
+[2026-03-30T09:28:43.529Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-03-30T09:28:43.567Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-03-30T09:28:43.581Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-03-30T09:28:43.596Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-03-30T09:28:43.726Z] ACTION: GET /api/system-config/active by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-03-30T09:28:43.742Z] ACTION: GET /api/applicants/shortlisted/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-03-30T09:28:43.764Z] ACTION: GET /api/applicants/selected/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-03-30T09:28:43.816Z] ACTION: GET /api/applicants/count by admin@rajalakshmiFoundation.in (1) ip=::1  details={"query":{"year":"2025"}}
+[2026-03-30T09:28:47.083Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-03-30T09:28:47.098Z] ACTION: GET /api/results/all-exams by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-03-30T09:28:47.122Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-03-30T09:28:47.129Z] ACTION: GET /api/results/all-exams by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-03-30T09:28:47.655Z] ACTION: GET /api/evaluation-dashboard/overall/2025 by anonymous (anonymous) ip=::1 
+[2026-03-30T09:28:47.663Z] ACTION: GET /api/evaluation-dashboard/jurisdictions/2025 by anonymous (anonymous) ip=::1 
+[2026-03-30T09:28:47.675Z] ACTION: GET /api/evaluation-dashboard/overall-progress/2025 by anonymous (anonymous) ip=::1 
+[2026-03-30T09:28:47.970Z] ACTION: GET /api/evaluation-dashboard/overall-progress/2025 by anonymous (anonymous) ip=::1 
+[2026-03-30T09:28:50.044Z] ACTION: GET /api/evaluation-dashboard/jurisdictions/2025 by anonymous (anonymous) ip=::1 
+[2026-03-30T09:28:50.052Z] ACTION: GET /api/evaluation-dashboard/overall/2025 by anonymous (anonymous) ip=::1 
+[2026-03-30T09:29:00.406Z] ACTION: GET /api/evaluation/exam_names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-03-30T09:29:00.419Z] ACTION: GET /api/evaluation/exam_names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-03-30T09:29:03.482Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-03-30T09:29:03.492Z] ACTION: GET /api/results/all-exams by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-03-30T09:29:03.512Z] ACTION: GET /api/exams/divisions-by-state/1 by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-03-30T09:29:03.729Z] ACTION: GET /api/results/all-exams by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-03-30T09:29:04.874Z] ACTION: GET /api/evaluation-dashboard/overall/2025 by anonymous (anonymous) ip=::1 
+[2026-03-30T09:29:04.880Z] ACTION: GET /api/evaluation-dashboard/jurisdictions/2025 by anonymous (anonymous) ip=::1 
+[2026-03-30T09:29:04.887Z] ACTION: GET /api/evaluation-dashboard/overall-progress/2025 by anonymous (anonymous) ip=::1 
+[2026-03-30T09:29:05.961Z] ACTION: GET /api/evaluation-dashboard/overall-progress/2025 by anonymous (anonymous) ip=::1 
+[2026-03-30T09:29:07.101Z] ACTION: GET /api/evaluation-dashboard/jurisdictions/2025 by anonymous (anonymous) ip=::1 
+[2026-03-30T09:29:07.114Z] ACTION: GET /api/evaluation-dashboard/overall/2025 by anonymous (anonymous) ip=::1 
+[2026-03-30T09:29:08.773Z] ACTION: GET /api/evaluation/exam_names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-03-30T09:29:09.570Z] ACTION: GET /api/evaluation/exam_names by admin@rajalakshmiFoundation.in (1) ip=::1 
+[2026-03-30T09:29:12.096Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"S_K_HIGH_SCHOOL_CHI_16_05_2025_10_00_14_00"}}
+[2026-03-30T09:29:12.103Z] ACTION: POST /api/evaluation/exam_query by admin@rajalakshmiFoundation.in (1) ip=::1 status=error details={"body":{"exam_name":"S_K_HIGH_SCHOOL_CHI_16_05_2025_10_00_14_00"},"statusCode":404}
+[2026-03-30T09:29:13.456Z] ACTION: POST /api/evaluation/download_excel by admin@rajalakshmiFoundation.in (1) ip=::1  details={"body":{"exam_name":"S_K_HIGH_SCHOOL_CHI_16_05_2025_10_00_14_00"}}
